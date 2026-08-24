@@ -10,6 +10,10 @@ Two programs, used in order:
 1. **BOLD DB Creator** (`dev/bold_db_creator.py`) — filters the raw BOLD
    TSV/`tar.gz` export, loads it into SQLite, indexes the selected fields and
    builds full-text search.
+
+   > **Note:** only records with a DNA sequence (`nuc` field) are kept —
+   > records without a sequence are discarded during Step 1 (TSV filtering)
+   > and never make it into the SQLite database.
 2. **Web viewer** (`dev/frontend/server.py`) — local Flask web app to search,
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.

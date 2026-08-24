@@ -4506,11 +4506,11 @@ class App(QMainWindow):
 
     def open_manual(self):
         filename = "user_guide_en.html" if LANG == 'en' else "guia_de_uso.html"
-        path = _proj_dir("manual", filename)
+        path = _proj_dir("guide", filename)
         if not os.path.exists(path) and LANG == 'en':
             # English manual missing (an old, not-yet-updated version, for
             # example): falls back to the Spanish version instead of leaving the button inert.
-            path = _proj_dir("manual", "guia_de_uso.html")
+            path = _proj_dir("guide", "guia_de_uso.html")
         if os.path.exists(path):
             _os_open(path)
         else:

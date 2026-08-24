@@ -97,7 +97,7 @@ BOLD_DB/
 │   │   └── templates/
 │   └── screenshots/
 ├── data/                      # raw / processed / exports (not versioned)
-└── manual/                    # user guide (ES/EN)
+└── guide/                     # user guide (ES/EN)
 ```
 
 The generated database and raw/processed data are **not** part of this
@@ -105,8 +105,8 @@ repository (see `.gitignore`).
 
 ## Documentation
 
-- [Guía de uso (ES)](manual/guia_de_uso.html)
-- [User guide (EN)](manual/user_guide.html)
+- [Guía de uso (ES)](guide/guia_de_uso.html)
+- [User guide (EN)](guide/user_guide.html)
 
 ## License
 

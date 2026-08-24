@@ -19,9 +19,7 @@ SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 ICON_DIR     = os.path.join(SCRIPT_DIR, "icons")
 
-# One icon file per shortcut. Both point at the same placeholder image today
-# (there's only one icon asset in the project) - drop in a different
-# create_db.ico/.png or web_viewer.ico/.png here to tell them apart.
+# One icon file per shortcut.
 CREATE_DB_ICON_WIN   = os.path.join(ICON_DIR, "create_db.ico")
 CREATE_DB_ICON_LINUX = os.path.join(ICON_DIR, "create_db.png")
 WEB_VIEWER_ICON_WIN   = os.path.join(ICON_DIR, "web_viewer.ico")

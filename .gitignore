@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Runtime / local state
+logs/
+*.log
+ui_state.ini
+
+# Databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Generated data (not versioned)
+data/raw/*
+data/processed/*
+data/exports/**/*
+!data/**/.gitkeep
+
+# OS cruft
+Thumbs.db
+.DS_Store

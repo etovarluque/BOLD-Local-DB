@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOLD DB — User Guide</title>
+<style>
+  :root {
+    --blue:    #2c4685;
+    --blue2:   #3E92CC;
+    --orange:  #f8901f;
+    --bg:      #f5f7fa;
+    --white:   #ffffff;
+    --text:    #2d2d2d;
+    --muted:   #6c757d;
+    --border:  #dee2e6;
+    --green:   #198754;
+    --yellow:  #e8a000;
+    --code-bg: #f0f4ff;
+    --sidebar-w: 290px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  /* ── Sidebar: document map ── */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    overflow-y: auto;
+    background: #1e2a3a;
+    color: #c9d3e0;
+    padding: 22px 0 40px;
+    z-index: 20;
+  }
+  .sidebar::-webkit-scrollbar { width: 8px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #3a4a60; border-radius: 4px; }
+
+  .sidebar .sb-brand {
+    padding: 0 22px 16px;
+    border-bottom: 1px solid #2f3d51;
+    margin-bottom: 14px;
+  }
+  .sidebar .sb-brand .name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .sidebar .sb-brand .name span { color: var(--orange); }
+  .sidebar .sb-brand .tag {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #7f8ea3;
+    margin-top: 2px;
+  }
+
+  .sidebar .sb-heading {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: #6c7d94;
+    padding: 0 22px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar nav ol { list-style: none; }
+
+  .sidebar nav a {
+    display: block;
+    color: #c9d3e0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 6px 22px 6px 20px;
+    border-left: 3px solid transparent;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .sidebar nav a:hover { background: #263447; color: #fff; }
+  .sidebar nav a.active {
+    background: #263447;
+    color: #fff;
+    border-left-color: var(--orange);
+    font-weight: 600;
+  }
+  .sidebar nav .lvl1 > a { font-weight: 600; }
+  .sidebar nav .lvl1 > a .n {
+    display: inline-block;
+    width: 20px;
+    color: var(--blue2);
+    font-size: 0.8rem;
+  }
+  .sidebar nav .lvl1 > a.active .n { color: var(--orange); }
+  .sidebar nav ol ol a {
+    font-size: 0.83rem;
+    color: #96a5b8;
+    padding-left: 42px;
+  }
+  .sidebar nav ol ol a.active { color: #fff; }
+  .sidebar nav .sb-group { margin-bottom: 2px; }
+
+  .sidebar .sb-footer {
+    margin-top: 22px;
+    padding: 14px 22px 0;
+    border-top: 1px solid #2f3d51;
+    font-size: 0.75rem;
+    color: #6c7d94;
+  }
+
+  /* ── Menu button (narrow screens) ── */
+  .sb-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 30;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .sb-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 19;
+  }
+
+  /* ── Layout ── */
+  .main { margin-left: var(--sidebar-w); }
+
+  .page-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue2) 100%);
+    color: #fff;
+    padding: 48px 32px 36px;
+    margin-bottom: 40px;
+  }
+  .site-header .brand {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .site-header .brand span { color: var(--orange); }
+  .site-header .subtitle {
+    font-size: 1.05rem;
+    opacity: 0.85;
+    margin-top: 6px;
+  }
+  .site-header .badge-row {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: 0.8rem;
+    color: #fff;
+  }
+
+  /* ── Sections ── */
+  section { margin-bottom: 44px; scroll-margin-top: 20px; }
+  h2.sub-title, h3.step-title { scroll-margin-top: 20px; }
+
+  h1.section-title {
+    font-size: 1.45rem;
+    color: var(--blue);
+    border-bottom: 2px solid var(--blue2);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h1.section-title .num {
+    background: var(--blue);
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  h2.sub-title {
+    font-size: 1.1rem;
+    color: var(--blue);
+    margin: 26px 0 10px;
+  }
+
+  h3.step-title {
+    font-size: 1rem;
+    color: var(--text);
+    font-weight: 600;
+    margin: 20px 0 8px;
+    padding-left: 12px;
+    border-left: 3px solid var(--orange);
+  }
+
+  p { margin-bottom: 12px; }
+
+  /* ── Content links ── */
+  .page-wrap a {
+    color: var(--blue2);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(62,146,204,0.4);
+    word-break: break-word;
+  }
+  .page-wrap a:hover {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.93rem;
+  }
+  .callout .icon { font-size: 1.2rem; flex-shrink: 0; line-height: 1.5; }
+  .callout.tip    { background: #e8f4fd; border-left: 4px solid var(--blue2); }
+  .callout.warn   { background: #fff8e1; border-left: 4px solid var(--yellow); }
+  .callout.danger { background: #fdecea; border-left: 4px solid #e53935; }
+  .callout.ok     { background: #e8f5e9; border-left: 4px solid var(--green); }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    background: var(--white);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  thead tr { background: var(--blue); color: #fff; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px; }
+  tbody tr:nth-child(even) { background: #f7f9fc; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Steps list ── */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 38px;
+    margin-bottom: 14px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    background: var(--blue2);
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 24px;
+    text-align: center;
+  }
+
+  /* ── Bullets ── */
+  ul.bullet { padding-left: 22px; margin: 10px 0; }
+  ul.bullet li { margin: 5px 0; }
+
+  /* ── Code / path ── */
+  code {
+    background: var(--code-bg);
+    color: #2c4685;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.88em;
+  }
+  kbd {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.85em;
+  }
+  pre {
+    background: #1e2a3a;
+    color: #cdd6f4;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.88rem;
+    overflow-x: auto;
+    margin: 14px 0;
+    line-height: 1.6;
+  }
+  pre .comment { color: #6c8993; }
+  pre .path    { color: #89dceb; }
+  pre .label   { color: #a6e3a1; }
+  pre .pin {
+    background: var(--green);
+    color: #fff;
+    font-weight: 600;
+    padding: 1px 9px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  /* ── Status indicators ── */
+  .status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .dot-green  { background: #4caf50; }
+  .dot-yellow { background: #ffa000; }
+
+  /* ── Search mode cards ── */
+  .mode-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .mode-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--blue2);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .mode-card h3 {
+    font-size: 0.95rem;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+  .mode-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ── Export cards ── */
+  .export-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .export-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .export-card .label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+  .export-card .label.csv   { color: var(--green); }
+  .export-card .label.fasta { color: var(--blue2); }
+  .export-card p { font-size: 0.88rem; color: var(--muted); margin: 0; }
+
+  /* ── FAQ ── */
+  .faq-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+  .faq-item .q {
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 6px;
+    font-size: 0.97rem;
+  }
+  .faq-item .a {
+    font-size: 0.92rem;
+    color: var(--text);
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    padding: 24px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 50px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1080px) {
+    .main { margin-left: 0; }
+    .sb-toggle { display: block; }
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      box-shadow: 4px 0 18px rgba(0,0,0,0.3);
+    }
+    body.sb-open .sidebar    { transform: translateX(0); }
+    body.sb-open .sb-backdrop { display: block; }
+    .site-header { padding-left: 70px; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; font-size: 13px; }
+    .sidebar, .sb-toggle, .sb-backdrop { display: none !important; }
+    .main { margin-left: 0; }
+    .site-header { background: var(--blue) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .callout, .mode-card, .faq-item, .export-card { break-inside: avoid; }
+    section { break-inside: avoid; }
+    h1.section-title, h2.sub-title, h3.step-title { break-after: avoid; }
+    a { color: inherit; text-decoration: none; }
+    .page-wrap a { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<button class="sb-toggle" id="sbToggle" aria-label="Open the document map">☰</button>
+<div class="sb-backdrop" id="sbBackdrop"></div>
+
+<!-- ── SIDE PANEL: DOCUMENT MAP ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="name">BOLD <span>DB</span></div>
+    <div class="tag">User Guide</div>
+  </div>
+
+  <div class="sb-heading">Document map</div>
+  <nav id="docMap">
+    <ol>
+      <li class="sb-group lvl1"><a href="#que-es"><span class="n">1</span>What is this for?</a></li>
+      <li class="sb-group lvl1"><a href="#requisitos"><span class="n">2</span>Prerequisites</a></li>
+      <li class="sb-group lvl1"><a href="#carpetas"><span class="n">3</span>Folder structure</a></li>
+      <li class="sb-group lvl1">
+        <a href="#parte1"><span class="n">4</span>Building the database</a>
+        <ol>
+          <li><a href="#paso0">Download the file from BOLD</a></li>
+          <li><a href="#campos-panel">Choose the fields (optional)</a></li>
+          <li><a href="#opcionA">Run all the steps at once</a></li>
+          <li><a href="#opcionB">Run the steps one at a time</a></li>
+          <li><a href="#indicadores">Status indicators</a></li>
+          <li><a href="#reanudar">Resuming and updating</a></li>
+          <li><a href="#logs">Activity log</a></li>
+        </ol>
+      </li>
+      <li class="sb-group lvl1">
+        <a href="#parte2"><span class="n">5</span>Querying the database</a>
+        <ol>
+          <li><a href="#abrir">Opening the database</a></li>
+          <li><a href="#modos">Search modes</a></li>
+          <li><a href="#busqueda-campos">Advanced field search</a></li>
+          <li><a href="#busqueda-fts">Full-text search</a></li>
+          <li><a href="#busqueda-batch">Batch search</a></li>
+          <li><a href="#tabla">Working with the results table</a></li>
+          <li><a href="#exportar">Exporting results</a></li>
+        </ol>
+      </li>
+      <li class="sb-group lvl1"><a href="#campos"><span class="n">6</span>Available fields</a></li>
+      <li class="sb-group lvl1"><a href="#faq"><span class="n">7</span>Frequently asked questions</a></li>
+    </ol>
+  </nav>
+
+  <div class="sb-footer">
+    Click any section to jump to it.
+  </div>
+</aside>
+
+<div class="main">
+
+<header class="site-header">
+  <div class="page-wrap" style="padding-top:0;padding-bottom:0;margin-bottom:0;">
+    <div class="brand">BOLD <span>DB</span></div>
+    <div class="subtitle">Installation and usage instructions — Local BOLD database</div>
+    <div class="badge-row">
+      <span class="badge">Windows</span>
+      <span class="badge">Python 3.10+</span>
+      <a href="guia_de_uso.html" class="badge" style="color:#fff;text-decoration:none;border-bottom:none;cursor:pointer;">🌐 Versión en español</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-wrap">
+
+  <!-- 1. WHAT IS THIS -->
+  <section id="que-es">
+    <h1 class="section-title"><span class="num">1</span> What is this for?</h1>
+    <p>
+      This tool downloads the public records from the <strong>BOLD (Barcode of Life Data System)</strong> system
+      and turns them into a local database you can query from your browser,
+      <strong>without needing an internet connection</strong> once it's installed.
+    </p>
+    <p>It's two programs, used in this order:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Program</th><th>What it's for</th><th>How to open it</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>BOLD DB Creator</strong></td>
+            <td>Processes the file downloaded from BOLD and builds the database</td>
+            <td>Shortcut <code>1_Crear_base_de_datos</code><br><span style="color:var(--muted);font-size:0.85em;">(same as <code>dev/bold_db_creator.bat</code>)</span></td>
+          </tr>
+          <tr>
+            <td><strong>BOLD DB web viewer</strong></td>
+            <td>Lets you search and export records once the database is built</td>
+            <td>Shortcut <code>2_Abrir_visor_web_BD_BOLD</code><br><span style="color:var(--muted);font-size:0.85em;">(same as <code>dev/launch_bold_db.bat</code>)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        Both shortcuts are in the main <code>BOLD_DB/</code> folder. Their file names stay in Spanish regardless
+        of which language you pick in the apps — they're just Windows shortcuts. If you copy the project to
+        another computer or drive and the shortcuts stop working, run <code>Reparar_accesos.bat</code> once:
+        it regenerates them pointing at the current location.
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. PREREQUISITES -->
+  <section id="requisitos">
+    <h1 class="section-title"><span class="num">2</span> Prerequisites</h1>
+    <p>You only need to have installed:</p>
+    <ul class="bullet">
+      <li>
+        <strong>Python 3.10 or newer</strong> — download it from
+        <strong>python.org</strong>. During installation, check the
+        <em>"Add Python to PATH"</em> option.
+      </li>
+      <li><strong>Disk space:</strong> at least <strong>80 GB free</strong> (see the FAQ).</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        The required libraries are installed <strong>automatically</strong> the first time you run each
+        program: <code>PySide6</code> for the Creator, and <code>Flask</code> and <code>psutil</code> for the web viewer.
+        You only need an internet connection for that first launch.
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. FOLDERS -->
+  <section id="carpetas">
+    <h1 class="section-title"><span class="num">3</span> Folder structure</h1>
+    <p>When you open the project folder you'll see this layout:</p>
+<pre><span class="path">BOLD_DB/</span>
+├── <span class="label">1_Crear_base_de_datos</span>       <span class="comment">← shortcut to the Creator</span>
+├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← shortcut to the web viewer</span>
+├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenerates the shortcuts if you move the folder</span>
+├── <span class="path">data/</span>
+│   ├── <span class="path">raw/</span>          <span class="pin">← place the file downloaded from BOLD here</span>
+│   ├── <span class="path">processed/</span>    <span class="comment">← intermediate files (filtered TSV); created automatically</span>
+│   └── <span class="path">exports/</span>      <span class="comment">← copy of everything you export; created automatically</span>
+├── <span class="path">dev/</span>
+│   ├── <span class="label">bold_db_creator.bat</span>
+│   └── <span class="label">launch_bold_db.bat</span>
+├── <span class="path">manual/</span>           <span class="comment">← this guide</span>
+└── <span class="path">app/</span>              <span class="comment">← created automatically: database, web server and logs</span>
+    ├── <span class="label">bold_db.db</span>    <span class="comment">← the finished database</span>
+    └── <span class="path">logs/</span>         <span class="comment">← history of each Creator run</span></pre>
+    <div class="callout ok">
+      <span class="icon">✅</span>
+      <div>
+        <strong>You don't have to create any folder by hand</strong>, except <code>data/raw/</code> if it doesn't
+        exist yet. The <code>app/</code> folder is generated automatically the first time you open the Creator,
+        with everything the web viewer needs.
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PART 1 -->
+  <section id="parte1">
+    <h1 class="section-title"><span class="num">4</span> Building the database</h1>
+    <p>You only need to do this <strong>once</strong>, or when you download a new version of BOLD.</p>
+
+    <!-- Step 0 -->
+    <h2 class="sub-title" id="paso0">Download the file from BOLD</h2>
+    <ol class="steps">
+      <li>From <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> download the complete data file (a BOLD account is required). It will have a name similar to <code>BOLD_Public.DAY-MONTH-YEAR.tar.gz</code>.</li>
+      <li><strong>Copy</strong> that <code>.tar.gz</code> file into the <code>BOLD_DB/data/raw/</code> folder —
+          copy it, don't move it (see the note below).</li>
+      <li><strong>Don't extract the file</strong>; the program does that on its own.</li>
+    </ol>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>The <code>.tar.gz</code> is deleted automatically.</strong> When Step 1 finishes, the Creator
+        deletes from <code>data/raw/</code> both the <code>.tar.gz</code> and the unfiltered TSV, to free up the
+        10–15 GB they take up once processed.
+        <br><br>
+        That's why it's best to <strong>copy</strong> the downloaded file into <code>data/raw/</code> and
+        <strong>not move it</strong>: that way you keep the original in your downloads folder. If something fails
+        partway through, or you want to rebuild the database later, you can just copy it again instead of having
+        to download those 10–15 GB from BOLD a second time.
+      </div>
+    </div>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>Leave only one <code>.tar.gz</code> file in <code>data/raw/</code>. If there are several, the Creator uses the most recent one and <strong>deletes the rest</strong>.</div>
+    </div>
+
+    <!-- Fields -->
+    <h2 class="sub-title" id="campos-panel">Choosing which fields are saved <em>(optional)</em></h2>
+    <p>
+      The <strong>Field Selection</strong> panel, in the Creator's sidebar (<strong>SETTINGS</strong> section),
+      decides which columns from the BOLD file end up in the database. By default it has the usual 23 columns
+      checked (see <a href="#campos">Available fields</a>), but you can enable any of the <strong>76</strong>
+      columns offered by BOLD's public data package — collection coordinates, habitat, primers, institution, etc.
+    </p>
+    <ol class="steps">
+      <li>Check or uncheck the fields you want to keep. The ones shown with a lock icon (BOLD ID, Sample ID, BIN,
+          basic taxonomy, Marker, Sequence…) can't be removed: the viewer needs them to work.</li>
+      <li>Next to each checked field there's a second checkbox, <strong>"index"</strong>: turn it on for fields
+          you're actually going to search by (it creates an index in Step 3 and includes the field in Step 4's
+          full-text search). Leave it off for fields you only want to view or export — every index costs disk
+          space.</li>
+      <li>Click <strong>"Save selection"</strong> to write it to <code>dev/fields_config.json</code>.</li>
+    </ol>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Reset fields</strong></td><td>Re-checks the 23 factory-default fields in the list.
+              It only changes what you see: it doesn't touch the file until you click "Save selection".</td></tr>
+          <tr><td><strong>Check against TSV</strong></td><td>Re-reads the header of the downloaded file and warns
+              if any configured field no longer exists, or if BOLD added new fields you aren't using. Only
+              available once the <code>.tar.gz</code> has been extracted (during or after Step 1).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Changing the selection means Step 1 has to be repeated</strong> with BOLD's <code>.tar.gz</code>,
+        because fields are extracted while filtering the TSV. The program detects the change on its own and
+        re-filters automatically if the <code>.tar.gz</code> is still available; if it was already deleted (it's
+        removed once Step 1 finishes), you'll need to download it again to apply the new selection.
+      </div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        If BOLD renames or drops a field in a new version, the panel flags it in red
+        (<em>"not in the TSV"</em>) and, if it finds a similar name in the new header, suggests it. A field BOLD
+        offers that you don't have enabled shows up in amber (<em>"new in BOLD"</em>). If the missing field is one
+        the viewer needs to work, Step 1 stops with a message explaining which one is missing, instead of building
+        an incomplete database.
+      </div>
+    </div>
+
+    <!-- Option A -->
+    <h2 class="sub-title" id="opcionA">Option A — Run all the steps at once <em>(recommended)</em></h2>
+    <ol class="steps">
+      <li>Double-click the <strong>1_Crear_base_de_datos</strong> shortcut. The Creator will open on the <strong>Home</strong> screen.</li>
+      <li>Click <strong>"Create the database"</strong>, under <strong>Option 1</strong>.</li>
+      <li>Confirm in the dialog that appears.</li>
+      <li>Wait for it to finish. The process can take <strong>several hours</strong> depending on the file size and your computer's speed.</li>
+    </ol>
+    <div class="callout ok">
+      <span class="icon">✅</span>
+      <div>When it finishes you'll see in the output panel: <strong>=== PROCESS FINISHED ===</strong>, followed by <strong>All done. Click «Open the viewer» on Home.</strong></div>
+    </div>
+    <p>Option 1 runs steps 1, 2 and 3. Option 2 on the same screen ("Create the full database") runs all four steps, including the optional Step 4 (FTS); you can also run Step 4 on its own later from the individual step list.</p>
+
+    <!-- Option B -->
+    <h2 class="sub-title" id="opcionB">Option B — Run the steps one at a time</h2>
+    <p>Useful if you need to resume from a specific point or want to see the detail of each stage.</p>
+
+    <h3 class="step-title">Step 1 — Prepare data <em>(required)</em></h3>
+    <p>Extracts the <code>.tar.gz</code> file and keeps only the columns checked in the
+       <a href="#campos-panel">Field Selection</a> panel — 23 by default, adjustable.</p>
+    <ul class="bullet">
+      <li>Select <strong>"1. Prepare data"</strong> in the left-hand menu → click <strong>Run</strong>.</li>
+      <li>Approximate duration: <strong>10–40 minutes</strong>.</li>
+      <li>Result: a <code>.filt.tsv</code> file in <code>data/processed/</code>.</li>
+      <li>When it finishes, the <code>.tar.gz</code> and the unfiltered TSV are <strong>deleted from
+          <code>data/raw/</code></strong> to free up space. If you copied the file instead of moving it, your
+          original download is still intact where it was.</li>
+      <li>Before filtering, the program <strong>checks</strong> that the configured fields exist in the actual
+          header of the downloaded file — see the <a href="#campos-panel">Field Selection panel</a>.</li>
+    </ul>
+
+    <h3 class="step-title">Step 2 — Build database <em>(required)</em></h3>
+    <p>Imports the filtered data into the database.</p>
+    <ul class="bullet">
+      <li>Select <strong>"2. Build database"</strong> → click <strong>Run</strong>.</li>
+      <li>Approximate duration: <strong>30–90 minutes</strong>.</li>
+      <li>Result: the <code>app/bold_db.db</code> file.</li>
+    </ul>
+
+    <h3 class="step-title">Step 3 — Speed up searches <em>(recommended)</em></h3>
+    <p>Creates indexes so searches are fast. Without this step the database still works, but every query can take minutes instead of seconds.</p>
+    <ul class="bullet">
+      <li>Select <strong>"3. Speed up searches"</strong> → click <strong>Run</strong>.</li>
+      <li>Approximate duration: <strong>5–20 minutes</strong>.</li>
+    </ul>
+
+    <h3 class="step-title">Step 4 — Full-text search <em>(optional)</em></h3>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        This step is <strong>optional</strong>. It takes <strong>several minutes</strong> (roughly 5–15 depending
+        on the database size) and adds about <strong>25% to the size</strong> of the database. Once the index
+        rebuild starts it <strong>cannot be interrupted</strong>, but since it's quick that's not much of a risk.
+        It's only needed if you want to use the <em>"Full-text search"</em> tab.
+      </div>
+    </div>
+    <ul class="bullet">
+      <li>Select <strong>"4. Full-text search"</strong> → click <strong>Run</strong>.</li>
+      <li>By default the index covers nearly the same fields as the field search (19 of 20): Sample ID, Field
+          ID, Museum ID, BIN, full taxonomy (kingdom to species), identification, ID Rank, country, state,
+          region, Base Count, marker and sequence date. <strong>Country code</strong> is left out (see the note
+          below). This list depends on which fields you marked as <em>"index"</em> in the
+          <a href="#campos-panel">Field Selection</a> panel; if you changed the selection, it may differ.</li>
+    </ul>
+
+    <!-- Status indicators -->
+    <h2 class="sub-title" id="indicadores">Status indicators</h2>
+    <p>On each panel you'll see, below the step description:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Indicator</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="status-dot dot-green"></span> <strong>Input available</strong></td>
+            <td>The files needed for this step are ready.</td>
+          </tr>
+          <tr>
+            <td><span class="status-dot dot-yellow"></span> <strong>Input not found</strong></td>
+            <td>You need to complete the previous step first.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Resuming -->
+    <h2 class="sub-title" id="reanudar">Resuming and updating</h2>
+    <p>The Creator <strong>detects work already done</strong> and skips whatever doesn't need repeating:</p>
+    <ul class="bullet">
+      <li>If the filtered TSV already exists, Step 1 is skipped.</li>
+      <li>If the database was already built from that same TSV, Step 2 is skipped.</li>
+      <li>Only the indexes that are still missing get created.</li>
+      <li>If the FTS index matches the current data, Step 4 is skipped.</li>
+    </ul>
+    <p>
+      To <strong>update to a new version of BOLD</strong>: place the new <code>.tar.gz</code> in
+      <code>data/raw/</code> and click <strong>"Create the database"</strong> (Option 1) on the Home screen
+      again. The previous version's files are removed automatically and the database is rebuilt from scratch.
+    </p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>If you interrupt a step with the <strong>Stop</strong> button, the partial files are deleted to avoid corrupted data. Running it again starts that step over from the beginning.</div>
+    </div>
+
+    <!-- Logs -->
+    <h2 class="sub-title" id="logs">Activity log</h2>
+    <p>Each Creator run leaves its own log:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>Content</th></tr></thead>
+        <tbody>
+          <tr><td><code>app/logs/run_YYYY-MM-DD_HH-MM-SS.log</code></td><td>Everything that appeared in the output panel during that session. The 100 most recent are kept.</td></tr>
+          <tr><td><code>app/logs/error.log</code></td><td>Technical detail of errors. This is the file to check when something fails.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5. PART 2 -->
+  <section id="parte2">
+    <h1 class="section-title"><span class="num">5</span> Querying the database</h1>
+
+    <h2 class="sub-title" id="abrir">Opening the database</h2>
+    <p>Double-click the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut. A terminal window will open and your browser will automatically open at <code>http://127.0.0.1:5001</code>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>The terminal window must <strong>stay open</strong> while you use the database. If you close it, the browser will stop working and you'll see the <em>"SERVER DISCONNECTED"</em> notice.</div>
+    </div>
+    <p>
+      In the top right of the page you'll see the loaded <strong>BOLD version</strong>, and next to the title the
+      database's <strong>total record count</strong>.
+    </p>
+
+    <!-- Modes -->
+    <h2 class="sub-title" id="modos">Search modes</h2>
+    <div class="mode-cards">
+      <div class="mode-card">
+        <h3>📋 Advanced field search</h3>
+        <p>Filters records by combining conditions on specific columns: species, country, marker, BIN, etc.</p>
+      </div>
+      <div class="mode-card">
+        <h3>🔍 Full-text search</h3>
+        <p>Searches one or more words across all text fields at once. Requires Step 4 to have been completed.</p>
+      </div>
+      <div class="mode-card">
+        <h3>📦 Batch search</h3>
+        <p>Searches a whole list of values by uploading a text file. Ideal for many species or IDs at once.</p>
+      </div>
+    </div>
+
+    <!-- Field search -->
+    <h2 class="sub-title" id="busqueda-campos">Advanced field search</h2>
+    <ol class="steps">
+      <li>Leave the first selector (<strong>AND / OR / NOT</strong>) as it is: it has no effect on the first condition.</li>
+      <li>Choose the <strong>field</strong> you want to search by (e.g. <em>Species</em>, <em>Country</em>, <em>BIN</em>).</li>
+      <li>Choose the <strong>operator</strong>.</li>
+      <li>Type the <strong>value</strong>. Autocomplete suggestions will appear.</li>
+      <li>Click <strong>Search</strong> or press <kbd>Enter</kbd>.</li>
+    </ol>
+    <p>
+      To search with <strong>several conditions</strong>, click <strong>"+ Add condition"</strong>. The
+      <strong>AND / OR / NOT</strong> selector on each new row indicates <em>how that condition joins with the
+      previous ones</em>.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Connector</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AND</strong></td><td>Both conditions must be true</td><td>Country = Colombia AND Marker = COI-5P</td></tr>
+          <tr><td><strong>OR</strong></td><td>At least one condition must be true</td><td>Species = Panthera leo OR Species = Panthera onca</td></tr>
+          <tr><td><strong>NOT</strong></td><td>Exclude records that match that condition</td><td>Family = Felidae NOT Genus = Felis</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        Conditions are evaluated <strong>in order, top to bottom</strong>, with no parentheses. If you need to
+        group them, split the query into two searches or use Batch mode.
+      </div>
+    </div>
+
+    <h3 class="step-title">Available operators</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Operator</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td>Equals</td><td>Exact value (not case-sensitive)</td></tr>
+          <tr><td>Not equals</td><td>Any value other than the one given</td></tr>
+          <tr><td>Contains</td><td>The cell contains that text anywhere</td></tr>
+          <tr><td>Does not contain</td><td>The cell doesn't contain that text</td></tr>
+          <tr><td>Starts with / Ends with</td><td>Match at the start or end</td></tr>
+          <tr><td>Greater than / Less than</td><td>Numeric comparison (e.g. Base Count &gt; 600)</td></tr>
+          <tr><td>Between</td><td>Numeric range; a second <em>"To"</em> box appears (e.g. Base Count between 600 and 700)</td></tr>
+          <tr><td>Has value / No value</td><td>The cell does or doesn't have a value. Nothing to type</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Autocomplete</h3>
+    <p>As you type, up to <strong>10 suggestions</strong> appear, taken from values that actually exist in the database, drawn from the taxonomic fields, marker, country, state, region and identification.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Key</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>↓</kbd> / <kbd>↑</kbd></td><td>Move through the suggestions</td></tr>
+          <tr><td><kbd>→</kbd> or <kbd>Tab</kbd></td><td>Accept the highlighted suggestion</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Close the suggestion list</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Run the search</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FTS -->
+    <h2 class="sub-title" id="busqueda-fts">Full-text search</h2>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Available only if you completed <strong>Step 4 (Full-text search)</strong>.</div>
+    </div>
+    <ol class="steps">
+      <li>Type one or more words in the search box.</li>
+      <li>Click <strong>Search</strong> or press <kbd>Enter</kbd>.</li>
+    </ol>
+    <p>By default the search covers nearly the same fields as the field search (19 of 20): Sample ID, Field
+       ID, Museum ID, BIN, kingdom, phylum, class, order, family, genus, species, identification, ID Rank, country,
+       state, region, Base Count, marker and sequence date — the exact list depends on which fields you marked as
+       <em>"index"</em> in the <a href="#campos-panel">Field Selection</a> panel. It does <strong>not</strong>
+       search inside the DNA sequence, the coordinates, the BOLD ID (which already has its own exact search as the
+       record's unique identifier), or the <strong>country code</strong>: since it's always 2 letters (e.g. "CO",
+       "US"), it's too short for the type of index this search uses — use <strong>country</strong> (full name)
+       or the field search with <em>Country Code = ...</em> instead.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>What you type</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><code>Panthera</code></td><td>Records containing that word in any text field, even as part of another word (e.g. it also finds "Pantherinae")</td></tr>
+          <tr><td><code>Panthera Colombia</code></td><td>Both words present, in any field, not necessarily the same one (equivalent to <code>AND</code>)</td></tr>
+          <tr><td><code>Panthera AND Colombia</code></td><td>Both words present, in any field</td></tr>
+          <tr><td><code>Panthera OR Felis</code></td><td>Either of the two words</td></tr>
+          <tr><td><code>Panthera NOT leo</code></td><td>Panthera but not leo</td></tr>
+          <tr><td><code>"Ara macao"</code></td><td>Exact phrase: searches for that complete, contiguous sequence of text within the same field</td></tr>
+          <tr><td><code>Mexico</code></td><td>Also finds <em>México</em>: accents are ignored</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        <strong>Without quotes</strong>, each word is searched separately in <strong>any</strong> text field, and
+        all of them must appear in the record (even if in different, unrelated columns). This can produce
+        unexpected matches: searching <code>Ara macao</code> without quotes also finds records where "Ara" appears
+        as a fragment of another word in one field (e.g. the genus <em>Hylarana</em>, which contains "ara") and
+        "macao" separately matches another field (e.g. a region called Macao), even though the record has nothing
+        to do with the bird.
+        <br><br>
+        <strong>With quotes</strong> (<code>"Ara macao"</code>) the search requires the text to appear
+        <strong>whole and contiguous</strong> within the same field, eliminating that kind of cross-field match —
+        it's the recommended way to search for a two-word species name.
+      </div>
+    </div>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        Searching for a <strong>Base Count</strong> value with only 1 or 2 digits (e.g. <code>34</code>) finds
+        nothing, for the same reason as the country code: the index can't represent text shorter than 3
+        characters. With 3 digits or more (e.g. <code>658</code>) it works normally.
+      </div>
+    </div>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        The connectors <code>AND</code>, <code>OR</code> and <code>NOT</code> must be written in
+        <strong>UPPERCASE</strong>. Outside a quoted phrase, the symbols
+        <code>( ) * : . - + | &amp; ! ^</code> are treated as <strong>literal text</strong>, not syntax: the
+        asterisk doesn't work as a wildcard and parentheses don't group anything. Inside a quoted phrase,
+        <code>AND</code>/<code>OR</code>/<code>NOT</code> also don't act as connectors: they're searched as
+        literal words of the phrase.
+      </div>
+    </div>
+
+    <!-- Batch -->
+    <h2 class="sub-title" id="busqueda-batch">Batch search</h2>
+    <p>Ideal when you have a list of species, BINs, or IDs and want to get all their records at once.</p>
+
+    <p>
+      Batch search is, in essence, an <strong>automated field search</strong>: it repeats the same query once for
+      each term in your file. That means <strong>all the terms in the file must belong to the same field</strong>,
+      the one you pick in <em>Field 1</em>. The program doesn't infer which category each line belongs to: it
+      applies the chosen field to all of them alike.
+    </p>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Don't mix categories within the file.</strong> A list with
+        <code>Panthera leo</code>, <code>COI-5P</code>, and <code>Colombia</code> won't work: those are values of
+        three different fields (Species, Marker, and Country). If you search with <em>Field 1 = Species</em>, only
+        <code>Panthera leo</code> will return results and the other two will show up in <code>not_found.txt</code>.
+        <br><br>
+        To cross two fields — for example, those species only in certain countries — don't combine them in one
+        file: use <strong>two separate files</strong> with the <em>"Add a second filter field"</em> option.
+        <br><br>
+        <em>One exception:</em> within taxonomy you can mix levels (families, genera and species in the same
+        file), because single-word terms are searched across all levels at once. See
+        <a href="#batch-taxonomia">How taxonomic terms are interpreted</a>, below.
+      </div>
+    </div>
+
+    <ol class="steps">
+      <li>In <strong>Field 1</strong>, select the column that matches the terms in your file
+          (e.g. <em>Species</em> if the file contains species names).</li>
+      <li>Drag a <code>.txt</code> or <code>.csv</code> file onto the indicated area (one value per line), or click <strong>"browse"</strong>.</li>
+      <li>Optionally, enable <strong>"Add a second filter field"</strong> and upload a second list to narrow the results by another field (e.g. those species only in certain countries).</li>
+      <li>If you need the sequences in FASTA format, check <strong>"Also export in FASTA format"</strong>.</li>
+      <li>Optionally, open <strong>"⚙ Customize summary report"</strong> to add columns to
+          <code>summary.csv</code> (see <a href="#batch-resumen">Customizing the summary report</a>).</li>
+      <li>Click <strong>"Run Batch Search"</strong> and wait; a ZIP file is downloaded when it finishes.</li>
+    </ol>
+
+    <h3 class="step-title" id="batch-taxonomia">How taxonomic terms are interpreted</h3>
+    <p>If <strong>Field 1</strong> is a taxonomic field (kingdom, phylum, class, order, family, genus, or species):</p>
+    <ul class="bullet">
+      <li>A <strong>single-word</strong> term (e.g. <code>Felidae</code>) is searched across <strong>all levels</strong> at once: kingdom, class, order, family, genus, and species. You don't need to get the exact level right.</li>
+      <li>A <strong>two-word</strong> term (e.g. <code>Panthera leo</code>) is only searched in <em>Species</em>.</li>
+      <li>Underscores are converted to spaces (<code>Panthera_leo</code> = <code>Panthera leo</code>), the first letter is capitalized, and duplicates are dropped.</li>
+    </ul>
+    <p>For any other field (BIN, marker, IDs, country…) the match is <strong>exact</strong>, case-insensitive.</p>
+
+    <h3 class="step-title">ZIP contents — Field 1 only</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File in the ZIP</th><th>Content</th></tr></thead>
+        <tbody>
+          <tr><td><code>all_results.tsv</code></td><td>All found records in a single file</td></tr>
+          <tr><td><code>individual/Term.tsv</code></td><td>One file per searched term</td></tr>
+          <tr><td><code>individual/Term.fasta</code></td><td>Sequences for that term (only if you checked the FASTA option)</td></tr>
+          <tr><td><code>summary.csv</code></td><td>Record count per term, including terms with zero. May carry <a href="#batch-resumen">extra columns</a></td></tr>
+          <tr><td><code>not_found.txt</code></td><td>Values that returned no results</td></tr>
+          <tr><td><code>summary_by_pais.csv</code></td><td>Only if you requested a <a href="#batch-resumen">breakdown report</a>: total records for each value of the field</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">ZIP contents — with Field 2 enabled</h3>
+    <p>The layout changes: <strong>one folder per value of Field 2</strong> is created.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File in the ZIP</th><th>Content</th></tr></thead>
+        <tbody>
+          <tr><td><code>all_results.tsv</code></td><td>All found records</td></tr>
+          <tr><td><code>Colombia/Panthera_onca.tsv</code></td><td>One file per term, inside the folder for each Field 2 value</td></tr>
+          <tr><td><code>Colombia/not_found.txt</code></td><td>Terms with no results <em>for that</em> Field 2 value</td></tr>
+          <tr><td><code>summary.csv</code></td><td>Count per Field 1 × Field 2 combination. May carry <a href="#batch-resumen">extra columns</a></td></tr>
+          <tr><td><code>summary_by_field2.csv</code></td><td>Summary per Field 2 value: total records, terms found and not found</td></tr>
+          <tr><td><code>summary_by_pais.csv</code></td><td>Only if you requested a <a href="#batch-resumen">breakdown report</a>: total records for each value of the field</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Customize summary -->
+    <h3 class="step-title" id="batch-resumen">Customizing the summary report</h3>
+    <p>
+      By default, <code>summary.csv</code> answers a single question: how many records there are per term. The
+      <strong>"⚙ Customize summary report"</strong> panel lets you add columns before running the search, to also
+      answer <em>how many distinct values</em> of another field each term has, and <em>which ones</em>.
+    </p>
+    <p>
+      Example: when searching a list of species, you can ask for the number of countries and which ones, plus the
+      number of genetic markers and which ones. The summary ends up like this:
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Species</th><th>Records</th><th># Country</th><th>Country</th><th># Marker</th><th>Marker</th></tr></thead>
+        <tbody>
+          <tr><td>Panthera leo</td><td>9</td><td>3</td><td>Kenya (5); Tanzania (3); India (1)</td><td>2</td><td>COI-5P (8); ND2 (1)</td></tr>
+          <tr><td>Panthera onca</td><td>5</td><td>1</td><td>Brazil (4)</td><td>1</td><td>COI-5P (5)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Panel controls</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>#</strong></td><td>Adds a column with the <strong>number</strong> of distinct values of that field for each term</td></tr>
+          <tr><td><strong>which ones</strong></td><td>Adds a column with the <strong>list</strong> of those values, sorted from most to least frequent</td></tr>
+          <tr><td><strong>Include count per value</strong></td><td>Writes how many records each value contributes: <code>Kenya (400); Tanzania (100)</code></td></tr>
+          <tr><td><strong>Limit lists to N values</strong></td><td>Trims the lists to the N most frequent values and adds <code>… and 340 more</code>. The <strong>#</strong> column still shows the real total</td></tr>
+          <tr><td><strong>Breakdown reports</strong></td><td>Generates an extra CSV per checked field (<code>summary_by_marcador.csv</code>, <code>summary_by_pais.csv</code>…) with the total records for each value across <em>all</em> results, not per term</td></tr>
+          <tr><td><strong>↺ Reset</strong></td><td>Removes all customization and returns to the basic summary</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        Your selection <strong>is remembered</strong> for the next searches, just like the table's column
+        settings. Next to the panel button you'll see a summary of what's active
+        (<em>"3 metrics · 1 breakdown"</em>) without needing to open it.
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        <strong>If you don't check anything, nothing changes:</strong> <code>summary.csv</code> comes out exactly
+        as always and the search doesn't take any longer. The metrics are computed while the ZIP is being built,
+        so even with several checked the extra time is minimal.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Only category fields are offered</strong>: taxonomic rank, marker, country, state, sequence date,
+        and the seven taxonomic categories (kingdom to species). BIN, the identifiers (BOLD ID, Sample ID, Field
+        ID, Museum ID), the coordinates, and the sequence are left out, because there almost every record has its
+        own value: the count would just equal the record count and the list would be unreadable.
+      </div>
+    </div>
+
+    <p>
+      With <strong>Field 2 enabled</strong>, the metrics are computed <strong>per combination</strong> of
+      Field 1 × Field 2, not aggregated by term. If you search species filtered by marker, the row
+      <code>Panthera leo / COI-5P</code> will show the countries for that species <em>within that marker</em>, and
+      the row <code>Panthera leo / ND2</code> will show its own separately.
+    </p>
+
+    <!-- Results table -->
+    <h2 class="sub-title" id="tabla">Working with the results table</h2>
+    <p>Results are shown in pages of <strong>50 records</strong>. Below the table you can move page by page or type the page number you want to jump to directly.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Click a cell</strong></td><td>Expands the cell to show its full content (useful for long sequences)</td></tr>
+          <tr><td><strong>Double-click a cell</strong></td><td>Copies its content to the clipboard; the <em>"Copied"</em> notice appears</td></tr>
+          <tr><td><strong>Columns ▾</strong></td><td>Shows or hides table columns. Your selection is remembered for next time</td></tr>
+          <tr><td><strong>⠿ Column order</strong></td><td>Drag the names to reorder the columns. <em>↺ Reset</em> returns to the original order</td></tr>
+          <tr><td><strong>Cancel Search</strong></td><td>Interrupts a query that's taking too long</td></tr>
+          <tr><td><strong>Clear Results</strong></td><td>Empties the table and frees up memory</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Export -->
+    <h2 class="sub-title" id="exportar">Exporting results</h2>
+    <p>After any search, the export buttons appear in the top-right corner of the results. The export includes <strong>all found records</strong>, not just the page you're viewing.</p>
+    <div class="export-cards">
+      <div class="export-card">
+        <div class="label csv">Export CSV</div>
+        <p>Opens a dialog with two options: <strong>include the DNA sequence column</strong> (without it the export is 2–3× faster) and <strong>export only the visible columns</strong> based on your "Columns" button selection.</p>
+      </div>
+      <div class="export-card">
+        <div class="label fasta">Export FASTA</div>
+        <p>Only the DNA sequences, in standard format for phylogenetic analysis and alignments.</p>
+      </div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        The two options in the CSV dialog are mutually exclusive: checking <em>"visible columns only"</em>
+        disables exporting the sequence.
+      </div>
+    </div>
+
+    <h3 class="step-title">FASTA file format</h3>
+    <p>Each header combines the record's available data, separated by <code>|</code>:</p>
+<pre><span class="comment"># Export from the results table</span>
+&gt;BOLD_ID|Sample_ID|BIN|Species|Marker
+
+<span class="comment"># Export from Batch search</span>
+&gt;BOLD_ID|Sample_ID|BIN|Most_specific_taxon|Marker</pre>
+    <ul class="bullet">
+      <li>The <em>most specific taxon</em> is the first one available in this order: species, genus, family, order, class, phylum, kingdom.</li>
+      <li>Alignment dashes and trailing/leading <code>N</code>s are removed.</li>
+      <li>Sequences <strong>shorter than 50 bases</strong> are discarded.</li>
+    </ul>
+
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        For large files the export is processed in the background with a progress bar; a download button appears
+        when it finishes. A copy is saved in <code>data/exports/</code>
+        (subfolders <code>csv_exports</code>, <code>fasta_exports</code>, and <code>batch_exports</code>); each one
+        keeps the <strong>20 most recent files</strong> and older ones are deleted automatically.
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. FIELDS -->
+  <section id="campos">
+    <h1 class="section-title"><span class="num">6</span> Available fields</h1>
+    <p>
+      These are the <strong>23 columns included by default</strong>, with the name you'll see in the interface.
+      They aren't fixed: from the Creator's <a href="#campos-panel">Field Selection</a> panel you can remove any
+      that don't interest you or add others from the 76 offered by BOLD's public data package (collection
+      coordinates, habitat, institution, primers, field notes, etc.).
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Group</th><th>Fields</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Identifiers</strong></td><td>BOLD ID, Sample ID, Field ID, Museum ID, BIN</td></tr>
+          <tr><td><strong>Taxonomy</strong></td><td>Kingdom, Phylum, Class, Order, Family, Genus, Species</td></tr>
+          <tr><td><strong>Identification</strong></td><td>Identification, ID Rank</td></tr>
+          <tr><td><strong>Geography</strong></td><td>Country, Country Code, State, Region, Coordinates</td></tr>
+          <tr><td><strong>Sequence</strong></td><td>Marker, Base Count, Sequence, Sequence Date</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Only BOLD records that <strong>have a DNA sequence</strong> are imported; the rest are discarded in Step 1, regardless of which fields you chose.</div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        <strong>BOLD ID, Sample ID, BIN, basic taxonomy (kingdom to species), Marker, and Sequence can't be
+        removed</strong>: the viewer needs them to identify records and export FASTA. The rest of the selection is
+        up to you.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. FAQ -->
+  <section id="faq">
+    <h1 class="section-title"><span class="num">7</span> Frequently asked questions</h1>
+
+    <div class="faq-item">
+      <div class="q">How much disk space do I need?</div>
+      <div class="a">BOLD's <code>.tar.gz</code> file is approximately 10–15 GB. The resulting SQLite database takes up between 20 and 30 GB. The FTS index (Step 4, optional) adds about another 25% on top of that. At least <strong>80 GB free</strong> is recommended. Keep in mind that during Step 1 the <code>.tar.gz</code>, the extracted TSV, and the filtered TSV all temporarily coexist on disk.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Do I have to create the <code>app/</code> folder before building the database?</div>
+      <div class="a">No. The Creator creates it automatically when it opens, along with the web server, templates, and the logs folder. You only need to place the <code>.tar.gz</code> in <code>data/raw/</code>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Can I close the Creator while it's processing?</div>
+      <div class="a">No. Closing the window stops the process. If you close it by accident, reopen it and run the step again; the program detects the previous progress and resumes from the right place.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">The browser says "SERVER DISCONNECTED".</div>
+      <div class="a">This means the server's terminal window is closed. Reopen the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">The "Full-text search" tab returns nothing.</div>
+      <div class="a">It requires <strong>Step 4 (Full-text search)</strong>. If you haven't run it, use the field search instead, which always works.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">I searched <code>Panthera leo</code> without quotes in full-text search and got extra results.</div>
+      <div class="a">Without quotes, each word is searched separately in <strong>any</strong> field (equivalent to <code>Panthera AND leo</code>), so a record can slip in if it contains "Panthera" in one field and "leo" in another, unrelated one. Use quotes — <code>"Panthera leo"</code> — to require that exact, contiguous sequence within the same field.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Searches are taking a long time.</div>
+      <div class="a">Check that you ran <strong>Step 3 (Speed up searches)</strong>. Also, the <em>Contains</em>, <em>Does not contain</em>, and <em>Ends with</em> operators can't take advantage of the indexes; prefer <em>Equals</em> or <em>Starts with</em> when possible.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Where do the files I export end up?</div>
+      <div class="a">Your browser downloads them to your usual downloads folder, and a copy is also saved in <code>data/exports/</code>. For each export type, the 20 most recent files are kept.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Can I add or remove fields from the database?</div>
+      <div class="a">Yes, from the Creator's <strong>Field Selection</strong> panel — see <a href="#campos-panel">Choosing the fields</a>. You can enable any of the 76 columns from BOLD's public data package, not just the 23 factory-default ones. A handful of fields (BOLD ID, Sample ID, BIN, basic taxonomy, Marker, Sequence) can't be removed because the viewer needs them to work.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">I changed the field selection, saved it, but the viewer still shows the same thing.</div>
+      <div class="a">Saving the selection only updates <code>dev/fields_config.json</code>; the database doesn't change until you repeat Step 1 with BOLD's <code>.tar.gz</code> (the program detects the change and re-filters on its own). If the <code>.tar.gz</code> was already deleted, you'll need to download it again.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">How often should I update the database?</div>
+      <div class="a">BOLD publishes new versions weekly. To update, download the new <code>.tar.gz</code>, place it in <code>data/raw/</code>, and run steps 1–3 again. The program automatically removes the previous version.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Can I keep the database on an external drive?</div>
+      <div class="a">Yes. Copy the whole <code>BOLD_DB/</code> folder to the external drive and run <code>Reparar_accesos.bat</code> once so the shortcuts point to the new drive.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">What do I do if Step 1 says "Input not found" even though I put the file there?</div>
+      <div class="a">Check that the file is directly inside <code>data/raw/</code> and that its extension is <code>.tar.gz</code> (not just <code>.tar</code> or <code>.gz</code>). The program looks for exactly that format.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Something failed and the message doesn't tell me enough.</div>
+      <div class="a">Open <code>app/logs/error.log</code>: it contains the technical detail of the last error. The full history of each session is in <code>app/logs/run_*.log</code>.</div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    BOLD DB &mdash; User Documentation
+  </footer>
+
+</div><!-- page-wrap -->
+</div><!-- main -->
+
+<script>
+  // ── Side panel: highlight the visible section ──
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#docMap a'));
+    var targets = links
+      .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
+      .filter(Boolean);
+
+    function setActive(id) {
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+
+    function onScroll() {
+      var best = null;
+      var bestTop = -Infinity;
+      targets.forEach(function (el) {
+        var top = el.getBoundingClientRect().top - 90;
+        if (top <= 0 && top > bestTop) { bestTop = top; best = el; }
+      });
+      if (!best && targets.length) best = targets[0];
+      if (best) setActive(best.id);
+    }
+
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () { onScroll(); ticking = false; });
+    });
+    window.addEventListener('load', onScroll);
+    onScroll();
+
+    // ── Side menu on narrow screens ──
+    var toggle = document.getElementById('sbToggle');
+    var backdrop = document.getElementById('sbBackdrop');
+    function close() { document.body.classList.remove('sb-open'); }
+    toggle.addEventListener('click', function () { document.body.classList.toggle('sb-open'); });
+    backdrop.addEventListener('click', close);
+    links.forEach(function (a) { a.addEventListener('click', close); });
+  })();
+</script>
+
+</body>
+</html>

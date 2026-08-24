@@ -1,0 +1,4087 @@
+<!DOCTYPE html>
+<html lang="{{ initial_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOLD Database</title>
+    <link rel="icon" type="image/x-icon" href="/static/database.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+		.autocomplete-dropdown {
+			position: absolute;
+			width: 100%;
+			background: white;
+			border: none;
+			box-shadow: none;
+			max-height: 200px;
+			overflow-y: auto;
+			z-index: 1000;
+			top: 100%;
+			left: 0;
+			will-change: transform;
+			transform: translateZ(0);
+			isolation: isolate;
+		}
+
+		.autocomplete-item {
+			padding: 8px;
+			cursor: pointer;
+			border-bottom: none;
+		}
+
+		.autocomplete-item:hover {
+			background-color: #f8f9fa;
+			cursor: pointer;
+		}
+		#loading {
+			display: none; /* Keep the indicator hidden until a search is performed */
+            position: relative;
+            text-align: center;
+            padding: 20px;
+        }
+		
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-tabs {
+            margin-bottom: 20px;
+        }
+        .search-tabs .btn-group > .btn {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+		
+
+
+        #ftsSearchPanel {
+            display: none;
+        }
+        
+        .active-tab {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+
+        .lang-btn.active {
+            background-color: #2c4685 !important;
+            color: #fff !important;
+            border-color: #2c4685 !important;
+        }
+
+        /* Tab with no function in this database. Kept mouse-sensitive
+           -without the `disabled` attribute- so the browser still shows the
+           tooltip explaining why. */
+        .tab-unavailable {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+        /* Neutralize Bootstrap's hover (blue fill), which here would suggest
+           the tab is responsive. Fixed color, not the theme variable: the
+           alpha version of Bootstrap in use doesn't expose it reliably. */
+        .tab-unavailable:hover {
+            background-color: transparent;
+            color: #0d6efd;
+        }
+        
+        #explainPanel {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+		}
+		
+        #total-records {
+            font-size: 0.7em;
+            color: white;
+        }
+
+		dialog {
+			border: none !important;
+			border-radius: 8px !important;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+			padding: 40px;
+			max-width: 800px;
+			text-align: center;
+		}
+		
+		dialog::backdrop {
+			background: rgba(0, 0, 0, 0) !important;
+			transition: background 0.3s !important;
+		}
+
+		dialog[open]::backdrop {
+			background: rgba(0, 0, 0, 0.5) !important;
+		}
+
+		.dialog-buttons {
+			display: flex;
+			justify-content: center; /* Center the button */
+			margin-top: 15px;
+		}
+
+		.dialog-confirm {
+			background: #007bff;
+			color: white;
+			border: none;
+			padding: 8px 16px;
+			border-radius: 6px;
+			cursor: pointer;
+			transition: background 0.3s;
+		}
+
+		.dialog-confirm:hover {
+			background: #0056b3;
+		}
+		
+		.custom-offset {
+			padding-right: 120px; /* or any value in px, %, rem, etc. */
+		}
+		
+		/* Base table styles */
+		.table {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed; /* Keep fixed layout for better width control */
+		}
+
+		.table th, .table td {
+			padding: 8px 12px;
+			text-align: left;
+			vertical-align: middle;
+			font-family: 'Roboto', sans-serif;
+			font-size: 0.94rem;    /* Uniform size (adjustable) */
+			border-bottom: 1px solid #dee2e6;
+			height: 50px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			transition: all 0.3s ease;
+		}
+
+		/* Column-type-specific styles */
+		.table .narrow-column {
+			max-width: 100px;
+			width: fit-content;
+		}
+
+		.table .medium-column {
+			max-width: 200px;
+		}
+
+		.table .wide-column {
+			max-width: 300px;
+		}
+
+		.table .sequence-column {
+			max-width: 500px;
+			word-break: break-all;
+		}
+
+
+		/* Style for truncated columns */
+		.table .truncated {
+			position: relative;
+			cursor: zoom-in !important;
+		}
+
+		.table td.truncated:hover {
+			background-color: #f0f0f0;
+		}
+
+		/* Header-specific styles */
+		.table thead th {
+			position: sticky;
+			font-size: 0.99rem;                 /* Smaller size */
+			font-weight: 600;                   /* Semibold weight */
+			top: 0;
+			background-color: #f8f9fa;
+			z-index: 10;
+			font-weight: bold;
+			white-space: nowrap !important; /* Force nowrap for headers */
+			overflow: visible !important; /* Ensure the full text is visible */
+			text-overflow: clip !important; /* Avoid ellipsis in headers */
+			padding: 10px 12px; /* A bit more padding for headers */
+			border-bottom: 2px solid #dee2e6; /* More visible bottom border */
+		}
+
+		/* Header with hover */
+		.table thead th:hover {
+			background-color: #e9ecef;
+		}
+
+		/* Style for the table container */
+		.table-frame {
+			border: 1px solid #dee2e6;
+			border-radius: 5px;
+			margin-bottom: 15px;
+			display: flex;
+			flex-direction: column;
+			max-height: calc(100vh - 400px);
+			min-height: 200px;
+		}
+
+		.table-container {
+			overflow-x: auto;
+			overflow-y: auto;
+			flex-grow: 1;
+		}
+		
+		
+		/* Keep the alternating row shading */
+		.table-striped tbody tr:nth-of-type(odd) td {
+			background-color: #f9f9f9;
+		}
+
+		.table-striped tbody tr:nth-of-type(even) td {
+			background-color: #ffffff;
+		}
+
+
+		.even-row {
+			background-color: #ffffff !important;
+		}
+
+		.odd-row {
+			background-color: #f0f0f0 !important;
+		}
+
+		/* Style for expanded cells */
+		.table td[style*="white-space: normal"] {
+			cursor: zoom-out;
+			white-space: normal !important;
+			overflow: visible !important;
+			max-width: none !important;
+			z-index: 2;
+			position: relative;
+			border-right: none;
+			border-left: none;
+			/* Keep the background color */
+			background-color: inherit !important;
+		}
+		
+		.table tbody tr:hover td {
+			background-color: #e6f7ff !important; /* Color when the mouse hovers over it */
+			cursor: default; /* Optional: change the cursor to pointer */
+		}
+
+		/* Styles for the expand/collapse button */
+		.toggle-expand-btn {
+			transition: all 0.3s ease;
+		}
+
+
+		/* Responsive improvements */
+		@media (max-width: 992px) {
+			.table-frame {
+				max-height: calc(100vh - 300px);
+			}
+			
+			.table th, .table td {
+				padding: 6px 8px;
+			}
+		}
+		
+		/* Alternating shading */
+		.table tbody tr.even-row {
+			background-color: #ffffff;
+		}
+
+		.table tbody tr.odd-row {
+			background-color: #f0f0f0;
+		}
+
+		/* Style for expanded cells */
+		.table td.expanded {
+			white-space: normal !important;
+			overflow: visible !important;
+			max-width: none !important;
+			position: relative;
+			z-index: 2;
+			background-color: inherit !important;
+			box-shadow: 0 0 0 1px #dee2e6; /* Bottom border only */
+			border-right: none !important;
+			border-left: none !important;
+		}
+
+
+		
+		.autocomplete-active {
+			background-color: #007bff;
+			color: white;
+		}
+
+		.results-card.hidden {
+			display: none;
+		}
+		
+		/* Custom style for the X button */
+		.remove-condition {
+			background-color: #ff4444 !important;  /* More intense red */
+			color: white !important;
+			border: none;
+			border-radius: 50%;  /* Circular shape */
+			top: 50%;           /* Vertical centering */
+			transform: translateY(30%); /* Fine adjustment for centering */
+			width: 24px;
+			height: 24px;
+			font-size: 12px;
+			font-weight: bold;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer !important;
+			transition: all 0.3s ease;  /* Smooth transition */
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			z-index: 2;
+		}
+
+		.remove-condition:hover {
+			background-color: #cc0000 !important;
+			transform: translateY(30%);
+		}
+
+		.remove-condition:active {
+			transform: translateY(30%);
+		}
+		
+		/* Transition when adding/removing conditions */
+		.search-condition {
+			transition: all 0.3s ease;
+			opacity: 1;
+			margin-bottom: 0.75rem;
+		}
+
+		.search-condition.adding {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+
+		/* Column order sortable list */
+		.col-order-list {
+			list-style: none;
+			padding: 4px;
+			margin: 0;
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			gap: 3px;
+			max-height: 200px;
+			overflow-y: auto;
+			border: 1px solid #dee2e6;
+			border-radius: 4px;
+			background: #f8f9fa;
+		}
+		.col-order-item {
+			display: flex;
+			align-items: center;
+			padding: 3px 7px;
+			background: white;
+			border: 1px solid #e9ecef;
+			border-radius: 3px;
+			font-size: 0.82em;
+			cursor: grab;
+			user-select: none;
+			-webkit-user-select: none;
+		}
+		.col-order-item:active { cursor: grabbing; }
+		.col-order-item.col-dragging { opacity: 0.25; }
+		.col-order-item.col-drag-over { outline: 2px solid #3E92CC; }
+		.col-order-grip {
+			color: #ccc;
+			font-size: 13px;
+			margin-right: 5px;
+			flex-shrink: 0;
+		}
+
+		/* Prevent text selection on buttons and controls */
+		.btn, .page-link, .autocomplete-item {
+		  user-select: none;
+		  -webkit-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  cursor: pointer;
+		}
+		
+		
+		/* General reset to avoid the text cursor where it doesn't belong */
+		body {
+		  cursor: default; /* Default cursor across the whole page */
+		}
+
+		/* Elements that SHOULD show a text cursor */
+		input[type="text"], 
+		input[type="search"], 
+		textarea, 
+		.value-input, 
+		.ftsQueryInput,
+		[contenteditable="true"] {
+		  cursor: text;
+		}
+
+		/* Elements that should show a pointer cursor */
+		select, 
+		button, 
+		.btn, 
+		.page-link, 
+		.remove-condition, 
+		.autocomplete-item,
+		.pagination a,
+		.search-condition,
+		.condition-type,
+		.column-select,
+		.operator-select {
+		  cursor: pointer;
+		  user-select: none;
+		  -webkit-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		}
+
+		/* Bootstrap-specific selectors */
+		.form-select {
+		  cursor: pointer !important;
+		  user-select: none;
+		}
+
+		/* Areas where the cursor should be the default (not text) */
+		.table th, 
+		.table td, 
+		.card, 
+		.container, 
+		body, 
+		html {
+		  cursor: default;
+		}
+		
+		/* Prevent text selection and text cursor on titles */
+		.card-header h5, .form-text, .title-lab {
+		  cursor: default;
+		  user-select: none;
+		  -webkit-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		}
+						
+		/* Styles for the counters */
+		.results-count {
+		  font-weight: bold;
+		}
+		
+		:root {
+		  --color-primary: #2c4685;
+		  --color-secondary: #3E92CC;
+		  --color-light: #F8F9FA;
+		}
+
+		body {
+		  font-family: 'Roboto', sans-serif;
+		  background-color: #f5f7fa;
+		}
+
+		.card-header {
+		  background-color: var(--color-primary);
+		  color: white;
+		  padding: 1rem 1.5rem;
+		}
+
+		.card-header h5 {
+		  font-weight: 500;
+		  margin: 0;
+		}
+
+		.table-frame {
+		  border: 1px solid #e0e0e0;
+		}
+
+
+		/* Input improvements */
+		.form-control, .form-select {
+		  padding: 0.5rem 1rem;
+		  border: 1px solid #ced4da;
+		  transition: all 0.3s;
+		}
+
+		.form-control:focus, .form-select:focus {
+		  border-color: var(--color-secondary);
+		  box-shadow: 0 0 0 0.25rem rgba(62, 146, 204, 0.25);
+		}
+		
+		
+		.title-lab {
+			font-family: 'Roboto Condensed', sans-serif;
+			text-align: left;
+		}
+
+		.lgc {
+			color: #6d6c7a;
+			font-size: 1.9rem;
+			font-weight: 700;
+		}
+
+		.bold {
+			color: #f8901f;
+			font-size: 1.9rem;
+			position: relative;
+		}
+
+		.bold::after {
+			content: "";
+			display: block;
+			width: 120%;
+			height: 3px;
+			background: linear-gradient(
+				90deg,
+				#0c0f13,          /* Initial color (blue) */
+				#0c0f13 20%,      /* Stay solid up to 20% */
+				transparent 100%  /* Fully transparent at the end */
+			);
+			margin-top: -5px;
+		}
+
+		.subtitle {
+			display: block;
+			font-size: 1.9rem;
+			color: #6c757d;
+			letter-spacing: 4px;
+		}
+
+		.file-name {
+			font-size: 0.4em;
+			color: gray;
+		}
+
+		.col-picker-dropdown {
+			position: absolute;
+			right: 0;
+			top: calc(100% + 4px);
+			background: #fff;
+			border: 1px solid #dee2e6;
+			border-radius: 6px;
+			box-shadow: 0 4px 12px rgba(0,0,0,.12);
+			z-index: 1050;
+			min-width: 220px;
+			max-height: 420px;
+			overflow-y: auto;
+		}
+		.col-picker-dropdown label {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 4px 14px;
+			cursor: pointer;
+			border-radius: 4px;
+			white-space: nowrap;
+			color: #212529;
+		}
+		.col-picker-dropdown label:hover { background: #f0f4ff; }
+		.col-picker-dropdown input[type=checkbox] {
+			cursor: pointer;
+			width: 15px;
+			height: 15px;
+			accent-color: var(--color-primary);
+		}
+		.col-picker-actions {
+			display: flex;
+			gap: 6px;
+			padding: 6px 14px 2px;
+			border-bottom: 1px solid #e9ecef;
+			margin-bottom: 4px;
+		}
+		.col-picker-actions button {
+			font-size: 0.78rem;
+			padding: 2px 10px;
+			border-radius: 4px;
+			border: 1px solid #ced4da;
+			background: #f8f9fa;
+			cursor: pointer;
+		}
+		.col-picker-actions button:hover { background: #e2e6ea; }
+
+		.copy-toast {
+			position: fixed;
+			bottom: 28px;
+			left: 50%;
+			transform: translateX(-50%);
+			background: #2c4685;
+			color: #fff;
+			padding: 8px 18px;
+			border-radius: 8px;
+			font-size: 0.88rem;
+			z-index: 9999;
+			pointer-events: none;
+			opacity: 1;
+			transition: opacity 0.4s;
+		}
+
+		.col-resize-handle {
+			position: absolute;
+			right: 0;
+			top: 0;
+			width: 6px;
+			height: 100%;
+			cursor: col-resize;
+			z-index: 1;
+		}
+		.col-resize-handle:hover {
+			background: rgba(13, 110, 253, 0.25);
+		}
+
+		/* ── Batch search drop zones ─────────────────────────────── */
+		.batch-drop-zone {
+			border: 2px dashed #ced4da;
+			border-radius: 8px;
+			padding: 16px 20px;
+			text-align: center;
+			cursor: pointer;
+			transition: border-color 0.2s, background 0.2s;
+			background: #fafbfc;
+			min-height: 74px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			user-select: none;
+			-webkit-user-select: none;
+		}
+		.batch-drop-zone:hover {
+			border-color: var(--color-secondary);
+			background: #f0f7ff;
+		}
+		.batch-drop-zone.dragover {
+			border-color: var(--color-secondary);
+			background: #e8f3ff;
+			border-style: solid;
+		}
+		.batch-drop-zone.loaded {
+			border-color: #198754;
+			border-style: solid;
+			background: #f0fff7;
+			cursor: default;
+		}
+		.batch-drop-hint {
+			color: #6c757d;
+			font-size: 0.88rem;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 2px;
+		}
+		.batch-file-info {
+			display: flex;
+			align-items: center;
+			width: 100%;
+			text-align: left;
+		}
+
+		/* ── Contextual note for the batch field ─────────────────── */
+		.batch-field-note {
+			display: flex;
+			align-items: flex-start;
+			gap: 6px;
+			font-size: 0.8rem;
+			color: #6c757d;
+			line-height: 1.45;
+			margin: -2px 0 8px;
+		}
+		.batch-field-note svg {
+			flex-shrink: 0;
+			margin-top: 1px;
+			opacity: .55;
+		}
+		.batch-field-note strong { color: var(--color-primary); }
+		.batch-field-note.is-set {
+			color: #495057;
+			background: #f0f7ff;
+			border-left: 3px solid var(--color-secondary);
+			border-radius: 0 4px 4px 0;
+			padding: 6px 10px;
+			margin: -2px 0 10px;
+		}
+
+		/* ── Summary report customization ────────────────────────── */
+		.report-panel {
+			border: 1px solid #dee2e6;
+			border-radius: 6px;
+			background: #f8f9fa;
+			padding: 12px 14px;
+		}
+		.report-metric-grid {
+			display: grid;
+			grid-template-columns: 1fr 96px 86px;
+			align-items: center;
+			gap: 1px 0;
+			max-height: 232px;
+			overflow-y: auto;
+			background: #fff;
+			border: 1px solid #e9ecef;
+			border-radius: 4px;
+			padding: 2px 0;
+		}
+		.report-metric-grid > div {
+			padding: 3px 10px;
+			font-size: 0.84rem;
+		}
+		.report-metric-head {
+			position: sticky;
+			top: 0;
+			background: #fff;
+			font-weight: 600;
+			font-size: 0.76rem !important;
+			text-transform: uppercase;
+			letter-spacing: .4px;
+			color: #6c757d;
+			border-bottom: 1px solid #e9ecef;
+			z-index: 1;
+			white-space: nowrap;
+		}
+		.report-metric-grid label {
+			display: block;
+			text-align: center;
+			cursor: pointer;
+			margin: 0;
+		}
+		.report-metric-grid input[type=checkbox] {
+			cursor: pointer;
+			width: 15px;
+			height: 15px;
+			accent-color: var(--color-primary);
+			vertical-align: middle;
+		}
+		.report-breakdown-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 2px 8px;
+			background: #fff;
+			border: 1px solid #e9ecef;
+			border-radius: 4px;
+			padding: 6px 8px;
+		}
+		.report-breakdown-grid label {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 0.82rem;
+			cursor: pointer;
+			margin: 0;
+			padding: 2px 4px;
+			border-radius: 3px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.report-breakdown-grid label:hover { background: #f0f4ff; }
+		.report-breakdown-grid input[type=checkbox] {
+			cursor: pointer;
+			width: 14px;
+			height: 14px;
+			accent-color: var(--color-primary);
+			flex-shrink: 0;
+		}
+		@media (max-width: 768px) {
+			.report-breakdown-grid { grid-template-columns: repeat(2, 1fr); }
+		}
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+	
+		<div class="d-flex align-items-center gap-3 mb-4">
+		  <img src="/static/logo.png" alt="Logo" width="300" height="35">
+
+		  <!-- Flex container for title and file name -->
+		  <div class="d-flex w-100 align-items-center justify-content-between">
+			<h1 class="title-lab mb-0" id="mainTitle">
+			  <span class="lgc" data-i18n="title_line1">BASE DE</span>
+			  <span class="bold" data-i18n="title_line2">DATOS</span>
+			  <small class="subtitle"><span data-i18n="title_local">Local</span>
+				<span id="total-records" class="badge rounded-pill fs-6 align-center" style="background-color: #6d6c7a; position: relative; top: -5px; left: 15px;">...</span>
+			  </small>
+			</h1>
+
+			<div class="d-flex align-items-center gap-2">
+			  <!-- File name -->
+			  <span id="file-name" style="display:none; background:linear-gradient(135deg,#2c4685,#3E92CC); color:#fff; padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:500; letter-spacing:0.4px; box-shadow:0 2px 8px rgba(44,70,133,0.3); white-space:nowrap;"></span>
+
+			  <!-- Language selector -->
+			  <div class="btn-group btn-group-sm" role="group" aria-label="Language">
+				<button type="button" class="btn btn-outline-secondary lang-btn" id="langBtnEs" onclick="setLang('es')">ES</button>
+				<button type="button" class="btn btn-outline-secondary lang-btn" id="langBtnEn" onclick="setLang('en')">EN</button>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		
+				
+        <!-- Tabs to switch between search methods -->
+        <div class="search-tabs">
+            <div class="btn-group w-100 mb-3" role="group" aria-label="Métodos de búsqueda" data-i18n-aria-label="search_methods_aria">
+                <button type="button" class="btn btn-outline-primary active-tab" id="fieldSearchTab" data-i18n="field_search_tab_btn">Búsqueda avanzada por campos</button>
+                {# Without an FTS index the tab stays inert, but the
+                   `disabled` attribute is NOT used: a disabled button doesn't
+                   receive mouse events, so the browser wouldn't show the
+                   tooltip explaining why. #}
+                <button type="button" id="ftsSearchTab"
+                        class="btn btn-outline-primary{% if not fts_available %} tab-unavailable{% endif %}"
+                        {% if not fts_available %}aria-disabled="true"
+                        {% if initial_lang == 'en' %}
+                        title="Not available in this database&#10;&#10;The search index «{{ fts_table_name }}» is missing, an optional component generated when building the database with bold_db_creator.py.&#10;&#10;Use the advanced field search instead, which queries the same records."
+                        {% else %}
+                        title="No disponible en esta base de datos&#10;&#10;Falta el índice de búsqueda «{{ fts_table_name }}», un componente opcional que se genera al construir la base con bold_db_creator.py.&#10;&#10;Usa la búsqueda avanzada por campos, que consulta los mismos registros."
+                        {% endif %}{% endif %}
+                        data-i18n="fts_panel_title">
+                    Búsqueda de texto completo
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_panel_title">Búsqueda en Batch</button>
+            </div>
+        </div>
+
+        {% if fts_available %}
+        <!-- FTS search panel -->
+        <div id="ftsSearchPanel" class="card mb-4">
+            <div class="card-header">
+                <h5 data-i18n="fts_panel_title">Búsqueda de texto completo</h5>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="ftsQueryInput" placeholder="Introduce tu consulta..." data-i18n-placeholder="fts_query_placeholder">
+                    <button class="btn btn-primary" id="ftsSearchButton" data-i18n="search_btn">Buscar</button>
+                </div>
+                <div class="form-text" data-i18n="fts_help_text">
+                    Busca en toda la base de datos con una consulta de texto completo.
+                    Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Batch search panel -->
+        <div id="batchSearchPanel" class="card mb-4" style="display:none;">
+            <div class="card-header">
+                <h5 data-i18n="batch_panel_title">Búsqueda en Batch</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-4" data-i18n-html="batch_intro_text">
+                    Búsqueda por campos automatizada: repite la misma consulta una vez por cada término de tu
+                    archivo de texto plano (un valor por línea). Todos los términos deben pertenecer al
+                    <strong>mismo campo</strong>, el que selecciones abajo.
+                    Los resultados se descargan como un ZIP con archivos TSV individuales por término,
+                    <code>all_results.tsv</code> y <code>summary.csv</code>.
+                </p>
+
+                <!-- Field 1 -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-secondary small text-uppercase" style="letter-spacing:.5px;" data-i18n="batch_field1_label">
+                        Campo 1 &middot; requerido
+                    </label>
+                    <div class="batch-field-note" id="batchNote1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path stroke-linecap="round" d="M12 16v-5M12 8h.01"/>
+                        </svg>
+                        <span></span>
+                    </div>
+                    <div class="row g-2 align-items-start">
+                        <div class="col-md-4">
+                            <select id="batchField1" class="form-select">
+                                <option value="" data-i18n="select_field_placeholder">Seleccionar campo...</option>
+                                {% for column in batch_columns %}
+                                <option value="{{ column.technical }}">{{ column.friendly }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="batch-drop-zone" id="batchDropZone1">
+                                <div class="batch-drop-hint" id="batchHint1">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.4;margin-bottom:4px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                                    </svg>
+                                    <span><span data-i18n="batch_drop_text">Arrastra tu archivo aquí</span>&ensp;<span data-i18n="batch_drop_or">o</span>&ensp;<span class="text-primary" style="text-decoration:underline;cursor:pointer;" onclick="batchBrowse(1)" data-i18n="batch_drop_browse">examina</span></span>
+                                    <small class="text-muted mt-1" data-i18n="batch_drop_note">Un valor por línea &middot; .txt o .csv</small>
+                                </div>
+                                <div class="batch-file-info d-none" id="batchFileInfo1">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#198754" style="flex-shrink:0;">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <div class="ms-2 text-start flex-grow-1">
+                                        <div class="fw-semibold" id="batchFileName1" style="font-size:.9rem;"></div>
+                                        <div class="text-muted" id="batchFileCount1" style="font-size:.8rem;"></div>
+                                    </div>
+                                    <button class="btn btn-sm btn-link text-danger p-0 ms-2"
+                                            onclick="event.stopPropagation();batchClearFile(1)"
+                                            title="Quitar archivo" data-i18n-title="remove_file">✕</button>
+                                </div>
+                            </div>
+                            <input type="file" id="batchFileInput1" accept=".txt,.csv" style="display:none;"
+                                   onchange="batchFileLoaded(1,this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Field 2 toggle -->
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="batchEnableField2"
+                               role="switch" onchange="toggleBatchField2()">
+                        <label class="form-check-label text-secondary" for="batchEnableField2" data-i18n="batch_add_field2">
+                            Agregar segundo campo de filtro
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Field 2 -->
+                <div id="batchField2Section" style="display:none;" class="mb-4">
+                    <label class="form-label fw-semibold text-secondary small text-uppercase" style="letter-spacing:.5px;" data-i18n="batch_field2_label">
+                        Campo 2 &middot; filtro adicional
+                    </label>
+                    <div class="batch-field-note" id="batchNote2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path stroke-linecap="round" d="M12 16v-5M12 8h.01"/>
+                        </svg>
+                        <span></span>
+                    </div>
+                    <div class="row g-2 align-items-start">
+                        <div class="col-md-4">
+                            <select id="batchField2" class="form-select">
+                                <option value="" data-i18n="select_field_placeholder">Seleccionar campo...</option>
+                                {% for column in batch_columns %}
+                                <option value="{{ column.technical }}">{{ column.friendly }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="batch-drop-zone" id="batchDropZone2">
+                                <div class="batch-drop-hint" id="batchHint2">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.4;margin-bottom:4px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                                    </svg>
+                                    <span><span data-i18n="batch_drop_text">Arrastra tu archivo aquí</span>&ensp;<span data-i18n="batch_drop_or">o</span>&ensp;<span class="text-primary" style="text-decoration:underline;cursor:pointer;" onclick="batchBrowse(2)" data-i18n="batch_drop_browse">examina</span></span>
+                                    <small class="text-muted mt-1" data-i18n="batch_drop_note">Un valor por línea &middot; .txt o .csv</small>
+                                </div>
+                                <div class="batch-file-info d-none" id="batchFileInfo2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#198754" style="flex-shrink:0;">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <div class="ms-2 text-start flex-grow-1">
+                                        <div class="fw-semibold" id="batchFileName2" style="font-size:.9rem;"></div>
+                                        <div class="text-muted" id="batchFileCount2" style="font-size:.8rem;"></div>
+                                    </div>
+                                    <button class="btn btn-sm btn-link text-danger p-0 ms-2"
+                                            onclick="event.stopPropagation();batchClearFile(2)"
+                                            title="Quitar archivo" data-i18n-title="remove_file">✕</button>
+                                </div>
+                            </div>
+                            <input type="file" id="batchFileInput2" accept=".txt,.csv" style="display:none;"
+                                   onchange="batchFileLoaded(2,this)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="batchIncludeFasta">
+                    <label class="form-check-label text-secondary" for="batchIncludeFasta" data-i18n="batch_include_fasta">
+                        Exportar también en formato FASTA
+                    </label>
+                </div>
+
+                <!-- Summary report customization (optional) -->
+                <div class="mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="reportToggleBtn" class="btn btn-sm btn-outline-secondary" type="button"
+                                onclick="toggleReportPanel()" data-i18n="report_toggle_btn">
+                            ⚙ Personalizar reporte resumen ▼
+                        </button>
+                        <span id="reportHint" class="text-muted" style="font-size:.82rem;"></span>
+                        <button id="reportResetBtn" class="btn btn-sm btn-link text-muted p-0 ms-auto"
+                                onclick="resetReportSpec()" title="Quitar toda la personalización" data-i18n-title="report_reset_title"
+                                style="display:none;" data-i18n="reset_btn">↺ Restablecer</button>
+                    </div>
+
+                    <div id="reportPanel" style="display:none;" class="mt-2">
+                        <div class="report-panel">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"
+                                   style="letter-spacing:.5px;" data-i18n="report_extra_info_label">
+                                Información adicional por término
+                            </label>
+                            <small class="text-muted d-block mb-2" data-i18n-html="report_extra_info_text">
+                                <code>summary.csv</code> trae una fila por cada término de tu lista, con el número de
+                                registros que encontró. Aquí puedes añadirle columnas que describen esos registros.
+                                Ejemplo: si marcas <strong>País</strong>, cada término indicará
+                                <em>en cuántos países</em> aparece y <em>cuáles</em> son.
+                            </small>
+
+                            <div class="report-metric-grid">
+                                <div class="report-metric-head" data-i18n="report_category">Categoría</div>
+                                <div class="report-metric-head text-center" data-i18n="report_how_many">Cuántos</div>
+                                <div class="report-metric-head text-center" data-i18n="report_which_ones">Cuáles</div>
+                                {% for column in metric_columns %}
+                                <div>{{ column.friendly }}</div>
+                                <div>
+                                    <label title="{% if initial_lang == 'en' %}Adds a column with the number of distinct {{ column.friendly }} the term appears in{% else %}Añade una columna con el número de {{ column.friendly }} distintos en que aparece cada término{% endif %}">
+                                        <input type="checkbox" class="report-metric-count"
+                                               data-col="{{ column.technical }}">
+                                    </label>
+                                </div>
+                                <div>
+                                    <label title="{% if initial_lang == 'en' %}Adds a column with the list of {{ column.friendly }} the term appears in{% else %}Añade una columna con la lista de {{ column.friendly }} en que aparece cada término{% endif %}">
+                                        <input type="checkbox" class="report-metric-values"
+                                               data-col="{{ column.technical }}">
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="reportWithCounts">
+                                <label class="form-check-label text-secondary" for="reportWithCounts"
+                                       style="font-size:.86rem;">
+                                    <span data-i18n="report_counts_label">En las listas, indicar cuántos registros aporta cada valor</span>
+                                    <span class="text-muted">— <span data-i18n="report_counts_example">ej.</span> <code>Kenya (400); Tanzania (100)</code></span>
+                                </label>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <input class="form-check-input mt-0" type="checkbox" id="reportLimitList">
+                                <label class="form-check-label text-secondary" for="reportLimitList"
+                                       style="font-size:.86rem;" data-i18n="report_limit_list_label">Acortar las listas a los</label>
+                                <input type="number" id="reportMaxList" class="form-control form-control-sm"
+                                       value="10" min="1" max="1000" style="width:80px;padding:.2rem .5rem;" disabled>
+                                <span class="text-secondary" style="font-size:.86rem;">
+                                    <span data-i18n="report_most_frequent">valores más frecuentes</span>
+                                    <span class="text-muted" data-i18n="report_most_frequent_hint">— útil si un término aparece en cientos de valores</span>
+                                </span>
+                            </div>
+
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mt-4 mb-1"
+                                   style="letter-spacing:.5px;" data-i18n="report_totals_label">
+                                Totales del conjunto
+                            </label>
+                            <small class="text-muted d-block mb-2" data-i18n-html="report_totals_text">
+                                A diferencia de lo anterior, esto no mira término por término sino
+                                <strong>todos los resultados juntos</strong>. Por cada categoría que marques se agrega al
+                                ZIP un CSV aparte que lista sus valores con el total de registros de cada uno.
+                                Ejemplo: marcando <strong>País</strong> obtienes <code>summary_by_pais.csv</code>
+                                con cuántos registros salieron de cada país.
+                            </small>
+                            <div class="report-breakdown-grid">
+                                {% for column in metric_columns %}
+                                <label title="{% if initial_lang == 'en' %}Adds a CSV with the total records for each {{ column.friendly }}, across all results{% else %}Agrega un CSV con el total de registros de cada {{ column.friendly }}, sobre todos los resultados{% endif %}">
+                                    <input type="checkbox" class="report-breakdown"
+                                           data-col="{{ column.technical }}">
+                                    <span>{{ column.friendly }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-2">
+                    <button id="batchSearchButton" class="btn btn-primary px-5"
+                            onclick="runBatchSearch()" data-i18n="batch_search_btn">Buscar en Batch</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Field search panel (original) -->
+        <div class="card mb-4" id="fieldSearchPanel">
+            <div class="card-header">
+                <h5 data-i18n="field_panel_title">Criterios de búsqueda por campos</h5>
+            </div>
+            <div class="card-body">
+                <div id="searchConditions">
+                    <div class="search-condition">
+                        <div class="row">
+							<div class="col-md-2">
+								<select class="form-select condition-type">
+									<option value="AND">AND</option>
+									<option value="OR">OR</option>
+									<option value="NOT">NOT</option>
+								</select>
+							</div>
+
+                            <div class="col-md-3">
+                                <select class="form-select column-select">
+                                    <option value="" data-i18n="select_field_placeholder">Seleccionar campo</option>
+                                    {% for column in columns %}
+                                    <option value="{{ column.friendly }}">{{ column.friendly }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select operator-select">
+                                    <option value="EQUALS" data-i18n="op_equals">Es igual a</option>
+                                    <option value="NOT_EQUALS" data-i18n="op_not_equals">No es igual a</option>
+                                    <option value="LIKE" data-i18n="op_contains">Contiene</option>
+                                    <option value="NOT_LIKE" data-i18n="op_not_contains">No contiene</option>
+                                    <option value="STARTS_WITH" data-i18n="op_starts_with">Comienza con</option>
+                                    <option value="ENDS_WITH" data-i18n="op_ends_with">Termina con</option>
+                                    <option value="GREATER_THAN" data-i18n="op_greater_than">Mayor que</option>
+                                    <option value="LESS_THAN" data-i18n="op_less_than">Menor que</option>
+                                    <option value="BETWEEN" data-i18n="op_between">Entre</option>
+									<option value="IS_NOT_EMPTY" data-i18n="op_has_value">Con dato</option>
+									<option value="IS_EMPTY" data-i18n="op_no_value">Sin dato</option>
+                                </select>
+                            </div>
+							<div class="col-md-3 position-relative">
+								<input type="text" class="form-control value-input" id="search-input" placeholder="Escribe un término" data-i18n-placeholder="value_input_placeholder">
+								<div class="autocomplete-dropdown"></div>
+								<input type="text" class="form-control value2-input mt-1" style="display:none;" placeholder="Hasta" data-i18n-placeholder="value2_input_placeholder">
+							</div>
+                            <div class="col-md-1">
+                                <button class="btn btn-danger btn-sm remove-condition">X</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+				<div class="row mt-3">
+					<div class="col-md-2"></div>
+					<div class="col-md-3"></div>
+					<div class="col-md-3 d-flex justify-content-center">
+						<button id="addCondition" class="btn btn-secondary" data-i18n="add_condition_btn">+ Añadir condición</button>
+					</div>
+					<div class="col-md-3 d-flex justify-content-center">
+						<button id="searchButton" class="btn btn-primary px-4" data-i18n="search_btn">Buscar</button>
+					</div>
+					<div class="col-md-1"></div>
+				</div>
+
+                
+                <div class="mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="colOrderToggleBtn" class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleColOrderPanel()" data-i18n="col_order_toggle_btn_label">
+                            ⠿ Orden de columnas ▼
+                        </button>
+                        <button id="resetColOrderBtn" class="btn btn-sm btn-link text-muted p-0"
+                                onclick="resetColOrder()" title="Restablecer orden predeterminado" data-i18n-title="col_order_reset_title" style="display:none;" data-i18n="reset_btn">
+                            ↺ Restablecer
+                        </button>
+                    </div>
+                    <div id="colOrderPanel" style="display:none;" class="mt-2">
+                        <small class="text-muted d-block mb-1" data-i18n="col_order_hint">Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:</small>
+                        <ul id="colOrderList" class="col-order-list"></ul>
+                    </div>
+                </div>
+
+                <div id="explainPanel" class="explain-panel mt-3">
+                    <h6 data-i18n="explain_plan_title">Plan de ejecución de la consulta:</h6>
+                    <pre id="explainResults"></pre>
+                </div>
+            </div>
+        </div>
+
+		<div class="card results-card">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<div>
+					<h5><span data-i18n="results_label">Resultados:</span> <span id="resultsCount"></span>
+						<span class="execution-time" id="executionTime"></span>
+					</h5>
+				</div>
+				<div class="ms-auto d-flex gap-2">
+					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
+					<button id="clearResultsButton" class="btn btn-warning" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
+					<button id="exportButton" class="btn btn-success" data-i18n="export_csv_btn">Exportar CSV</button>
+				</div>
+			</div>
+			<div class="card-body results-container">
+				<div id="loading" class="loading">
+					<img src="/static/dna.gif" alt="Cargando..." width="140" height="140" data-i18n-alt="loading_alt">
+					<p class="mt-2" data-i18n="loading_text">Cargando resultados...</p>
+				</div>
+				
+				<div id="resultsTable"></div>
+				
+				<div id="pagination" class="pagination justify-content-center mt-3"></div>
+			</div>
+		</div>
+
+    <script>
+        // ── Internationalization (frontend) ────────────────────────────────────
+        //
+        // Dictionary of interface text (not data: field names like
+        // "País"/"Country" are resolved server-side per language, see
+        // server.py FIELD_MAPPING/FIELD_MAPPING_EN). `setLang()` reloads the
+        // page so both sources stay consistent in one shot —
+        // this avoids keeping a copy of FIELD_MAPPING here too.
+        const I18N = {
+            es: {
+                title_line1: 'BASE DE', title_line2: 'DATOS', title_local: 'Local',
+                search_methods_aria: 'Métodos de búsqueda',
+                field_search_tab_btn: 'Búsqueda avanzada por campos',
+                fts_panel_title: 'Búsqueda de texto completo',
+                fts_help_text: 'Busca en toda la base de datos con una consulta de texto completo. Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.',
+                fts_query_placeholder: 'Introduce tu consulta...',
+                batch_panel_title: 'Búsqueda en Batch',
+                batch_intro_text: 'Búsqueda por campos automatizada: repite la misma consulta una vez por cada término de tu archivo de texto plano (un valor por línea). Todos los términos deben pertenecer al <strong>mismo campo</strong>, el que selecciones abajo. Los resultados se descargan como un ZIP con archivos TSV individuales por término, <code>all_results.tsv</code> y <code>summary.csv</code>.',
+                batch_field1_label: 'Campo 1 · requerido',
+                batch_field2_label: 'Campo 2 · filtro adicional',
+                select_field_placeholder: 'Seleccionar campo...',
+                batch_drop_text: 'Arrastra tu archivo aquí', batch_drop_or: 'o', batch_drop_browse: 'examina',
+                batch_drop_note: 'Un valor por línea · .txt o .csv',
+                remove_file: 'Quitar archivo',
+                batch_add_field2: 'Agregar segundo campo de filtro',
+                batch_include_fasta: 'Exportar también en formato FASTA',
+                report_reset_title: 'Quitar toda la personalización',
+                reset_btn: '↺ Restablecer',
+                report_extra_info_label: 'Información adicional por término',
+                report_extra_info_text: '<code>summary.csv</code> trae una fila por cada término de tu lista, con el número de registros que encontró. Aquí puedes añadirle columnas que describen esos registros. Ejemplo: si marcas <strong>País</strong>, cada término indicará <em>en cuántos países</em> aparece y <em>cuáles</em> son.',
+                report_category: 'Categoría', report_how_many: 'Cuántos', report_which_ones: 'Cuáles',
+                report_counts_label: 'En las listas, indicar cuántos registros aporta cada valor',
+                report_counts_example: 'ej.',
+                report_limit_list_label: 'Acortar las listas a los',
+                report_most_frequent: 'valores más frecuentes',
+                report_most_frequent_hint: '— útil si un término aparece en cientos de valores',
+                report_totals_label: 'Totales del conjunto',
+                report_totals_text: 'A diferencia de lo anterior, esto no mira término por término sino <strong>todos los resultados juntos</strong>. Por cada categoría que marques se agrega al ZIP un CSV aparte que lista sus valores con el total de registros de cada uno. Ejemplo: marcando <strong>País</strong> obtienes <code>summary_by_pais.csv</code> con cuántos registros salieron de cada país.',
+                batch_search_btn: 'Buscar en Batch',
+                field_panel_title: 'Criterios de búsqueda por campos',
+                op_equals: 'Es igual a', op_not_equals: 'No es igual a', op_contains: 'Contiene',
+                op_not_contains: 'No contiene', op_starts_with: 'Comienza con', op_ends_with: 'Termina con',
+                op_greater_than: 'Mayor que', op_less_than: 'Menor que', op_between: 'Entre',
+                op_has_value: 'Con dato', op_no_value: 'Sin dato',
+                value_input_placeholder: 'Escribe un término', value2_input_placeholder: 'Hasta',
+                add_condition_btn: '+ Añadir condición', search_btn: 'Buscar',
+                col_order_toggle_btn_label: 'Orden de columnas',
+                col_order_reset_title: 'Restablecer orden predeterminado',
+                col_order_hint: 'Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:',
+                explain_plan_title: 'Plan de ejecución de la consulta:',
+                results_label: 'Resultados:',
+                cancel_search_btn: 'Cancelar Búsqueda', clear_results_btn: 'Limpiar Resultados', export_csv_btn: 'Exportar CSV',
+                loading_alt: 'Cargando...', loading_text: 'Cargando resultados...',
+                no_search_term_alert: 'Por favor ingrese un término de búsqueda',
+                no_search_conditions_alert: 'Por favor seleccione al menos una condición de búsqueda',
+                no_export_id: 'No se recibió ID de exportación del servidor',
+                cancel_export_btn: 'Cancelar exportación',
+                export_error_prefix: 'Error en la exportación: ',
+                validation_need_term: 'Ingresa un término de búsqueda o cambia el operador',
+                server_disconnected_title: '🚨 SIN CONEXIÓN AL SERVIDOR 🚨',
+                server_disconnected_body: 'Verificar que la ventana del terminal esté abierta ejecutando el servidor.',
+                server_disconnected_body2: 'De lo contrario volver a abrir la base de datos.',
+                ok_btn: 'Aceptar',
+                select_field_and_term: 'Selecciona un campo e introduce un término de búsqueda',
+                enter_search_term: 'Por favor introduce un término de búsqueda',
+                field_required_title: '⛔ Campo requerido',
+                csv_export_options_title: 'Opciones de exportación CSV',
+                csv_include_seq_label: 'Incluir columna de secuencia ADN',
+                csv_include_nuc_hint: 'Al incluirla el archivo es más grande y la exportación más lenta.<br>',
+                csv_include_nuc_hint2: 'Sin ella, la velocidad puede duplicarse o triplicarse.',
+                csv_only_visible_label: 'Exportar solo columnas visibles',
+                csv_visible_cols_hint: 'Según la selección del botón "Columnas" en la tabla de resultados.<br>Deshabilita la exportación de la columna de secuencia.',
+                cancel_btn: 'Cancelar', export_btn: 'Exportar',
+                starting_export: 'Iniciando exportación...',
+                starting_fasta_export: 'Iniciando exportación FASTA...',
+                no_search_term_alert2: '🚫 Por favor ingrese un término de búsqueda',
+                no_search_conditions_alert2: '🚫 Por favor defina al menos una condición de búsqueda',
+                export_taking_long: 'La exportación puede estar tardando más de lo esperado.',
+                preparing_export: 'Preparando exportación...',
+                page_label: 'Página', page_of: 'de', results_per_page_title: 'Resultados por página',
+                first_page_title: 'Primera página', last_page_title: 'Última página',
+                prev_page: '&laquo; Anterior', next_page: 'Siguiente &raquo;',
+                goto_page_placeholder: 'Ir a...', goto_page_btn: 'Ir',
+                unique_values: 'valores únicos',
+                export_fasta_btn: 'Exportar FASTA',
+                close_btn: 'Cerrar',
+                download_zip_btn: 'Descargar ZIP',
+                no_results_short: 'Sin resultados.',
+                processing_ellipsis: 'Procesando...',
+                records_found_zip_ready: '<strong>{n}</strong> registros encontrados. ZIP listo para descargar.',
+                error_prefix: 'Error: ',
+                searching_sequences: 'Buscando secuencias...',
+                searching_database: 'Buscando en la base de datos...',
+                copied_toast: 'Copiado',
+                expand_rows: 'Expandir filas', collapse_rows: 'Contraer filas',
+                columns_btn: 'Columnas ▾', show_all_btn: 'Mostrar todas', hide_all_btn: 'Ocultar todas',
+                fasta_export_error_alert: '⛔ Error al exportar FASTA: ', csv_export_error_alert: '⛔ Error al exportar CSV: ',
+                batch_upload_file1: 'Carga un archivo para el campo 1', batch_upload_file2: 'Carga un archivo para el campo 2',
+                batch_select_field1: 'Selecciona el campo 1',
+                explain_query_error: 'Error al analizar la consulta: ',
+                processing_records: 'Procesando registros...',
+                no_results_message: 'No se encontraron resultados.',
+                report_toggle_btn: '⚙ Personalizar reporte resumen',
+                batch_select_field2_or_disable: 'Selecciona el campo 2 o desactívalo',
+                sending_terms_to_server: 'Enviando {n} términos al servidor...',
+                cancel_batch_search_btn: 'Cancelar búsqueda',
+                batch_search_cancelled: 'Búsqueda cancelada.',
+                batch_note_no_field: 'El archivo debe contener valores de un <strong>solo campo</strong>: el que elijas aquí. No mezcles categorías en la misma lista.',
+                batch_note_taxonomy: 'Todos los términos del archivo deben ser <strong>taxones</strong>. Los de una sola palabra (<em>Felidae</em>) se buscan en todos los niveles taxonómicos; los de dos (<em>Panthera leo</em>), solo en Especie.',
+                batch_note_generic: 'Todos los términos del archivo deben ser valores de <strong>{friendly}</strong>, sin mezclar otras categorías. La coincidencia es exacta, sin distinguir mayúsculas.',
+                report_hint_extra_cols: '{n} columna{s} extra',
+                report_hint_totals_csv: '{n} CSV de totales',
+                total_records_suffix: 'registros',
+                server_error_prefix: 'Error del servidor: ',
+                status_check_error_prefix: 'Error al verificar estado: ',
+                cancelling_btn: 'Cancelando...',
+                analyzing_query: 'Analizando consulta...',
+            },
+            en: {
+                title_line1: 'DATA', title_line2: 'BASE', title_local: 'Local',
+                search_methods_aria: 'Search methods',
+                field_search_tab_btn: 'Advanced field search',
+                fts_panel_title: 'Full-text search',
+                fts_help_text: 'Search the whole database with a full-text query. You can use operators like AND, OR, NOT and quotes for exact phrases.',
+                fts_query_placeholder: 'Enter your query...',
+                batch_panel_title: 'Batch Search',
+                batch_intro_text: 'Automated field search: it repeats the same query once for each term in your plain text file (one value per line). All terms must belong to the <strong>same field</strong>, the one you select below. Results are downloaded as a ZIP with individual TSV files per term, <code>all_results.tsv</code> and <code>summary.csv</code>.',
+                batch_field1_label: 'Field 1 · required',
+                batch_field2_label: 'Field 2 · additional filter',
+                select_field_placeholder: 'Select field...',
+                batch_drop_text: 'Drag your file here', batch_drop_or: 'or', batch_drop_browse: 'browse',
+                batch_drop_note: 'One value per line · .txt or .csv',
+                remove_file: 'Remove file',
+                batch_add_field2: 'Add a second filter field',
+                batch_include_fasta: 'Also export in FASTA format',
+                report_reset_title: 'Remove all customization',
+                reset_btn: '↺ Reset',
+                report_extra_info_label: 'Additional information per term',
+                report_extra_info_text: '<code>summary.csv</code> has one row per term in your list, with the number of records it found. Here you can add columns that describe those records. Example: if you check <strong>Country</strong>, each term will show <em>in how many countries</em> it appears and <em>which ones</em>.',
+                report_category: 'Category', report_how_many: 'How many', report_which_ones: 'Which ones',
+                report_counts_label: 'In the lists, show how many records each value contributes',
+                report_counts_example: 'e.g.',
+                report_limit_list_label: 'Shorten the lists to the top',
+                report_most_frequent: 'most frequent values',
+                report_most_frequent_hint: '— useful if a term appears in hundreds of values',
+                report_totals_label: 'Dataset totals',
+                report_totals_text: 'Unlike the above, this doesn\'t look term by term but at <strong>all results together</strong>. For each category you check, a separate CSV is added to the ZIP listing its values with the total number of records for each. Example: checking <strong>Country</strong> gets you <code>summary_by_pais.csv</code> with how many records came from each country.',
+                batch_search_btn: 'Run Batch Search',
+                field_panel_title: 'Field search criteria',
+                op_equals: 'Equals', op_not_equals: 'Not equals', op_contains: 'Contains',
+                op_not_contains: 'Does not contain', op_starts_with: 'Starts with', op_ends_with: 'Ends with',
+                op_greater_than: 'Greater than', op_less_than: 'Less than', op_between: 'Between',
+                op_has_value: 'Has value', op_no_value: 'No value',
+                value_input_placeholder: 'Type a term', value2_input_placeholder: 'To',
+                add_condition_btn: '+ Add condition', search_btn: 'Search',
+                col_order_toggle_btn_label: 'Column order',
+                col_order_reset_title: 'Reset to default order',
+                col_order_hint: 'Drag the terms to change the column order in the results table:',
+                explain_plan_title: 'Query execution plan:',
+                results_label: 'Results:',
+                cancel_search_btn: 'Cancel Search', clear_results_btn: 'Clear Results', export_csv_btn: 'Export CSV',
+                loading_alt: 'Loading...', loading_text: 'Loading results...',
+                no_search_term_alert: 'Please enter a search term',
+                no_search_conditions_alert: 'Please select at least one search condition',
+                no_export_id: 'No export ID received from the server',
+                cancel_export_btn: 'Cancel export',
+                export_error_prefix: 'Export error: ',
+                validation_need_term: 'Enter a search term or change the operator',
+                server_disconnected_title: '🚨 SERVER DISCONNECTED 🚨',
+                server_disconnected_body: 'Check that the terminal window running the server is still open.',
+                server_disconnected_body2: 'Otherwise, try reopening the database.',
+                ok_btn: 'OK',
+                select_field_and_term: 'Select a field and enter a search term',
+                enter_search_term: 'Please enter a search term',
+                field_required_title: '⛔ Field required',
+                csv_export_options_title: 'CSV export options',
+                csv_include_seq_label: 'Include DNA sequence column',
+                csv_include_nuc_hint: 'Including it makes the file bigger and the export slower.<br>',
+                csv_include_nuc_hint2: 'Without it, speed can double or triple.',
+                csv_only_visible_label: 'Export visible columns only',
+                csv_visible_cols_hint: 'Based on the "Columns" button selection in the results table.<br>Disables exporting the sequence column.',
+                cancel_btn: 'Cancel', export_btn: 'Export',
+                starting_export: 'Starting export...',
+                starting_fasta_export: 'Starting FASTA export...',
+                no_search_term_alert2: '🚫 Please enter a search term',
+                no_search_conditions_alert2: '🚫 Please define at least one search condition',
+                export_taking_long: 'The export may be taking longer than expected.',
+                preparing_export: 'Preparing export...',
+                page_label: 'Page', page_of: 'of', results_per_page_title: 'Results per page',
+                first_page_title: 'First page', last_page_title: 'Last page',
+                prev_page: '&laquo; Previous', next_page: 'Next &raquo;',
+                goto_page_placeholder: 'Go to...', goto_page_btn: 'Go',
+                unique_values: 'unique values',
+                no_results_message: 'No results found.',
+                export_fasta_btn: 'Export FASTA',
+                close_btn: 'Close',
+                download_zip_btn: 'Download ZIP',
+                no_results_short: 'No results.',
+                processing_ellipsis: 'Processing...',
+                records_found_zip_ready: '<strong>{n}</strong> records found. ZIP ready to download.',
+                error_prefix: 'Error: ',
+                searching_sequences: 'Searching sequences...',
+                searching_database: 'Searching the database...',
+                copied_toast: 'Copied',
+                expand_rows: 'Expand rows', collapse_rows: 'Collapse rows',
+                columns_btn: 'Columns ▾', show_all_btn: 'Show all', hide_all_btn: 'Hide all',
+                fasta_export_error_alert: '⛔ Error exporting FASTA: ', csv_export_error_alert: '⛔ Error exporting CSV: ',
+                batch_upload_file1: 'Upload a file for field 1', batch_upload_file2: 'Upload a file for field 2',
+                batch_select_field1: 'Select field 1',
+                explain_query_error: 'Error analyzing the query: ',
+                processing_records: 'Processing records...',
+                report_toggle_btn: '⚙ Customize summary report',
+                batch_select_field2_or_disable: 'Select field 2 or turn it off',
+                sending_terms_to_server: 'Sending {n} terms to the server...',
+                cancel_batch_search_btn: 'Cancel search',
+                batch_search_cancelled: 'Search cancelled.',
+                batch_note_no_field: 'The file must contain values for a <strong>single field</strong>: the one you pick here. Don\'t mix categories in the same list.',
+                batch_note_taxonomy: 'All terms in the file must be <strong>taxa</strong>. Single-word ones (<em>Felidae</em>) are searched across all taxonomic ranks; two-word ones (<em>Panthera leo</em>), only in Species.',
+                batch_note_generic: 'All terms in the file must be values of <strong>{friendly}</strong>, without mixing other categories. The match is exact and case-insensitive.',
+                report_hint_extra_cols: '{n} extra column{s}',
+                report_hint_totals_csv: '{n} totals CSV{s}',
+                total_records_suffix: 'records',
+                server_error_prefix: 'Server error: ',
+                status_check_error_prefix: 'Error checking status: ',
+                cancelling_btn: 'Cancelling...',
+                analyzing_query: 'Analyzing query...',
+            },
+        };
+
+        let currentLang = (document.documentElement.lang === 'es') ? 'es' : 'en';
+        // `unload` fires both when the tab is closed and when the page is
+        // reloaded (e.g. switching language); this flag skips the server
+        // shutdown in the reload case, where the tab isn't actually closing.
+        let skipShutdownOnUnload = false;
+
+        function t(key, vars) {
+            const dict = I18N[currentLang] || I18N.es;
+            let text = (dict[key] !== undefined) ? dict[key] : ((I18N.es[key] !== undefined) ? I18N.es[key] : key);
+            if (vars) {
+                for (const k in vars) text = text.replace(`{${k}}`, vars[k]);
+            }
+            return text;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+            document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+            document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
+            document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.getAttribute('data-i18n-alt')); });
+            document.querySelectorAll('[data-i18n-aria-label]').forEach(el => { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label'))); });
+            const esBtn = document.getElementById('langBtnEs'), enBtn = document.getElementById('langBtnEn');
+            if (esBtn && enBtn) {
+                esBtn.classList.toggle('active', currentLang === 'es');
+                enBtn.classList.toggle('active', currentLang === 'en');
+            }
+            const toggleBtn = document.getElementById('reportToggleBtn');
+            if (toggleBtn) {
+                const isOpen = document.getElementById('reportPanel') && document.getElementById('reportPanel').style.display !== 'none';
+                toggleBtn.textContent = `${t('report_toggle_btn')} ${isOpen ? '▲' : '▼'}`;
+            }
+            const colBtn = document.getElementById('colOrderToggleBtn');
+            if (colBtn) {
+                const isOpen = document.getElementById('colOrderPanel') && document.getElementById('colOrderPanel').style.display !== 'none';
+                colBtn.textContent = `${t('col_order_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
+            }
+            const totalRecordsEl = document.getElementById('total-records');
+            if (totalRecordsEl && totalRecordsEl.dataset.total) {
+                totalRecordsEl.textContent = ` ${totalRecordsEl.dataset.total} ${t('total_records_suffix')} `;
+            }
+        }
+
+        function setLang(lang) {
+            if (lang !== 'es' && lang !== 'en') return;
+            localStorage.setItem('boldLang', lang);
+            document.cookie = 'lang=' + lang + ';path=/;max-age=31536000';
+            if (lang === currentLang) { applyTranslations(); return; }
+            skipShutdownOnUnload = true;
+            location.reload();
+        }
+
+        document.addEventListener('DOMContentLoaded', applyTranslations);
+
+        const numFmt = new Intl.NumberFormat('en-US');
+
+        // Format a duration given in seconds into a human friendly string:
+        // seconds, minutes or hours depending on magnitude.
+        function formatDuration(seconds) {
+            const s = Number(seconds);
+            if (!isFinite(s) || s < 0) return '-';
+            if (s < 60) {
+                return `${s.toFixed(3)} s`;
+            }
+            if (s < 3600) {
+                const m = Math.floor(s / 60);
+                const rem = Math.round(s % 60);
+                return `${m} min ${rem} s`;
+            }
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const rem = Math.round(s % 60);
+            return `${h} h ${m} min ${rem} s`;
+        }
+
+        // Global pagination variables
+       const AppState = {
+            currentPage: 1,
+            totalPages: 1,
+            lastSearchConditions: [],
+            cachedResults: {},
+            resultsPerPage: 50,
+            activeSearchType: 'field',
+            lastFtsQuery: '',
+            abortController: null,
+            currentSearchId: null,
+            cachedCount: null,
+            cachedTotalPages: null,
+            totalCount: null
+        };
+
+        function generateSearchId() {
+            return crypto.randomUUID
+                ? crypto.randomUUID()
+                : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                    const r = Math.random() * 16 | 0;
+                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+        }
+
+        function cancelCurrentSearch() {
+            if (AppState.currentSearchId) {
+                navigator.sendBeacon(`/api/cancel_search/${AppState.currentSearchId}`);
+                AppState.currentSearchId = null;
+            }
+            if (AppState.abortController) {
+                AppState.abortController.abort();
+                AppState.abortController = null;
+            }
+        }
+
+        window.addEventListener('pagehide', cancelCurrentSearch);
+
+		        // ── Hidden columns (persisted in localStorage) ────────────────────
+        // Generated from `columns` (server.py, FIELD_MAPPING order) — this used
+        // to be a fixed list of the usual 23 fields, hand-copied into this
+        // file. A field added later via the Builder's "Fields" panel would
+        // show up in the "Select field" dropdown (which does read `columns`
+        // from the server) but never in the results table, because the table
+        // body only iterates this list. Now both come from the same source,
+        // so a new field shows up automatically, in the position that
+        // matches its actual proximity in the BOLD TSV.
+        const ORDERED_COLUMNS = {{ columns | map(attribute='friendly') | list | tojson }};
+
+        const hiddenColumns = new Set(JSON.parse(localStorage.getItem('boldHiddenColumns') || '[]'));
+
+        // Merges the order saved in this browser with the server's current
+        // order: keeps the user's manual reordering for fields they already
+        // had, drops any that no longer exist (e.g. removed from the
+        // "Fields" panel), and inserts each new field right after its
+        // nearest neighbor in ORDERED_COLUMNS — same as the first time,
+        // instead of piling them at the end every time someone reorders the
+        // table by hand.
+        function mergeColumnOrder(saved, canonical) {
+            if (!saved) return [...canonical];
+            const canonicalSet = new Set(canonical);
+            const result = saved.filter(c => canonicalSet.has(c));
+            canonical.forEach((col, idx) => {
+                if (result.includes(col)) return;
+                let afterIdx = -1;
+                for (let i = idx - 1; i >= 0; i--) {
+                    const j = result.indexOf(canonical[i]);
+                    if (j !== -1) { afterIdx = j; break; }
+                }
+                result.splice(afterIdx + 1, 0, col);
+            });
+            return result;
+        }
+
+        // Column order (persisted in localStorage)
+        let customColOrder = mergeColumnOrder(
+            JSON.parse(localStorage.getItem('boldColOrder') || 'null'), ORDERED_COLUMNS);
+
+        function buildColOrderList() {
+            const list = document.getElementById('colOrderList');
+            list.innerHTML = '';
+            let colDragSrc = null;
+
+            customColOrder.forEach(col => {
+                const li = document.createElement('li');
+                li.className = 'col-order-item';
+                li.draggable = true;
+                li.dataset.col = col;
+                li.innerHTML = `<span class="col-order-grip">⠿</span><span>${col}</span>`;
+
+                li.addEventListener('dragstart', e => {
+                    colDragSrc = li;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', '');
+                    setTimeout(() => li.classList.add('col-dragging'), 0);
+                });
+                li.addEventListener('dragend', () => {
+                    li.classList.remove('col-dragging');
+                    list.querySelectorAll('.col-order-item').forEach(i => i.classList.remove('col-drag-over'));
+                    customColOrder = [...list.querySelectorAll('.col-order-item')].map(i => i.dataset.col);
+                    localStorage.setItem('boldColOrder', JSON.stringify(customColOrder));
+                    const isDefault = JSON.stringify(customColOrder) === JSON.stringify([...ORDERED_COLUMNS]);
+                    document.getElementById('resetColOrderBtn').style.display = isDefault ? 'none' : 'inline-block';
+                    colDragSrc = null;
+                });
+                li.addEventListener('dragover', e => {
+                    if (!colDragSrc || li === colDragSrc) return;
+                    e.preventDefault();
+                    list.querySelectorAll('.col-order-item').forEach(i => i.classList.remove('col-drag-over'));
+                    li.classList.add('col-drag-over');
+                });
+                li.addEventListener('drop', e => {
+                    e.preventDefault();
+                    if (!colDragSrc || li === colDragSrc) return;
+                    li.classList.remove('col-drag-over');
+                    const rect = li.getBoundingClientRect();
+                    list.insertBefore(colDragSrc, e.clientY < rect.top + rect.height / 2 ? li : li.nextSibling);
+                });
+
+                list.appendChild(li);
+            });
+        }
+
+        function resetColOrder() {
+            customColOrder = [...ORDERED_COLUMNS];
+            localStorage.removeItem('boldColOrder');
+            buildColOrderList();
+            document.getElementById('resetColOrderBtn').style.display = 'none';
+        }
+
+        function toggleColOrderPanel() {
+            const panel = document.getElementById('colOrderPanel');
+            const btn = document.getElementById('colOrderToggleBtn');
+            const isHidden = panel.style.display === 'none';
+            panel.style.display = isHidden ? 'block' : 'none';
+            btn.innerHTML = `⠿ ${t('col_order_toggle_btn_label')} ${isHidden ? '▲' : '▼'}`;
+            if (isHidden) buildColOrderList();
+        }
+
+        function saveHiddenColumns() {
+            localStorage.setItem('boldHiddenColumns', JSON.stringify([...hiddenColumns]));
+        }
+
+        function applyColumnVisibility() {
+            ORDERED_COLUMNS.forEach((col, idx) => {
+                const colNum = idx + 1;
+                const display = hiddenColumns.has(col) ? 'none' : '';
+                document.querySelectorAll(
+                    `.table thead th:nth-child(${colNum}), .table tbody td:nth-child(${colNum})`
+                ).forEach(el => { el.style.display = display; });
+            });
+        }
+
+        function buildColPicker() {
+            const dropdown = document.getElementById('colPickerDropdown');
+            if (!dropdown || dropdown.dataset.built) return;
+            dropdown.dataset.built = '1';
+
+            const actions = document.createElement('div');
+            actions.className = 'col-picker-actions';
+            actions.innerHTML = `
+                <button onclick="setAllColumns(true)">${t('show_all_btn')}</button>
+                <button onclick="setAllColumns(false)">${t('hide_all_btn')}</button>`;
+            dropdown.appendChild(actions);
+
+            ORDERED_COLUMNS.forEach(col => {
+                const label = document.createElement('label');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !hiddenColumns.has(col);
+                cb.addEventListener('change', () => {
+                    if (cb.checked) hiddenColumns.delete(col);
+                    else hiddenColumns.add(col);
+                    saveHiddenColumns();
+                    applyColumnVisibility();
+                });
+                label.appendChild(cb);
+                label.appendChild(document.createTextNode(col));
+                dropdown.appendChild(label);
+            });
+        }
+
+        function setAllColumns(visible) {
+            if (visible) hiddenColumns.clear();
+            else ORDERED_COLUMNS.forEach(c => hiddenColumns.add(c));
+            saveHiddenColumns();
+            document.querySelectorAll('#colPickerDropdown input[type=checkbox]').forEach(cb => {
+                cb.checked = visible;
+            });
+            applyColumnVisibility();
+        }
+
+        function toggleColPicker(btn) {
+            const dd = document.getElementById('colPickerDropdown');
+            if (!dd) return;
+            const isOpen = dd.style.display !== 'none';
+            if (!isOpen) {
+                buildColPicker();
+                dd.style.display = 'block';
+            } else {
+                dd.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('colPickerDropdown');
+            if (!dd) return;
+            const wrap = dd.closest('.position-relative');
+            if (wrap && !wrap.contains(e.target)) {
+                dd.style.display = 'none';
+            }
+        });
+
+        // ── Copy toast ───────────────────────────────────────────────────
+        function showCopyToast() {
+            const toastEl = document.createElement('div');
+            toastEl.className = 'copy-toast';
+            toastEl.textContent = t('copied_toast');
+            document.body.appendChild(toastEl);
+            setTimeout(() => { toastEl.style.opacity = '0'; }, 1000);
+            setTimeout(() => { toastEl.remove(); }, 1400);
+        }
+
+
+		document.addEventListener("DOMContentLoaded", function () {
+			// Look up the .tsv file name
+			fetch('/list-static-files') // Make sure this route returns a list of files
+				.then(response => response.json())
+				.then(files => {
+					let filePath = files.find(f => f.endsWith(".tsv"));
+					let fileName = filePath ? filePath.split('/').pop().split('.').slice(0, -1).join('.') : "No TSV found";
+					const fileNameEl = document.getElementById("file-name");
+					fileNameEl.textContent = fileName;
+					fileNameEl.style.display = 'inline-block';
+				})
+				.catch(error => console.error('Error obteniendo la lista de archivos:', error));
+		});
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelector('.results-card').classList.add('hidden');
+			fetch('/total_records')
+                .then(response => response.json())
+                .then(data => {
+                    const formattedTotal = numFmt.format(data.total);
+                    document.getElementById('total-records').dataset.total = formattedTotal;
+                    document.getElementById('total-records').textContent = ` ${formattedTotal} ${t('total_records_suffix')} `;
+                })
+                .catch(error => console.error('Error obteniendo el total de registros:', error));
+        });
+		
+		
+		// Add this code to your JavaScript file or modify the existing one
+		document.addEventListener('DOMContentLoaded', function() {
+			// Function to handle operator changes
+			function handleOperatorChange(operatorSelect) {
+				const condition  = operatorSelect.closest('.search-condition');
+				const valueInput  = condition.querySelector('.value-input');
+				const value2Input = condition.querySelector('.value2-input');
+				const op = operatorSelect.value;
+				const noValueOps = ['IS_NOT_EMPTY', 'IS_EMPTY'];
+
+				if (noValueOps.includes(op)) {
+					valueInput.value = '';
+					valueInput.disabled = true;
+					valueInput.placeholder = '';
+					valueInput.style.visibility = 'hidden';
+					if (value2Input) { value2Input.style.display = 'none'; value2Input.value = ''; }
+				} else if (op === 'BETWEEN') {
+					valueInput.disabled = false;
+					valueInput.style.visibility = 'visible';
+					valueInput.placeholder = 'Desde';
+					if (value2Input) { value2Input.style.display = 'block'; value2Input.placeholder = 'Hasta'; }
+				} else {
+					valueInput.disabled = false;
+					valueInput.value = '';
+					valueInput.placeholder = t('value_input_placeholder');
+					valueInput.style.visibility = 'visible';
+					if (value2Input) { value2Input.style.display = 'none'; value2Input.value = ''; }
+				}
+			}
+			
+			// Set up event listeners for existing operators
+			function setupOperatorListeners() {
+				document.querySelectorAll('.operator-select').forEach(select => {
+					select.addEventListener('change', function() {
+						handleOperatorChange(this);
+					});
+				});
+			}
+			
+			setupOperatorListeners();
+			
+			// For new conditions
+			const addConditionBtn = document.getElementById('addCondition');
+			addConditionBtn.addEventListener('click', function() {
+				setTimeout(setupOperatorListeners, 10); // Small delay to make sure the DOM has updated
+			});
+		});
+		
+        
+       // Initialization once the DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            setupSearchButtons();
+            setupAutocomplete();
+            setupConditionControls();
+            setupOtherButtons();
+            if (localStorage.getItem('boldColOrder')) {
+                document.getElementById('resetColOrderBtn').style.display = 'inline-block';
+            }
+        });
+		
+		function addFastaButton() {
+			const exportButtonContainer = document.querySelector('.card-header .ms-auto.d-flex.gap-2');
+			
+			if (exportButtonContainer && !document.getElementById('exportFastaButton')) {
+				const fastaButton = document.createElement('button');
+				fastaButton.id = 'exportFastaButton';
+				fastaButton.className = 'btn btn-info';
+				fastaButton.textContent = t('export_fasta_btn');
+				fastaButton.addEventListener('click', exportToFasta);
+				
+				// Insert the button before the CSV export button
+				exportButtonContainer.insertBefore(fastaButton, document.getElementById('exportButton'));
+			}
+		}
+
+		// Main function for FASTA export with progress
+		async function exportToFasta() {
+			const loadingModal = createLoadingModalF();
+			let exportInterval = null;
+
+			try {
+				document.body.appendChild(loadingModal);
+				updateLoadingMessage(loadingModal, t('starting_fasta_export'));
+				
+				// Prepare request data
+				let requestData = {};
+				const { conditions, errors } = getSearchConditions();
+				
+				if (AppState.activeSearchType === 'fts') {
+					const query = document.getElementById('ftsQueryInput').value.trim();
+					if (!query) {
+						throw new Error(t('no_search_term_alert'));
+					}
+					
+					requestData = {
+						search_type: 'fts',
+						query: query
+					};
+				} else {
+					if (errors && errors.length > 0) {
+						throw new Error(t('no_search_conditions_alert'));
+					}
+					
+					requestData = {
+						conditions: conditions
+					};
+				}
+				
+				// Start the export
+				const response = await fetch('/api/export_fasta', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(requestData)
+				});
+				
+				const data = await response.json();
+				
+				if (!response.ok || data.error) {
+					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				}
+
+				// Get the export ID
+				const exportId = data.export_id;
+				if (!exportId) {
+					throw new Error(t('no_export_id'));
+				}
+
+				updateLoadingMessage(loadingModal, t('searching_sequences'));
+				updateProgressBar(loadingModal, 0);
+				
+				// Cancel button
+				const cancelButton = document.createElement('button');
+				cancelButton.textContent = t('cancel_export_btn');
+				cancelButton.className = 'cancel-export-btn';
+				cancelButton.onclick = async () => {
+					try {
+						await fetch(`/api/cancel_fasta_export/${exportId}`, { method: 'POST' });
+						clearInterval(exportInterval);
+						document.body.removeChild(loadingModal);
+					} catch (error) {
+						console.error('Error al cancelar exportación:', error);
+					}
+				};
+				loadingModal.querySelector('.loading-content').appendChild(cancelButton);
+				
+				// Poll status periodically
+				exportInterval = setInterval(async () => {
+					try {
+						const statusResponse = await fetch(`/api/fasta_export_status/${exportId}`);
+						const statusData = await statusResponse.json();
+						
+						if (!statusResponse.ok || statusData.error) {
+							throw new Error(statusData.error || `${t('status_check_error_prefix')}${statusResponse.status}`);
+						}
+
+						// Update the UI
+						updateLoadingMessage(loadingModal, statusData.message || t('processing_ellipsis'));
+						updateProgressBar(loadingModal, statusData.progress || 0);
+
+						// Export completed
+						if (statusData.status === 'completed' && statusData.download_url) {
+							clearInterval(exportInterval);
+
+							updateLoadingMessage(loadingModal, statusData.message || t('processing_ellipsis'));
+							updateProgressBar(loadingModal, 100);
+
+							// Replace the cancel button with a download button
+							const downloadBtn = document.createElement('button');
+							downloadBtn.textContent = t('ok_btn');
+							downloadBtn.className = 'download-export-btn';
+							downloadBtn.onclick = () => {
+								window.location.href = statusData.download_url;
+								setTimeout(() => {
+									document.body.removeChild(loadingModal);
+								}, 2000);
+							};
+							
+							const loadingContent = loadingModal.querySelector('.loading-content');
+							loadingContent.removeChild(loadingContent.querySelector('.cancel-export-btn'));
+							loadingContent.appendChild(downloadBtn);
+							
+						} else if (statusData.status === 'error') {
+							clearInterval(exportInterval);
+							throw new Error(`${t('export_error_prefix')}${statusData.message}`);
+						}
+						
+					} catch (error) {
+						clearInterval(exportInterval);
+						console.error('Error al verificar estado de exportación:', error);
+						updateProgressBar(loadingModal, -1);
+						updateLoadingMessage(loadingModal, `Error: ${error.message}`);
+					}
+				}, 2000);
+
+			} catch (error) {
+				console.error('Error en exportToFasta:', error);
+
+				if (loadingModal && document.body.contains(loadingModal)) {
+					updateProgressBar(loadingModal, -1);
+					updateLoadingMessage(loadingModal, `Error: ${error.message}`);
+					
+					// Button to close the modal
+					const closeBtn = document.createElement('button');
+					closeBtn.textContent = t('close_btn');
+					closeBtn.className = 'close-error-btn';
+					closeBtn.onclick = () => {
+						if (exportInterval) clearInterval(exportInterval);
+						document.body.removeChild(loadingModal);
+					};
+					
+					const loadingContent = loadingModal.querySelector('.loading-content');
+					// Clear existing buttons
+					const existingButtons = loadingContent.querySelectorAll('button');
+					existingButtons.forEach(btn => loadingContent.removeChild(btn));
+					
+					loadingContent.appendChild(closeBtn);
+				} else {
+					alert(t('fasta_export_error_alert') + error.message);
+				}
+			}
+		}
+
+		// Alias for compatibility with exportToFasta
+		function createLoadingModalF() {
+			return createLoadingModal('Exportando FASTA');
+		}
+
+		function updateLoadingMessage(modal, message) {
+			const messageElement = modal.querySelector('.loading-message');
+			if (messageElement) {
+				messageElement.innerHTML = message;
+			}
+		}
+
+		function updateProgressBar(modal, percentage) {
+			const spinner = modal.querySelector('.dna-spinner');
+			if (!spinner) return;
+			if (percentage >= 100) {
+				spinner.classList.add('done');
+			} else if (percentage < 0) {
+				spinner.classList.add('error');
+			}
+			// between 0 and 99: spinner keeps spinning automatically
+
+			const bar  = modal.querySelector('.export-progress');
+			const fill = modal.querySelector('.export-progress-fill');
+			if (!bar || !fill) return;
+			if (percentage < 0) {
+				bar.classList.add('error');
+				return;
+			}
+			if (percentage > 0) bar.style.display = 'block';
+			if (bar.style.display === 'none') return;
+			const pct = Math.max(0, Math.min(100, percentage));
+			fill.style.width = pct + '%';
+			if (pct >= 100) bar.classList.add('done');
+		}
+
+
+
+		
+				
+
+		// Add event listener to initialize the button when the page loads
+		document.addEventListener('DOMContentLoaded', function() {
+			// Add the initial FASTA button
+			addFastaButton();
+
+			// Make sure the button is also added after each search
+			const observer = new MutationObserver(function(mutations) {
+				mutations.forEach(function(mutation) {
+					if (mutation.type === 'childList' && mutation.target.id === 'resultsTable') {
+						addFastaButton();
+					}
+				});
+			});
+			
+			// Watch for changes in the results table
+			observer.observe(document.getElementById('resultsTable'), { childList: true });
+		});
+
+        function initializeTabs() {
+            // Tabs whose panel doesn't exist are discarded: without an FTS
+            // index the server doesn't render the full-text one.
+            const tabDefs = [
+                { tab: 'fieldSearchTab', panel: 'fieldSearchPanel', type: 'field' },
+                { tab: 'ftsSearchTab',   panel: 'ftsSearchPanel',   type: 'fts'   },
+                { tab: 'batchSearchTab', panel: 'batchSearchPanel', type: 'batch' },
+            ].filter(({ tab, panel }) =>
+                document.getElementById(tab) && document.getElementById(panel));
+
+            tabDefs.forEach(({ tab, panel, type }) => {
+                document.getElementById(tab).addEventListener('click', function () {
+                    tabDefs.forEach(({ tab: t, panel: p }) => {
+                        document.getElementById(t).classList.remove('active-tab');
+                        document.getElementById(p).style.display = 'none';
+                    });
+                    this.classList.add('active-tab');
+                    document.getElementById(panel).style.display = 'block';
+                    AppState.activeSearchType = type;
+                });
+            });
+        }
+
+		function setupSearchButtons() {
+			// FTS search button and field. Without an FTS index the server
+			// doesn't render them (see `fts_available`), so they don't exist here.
+			const ftsButton = document.getElementById('ftsSearchButton');
+			const ftsInput  = document.getElementById('ftsQueryInput');
+
+			if (ftsButton) ftsButton.addEventListener('click', performFtsSearch);
+
+			// Enter in the FTS search field
+			if (ftsInput) ftsInput.addEventListener('keydown', function(event) {
+				if (event.key === 'Enter') {
+					event.preventDefault(); // Prevent unwanted default behavior
+					performFtsSearch();
+				}
+			});
+
+			// Search by fields
+			document.getElementById('searchButton').addEventListener('click', performSearch);
+
+			// Add event listeners for quick search on Enter
+			document.addEventListener('keydown', function(event) {
+				if (event.key === 'Enter') {
+					const activeElement = document.activeElement;
+					// Add more selectors to make sure we cover all cases
+					if (activeElement.classList.contains('value-input') || 
+						activeElement.id === 'ftsQueryInput' ||
+						activeElement.closest('.search-condition')) {
+						event.preventDefault();
+						if (AppState.activeSearchType === 'fts') {
+							performFtsSearch();
+						} else {
+							performSearch();
+						}
+					}
+				}
+			});
+		}
+
+		function setupConditionControls() {
+			// Add condition
+			document.getElementById('addCondition').addEventListener('click', function() {
+				const container = document.getElementById('searchConditions');
+				const firstCondition = document.querySelector('.search-condition');
+				const newCondition = firstCondition.cloneNode(true);
+
+				// Reset values but set the selects back to their defaults
+				const inputs = newCondition.querySelectorAll('input');
+				inputs.forEach(input => input.value = '');
+
+				// Set "AND" as selected in the logical operator select
+				const conditionTypeSelect = newCondition.querySelector('.condition-type');
+				conditionTypeSelect.value = 'AND';
+
+				// Set "Equals" as selected in the operator select
+				const operatorSelect = newCondition.querySelector('.operator-select');
+				operatorSelect.value = 'EQUALS';
+
+				// Reset input visibility (may be hidden if the source had IS_EMPTY/IS_NOT_EMPTY)
+				const clonedValueInput = newCondition.querySelector('.value-input');
+				clonedValueInput.disabled = false;
+				clonedValueInput.style.visibility = 'visible';
+				clonedValueInput.placeholder = t('value_input_placeholder');
+
+				// Hide value2-input when cloning
+				const clonedValue2Input = newCondition.querySelector('.value2-input');
+				if (clonedValue2Input) { clonedValue2Input.style.display = 'none'; clonedValue2Input.value = ''; }
+
+				// Show the remove button on the new condition
+				const removeButton = newCondition.querySelector('.remove-condition');
+				removeButton.style.display = 'block';
+
+				// Effect when adding a new field
+				newCondition.classList.add('adding');
+				container.appendChild(newCondition);
+
+				setTimeout(() => {
+					newCondition.classList.remove('adding');
+				}, 10);  // Small delay to trigger the transition
+
+				// Set up the remove button
+				setupRemoveButton(newCondition);
+				updateConditionVisibility();
+			});
+
+			// Set up remove buttons for the initial conditions
+			document.querySelectorAll('.search-condition').forEach((condition, index) => {
+				// Hide the remove button only on the first condition
+				if (index === 0) {
+					const removeButton = condition.querySelector('.remove-condition');
+					removeButton.style.display = 'none';
+				}
+				setupRemoveButton(condition);
+			});
+			updateConditionVisibility();
+		}
+
+		function setupOtherButtons() {
+			document.getElementById('clearResultsButton').addEventListener('click', function() {
+				// Clear results
+				document.getElementById('resultsTable').innerHTML = '';
+				document.getElementById('pagination').innerHTML = '';
+				document.getElementById('resultsCount').textContent = '';
+				document.getElementById('executionTime').textContent = '';
+
+				document.querySelector('.results-card').classList.add('hidden');
+
+				// Clear advanced search fields
+				document.querySelectorAll('.search-condition').forEach((condition, index) => {
+					const columnSelect = condition.querySelector('.column-select');
+					const operatorSelect = condition.querySelector('.operator-select');
+					const valueInput = condition.querySelector('.value-input');
+
+					// Reset values (leave the first condition with its defaults)
+					if (index === 0) {
+						columnSelect.value = '';
+						operatorSelect.value = 'EQUALS';
+						valueInput.value = '';
+						valueInput.disabled = false;
+						valueInput.style.visibility = 'visible';
+						valueInput.placeholder = t('value_input_placeholder');
+						const v2 = condition.querySelector('.value2-input');
+						if (v2) { v2.style.display = 'none'; v2.value = ''; }
+					} else {
+						// Remove additional conditions
+						condition.remove();
+					}
+				});
+
+				// Clear FTS search (absent if the database has no FTS index)
+				const ftsInput = document.getElementById('ftsQueryInput');
+				if (ftsInput) ftsInput.value = '';
+
+				// Hide the explain panel if visible
+				document.getElementById('explainPanel').style.display = 'none';
+			});
+			
+			document.getElementById('cancelButton').addEventListener('click', function() {
+				cancelCurrentSearch();
+				document.getElementById('loading').style.display = 'none';
+				document.getElementById('cancelButton').style.display = 'none';
+			});
+
+			document.getElementById('exportButton').addEventListener('click', exportToCSV);
+		}
+		
+
+        function setupRemoveButton(conditionElement) {
+            const removeButton = conditionElement.querySelector('.remove-condition');
+            removeButton.addEventListener('click', function() {
+                const conditions = document.querySelectorAll('.search-condition');
+                if (conditions.length > 1) {
+                    conditionElement.remove();
+                    updateConditionVisibility();
+                }
+            });
+        }
+
+        function updateConditionVisibility() {
+            const conditions = document.querySelectorAll('.search-condition');
+            
+            conditions.forEach((condition, index) => {
+                const conditionTypeSelect = condition.querySelector('.condition-type');
+                
+                if (index === 0) {
+                    conditionTypeSelect.style.display = 'none';
+                } else {
+                    conditionTypeSelect.style.display = 'block';
+                }
+            });
+        }
+
+		function getSearchConditions() {
+			const conditions = [];
+			let validationErrors = [];
+			const noValueOps = ['IS_NOT_EMPTY', 'IS_EMPTY'];
+
+			document.querySelectorAll('.search-condition').forEach(condition => {
+				const conditionType = condition.querySelector('.condition-type').value;
+				const column = condition.querySelector('.column-select').value;
+				const operator = condition.querySelector('.operator-select').value;
+				let value = condition.querySelector('.value-input').value.trim();
+				const v2el = condition.querySelector('.value2-input');
+				const value2 = v2el ? v2el.value.trim() : '';
+
+				// Reset styles
+				condition.querySelector('.column-select').style.border = '';
+				condition.querySelector('.value-input').style.border = '';
+				if (v2el) v2el.style.border = '';
+
+				if (!column) {
+					validationErrors.push("Selecciona un campo en todas las condiciones");
+					condition.querySelector('.column-select').style.border = '2px solid red';
+				}
+
+				if (!value && !noValueOps.includes(operator)) {
+					validationErrors.push(t('validation_need_term'));
+					condition.querySelector('.value-input').style.border = '2px solid red';
+				}
+
+				if (operator === 'BETWEEN' && !value2) {
+					validationErrors.push("El operador 'Entre' requiere dos valores");
+					if (v2el) v2el.style.border = '2px solid red';
+				}
+
+				const valid = column && (
+					noValueOps.includes(operator) ||
+					(operator === 'BETWEEN' && value && value2) ||
+					(!noValueOps.includes(operator) && operator !== 'BETWEEN' && value)
+				);
+
+				if (valid) {
+					if (noValueOps.includes(operator)) value = "__SPECIAL_OPERATOR__";
+					const entry = { condition_type: conditionType, column, operator, value };
+					if (operator === 'BETWEEN') entry.value2 = value2;
+					conditions.push(entry);
+				}
+			});
+
+			return {
+				conditions: conditions,
+				errors: [...new Set(validationErrors)]
+			};
+		}
+		
+	
+
+		async function performSearch(newSearch = true) {
+			// Get conditions and errors
+			const { conditions, errors } = getSearchConditions();
+
+			// Show errors if any
+			if (errors.length > 0) {
+				showValidationError(errors);
+				return;
+			}
+
+			// Cancel previous search if any
+			cancelCurrentSearch();
+
+			// Create a new ID and abort controller
+			AppState.currentSearchId = generateSearchId();
+			AppState.abortController = new AbortController();
+			const signal = AppState.abortController.signal;
+
+			// Show loading UI
+			document.querySelector('.results-card').classList.remove('hidden');
+			document.getElementById('loading').style.display = 'block';
+			document.getElementById('cancelButton').style.display = 'inline-block';
+			document.getElementById('clearResultsButton').style.display = 'none';
+			document.getElementById('resultsTable').innerHTML = '';
+			document.getElementById('pagination').innerHTML = '';
+			document.getElementById('resultsCount').textContent = '';
+			document.getElementById('executionTime').textContent = '';
+
+			// Save the current conditions
+			AppState.lastSearchConditions = JSON.parse(JSON.stringify(conditions));
+
+			// Reset to page 1 only if this is a new search
+			if (newSearch) {
+				AppState.currentPage = 1;
+				AppState.cachedCount = null;
+				AppState.cachedTotalPages = null;
+				AppState.totalCount = null;
+			}
+
+			try {
+				const response = await fetch('/api/search', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						search_id: AppState.currentSearchId,
+						conditions: conditions,
+						page: AppState.currentPage,
+						per_page: AppState.resultsPerPage,
+						skip_count: !newSearch
+					}),
+					signal
+				});
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.count !== null && data.count !== undefined) {
+                    AppState.cachedCount = data.count;
+                    AppState.cachedTotalPages = data.total_pages;
+                } else {
+                    data.count = AppState.cachedCount;
+                    data.total_pages = AppState.cachedTotalPages;
+                }
+
+                displayResults(data);
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Búsqueda cancelada por el usuario');
+                    return;
+                }
+				
+				const dialog = document.createElement('dialog');
+				dialog.innerHTML = `
+					<h3>${t('server_disconnected_title')}</h3>
+					<p>${t('server_disconnected_body')}</p>
+					<p>${t('server_disconnected_body2')}</p>
+					<div class="dialog-buttons">
+						<button class="dialog-confirm">${t('ok_btn')}</button>
+					</div>
+				`;
+				document.body.appendChild(dialog);
+				dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
+				dialog.showModal();
+				return;				
+				
+				
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('cancelButton').style.display = 'none';
+                AppState.currentSearchId = null;
+            }
+
+        }
+		
+		
+		function showValidationError(errors) {
+			document.querySelectorAll('dialog').forEach(d => d.close());
+			const msgs = Array.isArray(errors) && errors.length
+				? errors.map(e => `<li>${e}</li>`).join('')
+				: `<li>${t('select_field_and_term')}</li>`;
+			const dialog = document.createElement('dialog');
+			dialog.innerHTML = `
+				<h3>${t('field_required_title')}</h3>
+				<ul style="text-align:left;padding-left:1.2em;margin:0 0 12px;">${msgs}</ul>
+				<div class="dialog-buttons">
+					<button class="dialog-confirm">${t('ok_btn')}</button>
+				</div>
+			`;
+			document.body.appendChild(dialog);
+			dialog.querySelector('.dialog-confirm').addEventListener('click', () => {
+				dialog.close();
+				document.body.removeChild(dialog);
+			});
+			dialog.showModal();
+		}
+
+		async function performFtsSearch(newSearch = true) {
+			const query = document.getElementById('ftsQueryInput').value.trim();
+			
+			if (!query) {
+				const dialog = document.createElement('dialog');
+				dialog.innerHTML = `
+					<h3>${t('field_required_title')}</h3>
+					<p>${t('enter_search_term')}</p>
+					<div class="dialog-buttons">
+						<button class="dialog-confirm">${t('ok_btn')}</button>
+					</div>
+				`;
+				document.body.appendChild(dialog);
+				dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
+				dialog.showModal();
+				return;
+			}
+			
+			// Cancel previous search if any
+			cancelCurrentSearch();
+
+			// Create a new ID and abort controller
+			AppState.currentSearchId = generateSearchId();
+			AppState.abortController = new AbortController();
+			const signal = AppState.abortController.signal;
+
+			// Show loading UI
+			document.querySelector('.results-card').classList.remove('hidden');
+			document.getElementById('loading').style.display = 'block';
+			document.getElementById('cancelButton').style.display = 'inline-block';
+			document.getElementById('clearResultsButton').style.display = 'none';
+			document.getElementById('resultsTable').innerHTML = '';
+			document.getElementById('pagination').innerHTML = '';
+			document.getElementById('resultsCount').textContent = '';
+			document.getElementById('executionTime').textContent = '';
+
+			// Save the last FTS query
+			AppState.lastFtsQuery = query;
+
+			// Reset to page 1 only if this is a new search
+			if (newSearch) {
+				AppState.currentPage = 1;
+				AppState.cachedCount = null;
+				AppState.cachedTotalPages = null;
+				AppState.totalCount = null;
+			}
+
+			try {
+				const response = await fetch('/api/search', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						search_id: AppState.currentSearchId,
+						search_type: 'fts',
+						query: query,
+						page: AppState.currentPage,
+						per_page: AppState.resultsPerPage,
+						skip_count: !newSearch
+					}),
+					signal
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				const data = await response.json();
+
+				if (data.error) {
+					throw new Error(data.error);
+				}
+
+				if (data.count !== null && data.count !== undefined) {
+					AppState.cachedCount = data.count;
+					AppState.cachedTotalPages = data.total_pages;
+				} else {
+					data.count = AppState.cachedCount;
+					data.total_pages = AppState.cachedTotalPages;
+				}
+
+				displayResults(data);
+			} catch (error) {
+				if (error.name === 'AbortError') {
+					console.log('Búsqueda cancelada por el usuario');
+					return;
+				}
+				
+				const dialog = document.createElement('dialog');
+				dialog.innerHTML = `
+					<h3>${t('server_disconnected_title')}</h3>
+					<p>${t('server_disconnected_body')}</p>
+					<p>${t('server_disconnected_body2')}</p>
+					<div class="dialog-buttons">
+						<button class="dialog-confirm">${t('ok_btn')}</button>
+					</div>
+				`;
+				document.body.appendChild(dialog);
+				dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
+				dialog.showModal();
+				return;        
+			} finally {
+				document.getElementById('loading').style.display = 'none';
+				document.getElementById('cancelButton').style.display = 'none';
+				AppState.currentSearchId = null;
+			}
+		}
+		
+		function executeCurrentSearch() {
+			if (AppState.activeSearchType === 'fts') {
+				performFtsSearch(false);  // Indicates this is NOT a new search
+			} else {
+				performSearch(false);  // Indicates this is NOT a new search
+			}
+		}
+
+
+
+		// Main function to start the export
+		function showCsvExportOptions() {
+			return new Promise((resolve, reject) => {
+				const overlay = document.createElement('div');
+				overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1100;';
+
+				const box = document.createElement('div');
+				box.style.cssText = 'background:#fff;padding:28px 32px;border-radius:8px;min-width:380px;max-width:480px;box-shadow:0 4px 16px rgba(0,0,0,0.25);';
+
+				box.innerHTML = `
+					<h3 style="margin:0 0 18px;font-size:1.1rem;">${t('csv_export_options_title')}</h3>
+					<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:8px;">
+						<input type="checkbox" id="csvIncludeNuc" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+						<span><strong>${t('csv_include_seq_label')}</strong></span>
+					</label>
+					<p style="margin:0 0 16px;font-size:0.85rem;color:#666;padding-left:26px;">
+						${t('csv_include_nuc_hint')}
+						${t('csv_include_nuc_hint2')}
+					</p>
+					<hr style="margin:0 0 14px;">
+					<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:6px;">
+						<input type="checkbox" id="csvOnlyVisible" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+						<span><strong>${t('csv_only_visible_label')}</strong><br>
+						<span style="font-size:0.82rem;color:#666;">${t('csv_visible_cols_hint')}</span></span>
+					</label>
+					<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+						<button id="csvOptCancel" style="padding:8px 18px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">${t('cancel_btn')}</button>
+						<button id="csvOptExport" style="padding:8px 20px;border:none;border-radius:4px;background:#0d6efd;color:#fff;font-weight:600;cursor:pointer;">${t('export_btn')}</button>
+					</div>
+				`;
+
+				overlay.appendChild(box);
+				document.body.appendChild(overlay);
+
+				const cbNuc = overlay.querySelector('#csvIncludeNuc');
+				const cbVisible = overlay.querySelector('#csvOnlyVisible');
+				cbVisible.addEventListener('change', () => {
+					cbNuc.disabled = cbVisible.checked;
+					if (cbVisible.checked) cbNuc.checked = false;
+				});
+
+				overlay.querySelector('#csvOptExport').addEventListener('click', () => {
+					const includeNuc = cbNuc.checked;
+					const onlyVisible = cbVisible.checked;
+					document.body.removeChild(overlay);
+					resolve({ includeNuc, onlyVisible });
+				});
+
+				overlay.querySelector('#csvOptCancel').addEventListener('click', () => {
+					document.body.removeChild(overlay);
+					reject(new Error('cancelado'));
+				});
+
+				overlay.addEventListener('click', e => {
+					if (e.target === overlay) {
+						document.body.removeChild(overlay);
+						reject(new Error('cancelado'));
+					}
+				});
+			});
+		}
+
+		// Main function to start the export
+		async function exportToCSV() {
+			let opts;
+			try {
+				opts = await showCsvExportOptions();
+			} catch {
+				return; // cancelled by the user
+			}
+
+			const loadingModal = createLoadingModal('Exportando CSV');
+			let exportInterval = null;
+			
+			try {
+				document.body.appendChild(loadingModal);
+				updateLoadingMessage(loadingModal, t('starting_export'));
+				
+				// Prepare the request data
+				let requestData = {};
+				const { conditions, errors } = getSearchConditions();
+				
+				// Compute visible columns when "only visible" is selected
+				let exportColumns = null;
+				if (opts.onlyVisible) {
+					exportColumns = customColOrder.filter(c => !hiddenColumns.has(c));
+				}
+
+				if (AppState.activeSearchType === 'fts') {
+					const query = document.getElementById('ftsQueryInput').value.trim();
+					if (!query) {
+						throw new Error(t('no_search_term_alert2'));
+					}
+
+					requestData = {
+						search_type: 'fts',
+						query: query,
+						include_nuc: opts.includeNuc,
+						...(exportColumns ? { export_columns: exportColumns } : {})
+					};
+				} else {
+					if (errors && errors.length > 0) {
+						throw new Error(t('no_search_conditions_alert2'));
+					}
+
+					requestData = {
+						conditions: conditions,
+						include_nuc: opts.includeNuc,
+						...(exportColumns ? { export_columns: exportColumns } : {})
+					};
+				}
+
+				// Start the export
+				const response = await fetch('/api/export_csv', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(requestData)
+				});
+				
+				const data = await response.json();
+				
+				if (!response.ok || data.error) {
+					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				}
+
+				// Get the export ID
+				const exportId = data.export_id;
+				if (!exportId) {
+					throw new Error(t('no_export_id'));
+				}
+
+				updateLoadingMessage(loadingModal, t('processing_records'));
+				updateProgressBar(loadingModal, 0);
+				
+				// Create cancel button
+				const cancelButton = document.createElement('button');
+				cancelButton.textContent = t('cancel_export_btn');
+				cancelButton.className = 'cancel-export-btn';
+				cancelButton.onclick = async () => {
+					try {
+						await fetch(`/api/cancel_export/${exportId}`, { method: 'POST' });
+						clearInterval(exportInterval);
+						document.body.removeChild(loadingModal);
+					} catch (error) {
+						console.error('Error al cancelar exportación:', error);
+					}
+				};
+				loadingModal.querySelector('.loading-content').appendChild(cancelButton);
+				
+				// Poll status periodically
+				let lastRowsProcessed = 0;
+				let noProgressCount = 0;
+				
+				exportInterval = setInterval(async () => {
+					try {
+						const statusResponse = await fetch(`/api/export_status/${exportId}`);
+						const statusData = await statusResponse.json();
+						
+						if (!statusResponse.ok || statusData.error) {
+							throw new Error(statusData.error || `${t('status_check_error_prefix')}${statusResponse.status}`);
+						}
+
+						// Check progress
+						const currentRows = statusData.rows_processed || 0;
+						if (currentRows === lastRowsProcessed) {
+							noProgressCount++;
+						} else {
+							noProgressCount = 0;
+							lastRowsProcessed = currentRows;
+						}
+
+						// If there's no progress after several attempts, something may be wrong
+						if (noProgressCount > 10) {
+							updateLoadingMessage(loadingModal, `${t('export_taking_long')} ${statusData.message || ''}`);
+						} else {
+							updateLoadingMessage(loadingModal, statusData.message || t('processing_ellipsis'));
+						}
+
+						// Export completed
+						if (statusData.status === 'completed' && statusData.download_url) {
+							clearInterval(exportInterval);
+
+							updateLoadingMessage(loadingModal, statusData.message || t('processing_ellipsis'));
+							updateProgressBar(loadingModal, 100);
+							
+							// Replace the cancel button with a download button
+							const downloadBtn = document.createElement('button');
+							downloadBtn.textContent = t('ok_btn');
+							downloadBtn.className = 'download-export-btn';
+							downloadBtn.onclick = () => {
+								window.location.href = statusData.download_url;
+								setTimeout(() => {
+									document.body.removeChild(loadingModal);
+								}, 2000);
+							};
+							
+							const loadingContent = loadingModal.querySelector('.loading-content');
+							loadingContent.removeChild(loadingContent.querySelector('.cancel-export-btn'));
+							loadingContent.appendChild(downloadBtn);
+							
+						} else if (statusData.status === 'error') {
+							clearInterval(exportInterval);
+							throw new Error(`${t('export_error_prefix')}${statusData.message}`);
+						}
+						
+					} catch (error) {
+						clearInterval(exportInterval);
+						console.error('Error al verificar estado de exportación:', error);
+						updateProgressBar(loadingModal, -1);
+						updateLoadingMessage(loadingModal, `Error: ${error.message}`);
+					}
+				}, 2000);
+
+			} catch (error) {
+				console.error('Error en exportToCSV:', error);
+
+				if (loadingModal && document.body.contains(loadingModal)) {
+					updateProgressBar(loadingModal, -1);
+					updateLoadingMessage(loadingModal, `Error: ${error.message}`);
+					
+					// Add a button to close the modal after an error
+					const closeBtn = document.createElement('button');
+					closeBtn.textContent = t('close_btn');
+					closeBtn.className = 'close-error-btn';
+					closeBtn.onclick = () => {
+						if (exportInterval) clearInterval(exportInterval);
+						document.body.removeChild(loadingModal);
+					};
+					
+					const loadingContent = loadingModal.querySelector('.loading-content');
+					// Clear existing buttons
+					const existingButtons = loadingContent.querySelectorAll('button');
+					existingButtons.forEach(btn => loadingContent.removeChild(btn));
+					
+					loadingContent.appendChild(closeBtn);
+				} else {
+					alert(t('csv_export_error_alert') + error.message);
+				}
+			}
+		}
+
+		// Utility functions for the modal and the UI
+		function createLoadingModal(modalTitle = 'Exportando') {
+			const modal = document.createElement('div');
+			modal.className = 'export-loading-modal';
+			modal.style.position = 'fixed';
+			modal.style.top = '0';
+			modal.style.left = '0';
+			modal.style.width = '100%';
+			modal.style.height = '100%';
+			modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+			modal.style.display = 'flex';
+			modal.style.justifyContent = 'center';
+			modal.style.alignItems = 'center';
+			modal.style.zIndex = '1000';
+
+			const content = document.createElement('div');
+			content.className = 'loading-content';
+			content.style.backgroundColor = 'white';
+			content.style.padding = '30px';
+			content.style.borderRadius = '8px';
+			content.style.minWidth = '400px';
+			content.style.maxWidth = '600px';
+			content.style.textAlign = 'center';
+			content.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+
+			const title = document.createElement('h3');
+			title.textContent = modalTitle;
+			title.style.marginTop = '0';
+			title.style.marginBottom = '20px';
+
+			const message = document.createElement('p');
+			message.className = 'loading-message';
+			message.style.cssText = 'margin-bottom:16px;min-height:2.4em;line-height:1.5;';
+			message.textContent = t('preparing_export');
+
+			const spinner = document.createElement('div');
+			spinner.className = 'dna-spinner';
+			for (let i = 0; i < 6; i++) spinner.appendChild(document.createElement('span'));
+
+			// Progress bar: hidden until a percentage > 0 arrives, so we don't
+			// show an always-empty bar for exports that don't report one.
+			const progressWrap = document.createElement('div');
+			progressWrap.className = 'export-progress';
+			progressWrap.style.display = 'none';
+			const progressFill = document.createElement('div');
+			progressFill.className = 'export-progress-fill';
+			progressWrap.appendChild(progressFill);
+
+			content.appendChild(title);
+			content.appendChild(spinner);
+			content.appendChild(progressWrap);
+			content.appendChild(message);
+			modal.appendChild(content);
+
+			// Styles
+			const style = document.createElement('style');
+			style.innerHTML = `
+				@keyframes dna-bounce {
+					0%, 100% { transform: translateY(-11px) scale(1.25); }
+					50%       { transform: translateY(11px)  scale(0.78); }
+				}
+				.dna-spinner {
+					display: flex;
+					gap: 8px;
+					align-items: center;
+					justify-content: center;
+					height: 48px;
+					margin: 0 auto 20px;
+				}
+				.dna-spinner span {
+					width: 13px; height: 13px; border-radius: 50%;
+					background: #0d6efd;
+					animation: dna-bounce 1.2s ease-in-out infinite;
+				}
+				.dna-spinner span:nth-child(even) { background: #3E92CC; animation-direction: reverse; }
+				.dna-spinner span:nth-child(2) { animation-delay: 0.15s; }
+				.dna-spinner span:nth-child(3) { animation-delay: 0.30s; }
+				.dna-spinner span:nth-child(4) { animation-delay: 0.45s; }
+				.dna-spinner span:nth-child(5) { animation-delay: 0.60s; }
+				.dna-spinner span:nth-child(6) { animation-delay: 0.75s; }
+				.dna-spinner.done  span { background: #4CAF50 !important; animation: none; }
+				.dna-spinner.error span { background: #f44336 !important; animation: none; }
+				.export-progress {
+					height: 10px;
+					width: 100%;
+					background: #e9ecef;
+					border-radius: 5px;
+					overflow: hidden;
+					margin: 0 auto 16px;
+				}
+				.export-progress-fill {
+					height: 100%;
+					width: 0%;
+					border-radius: 5px;
+					background: linear-gradient(90deg, #2c4685, #3E92CC);
+					transition: width 0.4s ease;
+				}
+				.export-progress.done .export-progress-fill  { background: #4CAF50; }
+				.export-progress.error .export-progress-fill { background: #f44336; }
+				.export-loading-modal button {
+					padding: 10px 15px;
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+					font-weight: bold;
+					margin: 0 5px;
+					transition: background-color 0.3s ease;
+				}
+				.cancel-export-btn  { background-color: #f44336; color: white; }
+				.cancel-export-btn:hover { background-color: #d32f2f; }
+				.download-export-btn { background-color: #4CAF50; color: white; }
+				.download-export-btn:hover { background-color: #388E3C; }
+				.close-error-btn { background-color: #757575; color: white; }
+				.close-error-btn:hover { background-color: #616161; }
+			`;
+			document.head.appendChild(style);
+
+			return modal;
+		}
+
+		function displayResults(data) {
+			const resultsCard = document.querySelector('.results-card');
+			document.getElementById('loading').style.display = 'none';
+
+			const { results, count, page, total_pages, execution_time } = data;
+			const resultsCount = document.getElementById('resultsCount');
+			const resultsTable = document.getElementById('resultsTable');
+			const exportButton = document.getElementById('exportButton');
+			const exportFastaButton = document.getElementById('exportFastaButton');
+			const executionTime = document.getElementById('executionTime');
+
+			// Update the count cache only when the server sends it (new search)
+			if (count !== null && count !== undefined) {
+				AppState.totalCount = count;
+				AppState.totalPages = total_pages;
+			}
+			const displayCount = AppState.totalCount;
+
+			resultsCard.classList.remove('hidden');
+
+			// Clear only the table content, not the whole container
+			resultsTable.innerHTML = '';
+
+			AppState.currentPage = page;
+
+			// Show total records (formatted with thousands separators)
+			const formattedCount = numFmt.format(displayCount);
+
+			resultsCount.innerHTML = `
+				<span class="results-count">${formattedCount} registros</span>
+			`;
+			executionTime.textContent = `Tiempo: ${formatDuration(execution_time)}`;
+
+			if (displayCount > 0) {
+				exportButton.style.display = 'block';
+				if (exportFastaButton) exportFastaButton.style.display = 'block';
+				
+				// Build the full table structure
+				const tableFrame = document.createElement('div');
+				tableFrame.className = 'table-frame';
+				
+				const tableContainer = document.createElement('div');
+				tableContainer.className = 'table-container';
+				
+				const table = document.createElement('table');
+				table.className = 'table table-striped table-hover';
+				
+				const orderedColumns = customColOrder;
+				
+				// Headers
+				const thead = document.createElement("thead");
+				const headerRow = document.createElement("tr");
+
+				orderedColumns.forEach((col, colIdx) => {
+					const th = document.createElement("th");
+					th.textContent = col;
+
+					const resizeHandle = document.createElement('div');
+					resizeHandle.className = 'col-resize-handle';
+					resizeHandle.addEventListener('dblclick', function(e) {
+						e.stopPropagation();
+						const cells = table.querySelectorAll(`tbody tr td:nth-child(${colIdx + 1})`);
+						const measurer = document.createElement('span');
+						measurer.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:0.94rem Roboto,sans-serif;padding:0 12px;';
+						document.body.appendChild(measurer);
+						let maxWidth = th.offsetWidth;
+						cells.forEach(cell => {
+							measurer.textContent = cell.textContent;
+							maxWidth = Math.max(maxWidth, measurer.offsetWidth);
+						});
+						document.body.removeChild(measurer);
+						const newWidth = Math.min(maxWidth + 8, 600) + 'px';
+						th.style.maxWidth = newWidth;
+						th.style.width = newWidth;
+						cells.forEach(cell => {
+							cell.style.maxWidth = newWidth;
+							cell.style.width = newWidth;
+						});
+					});
+					th.appendChild(resizeHandle);
+					headerRow.appendChild(th);
+				});
+				thead.appendChild(headerRow);
+				table.appendChild(thead);
+
+				// Data rows
+				const tbody = document.createElement("tbody");
+				results.forEach((row, rowIndex) => {
+					const tr = document.createElement("tr");
+					tr.classList.add(rowIndex % 2 === 0 ? 'even-row' : 'odd-row');
+					
+					orderedColumns.forEach(col => {
+						const td = document.createElement("td");
+						td.textContent = row[col] || "";
+						
+						// Expand/collapse with a single click; copy with a double click
+						let _clickTimer = null;
+						td.addEventListener('click', function() {
+							const cell = this;
+							clearTimeout(_clickTimer);
+							_clickTimer = setTimeout(() => {
+								const currentlyExpanded = cell.classList.contains('expanded');
+								document.querySelectorAll('.table td.expanded').forEach(td => {
+									td.classList.remove('expanded');
+								});
+								if (!currentlyExpanded) cell.classList.add('expanded');
+							}, 220);
+						});
+
+						td.addEventListener('dblclick', function(e) {
+							e.stopPropagation();
+							e.preventDefault();
+							clearTimeout(_clickTimer);
+							const sel = window.getSelection();
+							const range = document.createRange();
+							range.selectNodeContents(this);
+							sel.removeAllRanges();
+							sel.addRange(range);
+							navigator.clipboard.writeText(this.textContent.trim()).then(showCopyToast);
+						});
+						
+						tr.appendChild(td);
+					});
+					tbody.appendChild(tr);
+				});
+				table.appendChild(tbody);
+				
+				// Build the element hierarchy
+				tableContainer.appendChild(table);
+				tableFrame.appendChild(tableContainer);
+				
+				// Expand/collapse button
+				const toggleBtn = document.createElement('button');
+				toggleBtn.className = 'btn btn-sm btn-outline-secondary me-2 toggle-expand-btn';
+				toggleBtn.textContent = t('expand_rows');
+				toggleBtn.dataset.state = 'collapsed';
+				
+				toggleBtn.onclick = function() {
+					const isExpanded = this.dataset.state === 'expanded';
+					const allCells = document.querySelectorAll('.table td');
+					
+					allCells.forEach(cell => {
+						if (isExpanded) {
+							cell.style.whiteSpace = 'nowrap';
+							cell.style.overflow = 'hidden';
+							cell.style.maxWidth = '';
+						} else {
+							cell.style.whiteSpace = 'normal';
+							cell.style.overflow = 'visible';
+							cell.style.maxWidth = 'none';
+						}
+						
+						// Keep the background color according to the row class
+						if (cell.parentElement.classList.contains('even-row')) {
+							cell.style.backgroundColor = '#ffffff';
+						} else {
+							cell.style.backgroundColor = '#f9f9f9';
+						}
+					});
+					
+					this.dataset.state = isExpanded ? 'collapsed' : 'expanded';
+					this.textContent = isExpanded ? t('expand_rows') : t('collapse_rows');
+					
+					if (isExpanded) {
+						setTimeout(adjustColumnWidths, 0);
+					}
+				};
+				
+				// Controls container
+				const controlsDiv = document.createElement('div');
+				controlsDiv.className = 'table-controls mt-2 mb-2 d-flex justify-content-end align-items-center gap-2';
+				controlsDiv.appendChild(toggleBtn);
+
+				// Column picker button
+				const colPickerWrap = document.createElement('div');
+				colPickerWrap.className = 'position-relative';
+				colPickerWrap.innerHTML = `
+					<button class="btn btn-sm btn-outline-secondary" onclick="toggleColPicker(this)">${t('columns_btn')}</button>
+					<div id="colPickerDropdown" class="col-picker-dropdown" style="display:none;"></div>`;
+				controlsDiv.appendChild(colPickerWrap);
+
+				// Add everything to the DOM
+				resultsTable.appendChild(controlsDiv);
+				resultsTable.appendChild(tableFrame);
+
+				// Make sure the scrollbars are visible
+				setTimeout(() => {
+					adjustTableFrame();
+					adjustColumnWidths();
+					applyColumnVisibility();
+				}, 0);
+				
+				createPagination(displayCount);
+				document.getElementById('clearResultsButton').style.display = 'inline-block';
+			} else {
+				resultsTable.innerHTML = `<p>${t('no_results_message')}</p>`;
+				document.getElementById('pagination').innerHTML = '';
+				document.getElementById('clearResultsButton').style.display = 'none';
+				exportButton.style.display = 'none';
+				if (exportFastaButton) exportFastaButton.style.display = 'none';
+			}
+			scrollToResults();
+		}
+		
+		
+		function adjustColumnWidths() {
+			const table = document.querySelector('.table');
+			if (!table) return;
+
+			// Define column categories based on expected content
+			const narrowColumns = ["# Bases", "Código País", "Coordenadas", "Base Count", "Country Code", "Coordinates"];
+			
+			const mediumColumns = ["ID BOLD", "ID Muestra", "ID Campo", "ID Museo", "BIN", "Nivel", "Marcador", "Reino", "Filo", "Clase", "Orden", "Familia", "Género", "País", "Estado", "Región", "Fecha secuencia",
+				"BOLD ID", "Sample ID", "Field ID", "Museum ID", "ID Rank", "Marker", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Country/Ocean", "State/Province", "Region", "Sequence Date"];
+			
+			const wideColumns = ["Identificación", "Especie", "Identification", "Species"];
+			
+			const extraWideColumns = ["Secuencia", "Sequence"];
+
+			// Get headers
+			const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+			
+			// First pass: analyze the actual content to determine optimal widths
+			const colContentLengths = headers.map(() => []);
+			
+			// Collect content lengths for each column
+			const rows = table.querySelectorAll('tbody tr');
+			rows.forEach(row => {
+				const cells = row.querySelectorAll('td');
+				cells.forEach((cell, index) => {
+					const content = cell.textContent;
+					colContentLengths[index].push(content.length);
+				});
+			});
+			
+			// Compute stats for each column
+			const colStats = colContentLengths.map(lengths => {
+				if (lengths.length === 0) return { max: 0, avg: 0 };
+				const max = Math.max(...lengths);
+				const avg = lengths.reduce((sum, len) => sum + len, 0) / lengths.length;
+				return { max, avg };
+			});
+			
+			// Apply widths based on content and predefined categories
+			headers.forEach((header, index) => {
+				const stats = colStats[index];
+				const columnCells = Array.from(table.querySelectorAll(`tr td:nth-child(${index + 1})`));
+				const headerCell = table.querySelector(`th:nth-child(${index + 1})`);
+				
+				let widthClass = '';
+				let maxWidth = '';
+				
+				// Compute the minimum width needed for the header (guaranteed)
+				// Uses an average of 10px per character to ensure the full text is visible
+				const headerMinWidth = header.length * 10 + 24; // 24px para padding y margen
+				
+				if (extraWideColumns.includes(header)) {
+					// For extra-wide columns like sequences
+					maxWidth = `${Math.max(headerMinWidth, 500)}px`;
+					widthClass = 'sequence-column';
+				} else if (wideColumns.includes(header)) {
+					// For wide columns
+					maxWidth = `${Math.max(headerMinWidth, 200)}px`;
+					widthClass = 'wide-column';
+				} else if (mediumColumns.includes(header)) {
+					// For medium columns, ensuring the header still fits
+					const contentWidth = Math.min(stats.avg * 10 + 30, 250);
+					const optimalWidth = Math.max(headerMinWidth, contentWidth);
+					maxWidth = `${optimalWidth}px`;
+					widthClass = 'medium-column';
+				} else if (narrowColumns.includes(header)) {
+					// For narrow columns, ensuring the header still fits
+					const contentWidth = Math.min(stats.max * 8, 100);
+					const optimalWidth = Math.max(headerMinWidth, contentWidth);
+					maxWidth = `${optimalWidth}px`;
+					widthClass = 'narrow-column';
+				} else {
+					// For uncategorized columns, adaptive but ensuring the header still fits
+					const contentLength = Math.min(stats.avg * 8 + 20, 250);
+					const optimalWidth = Math.max(headerMinWidth, contentLength);
+					maxWidth = `${optimalWidth}px`;
+					widthClass = 'adaptive-column';
+				}
+				
+				// Apply styles to the header and cells
+				if (headerCell) {
+					headerCell.classList.add(widthClass);
+					headerCell.style.maxWidth = maxWidth;
+					headerCell.style.width = maxWidth;
+					// Make sure the header is always visible
+					headerCell.style.whiteSpace = 'nowrap';
+					headerCell.style.overflow = 'visible';
+				}
+				
+				columnCells.forEach(cell => {
+					cell.classList.add(widthClass);
+					cell.style.maxWidth = maxWidth;
+					cell.style.width = maxWidth;
+				});
+			});
+
+			// Wait a moment for the browser to apply the styles, then check for actual truncation
+			setTimeout(() => {
+				document.querySelectorAll('.table td').forEach(cell => {
+					// Compare the actual width needed with the available width
+					if (cell.scrollWidth > cell.clientWidth) {
+						cell.setAttribute('title', cell.textContent);
+						cell.classList.add('truncated');
+					} else {
+						cell.classList.remove('truncated');
+						cell.removeAttribute('title');
+					}
+				});
+			}, 50);
+			
+			// Make sure the table's total width is at least 100%
+			table.style.minWidth = '100%';
+
+			// Add a listener for window resizing
+			window.removeEventListener('resize', detectTruncatedCells); // Remove any previous listeners
+			window.addEventListener('resize', detectTruncatedCells);
+		}
+
+		// Separate function to detect truncated cells (for use with resize events)
+		function detectTruncatedCells() {
+			document.querySelectorAll('.table td').forEach(cell => {
+				// Skip cells that are already expanded
+				if (cell.style.whiteSpace === 'normal') return;
+				
+				if (cell.scrollWidth > cell.clientWidth) {
+					cell.setAttribute('title', cell.textContent);
+					cell.classList.add('truncated');
+				} else {
+					cell.classList.remove('truncated');
+					cell.removeAttribute('title');
+				}
+			});
+		}
+		
+		
+		
+		function formatWithSpaces(digitsStr) {
+			return digitsStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+		}
+
+		function createPagination(totalItems) {
+			const pagination = document.getElementById('pagination');
+			pagination.innerHTML = '';
+
+			const totalPages = AppState.totalPages;
+			const currentPage = AppState.currentPage;
+
+			const formatter = numFmt;
+
+			const wrapper = document.createElement('div');
+			wrapper.className = 'd-flex flex-wrap justify-content-center align-items-center gap-3 py-3 pagination-wrapper';
+
+			// "Page X of Y (N rpp)" text
+			const info = document.createElement('span');
+			info.className = 'fw-semibold text-secondary';
+			info.innerHTML = `${t('page_label')} ${formatter.format(currentPage)} ${t('page_of')} ${formatter.format(totalPages)} <span class="text-muted fw-normal" style="font-size:0.9em;cursor:help;" title="${t('results_per_page_title')}">(${formatter.format(AppState.resultsPerPage)} rpp)</span>`;
+			wrapper.appendChild(info);
+
+			if (totalPages > 1) {
+				// Single block: «« | « Previous | [Go input] | Next » | »»
+				const navGroup = document.createElement('div');
+				navGroup.className = 'd-flex align-items-center gap-1';
+
+				// «« First
+				const firstBtn = document.createElement('button');
+				firstBtn.innerHTML = '&laquo;&laquo;';
+				firstBtn.className = 'btn btn-outline-secondary btn-sm';
+				firstBtn.title = t('first_page_title');
+				firstBtn.disabled = currentPage === 1;
+				firstBtn.onclick = () => { AppState.currentPage = 1; executeCurrentSearch(); };
+				navGroup.appendChild(firstBtn);
+
+				// « Previous
+				const prevBtn = document.createElement('button');
+				prevBtn.innerHTML = t('prev_page');
+				prevBtn.className = 'btn btn-outline-primary btn-sm';
+				prevBtn.disabled = currentPage === 1;
+				prevBtn.onclick = () => { if (AppState.currentPage > 1) { AppState.currentPage--; executeCurrentSearch(); } };
+				navGroup.appendChild(prevBtn);
+
+				// [input] [Go]
+				const inputGroup = document.createElement('div');
+				inputGroup.className = 'input-group input-group-sm goto-page-group';
+				inputGroup.style.width = '120px';
+
+				const input = document.createElement('input');
+				input.type = 'text';
+				input.placeholder = t('goto_page_placeholder');
+				input.className = 'form-control text-center';
+				input.value = formatter.format(currentPage);
+
+				const goBtn = document.createElement('button');
+				goBtn.textContent = t('goto_page_btn');
+				goBtn.className = 'btn btn-outline-secondary';
+
+				const validateInput = (value) => {
+					const rawValue = value.replace(/[^\d]/g, '');
+					if (rawValue === '') {
+						input.classList.remove('is-invalid', 'is-valid');
+						goBtn.disabled = false;
+						return;
+					}
+					const page = parseInt(rawValue, 10);
+					if (page < 1 || page > totalPages) {
+						input.classList.add('is-invalid');
+						input.classList.remove('is-valid');
+						goBtn.disabled = true;
+					} else {
+						input.classList.remove('is-invalid');
+						input.classList.add('is-valid');
+						goBtn.disabled = false;
+					}
+				};
+
+				input.addEventListener('input', (e) => {
+					const el = e.target;
+					const oldValue = el.value;
+					const oldPos = el.selectionStart;
+					const raw = oldValue.replace(/[^\d]/g, '');
+					if (raw === '') { el.value = ''; validateInput(''); return; }
+					const formatted = formatWithSpaces(raw);
+					const digitsBeforeCaret = (oldValue.slice(0, oldPos).match(/\d/g) || []).length;
+					let newCaret = formatted.length;
+					if (digitsBeforeCaret > 0) {
+						let digitCount = 0;
+						for (let i = 0; i < formatted.length; i++) {
+							if (/\d/.test(formatted[i])) digitCount++;
+							if (digitCount >= digitsBeforeCaret) { newCaret = i + 1; break; }
+						}
+					} else {
+						newCaret = 0;
+					}
+					el.value = formatted;
+					newCaret = Math.max(0, Math.min(newCaret, el.value.length));
+					el.setSelectionRange(newCaret, newCaret);
+					validateInput(formatted);
+				});
+
+				const handleGo = () => {
+					const page = parseInt(input.value.replace(/[^\d]/g, ''), 10);
+					if (page >= 1 && page <= totalPages) { AppState.currentPage = page; executeCurrentSearch(); }
+				};
+				input.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleGo(); });
+				goBtn.onclick = handleGo;
+
+				inputGroup.appendChild(input);
+				inputGroup.appendChild(goBtn);
+				navGroup.appendChild(inputGroup);
+
+				// Next »
+				const nextBtn = document.createElement('button');
+				nextBtn.innerHTML = t('next_page');
+				nextBtn.className = 'btn btn-outline-primary btn-sm';
+				nextBtn.disabled = currentPage === totalPages;
+				nextBtn.onclick = () => { if (AppState.currentPage < totalPages) { AppState.currentPage++; executeCurrentSearch(); } };
+				navGroup.appendChild(nextBtn);
+
+				// »» Last
+				const lastBtn = document.createElement('button');
+				lastBtn.innerHTML = '&raquo;&raquo;';
+				lastBtn.className = 'btn btn-outline-secondary btn-sm';
+				lastBtn.title = t('last_page_title');
+				lastBtn.disabled = currentPage === totalPages;
+				lastBtn.onclick = () => { AppState.currentPage = totalPages; executeCurrentSearch(); };
+				navGroup.appendChild(lastBtn);
+
+				wrapper.appendChild(navGroup);
+			}
+
+			pagination.appendChild(wrapper);
+		}
+		
+		
+		
+		// Function to adjust the frame height
+		function adjustTableFrame() {
+			const headerHeight = document.querySelector('.card-header').offsetHeight;
+			const paginationHeight = document.getElementById('pagination').offsetHeight;
+			const windowHeight = window.innerHeight;
+			
+			const frame = document.querySelector('.table-frame');
+			if (frame) {
+				frame.style.maxHeight = `calc(${windowHeight}px - ${headerHeight + paginationHeight + 250}px)`;
+			}
+		}
+
+		// Run on load and on resize
+		window.addEventListener('load', adjustTableFrame);
+		window.addEventListener('resize', debounce(adjustTableFrame, 100));
+
+        
+        function explainQuery() {
+            document.getElementById('explainPanel').style.display = 'block';
+            document.getElementById('explainResults').textContent = t('analyzing_query');
+            
+            if (AppState.activeSearchType === 'fts') {
+                const query = document.getElementById('ftsQueryInput').value.trim();
+                
+				if (!query) {
+					const dialog = document.createElement('dialog');
+					dialog.innerHTML = `
+						<h3>${t('field_required_title')}</h3>
+						<p>${t('enter_search_term')}</p>
+						<div class="dialog-buttons">
+							<button class="dialog-confirm">${t('ok_btn')}</button>
+						</div>
+					`;
+					document.body.appendChild(dialog);
+					dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
+					dialog.showModal();
+					return;
+				}
+                
+                fetch('/api/explain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        search_type: 'fts',
+                        query: query 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('explainResults').textContent = t('error_prefix') + data.error;
+                        return;
+                    }
+                    
+                    const planText = data.plan.map(item => 
+                        JSON.stringify(item, null, 2)
+                    ).join('\n');
+                    
+                    document.getElementById('explainResults').textContent = planText;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('explainResults').textContent = t('explain_query_error') + error;
+                });
+            } else {
+                const { conditions, errors } = getSearchConditions();
+
+				if (conditions.length === 0) {
+					const dialog = document.createElement('dialog');
+					dialog.innerHTML = `
+						<h3>${t('field_required_title')}</h3>
+						<p>${t('select_field_and_term')}</p>
+						<div class="dialog-buttons">
+							<button class="dialog-confirm">${t('ok_btn')}</button>
+						</div>
+					`;
+					document.body.appendChild(dialog);
+					dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
+					dialog.showModal();
+					return;
+				}
+
+                fetch('/api/explain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conditions })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('explainResults').textContent = t('error_prefix') + data.error;
+                        return;
+                    }
+                    
+                    const planText = data.plan.map(item => 
+                        JSON.stringify(item, null, 2)
+                    ).join('\n');
+                    
+                    document.getElementById('explainResults').textContent = planText;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('explainResults').textContent = t('explain_query_error') + error;
+                });
+            }
+        }
+
+
+
+
+		function setupAutocomplete() {
+			let currentFocus = -1;
+			let hasSelection = false; // Flag to track whether a suggestion was selected
+
+			const debouncedFetch = debounce(function(query, input, resultsDiv) {
+				fetch(`/api/autocomplete?query=${encodeURIComponent(query)}`)
+					.then(response => response.json())
+					.then(data => {
+						resultsDiv.innerHTML = "";
+
+						if (!data.results?.length) {
+							resultsDiv.innerHTML = "<div class='autocomplete-item'>No hay resultados</div>";
+							return;
+						}
+
+						const uniqueResults = Array.from(new Map(
+							data.results.map(item => [item.value, item])
+						).values());
+
+						uniqueResults.forEach((item, index) => {
+							let div = document.createElement("div");
+							div.innerHTML = `<strong>${item.value}</strong> <small>(${item.field})</small>`;
+							div.classList.add("autocomplete-item");
+							div.dataset.index = index;
+							div.addEventListener("click", function() {
+								input.value = item.value;
+								clearAutocomplete(resultsDiv);
+								hasSelection = true;
+								input.focus();
+							});
+							resultsDiv.appendChild(div);
+						});
+					})
+					.catch(error => {
+						console.error("Error en autocompletar:", error);
+						resultsDiv.innerHTML = "<div class='autocomplete-item'>Error al buscar</div>";
+					});
+			}, 300);
+
+		document.addEventListener('input', function(event) {
+				const input = event.target;
+				if (!input.matches('.value-input, #ftsQueryInput')) return;
+
+				const resultsDiv = input.nextElementSibling?.classList?.contains('autocomplete-dropdown')
+					? input.nextElementSibling
+					: createAutocompleteDropdown(input);
+
+				currentFocus = -1;
+				hasSelection = false; // Reset while typing
+
+				let query = input.value.trim();
+				if (query.length < 2) {
+					resultsDiv.innerHTML = "";
+					return;
+				}
+
+				debouncedFetch(query, input, resultsDiv);
+			});
+			
+			document.addEventListener('keydown', function(event) {
+				const input = event.target;
+				if (!input.matches('.value-input, #ftsQueryInput')) return;
+				
+				const resultsDiv = input.nextElementSibling;
+				if (!resultsDiv?.classList?.contains('autocomplete-dropdown')) return;
+				
+				const items = resultsDiv.querySelectorAll('.autocomplete-item');
+				
+				if (event.key === 'ArrowDown') {
+					event.preventDefault();
+					currentFocus = (currentFocus + 1) % items.length;
+					setActiveItem(items);
+				}
+				else if (event.key === 'ArrowUp') {
+					event.preventDefault();
+					currentFocus = (currentFocus - 1 + items.length) % items.length;
+					setActiveItem(items);
+				}
+				else if (event.key === 'ArrowRight' || event.key === 'Tab') {
+					if (items.length > 0 && currentFocus > -1 && !hasSelection) {
+						// First Enter/Tab: select the suggestion
+						event.preventDefault();
+						input.value = items[currentFocus].querySelector('strong').textContent;
+						clearAutocomplete(resultsDiv);
+						hasSelection = true;
+						
+						if (event.key === 'Tab') {
+							// With Tab, move focus to the next field
+							const form = input.closest('form');
+							if (form) {
+								const inputs = Array.from(form.querySelectorAll('input, select, textarea'));
+								const currentIndex = inputs.indexOf(input);
+								if (currentIndex < inputs.length - 1) {
+									inputs[currentIndex + 1].focus();
+								}
+							}
+						}
+					}
+					// A second Enter (hasSelection=true) will let the form submit normally
+				}
+				else if (event.key === 'Escape') {
+					clearAutocomplete(resultsDiv);
+					input.blur();
+				}
+			});
+			
+					
+			// Hide dropdown when clicking outside
+			document.addEventListener('click', function(event) {
+				if (!event.target.matches('.value-input, #ftsQueryInput, .autocomplete-item, .autocomplete-item *')) {
+					clearAllAutocompleteDropdowns();
+				}
+			});
+			
+			// Clear autocomplete on Enter
+			document.addEventListener('keydown', function(event) {
+				if (event.key === 'Enter' && event.target.matches('.value-input, #ftsQueryInput')) {
+					clearAutocomplete(event.target.nextElementSibling);
+				}
+			});
+			
+			// Clear autocomplete on form submit
+			document.querySelectorAll('form').forEach(form => {
+				form.addEventListener('submit', function() {
+					clearAllAutocompleteDropdowns();
+				});
+			});
+			
+			// Function to highlight the active item
+			function setActiveItem(items) {
+				removeActive(items);
+				if (currentFocus >= 0 && currentFocus < items.length) {
+					items[currentFocus].classList.add('autocomplete-active');
+					items[currentFocus].scrollIntoView({ block: 'nearest' });
+				}
+			}
+			
+			// Function to remove highlighting from all items
+			function removeActive(items) {
+				items.forEach(item => {
+					item.classList.remove('autocomplete-active');
+				});
+			}
+    
+			// Helper function to create a dropdown if none exists
+			function createAutocompleteDropdown(input) {
+				const div = document.createElement('div');
+				div.className = 'autocomplete-dropdown';
+				input.insertAdjacentElement('afterend', div);
+				return div;
+			}
+			
+			// Function to clear a specific dropdown
+			function clearAutocomplete(dropdown) {
+				if (dropdown?.classList?.contains('autocomplete-dropdown')) {
+					dropdown.innerHTML = '';
+				}
+			}
+			
+			// Function to clear all dropdowns
+			function clearAllAutocompleteDropdowns() {
+				document.querySelectorAll('.autocomplete-dropdown').forEach(dropdown => {
+					dropdown.innerHTML = '';
+				});
+			}
+		}
+
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+		
+		
+		// Shut down the server and terminal window when the browser tab is closed
+		window.addEventListener("unload", function () {
+			if (skipShutdownOnUnload) return;
+			navigator.sendBeacon("http://127.0.0.1:5001/shutdown");
+		});
+		
+		function scrollToResults() {
+			// Get the position of the results panel
+			const resultsCard = document.querySelector('.results-card');
+			if (resultsCard) {
+				// Scroll the window to the top of the results panel
+				resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+		
+		document.addEventListener("DOMContentLoaded", function() {
+			const firstInput = document.querySelector('.value-input');
+			if (firstInput) firstInput.focus();
+			setupBatchDragDrop();
+			setupBatchFieldNotes();
+			setupReportPanel();
+		});
+
+
+		// ── Batch search ─────────────────────────────────────────────────────────
+
+		const BatchState = {
+			values: [[], []],
+			names:  ['', ''],
+		};
+
+		// Strips accents and diacritics: 'Mérida' → 'Merida'. The database is
+		// practically accent-free, so normalizing the input keeps a term
+		// copied with an accent from returning no matches.
+		function stripAccents(text) {
+			return text.normalize('NFD').replace(/[̀-ͯ]/g, '');
+		}
+
+		// ── Contextual field note ─────────────────────────────────────────────
+		// States the key batch rule -one file, one field- and makes it concrete
+		// as soon as the user picks the column. Must match the server's
+		// _TAXONOMY_COLS.
+		const BATCH_TAXONOMY_COLS = new Set([
+			'col_kingdom', 'col_phylum', 'col_class',
+			'col_order', 'col_family', 'col_genus', 'col_species',
+		]);
+
+		function updateBatchFieldNote(n) {
+			const select = document.getElementById(`batchField${n}`);
+			const note   = document.getElementById(`batchNote${n}`);
+			if (!select || !note) return;
+			const span = note.querySelector('span');
+			const col  = select.value;
+
+			if (!col) {
+				note.classList.remove('is-set');
+				span.innerHTML = t('batch_note_no_field');
+				return;
+			}
+
+			note.classList.add('is-set');
+			if (BATCH_TAXONOMY_COLS.has(col)) {
+				span.innerHTML = t('batch_note_taxonomy');
+			} else {
+				const friendly = select.options[select.selectedIndex].text;
+				span.innerHTML = t('batch_note_generic', { friendly });
+			}
+		}
+
+		function setupBatchFieldNotes() {
+			[1, 2].forEach(n => {
+				const select = document.getElementById(`batchField${n}`);
+				if (!select) return;
+				select.addEventListener('change', () => updateBatchFieldNote(n));
+				updateBatchFieldNote(n);
+			});
+		}
+
+		function toggleBatchField2() {
+			const section = document.getElementById('batchField2Section');
+			const enabled = document.getElementById('batchEnableField2').checked;
+			section.style.display = enabled ? 'block' : 'none';
+			if (!enabled) batchClearFile(2);
+		}
+
+		function batchBrowse(n) {
+			const zone = document.getElementById(`batchDropZone${n}`);
+			if (!zone.classList.contains('loaded'))
+				document.getElementById(`batchFileInput${n}`).click();
+		}
+
+		function batchFileLoaded(n, input) {
+			const file = input.files[0];
+			if (file) loadBatchFile(n, file);
+			input.value = '';
+		}
+
+		function loadBatchFile(n, file) {
+			const reader = new FileReader();
+			reader.onload = function (e) {
+				// Normalized the same way as the server (underscores → spaces,
+				// collapsed spaces, no accents) and deduplicated case-insensitively,
+				// so the count shown matches the terms that are actually
+				// searched for.
+				const seen = new Set();
+				const unique = [];
+				for (const line of e.target.result.split(/\r?\n/)) {
+					const val = stripAccents(line.replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
+					if (!val) continue;
+					const key = val.toLowerCase();
+					if (seen.has(key)) continue;
+					seen.add(key);
+					unique.push(val);
+				}
+				BatchState.values[n - 1] = unique;
+				BatchState.names[n - 1]  = file.name;
+
+				document.getElementById(`batchFileName${n}`).textContent  = file.name;
+				document.getElementById(`batchFileCount${n}`).textContent = `${numFmt.format(unique.length)} ${t('unique_values')}`;
+				document.getElementById(`batchHint${n}`).classList.add('d-none');
+				document.getElementById(`batchFileInfo${n}`).classList.remove('d-none');
+				document.getElementById(`batchDropZone${n}`).classList.add('loaded');
+			};
+			reader.readAsText(file);
+		}
+
+		function batchClearFile(n) {
+			BatchState.values[n - 1] = [];
+			BatchState.names[n - 1]  = '';
+			document.getElementById(`batchHint${n}`).classList.remove('d-none');
+			document.getElementById(`batchFileInfo${n}`).classList.add('d-none');
+			document.getElementById(`batchDropZone${n}`).classList.remove('loaded');
+		}
+
+		// ── Summary report customization ───────────────────────────────────
+		// Everything is optional: if nothing is checked, collectReportSpec()
+		// returns null, the request carries no `report` block, and the server
+		// generates the usual summary.csv with no extra work.
+		const REPORT_STORE_KEY = 'boldBatchReport';
+
+		function toggleReportPanel() {
+			const panel  = document.getElementById('reportPanel');
+			const btn    = document.getElementById('reportToggleBtn');
+			const hidden = panel.style.display === 'none';
+			panel.style.display = hidden ? 'block' : 'none';
+			btn.innerHTML = `${t('report_toggle_btn')} ${hidden ? '▲' : '▼'}`;
+		}
+
+		function collectReportSpec() {
+			// Rows are iterated in DOM order (the server's whitelist order), so
+			// the summary columns come out in that same order.
+			const metrics = [];
+			document.querySelectorAll('#reportPanel .report-metric-count').forEach(cb => {
+				const col  = cb.dataset.col;
+				const list = document.querySelector(
+					`#reportPanel .report-metric-values[data-col="${col}"]`);
+				const wantCount = cb.checked;
+				const wantList  = !!(list && list.checked);
+				if (wantCount || wantList)
+					metrics.push({ column: col, count: wantCount, list: wantList });
+			});
+
+			const breakdowns = [...document.querySelectorAll('#reportPanel .report-breakdown')]
+				.filter(cb => cb.checked).map(cb => cb.dataset.col);
+
+			if (!metrics.length && !breakdowns.length) return null;
+
+			const limitOn = document.getElementById('reportLimitList').checked;
+			return {
+				metrics,
+				breakdowns,
+				with_counts: document.getElementById('reportWithCounts').checked,
+				max_list:    limitOn
+					? (parseInt(document.getElementById('reportMaxList').value, 10) || 0)
+					: 0,
+			};
+		}
+
+		function updateReportHint() {
+			const spec  = collectReportSpec();
+			const hint  = document.getElementById('reportHint');
+			const reset = document.getElementById('reportResetBtn');
+			if (!spec) {
+				hint.textContent   = '';
+				reset.style.display = 'none';
+				return;
+			}
+			// Columns are counted, not fields: a field with both "How many" and
+			// "Which ones" checked contributes two columns to summary.csv.
+			const cols = spec.metrics.reduce((n, m) => n + (m.count ? 1 : 0) + (m.list ? 1 : 0), 0);
+			const parts = [];
+			if (cols)
+				parts.push(t('report_hint_extra_cols', { n: cols, s: cols > 1 ? 's' : '' }));
+			if (spec.breakdowns.length)
+				parts.push(t('report_hint_totals_csv', { n: spec.breakdowns.length, s: spec.breakdowns.length > 1 ? 's' : '' }));
+			hint.textContent    = parts.join(' · ');
+			reset.style.display = 'inline-block';
+		}
+
+		function saveReportSpec() {
+			const picked = sel => [...document.querySelectorAll(`#reportPanel ${sel}`)]
+				.filter(cb => cb.checked).map(cb => cb.dataset.col);
+			localStorage.setItem(REPORT_STORE_KEY, JSON.stringify({
+				count:      picked('.report-metric-count'),
+				values:     picked('.report-metric-values'),
+				breakdowns: picked('.report-breakdown'),
+				withCounts: document.getElementById('reportWithCounts').checked,
+				limitOn:    document.getElementById('reportLimitList').checked,
+				maxList:    document.getElementById('reportMaxList').value,
+			}));
+			updateReportHint();
+		}
+
+		function restoreReportSpec() {
+			let state;
+			try {
+				state = JSON.parse(localStorage.getItem(REPORT_STORE_KEY) || 'null');
+			} catch (e) { state = null; }
+			if (!state) { updateReportHint(); return; }
+
+			const apply = (sel, cols) => {
+				const set = new Set(cols || []);
+				document.querySelectorAll(`#reportPanel ${sel}`).forEach(cb => {
+					cb.checked = set.has(cb.dataset.col);
+				});
+			};
+			apply('.report-metric-count',  state.count);
+			apply('.report-metric-values', state.values);
+			apply('.report-breakdown',     state.breakdowns);
+
+			document.getElementById('reportWithCounts').checked = !!state.withCounts;
+			document.getElementById('reportLimitList').checked   = !!state.limitOn;
+			if (state.maxList) document.getElementById('reportMaxList').value = state.maxList;
+			document.getElementById('reportMaxList').disabled = !state.limitOn;
+
+			updateReportHint();
+		}
+
+		function resetReportSpec() {
+			document.querySelectorAll('#reportPanel input[type=checkbox]')
+				.forEach(cb => { cb.checked = false; });
+			document.getElementById('reportMaxList').value    = 10;
+			document.getElementById('reportMaxList').disabled = true;
+			localStorage.removeItem(REPORT_STORE_KEY);
+			updateReportHint();
+		}
+
+		function setupReportPanel() {
+			const panel = document.getElementById('reportPanel');
+			if (!panel) return;
+			panel.addEventListener('change', e => {
+				if (e.target.id === 'reportLimitList')
+					document.getElementById('reportMaxList').disabled = !e.target.checked;
+				saveReportSpec();
+			});
+			document.getElementById('reportMaxList')
+				.addEventListener('input', saveReportSpec);
+			restoreReportSpec();
+		}
+
+		function setupBatchDragDrop() {
+			[1, 2].forEach(n => {
+				const zone = document.getElementById(`batchDropZone${n}`);
+				if (!zone) return;
+
+				zone.addEventListener('dragover', e => {
+					e.preventDefault();
+					if (!zone.classList.contains('loaded')) zone.classList.add('dragover');
+				});
+				zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+				zone.addEventListener('drop', e => {
+					e.preventDefault();
+					zone.classList.remove('dragover');
+					const file = e.dataTransfer.files[0];
+					if (file && !zone.classList.contains('loaded')) loadBatchFile(n, file);
+				});
+				zone.addEventListener('click', e => {
+					if (!e.target.closest('.batch-file-info')) batchBrowse(n);
+				});
+			});
+		}
+
+		async function runBatchSearch() {
+			const field1       = document.getElementById('batchField1').value;
+			const field2On     = document.getElementById('batchEnableField2').checked;
+			const field2       = field2On ? document.getElementById('batchField2').value : '';
+
+			if (!field1)                        { showBatchDialog(t('batch_select_field1')); return; }
+			if (!BatchState.values[0].length)   { showBatchDialog(t('batch_upload_file1')); return; }
+			if (field2On) {
+				if (!field2)                    { showBatchDialog(t('batch_select_field2_or_disable')); return; }
+				if (!BatchState.values[1].length){ showBatchDialog(t('batch_upload_file2')); return; }
+			}
+
+			const fields = [{ technical: field1, values: BatchState.values[0] }];
+			if (field2On && field2) fields.push({ technical: field2, values: BatchState.values[1] });
+
+			const includeFasta = document.getElementById('batchIncludeFasta').checked;
+			const report       = collectReportSpec();   // null if nothing was customized
+
+			const modal = createLoadingModal(t('batch_panel_title'));
+			document.body.appendChild(modal);
+			updateLoadingMessage(modal, t('sending_terms_to_server', { n: numFmt.format(BatchState.values[0].length) }));
+
+			let poll = null;
+			try {
+				const resp = await fetch('/api/batch_search', {
+					method:  'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body:    JSON.stringify({ fields, include_fasta: includeFasta, report }),
+				});
+				const data = await resp.json();
+				if (!resp.ok || data.error) throw new Error(data.error || `Error ${resp.status}`);
+
+				const exportId = data.export_id;
+				updateLoadingMessage(modal, t('searching_database'));
+
+				// Cancel: interrupts the query on the server, not just the UI
+				const cancelBtn = document.createElement('button');
+				cancelBtn.textContent = t('cancel_batch_search_btn');
+				cancelBtn.className   = 'cancel-export-btn';
+				cancelBtn.onclick = async () => {
+					cancelBtn.disabled    = true;
+					cancelBtn.textContent = t('cancelling_btn');
+					try {
+						await fetch(`/api/cancel_batch_search/${exportId}`, { method: 'POST' });
+					} catch (e) { /* polling will reflect the final status */ }
+				};
+				modal.querySelector('.loading-content').appendChild(cancelBtn);
+
+				const removeCancelBtn = () => {
+					const b = modal.querySelector('.cancel-export-btn');
+					if (b) b.remove();
+				};
+
+				poll = setInterval(async () => {
+					try {
+						const sr = await fetch(`/api/batch_search_status/${exportId}`);
+						const sd = await sr.json();
+						const pct = sd.progress || 0;
+						updateLoadingMessage(modal,
+							`${sd.message || t('processing_ellipsis')}<br><small>${pct}%</small>`);
+						updateProgressBar(modal, pct);
+
+						if (sd.status === 'completed' && sd.download_url) {
+							clearInterval(poll);
+							removeCancelBtn();
+							updateProgressBar(modal, 100);
+							updateLoadingMessage(modal,
+								t('records_found_zip_ready', { n: numFmt.format(sd.total_rows) }));
+
+							const dlBtn = document.createElement('button');
+							dlBtn.textContent = t('download_zip_btn');
+							dlBtn.className   = 'download-export-btn';
+							dlBtn.onclick = () => {
+								window.location.href = sd.download_url;
+								setTimeout(() => {
+									if (document.body.contains(modal)) document.body.removeChild(modal);
+								}, 1500);
+							};
+							modal.querySelector('.loading-content').appendChild(dlBtn);
+
+						} else if (sd.status === 'completed') {
+							// Completed with no file: no term had any matches.
+							clearInterval(poll);
+							removeCancelBtn();
+							updateProgressBar(modal, 100);
+							updateLoadingMessage(modal, sd.message || t('no_results_short'));
+							_batchAddCloseBtn(modal);
+
+						} else if (sd.status === 'cancelled') {
+							clearInterval(poll);
+							removeCancelBtn();
+							updateProgressBar(modal, -1);
+							updateLoadingMessage(modal, t('batch_search_cancelled'));
+							_batchAddCloseBtn(modal);
+
+						} else if (sd.status === 'error') {
+							clearInterval(poll);
+							throw new Error(sd.message);
+						}
+					} catch (e) {
+						clearInterval(poll);
+						removeCancelBtn();
+						updateProgressBar(modal, -1);
+						updateLoadingMessage(modal, `${t('error_prefix')}${e.message}`);
+						_batchAddCloseBtn(modal);
+					}
+				}, 1500);
+
+			} catch (e) {
+				if (poll) clearInterval(poll);
+				updateProgressBar(modal, -1);
+				updateLoadingMessage(modal, `${t('error_prefix')}${e.message}`);
+				_batchAddCloseBtn(modal);
+			}
+		}
+
+		function _batchAddCloseBtn(modal) {
+			const existing = modal.querySelector('.close-error-btn');
+			if (existing) return;
+			const btn = document.createElement('button');
+			btn.textContent = t('close_btn');
+			btn.className   = 'close-error-btn';
+			btn.onclick     = () => { if (document.body.contains(modal)) document.body.removeChild(modal); };
+			modal.querySelector('.loading-content').appendChild(btn);
+		}
+
+		function showBatchDialog(msg) {
+			const d = document.createElement('dialog');
+			d.innerHTML = `
+				<h3>⛔ Error</h3>
+				<p>${msg}</p>
+				<div class="dialog-buttons">
+					<button class="dialog-confirm">${t('ok_btn')}</button>
+				</div>`;
+			document.body.appendChild(d);
+			d.querySelector('.dialog-confirm').addEventListener('click', () => {
+				d.close();
+				document.body.removeChild(d);
+			});
+			d.showModal();
+		}
+
+
+	</script>
+
+</body>
+</html>

@@ -40,8 +40,8 @@ Two programs, used in order:
 2. **Generate your shortcuts** — a shortcut's target is an absolute path, so
    it has to be created for wherever *your* copy of this project ends up.
    Double-click, once:
-   - Windows: `0_Generate_Shortcuts.bat`
-   - Linux: `0_Generate_Shortcuts.sh`
+   - Windows: `0_Generate_Shortcuts_Windows.bat`
+   - Linux: `0_Generate_Shortcuts_Linux.sh`
    - macOS: not needed — the shortcuts in `macos_launchers/` already work
    Run it again any time you move the project to another drive, computer or
    user account, to regenerate broken shortcuts. (Or run
@@ -76,8 +76,8 @@ use those directly instead if you'd rather run them from a terminal.
 
 ```
 BOLD_DB/
-├── 0_Generate_Shortcuts.bat               # Windows: creates the 1/2 shortcuts
-├── 0_Generate_Shortcuts.sh                # Linux: creates the 1/2 shortcuts
+├── 0_Generate_Shortcuts_Windows.bat       # Windows: creates the 1/2 shortcuts
+├── 0_Generate_Shortcuts_Linux.sh          # Linux: creates the 1/2 shortcuts
 ├── 1_Create_DB.lnk                        # Windows shortcut (generated, not versioned)
 ├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut (generated, not versioned)
 ├── macos_launchers/

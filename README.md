@@ -37,30 +37,55 @@ Two programs, used in order:
 
 1. Download a data package (`.tar.gz`) from
    [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest).
-2. Build the database:
-   - Windows: run `1_Create_DB.lnk` (or `dev/bold_db_creator.bat`)
-   - macOS/Linux: run `dev/bold_db_creator.sh`
-3. Open the web viewer at `http://127.0.0.1:5001`:
-   - Windows: run `2_Open_web_viewer_BOLD_DB.lnk` (or `dev/launch_bold_db.bat`)
-   - macOS/Linux: run `dev/launch_bold_db.sh`
+2. Build the database — double-click the **"1"** shortcut for your OS:
+   - Windows: `1_Create_DB.lnk`
+   - macOS: `1_Create_DB.command`
+   - Linux: `1_Create_DB.desktop`
+3. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"** shortcut:
+   - Windows: `2_Open_web_viewer_BOLD_DB.lnk`
+   - macOS: `2_Open_web_viewer_BOLD_DB.command`
+   - Linux: `2_Open_web_viewer_BOLD_DB.desktop`
 
-On Windows, if you move this folder to another drive or computer, run
-`repair_shortcuts.bat` once — it regenerates the two shortcuts to point at the
-new location. On macOS/Linux the `.sh` scripts resolve their own location
-automatically, so no repair step is needed — just make sure they're
-executable (`chmod +x dev/*.sh`).
+All four shortcuts live at the project root and just call the matching
+script in `dev/` (`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) —
+use those directly instead if you'd rather run them from a terminal.
+
+**If you move this folder** to another drive, computer or user account, the
+Windows and Linux shortcuts embed an absolute path and stop working — run
+the matching repair script once to regenerate them:
+
+| OS | Repair command |
+|---|---|
+| Windows | `repair_shortcuts.bat` |
+| Linux | `dev/repair_shortcuts.sh` |
+| macOS | not needed — `.command` files locate themselves automatically |
+
+**First-run OS quirks:**
+- **macOS**: Gatekeeper blocks scripts downloaded from the internet the
+  first time — right-click the `.command` file → *Open* once to allow it.
+- **Linux**: GNOME/KDE require marking a downloaded `.desktop` launcher as
+  trusted — right-click it → *Allow Launching* (or *Trust*) once.
+- If double-clicking doesn't work at all, run the `.sh` script directly
+  from a terminal instead.
 
 ## Project structure
 
 ```
 BOLD_DB/
-├── 1_Create_DB.lnk
-├── 2_Open_web_viewer_BOLD_DB.lnk
-├── repair_shortcuts.bat
+├── 1_Create_DB.lnk                        # Windows shortcut
+├── 1_Create_DB.command                    # macOS shortcut
+├── 1_Create_DB.desktop                    # Linux shortcut
+├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut
+├── 2_Open_web_viewer_BOLD_DB.command      # macOS shortcut
+├── 2_Open_web_viewer_BOLD_DB.desktop      # Linux shortcut
+├── repair_shortcuts.bat                   # regenerates the Windows shortcuts
 ├── dev/
 │   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
-│   ├── bold_db_creator.sh     # macOS/Linux launcher (equivalent to 1_Create_DB.lnk)
-│   ├── launch_bold_db.sh      # macOS/Linux launcher (equivalent to 2_Open_web_viewer_BOLD_DB.lnk)
+│   ├── bold_db_creator.bat    # Windows launcher, called by 1_Create_DB.lnk
+│   ├── bold_db_creator.sh     # macOS/Linux launcher, called by the "1" shortcuts
+│   ├── launch_bold_db.bat     # Windows launcher, called by 2_Open_web_viewer_BOLD_DB.lnk
+│   ├── launch_bold_db.sh      # macOS/Linux launcher, called by the "2" shortcuts
+│   ├── repair_shortcuts.sh    # regenerates the Linux shortcuts
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/
 │   │   ├── server.py          # Local web server (search / filter / export)

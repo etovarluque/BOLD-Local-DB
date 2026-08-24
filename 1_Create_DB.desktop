@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=1 - Create DB
+Comment=Build the BOLD local database
+Exec=bash -c 'cd "/f/Biotools_LGC/BOLD_DB/dist/BOLD_DB" && ./dev/bold_db_creator.sh'
+Icon=utilities-terminal
+Terminal=true
+Categories=Utility;

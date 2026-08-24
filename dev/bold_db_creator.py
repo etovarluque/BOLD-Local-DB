@@ -35,9 +35,6 @@ def _ensure_deps():
     if not missing:
         return
 
-    import ctypes
-    import threading
-
     _TITLE = "BOLD DB Creator — Instalando"
     _MSG   = (
         "Instalando dependencias, por favor espere…\n\n"
@@ -45,23 +42,33 @@ def _ensure_deps():
         "La aplicación iniciará automáticamente al terminar.\n"
         "No cierre esta ventana."
     )
-    # MB_ICONINFORMATION | MB_TOPMOST
-    threading.Thread(
-        target=ctypes.windll.user32.MessageBoxW,
-        args=(0, _MSG, _TITLE, 0x00040040),
-        daemon=True,
-    ).start()
+
+    if sys.platform == "win32":
+        # PySide6 isn't installed yet, so a native MessageBox is used instead
+        # of a Qt dialog while pip installs it in the background.
+        import ctypes
+        import threading
+
+        # MB_ICONINFORMATION | MB_TOPMOST
+        threading.Thread(
+            target=ctypes.windll.user32.MessageBoxW,
+            args=(0, _MSG, _TITLE, 0x00040040),
+            daemon=True,
+        ).start()
+    else:
+        print(f"{_TITLE}\n{_MSG}")
 
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + missing)
     finally:
-        # Close the dialog once installation finishes (or fails)
-        for _ in range(10):
-            hwnd = ctypes.windll.user32.FindWindowW(None, _TITLE)
-            if hwnd:
-                ctypes.windll.user32.PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE
-                break
-            time.sleep(0.2)
+        if sys.platform == "win32":
+            # Close the dialog once installation finishes (or fails)
+            for _ in range(10):
+                hwnd = ctypes.windll.user32.FindWindowW(None, _TITLE)
+                if hwnd:
+                    ctypes.windll.user32.PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE
+                    break
+                time.sleep(0.2)
 
 _ensure_deps()
 
@@ -2551,11 +2558,21 @@ def _proj_dir(*parts):
     return os.path.normpath(os.path.join(PROJECT_ROOT, "..", *parts))
 
 
+def _os_open(path):
+    """Opens a file or folder with the OS's default application/file manager."""
+    if sys.platform == "win32":
+        os.startfile(path)
+    elif sys.platform == "darwin":
+        subprocess.run(["open", path], check=True)
+    else:
+        subprocess.run(["xdg-open", path], check=True)
+
+
 def _open_folder(path):
-    """Opens a folder in Explorer, creating it if needed."""
+    """Opens a folder in the file manager, creating it if needed."""
     try:
         os.makedirs(path, exist_ok=True)
-        os.startfile(path)
+        _os_open(path)
         return True
     except Exception:
         return False
@@ -4495,7 +4512,7 @@ class App(QMainWindow):
             # example): falls back to the Spanish version instead of leaving the button inert.
             path = _proj_dir("manual", "guia_de_uso.html")
         if os.path.exists(path):
-            os.startfile(path)
+            _os_open(path)
         else:
             QMessageBox.information(self, t('manual_not_found_title'), t('manual_not_found_body'))
 

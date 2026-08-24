@@ -28,7 +28,7 @@ Two programs, used in order:
 
 ## Requirements
 
-- Windows
+- Windows, macOS or Linux
 - Python 3 (dependencies auto-install on first run: PySide6, Flask, etc.)
 - A [BOLD Systems](https://bench.boldsystems.org/) account, to download data packages
 - ~80 GB of free disk space, for the downloaded package and the resulting database
@@ -36,15 +36,19 @@ Two programs, used in order:
 ## Quick start
 
 1. Download a data package (`.tar.gz`) from
-   [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest),
-   then run `1_Create_DB.lnk` (or `dev/bold_db_creator.bat`) to build the
-   database from it.
-2. Run `2_Open_web_viewer_BOLD_DB.lnk` (or `dev/launch_bold_db.bat`) to open
-   the web viewer at `http://127.0.0.1:5001`.
+   [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest).
+2. Build the database:
+   - Windows: run `1_Create_DB.lnk` (or `dev/bold_db_creator.bat`)
+   - macOS/Linux: run `dev/bold_db_creator.sh`
+3. Open the web viewer at `http://127.0.0.1:5001`:
+   - Windows: run `2_Open_web_viewer_BOLD_DB.lnk` (or `dev/launch_bold_db.bat`)
+   - macOS/Linux: run `dev/launch_bold_db.sh`
 
-If you move this folder to another drive or computer, run
+On Windows, if you move this folder to another drive or computer, run
 `repair_shortcuts.bat` once — it regenerates the two shortcuts to point at the
-new location.
+new location. On macOS/Linux the `.sh` scripts resolve their own location
+automatically, so no repair step is needed — just make sure they're
+executable (`chmod +x dev/*.sh`).
 
 ## Project structure
 
@@ -55,6 +59,8 @@ BOLD_DB/
 ├── repair_shortcuts.bat
 ├── dev/
 │   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
+│   ├── bold_db_creator.sh     # macOS/Linux launcher (equivalent to 1_Create_DB.lnk)
+│   ├── launch_bold_db.sh      # macOS/Linux launcher (equivalent to 2_Open_web_viewer_BOLD_DB.lnk)
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/
 │   │   ├── server.py          # Local web server (search / filter / export)

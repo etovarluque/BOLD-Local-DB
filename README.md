@@ -42,18 +42,18 @@ Two programs, used in order:
    Double-click, once:
    - Windows: `0_Generate_Shortcuts_Windows.bat`
    - Linux: `0_Generate_Shortcuts_Linux.sh`
-   - macOS: not needed — the shortcuts in `macos_launchers/` already work
+   - macOS: not needed — the shortcuts in `macos_shortcuts/` already work
    Run it again any time you move the project to another drive, computer or
    user account, to regenerate broken shortcuts. (Or run
    `python dev/generate_shortcuts.py` from a terminal instead, on any OS.)
 3. Build the database — double-click the **"1"** shortcut for your OS:
    - Windows: `1_Create_DB.lnk` (project root)
-   - macOS: `macos_launchers/1_Create_DB.command`
+   - macOS: `macos_shortcuts/1_Create_DB.command`
    - Linux: `linux_launchers/1_Create_DB.desktop`
 4. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"**
    shortcut:
    - Windows: `2_Open_web_viewer_BOLD_DB.lnk` (project root)
-   - macOS: `macos_launchers/2_Open_web_viewer_BOLD_DB.command`
+   - macOS: `macos_shortcuts/2_Open_web_viewer_BOLD_DB.command`
    - Linux: `linux_launchers/2_Open_web_viewer_BOLD_DB.desktop`
 
 The Windows and Linux shortcuts aren't stored in the repository — they're
@@ -80,7 +80,7 @@ BOLD_DB/
 ├── 0_Generate_Shortcuts_Linux.sh          # Linux: creates the 1/2 shortcuts
 ├── 1_Create_DB.lnk                        # Windows shortcut (generated, not versioned)
 ├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut (generated, not versioned)
-├── macos_launchers/
+├── macos_shortcuts/
 │   ├── 1_Create_DB.command                # macOS shortcut
 │   └── 2_Open_web_viewer_BOLD_DB.command  # macOS shortcut
 ├── linux_launchers/                       # Linux shortcuts (generated, not versioned)

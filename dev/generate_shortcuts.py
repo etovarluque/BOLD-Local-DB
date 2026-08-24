@@ -87,7 +87,7 @@ def _generate_linux():
 
 
 def _generate_macos():
-    out_dir = os.path.join(PROJECT_ROOT, "macos_launchers")
+    out_dir = os.path.join(PROJECT_ROOT, "macos_shortcuts")
     os.makedirs(out_dir, exist_ok=True)
     # .command files resolve their own folder at run time (no absolute path
     # baked in), so there's nothing to regenerate - just make sure they're
@@ -98,7 +98,7 @@ def _generate_macos():
         path = os.path.join(out_dir, filename)
         if os.path.exists(path):
             os.chmod(path, 0o755)
-    print("macOS shortcuts in macos_launchers/ are self-locating - nothing")
+    print("macOS shortcuts in macos_shortcuts/ are self-locating - nothing")
     print("to regenerate. (They can't carry a custom Finder icon; see the")
     print("README for details.)")
 

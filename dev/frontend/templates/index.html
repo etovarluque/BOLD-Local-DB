@@ -788,8 +788,10 @@
     <div class="container mt-4">
 	
 		<div class="d-flex align-items-center gap-3 mb-4">
-		  <img src="/static/logo.png" alt="Logo" width="300" height="35">
-		  <span class="text-muted" style="font-size:0.75rem;">v{{ version }}</span>
+		  <div class="d-flex flex-column align-items-start">
+			<img src="/static/logo.png" alt="Logo" width="300" height="35">
+			<span class="text-muted" style="font-size:0.7rem;">v{{ version }}</span>
+		  </div>
 
 		  <!-- Flex container for title and file name -->
 		  <div class="d-flex w-100 align-items-center justify-content-between">

@@ -39,15 +39,15 @@ Two programs, used in order:
    [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest).
 2. Build the database — double-click the **"1"** shortcut for your OS:
    - Windows: `1_Create_DB.lnk` (project root)
-   - macOS: `macos/1_Create_DB.command`
-   - Linux: `linux/1_Create_DB.desktop`
+   - macOS: `macos_launchers/1_Create_DB.command`
+   - Linux: `linux_launchers/1_Create_DB.desktop`
 3. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"** shortcut:
    - Windows: `2_Open_web_viewer_BOLD_DB.lnk` (project root)
-   - macOS: `macos/2_Open_web_viewer_BOLD_DB.command`
-   - Linux: `linux/2_Open_web_viewer_BOLD_DB.desktop`
+   - macOS: `macos_launchers/2_Open_web_viewer_BOLD_DB.command`
+   - Linux: `linux_launchers/2_Open_web_viewer_BOLD_DB.desktop`
 
 The Windows shortcuts live at the project root; the macOS and Linux ones are
-grouped in their own `macos/`/`linux/` folders to keep the root uncluttered.
+grouped in their own `macos_launchers/`/`linux_launchers/` folders to keep the root uncluttered.
 All of them just call the matching script in `dev/`
 (`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) — use those
 directly instead if you'd rather run them from a terminal.
@@ -59,7 +59,7 @@ the matching repair script once to regenerate them:
 | OS | Repair command |
 |---|---|
 | Windows | `repair_shortcuts.bat` (project root) |
-| Linux | `linux/repair_shortcuts.sh` |
+| Linux | `linux_launchers/repair_shortcuts.sh` |
 | macOS | not needed — `.command` files locate themselves automatically |
 
 **First-run OS quirks:**
@@ -77,10 +77,10 @@ BOLD_DB/
 ├── 1_Create_DB.lnk                        # Windows shortcut
 ├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut
 ├── repair_shortcuts.bat                   # regenerates the Windows shortcuts
-├── macos/
+├── macos_launchers/
 │   ├── 1_Create_DB.command                # macOS shortcut
 │   └── 2_Open_web_viewer_BOLD_DB.command  # macOS shortcut
-├── linux/
+├── linux_launchers/
 │   ├── 1_Create_DB.desktop                # Linux shortcut
 │   ├── 2_Open_web_viewer_BOLD_DB.desktop  # Linux shortcut
 │   └── repair_shortcuts.sh                # regenerates the Linux shortcuts

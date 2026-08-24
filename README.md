@@ -30,6 +30,8 @@ Two programs, used in order:
 
 - Windows
 - Python 3 (dependencies auto-install on first run: PySide6, Flask, etc.)
+- A [BOLD Systems](https://bench.boldsystems.org/) account, to download data packages
+- ~80 GB of free disk space, for the downloaded package and the resulting database
 
 ## Quick start
 

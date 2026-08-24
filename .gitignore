@@ -23,3 +23,8 @@ data/exports/**/*
 # OS cruft
 Thumbs.db
 .DS_Store
+
+# Generated shortcuts (machine-specific; created by dev/generate_shortcuts.py)
+/1_Create_DB.lnk
+/2_Open_web_viewer_BOLD_DB.lnk
+/linux_launchers/*.desktop

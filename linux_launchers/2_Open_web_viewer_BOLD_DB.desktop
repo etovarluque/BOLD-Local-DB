@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=2 - Open web viewer BOLD DB
-Comment=Open the BOLD DB web viewer
-Exec=bash -c 'cd "/f/Biotools_LGC/BOLD_DB/dist/BOLD_DB" && ./dev/launch_bold_db.sh'
-Icon=web-browser
-Terminal=true
-Categories=Utility;

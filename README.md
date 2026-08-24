@@ -37,30 +37,30 @@ Two programs, used in order:
 
 1. Download a data package (`.tar.gz`) from
    [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest).
-2. Build the database — double-click the **"1"** shortcut for your OS:
+2. **Generate your shortcuts** — a shortcut's target is an absolute path, so
+   it has to be created for wherever *your* copy of this project ends up.
+   Open a terminal in the project folder and run:
+   ```
+   python dev/generate_shortcuts.py
+   ```
+   Run it again any time you move the project to another drive, computer or
+   user account, to regenerate broken shortcuts.
+3. Build the database — double-click the **"1"** shortcut for your OS:
    - Windows: `1_Create_DB.lnk` (project root)
    - macOS: `macos_launchers/1_Create_DB.command`
    - Linux: `linux_launchers/1_Create_DB.desktop`
-3. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"** shortcut:
+4. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"** shortcut:
    - Windows: `2_Open_web_viewer_BOLD_DB.lnk` (project root)
    - macOS: `macos_launchers/2_Open_web_viewer_BOLD_DB.command`
    - Linux: `linux_launchers/2_Open_web_viewer_BOLD_DB.desktop`
 
-The Windows shortcuts live at the project root; the macOS and Linux ones are
-grouped in their own `macos_launchers/`/`linux_launchers/` folders to keep the root uncluttered.
-All of them just call the matching script in `dev/`
-(`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) — use those
-directly instead if you'd rather run them from a terminal.
-
-**If you move this folder** to another drive, computer or user account, the
-Windows and Linux shortcuts embed an absolute path and stop working — run
-the matching repair script once to regenerate them:
-
-| OS | Repair command |
-|---|---|
-| Windows | `repair_shortcuts.bat` (project root) |
-| Linux | `linux_launchers/repair_shortcuts.sh` |
-| macOS | not needed — `.command` files locate themselves automatically |
+The Windows and Linux shortcuts aren't stored in the repository — they're
+machine-specific, so `generate_shortcuts.py` creates them locally instead
+(Windows shortcuts at the project root; Linux ones in `linux_launchers/`).
+The macOS `.command` files *are* stored as-is, since they locate their own
+folder at run time and never go stale. All of them just call the matching
+script in `dev/` (`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) —
+use those directly instead if you'd rather run them from a terminal.
 
 **First-run OS quirks:**
 - **macOS**: Gatekeeper blocks scripts downloaded from the internet the
@@ -74,22 +74,20 @@ the matching repair script once to regenerate them:
 
 ```
 BOLD_DB/
-├── 1_Create_DB.lnk                        # Windows shortcut
-├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut
-├── repair_shortcuts.bat                   # regenerates the Windows shortcuts
+├── 1_Create_DB.lnk                        # Windows shortcut (generated, not versioned)
+├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut (generated, not versioned)
 ├── macos_launchers/
 │   ├── 1_Create_DB.command                # macOS shortcut
 │   └── 2_Open_web_viewer_BOLD_DB.command  # macOS shortcut
-├── linux_launchers/
-│   ├── 1_Create_DB.desktop                # Linux shortcut
-│   ├── 2_Open_web_viewer_BOLD_DB.desktop  # Linux shortcut
-│   └── repair_shortcuts.sh                # regenerates the Linux shortcuts
+├── linux_launchers/                       # Linux shortcuts (generated, not versioned)
 ├── dev/
 │   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
 │   ├── bold_db_creator.bat    # Windows launcher, called by 1_Create_DB.lnk
 │   ├── bold_db_creator.sh     # macOS/Linux launcher, called by the "1" shortcuts
 │   ├── launch_bold_db.bat     # Windows launcher, called by 2_Open_web_viewer_BOLD_DB.lnk
 │   ├── launch_bold_db.sh      # macOS/Linux launcher, called by the "2" shortcuts
+│   ├── generate_shortcuts.py  # creates/repairs the shortcuts for your OS
+│   ├── icons/                 # icons used by the shortcuts and the GUI
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/
 │   │   ├── server.py          # Local web server (search / filter / export)

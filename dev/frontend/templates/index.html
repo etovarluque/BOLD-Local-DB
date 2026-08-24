@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOLD Database</title>
+    <title>BOLD Database v{{ version }}</title>
     <link rel="icon" type="image/x-icon" href="/static/database.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -789,6 +789,7 @@
 	
 		<div class="d-flex align-items-center gap-3 mb-4">
 		  <img src="/static/logo.png" alt="Logo" width="300" height="35">
+		  <span class="text-muted" style="font-size:0.75rem;">v{{ version }}</span>
 
 		  <!-- Flex container for title and file name -->
 		  <div class="d-flex w-100 align-items-center justify-content-between">
@@ -2914,9 +2915,9 @@
 			const formattedCount = numFmt.format(displayCount);
 
 			resultsCount.innerHTML = `
-				<span class="results-count">${formattedCount} registros</span>
+				<span class="results-count">${formattedCount} records</span>
 			`;
-			executionTime.textContent = `Tiempo: ${formatDuration(execution_time)}`;
+			executionTime.textContent = `Time: ${formatDuration(execution_time)}`;
 
 			if (displayCount > 0) {
 				exportButton.style.display = 'block';

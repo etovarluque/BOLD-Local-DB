@@ -79,6 +79,7 @@ from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
+__version__ = "1.0.0"
 
 app = Flask(__name__)
 
@@ -748,6 +749,7 @@ def index():
         fts_available=fts_table_available(),
         fts_table_name=FTS_TABLE_NAME,
         initial_lang=get_lang(),
+        version=__version__,
     )
 
 

@@ -4,6 +4,8 @@ BOLD Database Creator - unified GUI
 Steps: 1-Filter TSV  2-TSV->SQLite  3-Index  4-FTS
 """
 
+__version__ = "1.0.0"
+
 # ---- Imports -----------------------------------------------------------------
 import sys, subprocess
 import os, re, sqlite3, csv, glob, tarfile, time, threading, shutil, unicodedata, webbrowser
@@ -4025,7 +4027,7 @@ class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("BOLD Database Creator")
+        self.setWindowTitle(f"BOLD Database Creator v{__version__}")
         # Wider and less tall: with the log in a side column the window
         # becomes three columns (sidebar | step | output).
         self.resize(_px(1400), _px(820))

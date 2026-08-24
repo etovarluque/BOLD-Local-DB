@@ -31,8 +31,10 @@ Two programs, used in order:
 
 ## Quick start
 
-1. Run `1_Create_DB.lnk` (or `dev/bold_db_creator.bat`) to build the database
-   from a BOLD export.
+1. Download a data package (`.tar.gz`) from
+   [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest),
+   then run `1_Create_DB.lnk` (or `dev/bold_db_creator.bat`) to build the
+   database from it.
 2. Run `2_Open_web_viewer_BOLD_DB.lnk` (or `dev/launch_bold_db.bat`) to open
    the web viewer at `http://127.0.0.1:5001`.
 

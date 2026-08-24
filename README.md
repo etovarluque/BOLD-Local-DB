@@ -70,3 +70,9 @@ repository (see `.gitignore`).
 
 - [Guía de uso (ES)](manual/guia_de_uso.html)
 - [User guide (EN)](manual/user_guide.html)
+
+## License
+
+[Polyform Noncommercial 1.0.0](LICENSE) — free to use, modify and redistribute
+for any noncommercial purpose. Commercial use (selling it, offering it as a
+paid service, etc.) is not permitted.

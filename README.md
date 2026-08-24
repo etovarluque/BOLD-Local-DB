@@ -38,17 +38,19 @@ Two programs, used in order:
 1. Download a data package (`.tar.gz`) from
    [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest).
 2. Build the database — double-click the **"1"** shortcut for your OS:
-   - Windows: `1_Create_DB.lnk`
-   - macOS: `1_Create_DB.command`
-   - Linux: `1_Create_DB.desktop`
+   - Windows: `1_Create_DB.lnk` (project root)
+   - macOS: `macos/1_Create_DB.command`
+   - Linux: `linux/1_Create_DB.desktop`
 3. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"** shortcut:
-   - Windows: `2_Open_web_viewer_BOLD_DB.lnk`
-   - macOS: `2_Open_web_viewer_BOLD_DB.command`
-   - Linux: `2_Open_web_viewer_BOLD_DB.desktop`
+   - Windows: `2_Open_web_viewer_BOLD_DB.lnk` (project root)
+   - macOS: `macos/2_Open_web_viewer_BOLD_DB.command`
+   - Linux: `linux/2_Open_web_viewer_BOLD_DB.desktop`
 
-All four shortcuts live at the project root and just call the matching
-script in `dev/` (`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) —
-use those directly instead if you'd rather run them from a terminal.
+The Windows shortcuts live at the project root; the macOS and Linux ones are
+grouped in their own `macos/`/`linux/` folders to keep the root uncluttered.
+All of them just call the matching script in `dev/`
+(`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) — use those
+directly instead if you'd rather run them from a terminal.
 
 **If you move this folder** to another drive, computer or user account, the
 Windows and Linux shortcuts embed an absolute path and stop working — run
@@ -56,8 +58,8 @@ the matching repair script once to regenerate them:
 
 | OS | Repair command |
 |---|---|
-| Windows | `repair_shortcuts.bat` |
-| Linux | `dev/repair_shortcuts.sh` |
+| Windows | `repair_shortcuts.bat` (project root) |
+| Linux | `linux/repair_shortcuts.sh` |
 | macOS | not needed — `.command` files locate themselves automatically |
 
 **First-run OS quirks:**
@@ -73,19 +75,21 @@ the matching repair script once to regenerate them:
 ```
 BOLD_DB/
 ├── 1_Create_DB.lnk                        # Windows shortcut
-├── 1_Create_DB.command                    # macOS shortcut
-├── 1_Create_DB.desktop                    # Linux shortcut
 ├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut
-├── 2_Open_web_viewer_BOLD_DB.command      # macOS shortcut
-├── 2_Open_web_viewer_BOLD_DB.desktop      # Linux shortcut
 ├── repair_shortcuts.bat                   # regenerates the Windows shortcuts
+├── macos/
+│   ├── 1_Create_DB.command                # macOS shortcut
+│   └── 2_Open_web_viewer_BOLD_DB.command  # macOS shortcut
+├── linux/
+│   ├── 1_Create_DB.desktop                # Linux shortcut
+│   ├── 2_Open_web_viewer_BOLD_DB.desktop  # Linux shortcut
+│   └── repair_shortcuts.sh                # regenerates the Linux shortcuts
 ├── dev/
 │   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
 │   ├── bold_db_creator.bat    # Windows launcher, called by 1_Create_DB.lnk
 │   ├── bold_db_creator.sh     # macOS/Linux launcher, called by the "1" shortcuts
 │   ├── launch_bold_db.bat     # Windows launcher, called by 2_Open_web_viewer_BOLD_DB.lnk
 │   ├── launch_bold_db.sh      # macOS/Linux launcher, called by the "2" shortcuts
-│   ├── repair_shortcuts.sh    # regenerates the Linux shortcuts
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/
 │   │   ├── server.py          # Local web server (search / filter / export)

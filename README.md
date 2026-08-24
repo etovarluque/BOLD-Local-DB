@@ -3,8 +3,6 @@
 Desktop tool to build and browse a local, **offline** SQLite database from
 [BOLD Systems](https://www.boldsystems.org/) (Barcode of Life Data System) TSV exports.
 
-![Web viewer](dev/screenshots/home.png)
-
 ## What it does
 
 Two programs, used in order:
@@ -16,7 +14,7 @@ Two programs, used in order:
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.
 
-### More screenshots
+### Screenshots
 
 | Full-text search | Advanced field search | Batch search |
 |---|---|---|
@@ -52,7 +50,7 @@ BOLD_DB/
 │   │   ├── server.py          # Local web server (search / filter / export)
 │   │   ├── static/
 │   │   └── templates/
-│   └── icons/
+│   └── screenshots/
 ├── data/                      # raw / processed / exports (not versioned)
 └── manual/                    # user guide (ES/EN)
 ```

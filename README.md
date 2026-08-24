@@ -3,7 +3,7 @@
 Desktop tool to build and browse a local, **offline** SQLite database from
 [BOLD Systems](https://www.boldsystems.org/) (Barcode of Life Data System) TSV exports.
 
-![Web viewer](dev/icons/home.png)
+![Web viewer](dev/screenshots/home.png)
 
 ## What it does
 
@@ -15,6 +15,12 @@ Two programs, used in order:
 2. **Web viewer** (`dev/frontend/server.py`) — local Flask web app to search,
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.
+
+### More screenshots
+
+| Full-text search | Advanced field search | Batch search |
+|---|---|---|
+| ![Full-text search](dev/screenshots/full_text_search.png) | ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Batch search](dev/screenshots/batch_search.png) |
 
 ## Requirements
 

@@ -1294,6 +1294,15 @@ def normalize_field(value):
     return value.strip()
 
 
+def normalize_nuc(value):
+    """Strips alignment gaps ('-') and uppercases the sequence.
+
+    Applied unconditionally (unlike normalize_field), since nuc is pure
+    ASCII and would otherwise never reach the non-ASCII normalization path.
+    """
+    return value.replace('-', '').upper()
+
+
 # Columns included in FTS5 — the same ones that are indexed (so full-text
 # search covers the same fields as field-by-field search), except
 # col_country_iso. The 'trigram' tokenizer can't index text under 3
@@ -1716,6 +1725,7 @@ def run_step1(log, progress, cfg):
         # split only up to the farthest column we need; the rest of the line
         # stays as a single undivided string -> avoids ~100 allocations per row
         _MAX_COL = max(col_idx + [filt_idx])
+        nuc_pos = col_idx.index(filt_idx) if filt_idx in col_idx else None
 
         stop        = cfg.get("_stop")
         interrupted = False
@@ -1742,6 +1752,8 @@ def run_step1(log, progress, cfg):
                         # ASCII — pay nothing for this check.
                         if not line.isascii():
                             row = tuple(normalize_field(v) for v in row)
+                        if nuc_pos is not None and row[nuc_pos]:
+                            row = row[:nuc_pos] + (normalize_nuc(row[nuc_pos]),) + row[nuc_pos + 1:]
                         batch.append(row)
                         written += 1
                         if len(batch) >= _BATCH:

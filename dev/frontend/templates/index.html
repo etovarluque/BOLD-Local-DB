@@ -249,20 +249,6 @@
 			background-color: #f0f0f0 !important;
 		}
 
-		/* Style for expanded cells */
-		.table td[style*="white-space: normal"] {
-			cursor: zoom-out;
-			white-space: normal !important;
-			overflow: visible !important;
-			max-width: none !important;
-			z-index: 2;
-			position: relative;
-			border-right: none;
-			border-left: none;
-			/* Keep the background color */
-			background-color: inherit !important;
-		}
-		
 		.table tbody tr:hover td {
 			background-color: #e6f7ff !important; /* Color when the mouse hovers over it */
 			cursor: default; /* Optional: change the cursor to pointer */
@@ -285,17 +271,9 @@
 			}
 		}
 		
-		/* Alternating shading */
-		.table tbody tr.even-row {
-			background-color: #ffffff;
-		}
-
-		.table tbody tr.odd-row {
-			background-color: #f0f0f0;
-		}
-
 		/* Style for expanded cells */
 		.table td.expanded {
+			cursor: zoom-out;
 			white-space: normal !important;
 			overflow: visible !important;
 			max-width: none !important;
@@ -1177,7 +1155,7 @@
         </div>
 
 		<div class="card results-card">
-			<div class="card-header d-flex justify-content-between align-items-center">
+			<div id="resultsCardHeader" class="card-header d-flex justify-content-between align-items-center">
 				<div>
 					<h5><span data-i18n="results_label">Resultados:</span> <span id="resultsCount"></span>
 						<span class="execution-time" id="executionTime"></span>
@@ -1245,7 +1223,7 @@
                 op_not_contains: 'No contiene', op_starts_with: 'Comienza con', op_ends_with: 'Termina con',
                 op_greater_than: 'Mayor que', op_less_than: 'Menor que', op_between: 'Entre',
                 op_has_value: 'Con dato', op_no_value: 'Sin dato',
-                value_input_placeholder: 'Escribe un término', value2_input_placeholder: 'Hasta',
+                value_input_placeholder: 'Escribe un término', value_from_placeholder: 'Desde', value2_input_placeholder: 'Hasta',
                 add_condition_btn: '+ Añadir condición', search_btn: 'Buscar',
                 col_order_toggle_btn_label: 'Orden de columnas',
                 col_order_reset_title: 'Restablecer orden predeterminado',
@@ -1260,13 +1238,17 @@
                 cancel_export_btn: 'Cancelar exportación',
                 export_error_prefix: 'Error en la exportación: ',
                 validation_need_term: 'Ingresa un término de búsqueda o cambia el operador',
+                validation_need_column: 'Selecciona un campo en todas las condiciones',
+                validation_need_between_values: "El operador 'Entre' requiere dos valores",
+                autocomplete_no_results: 'No hay resultados', autocomplete_error: 'Error al buscar',
                 server_disconnected_title: '🚨 SIN CONEXIÓN AL SERVIDOR 🚨',
                 server_disconnected_body: 'Verificar que la ventana del terminal esté abierta ejecutando el servidor.',
                 server_disconnected_body2: 'De lo contrario volver a abrir la base de datos.',
+                search_error_title: '⚠️ Error en la búsqueda',
                 ok_btn: 'Aceptar',
                 select_field_and_term: 'Selecciona un campo e introduce un término de búsqueda',
                 enter_search_term: 'Por favor introduce un término de búsqueda',
-                field_required_title: '⛔ Campo requerido',
+                field_required_title: '⛔ Campo requerido', batch_error_title: '⛔ Error',
                 csv_export_options_title: 'Opciones de exportación CSV',
                 csv_include_seq_label: 'Incluir columna de secuencia ADN',
                 csv_include_nuc_hint: 'Al incluirla el archivo es más grande y la exportación más lenta.<br>',
@@ -1313,7 +1295,7 @@
                 batch_note_generic: 'Todos los términos del archivo deben ser valores de <strong>{friendly}</strong>, sin mezclar otras categorías. La coincidencia es exacta, sin distinguir mayúsculas.',
                 report_hint_extra_cols: '{n} columna{s} extra',
                 report_hint_totals_csv: '{n} CSV de totales',
-                total_records_suffix: 'registros',
+                total_records_suffix: 'registros', time_label: 'Tiempo:',
                 server_error_prefix: 'Error del servidor: ',
                 status_check_error_prefix: 'Error al verificar estado: ',
                 cancelling_btn: 'Cancelando...',
@@ -1354,7 +1336,7 @@
                 op_not_contains: 'Does not contain', op_starts_with: 'Starts with', op_ends_with: 'Ends with',
                 op_greater_than: 'Greater than', op_less_than: 'Less than', op_between: 'Between',
                 op_has_value: 'Has value', op_no_value: 'No value',
-                value_input_placeholder: 'Type a term', value2_input_placeholder: 'To',
+                value_input_placeholder: 'Type a term', value_from_placeholder: 'From', value2_input_placeholder: 'To',
                 add_condition_btn: '+ Add condition', search_btn: 'Search',
                 col_order_toggle_btn_label: 'Column order',
                 col_order_reset_title: 'Reset to default order',
@@ -1369,13 +1351,17 @@
                 cancel_export_btn: 'Cancel export',
                 export_error_prefix: 'Export error: ',
                 validation_need_term: 'Enter a search term or change the operator',
+                validation_need_column: 'Select a field in every condition',
+                validation_need_between_values: "The 'Between' operator requires two values",
+                autocomplete_no_results: 'No results', autocomplete_error: 'Search error',
                 server_disconnected_title: '🚨 SERVER DISCONNECTED 🚨',
                 server_disconnected_body: 'Check that the terminal window running the server is still open.',
                 server_disconnected_body2: 'Otherwise, try reopening the database.',
+                search_error_title: '⚠️ Search error',
                 ok_btn: 'OK',
                 select_field_and_term: 'Select a field and enter a search term',
                 enter_search_term: 'Please enter a search term',
-                field_required_title: '⛔ Field required',
+                field_required_title: '⛔ Field required', batch_error_title: '⛔ Error',
                 csv_export_options_title: 'CSV export options',
                 csv_include_seq_label: 'Include DNA sequence column',
                 csv_include_nuc_hint: 'Including it makes the file bigger and the export slower.<br>',
@@ -1422,7 +1408,7 @@
                 batch_note_generic: 'All terms in the file must be values of <strong>{friendly}</strong>, without mixing other categories. The match is exact and case-insensitive.',
                 report_hint_extra_cols: '{n} extra column{s}',
                 report_hint_totals_csv: '{n} totals CSV{s}',
-                total_records_suffix: 'records',
+                total_records_suffix: 'records', time_label: 'Time:',
                 server_error_prefix: 'Server error: ',
                 status_check_error_prefix: 'Error checking status: ',
                 cancelling_btn: 'Cancelling...',
@@ -1554,6 +1540,12 @@
         // matches its actual proximity in the BOLD TSV.
         const ORDERED_COLUMNS = {{ columns | map(attribute='friendly') | list | tojson }};
 
+        // Operators that take no value (the condition is complete on its own,
+        // e.g. "has no value"). Shared by handleOperatorChange (disables the
+        // value input) and getSearchConditions (skips the "needs a value"
+        // check) so the two can't drift apart.
+        const NO_VALUE_OPERATORS = ['IS_NOT_EMPTY', 'IS_EMPTY'];
+
         const hiddenColumns = new Set(JSON.parse(localStorage.getItem('boldHiddenColumns') || '[]'));
 
         // Merges the order saved in this browser with the server's current
@@ -1644,18 +1636,42 @@
             if (isHidden) buildColOrderList();
         }
 
+        // Wipes the results table/pagination/count/timer text - shared by the
+        // "clear results" button and by both search functions right before
+        // they kick off a new request.
+        function resetResultsDisplay() {
+            document.getElementById('resultsTable').innerHTML = '';
+            document.getElementById('pagination').innerHTML = '';
+            document.getElementById('resultsCount').textContent = '';
+            document.getElementById('executionTime').textContent = '';
+        }
+
         function saveHiddenColumns() {
             localStorage.setItem('boldHiddenColumns', JSON.stringify([...hiddenColumns]));
         }
 
-        function applyColumnVisibility() {
-            ORDERED_COLUMNS.forEach((col, idx) => {
+        function applyColumnVisibility(onlyCol = null) {
+            // Must walk the table's actual rendered order (customColOrder),
+            // not the default ORDERED_COLUMNS: the table is built from
+            // customColOrder (see displayResults), so once the user drags
+            // columns into a different order, indexing by position in
+            // ORDERED_COLUMNS would hide whatever column now sits at that
+            // position instead of the one actually intended.
+            const showOrHide = (col, idx) => {
                 const colNum = idx + 1;
                 const display = hiddenColumns.has(col) ? 'none' : '';
                 document.querySelectorAll(
                     `.table thead th:nth-child(${colNum}), .table tbody td:nth-child(${colNum})`
                 ).forEach(el => { el.style.display = display; });
-            });
+            };
+            if (onlyCol !== null) {
+                // A single checkbox toggled: touch only that column's cells
+                // instead of re-scanning the whole table for every column.
+                const idx = customColOrder.indexOf(onlyCol);
+                if (idx !== -1) showOrHide(onlyCol, idx);
+                return;
+            }
+            customColOrder.forEach(showOrHide);
         }
 
         function buildColPicker() {
@@ -1679,7 +1695,7 @@
                     if (cb.checked) hiddenColumns.delete(col);
                     else hiddenColumns.add(col);
                     saveHiddenColumns();
-                    applyColumnVisibility();
+                    applyColumnVisibility(col);
                 });
                 label.appendChild(cb);
                 label.appendChild(document.createTextNode(col));
@@ -1756,15 +1772,22 @@
         });
 		
 		
-		// Add this code to your JavaScript file or modify the existing one
-		document.addEventListener('DOMContentLoaded', function() {
-			// Function to handle operator changes
-			function handleOperatorChange(operatorSelect) {
+		// handleOperatorChange/setupOperatorListeners live at top level (not
+		// nested in a DOMContentLoaded closure) so setupConditionControls()'s
+		// "Add condition" handler can call setupOperatorListeners(newCondition)
+		// directly on the cloned node right after appending it. cloneNode(true)
+		// copies markup but never JS listeners, so without this the clone's
+		// operator <select> would have no 'change' handler at all; the
+		// previous fix for that was a second global click listener on
+		// #addCondition that re-scanned *every* .operator-select on the page
+		// after a setTimeout - which also re-added a duplicate 'change'
+		// listener to every condition that already had one.
+		function handleOperatorChange(operatorSelect) {
 				const condition  = operatorSelect.closest('.search-condition');
 				const valueInput  = condition.querySelector('.value-input');
 				const value2Input = condition.querySelector('.value2-input');
 				const op = operatorSelect.value;
-				const noValueOps = ['IS_NOT_EMPTY', 'IS_EMPTY'];
+				const noValueOps = NO_VALUE_OPERATORS;
 
 				if (noValueOps.includes(op)) {
 					valueInput.value = '';
@@ -1775,8 +1798,8 @@
 				} else if (op === 'BETWEEN') {
 					valueInput.disabled = false;
 					valueInput.style.visibility = 'visible';
-					valueInput.placeholder = 'Desde';
-					if (value2Input) { value2Input.style.display = 'block'; value2Input.placeholder = 'Hasta'; }
+					valueInput.placeholder = t('value_from_placeholder');
+					if (value2Input) { value2Input.style.display = 'block'; value2Input.placeholder = t('value2_input_placeholder'); }
 				} else {
 					valueInput.disabled = false;
 					valueInput.value = '';
@@ -1786,32 +1809,26 @@
 				}
 			}
 			
-			// Set up event listeners for existing operators
-			function setupOperatorListeners() {
-				document.querySelectorAll('.operator-select').forEach(select => {
-					select.addEventListener('change', function() {
-						handleOperatorChange(this);
-					});
+		// Attaches the operator-change listener within `root` (a single
+		// .search-condition when called for a freshly cloned one, or
+		// `document` for the conditions already in the initial page markup).
+		function setupOperatorListeners(root = document) {
+			root.querySelectorAll('.operator-select').forEach(select => {
+				select.addEventListener('change', function() {
+					handleOperatorChange(this);
 				});
-			}
-			
-			setupOperatorListeners();
-			
-			// For new conditions
-			const addConditionBtn = document.getElementById('addCondition');
-			addConditionBtn.addEventListener('click', function() {
-				setTimeout(setupOperatorListeners, 10); // Small delay to make sure the DOM has updated
 			});
-		});
-		
-        
+		}
+
        // Initialization once the DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             initializeTabs();
             setupSearchButtons();
             setupAutocomplete();
+            setupOperatorListeners();
             setupConditionControls();
             setupOtherButtons();
+            setupResultsTableDelegation();
             if (localStorage.getItem('boldColOrder')) {
                 document.getElementById('resetColOrderBtn').style.display = 'inline-block';
             }
@@ -1833,6 +1850,27 @@
 		}
 
 		// Main function for FASTA export with progress
+		// Shared by exportToFasta/exportToCSV's top-level catch (identical in
+		// both): shows the error in the already-open loading modal and swaps
+		// its buttons for a single "close" one that also stops the
+		// status-polling interval, mirroring batch search's _batchAddCloseBtn.
+		function showExportErrorInModal(loadingModal, exportInterval, error) {
+			updateProgressBar(loadingModal, -1);
+			updateLoadingMessage(loadingModal, `Error: ${error.message}`);
+
+			const closeBtn = document.createElement('button');
+			closeBtn.textContent = t('close_btn');
+			closeBtn.className = 'close-error-btn';
+			closeBtn.onclick = () => {
+				if (exportInterval) clearInterval(exportInterval);
+				document.body.removeChild(loadingModal);
+			};
+
+			const loadingContent = loadingModal.querySelector('.loading-content');
+			loadingContent.querySelectorAll('button').forEach(btn => loadingContent.removeChild(btn));
+			loadingContent.appendChild(closeBtn);
+		}
+
 		async function exportToFasta() {
 			const loadingModal = createLoadingModalF();
 			let exportInterval = null;
@@ -1955,24 +1993,7 @@
 				console.error('Error en exportToFasta:', error);
 
 				if (loadingModal && document.body.contains(loadingModal)) {
-					updateProgressBar(loadingModal, -1);
-					updateLoadingMessage(loadingModal, `Error: ${error.message}`);
-					
-					// Button to close the modal
-					const closeBtn = document.createElement('button');
-					closeBtn.textContent = t('close_btn');
-					closeBtn.className = 'close-error-btn';
-					closeBtn.onclick = () => {
-						if (exportInterval) clearInterval(exportInterval);
-						document.body.removeChild(loadingModal);
-					};
-					
-					const loadingContent = loadingModal.querySelector('.loading-content');
-					// Clear existing buttons
-					const existingButtons = loadingContent.querySelectorAll('button');
-					existingButtons.forEach(btn => loadingContent.removeChild(btn));
-					
-					loadingContent.appendChild(closeBtn);
+					showExportErrorInModal(loadingModal, exportInterval, error);
 				} else {
 					alert(t('fasta_export_error_alert') + error.message);
 				}
@@ -2140,8 +2161,10 @@
 					newCondition.classList.remove('adding');
 				}, 10);  // Small delay to trigger the transition
 
-				// Set up the remove button
+				// Set up the remove button and the operator-change handler
+				// (cloneNode(true) copies markup only, never JS listeners)
 				setupRemoveButton(newCondition);
+				setupOperatorListeners(newCondition);
 				updateConditionVisibility();
 			});
 
@@ -2160,10 +2183,7 @@
 		function setupOtherButtons() {
 			document.getElementById('clearResultsButton').addEventListener('click', function() {
 				// Clear results
-				document.getElementById('resultsTable').innerHTML = '';
-				document.getElementById('pagination').innerHTML = '';
-				document.getElementById('resultsCount').textContent = '';
-				document.getElementById('executionTime').textContent = '';
+				resetResultsDisplay();
 
 				document.querySelector('.results-card').classList.add('hidden');
 
@@ -2235,7 +2255,7 @@
 		function getSearchConditions() {
 			const conditions = [];
 			let validationErrors = [];
-			const noValueOps = ['IS_NOT_EMPTY', 'IS_EMPTY'];
+			const noValueOps = NO_VALUE_OPERATORS;
 
 			document.querySelectorAll('.search-condition').forEach(condition => {
 				const conditionType = condition.querySelector('.condition-type').value;
@@ -2250,26 +2270,25 @@
 				condition.querySelector('.value-input').style.border = '';
 				if (v2el) v2el.style.border = '';
 
+				let valid = true;
+
 				if (!column) {
-					validationErrors.push("Selecciona un campo en todas las condiciones");
+					valid = false;
+					validationErrors.push(t('validation_need_column'));
 					condition.querySelector('.column-select').style.border = '2px solid red';
 				}
 
 				if (!value && !noValueOps.includes(operator)) {
+					valid = false;
 					validationErrors.push(t('validation_need_term'));
 					condition.querySelector('.value-input').style.border = '2px solid red';
 				}
 
 				if (operator === 'BETWEEN' && !value2) {
-					validationErrors.push("El operador 'Entre' requiere dos valores");
+					valid = false;
+					validationErrors.push(t('validation_need_between_values'));
 					if (v2el) v2el.style.border = '2px solid red';
 				}
-
-				const valid = column && (
-					noValueOps.includes(operator) ||
-					(operator === 'BETWEEN' && value && value2) ||
-					(!noValueOps.includes(operator) && operator !== 'BETWEEN' && value)
-				);
 
 				if (valid) {
 					if (noValueOps.includes(operator)) value = "__SPECIAL_OPERATOR__";
@@ -2310,10 +2329,7 @@
 			document.getElementById('loading').style.display = 'block';
 			document.getElementById('cancelButton').style.display = 'inline-block';
 			document.getElementById('clearResultsButton').style.display = 'none';
-			document.getElementById('resultsTable').innerHTML = '';
-			document.getElementById('pagination').innerHTML = '';
-			document.getElementById('resultsCount').textContent = '';
-			document.getElementById('executionTime').textContent = '';
+			resetResultsDisplay();
 
 			// Save the current conditions
 			AppState.lastSearchConditions = JSON.parse(JSON.stringify(conditions));
@@ -2340,15 +2356,7 @@
 					signal
 				});
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                const data = await readJsonOrThrow(response);
 
                 if (data.count !== null && data.count !== undefined) {
                     AppState.cachedCount = data.count;
@@ -2364,8 +2372,48 @@
                     console.log('Búsqueda cancelada por el usuario');
                     return;
                 }
-				
-				const dialog = document.createElement('dialog');
+				showFetchError(error);
+				return;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('cancelButton').style.display = 'none';
+                AppState.currentSearchId = null;
+            }
+
+        }
+
+		// Parses a fetch Response as JSON, surfacing the server's own error
+		// message (its JSON body's `error` field) whether it came back with
+		// an error HTTP status or with a 200 that still reports a problem -
+		// either way the caller gets a real message instead of a bare
+		// "HTTP error! status: 500".
+		async function readJsonOrThrow(response) {
+			let data;
+			try {
+				data = await response.json();
+			} catch (_) {
+				data = null;
+			}
+			if (!response.ok) {
+				throw new Error((data && data.error) || `HTTP error! status: ${response.status}`);
+			}
+			if (data && data.error) {
+				throw new Error(data.error);
+			}
+			return data;
+		}
+
+		// A fetch() network failure (server not running at all) throws a bare
+		// TypeError with no useful message - that's the only case that should
+		// show "server disconnected". Any other error (HTTP error status,
+		// or a 200 response carrying {error: ...}) is the server reporting a
+		// real problem (e.g. an invalid search condition), and its actual
+		// message should reach the user instead of being replaced by the
+		// generic disconnected dialog.
+		function showFetchError(error) {
+			document.querySelectorAll('dialog').forEach(d => d.close());
+			const dialog = document.createElement('dialog');
+			if (error instanceof TypeError) {
 				dialog.innerHTML = `
 					<h3>${t('server_disconnected_title')}</h3>
 					<p>${t('server_disconnected_body')}</p>
@@ -2374,21 +2422,23 @@
 						<button class="dialog-confirm">${t('ok_btn')}</button>
 					</div>
 				`;
-				document.body.appendChild(dialog);
-				dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
-				dialog.showModal();
-				return;				
-				
-				
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('cancelButton').style.display = 'none';
-                AppState.currentSearchId = null;
-            }
+			} else {
+				dialog.innerHTML = `
+					<h3>${t('search_error_title')}</h3>
+					<p>${error.message}</p>
+					<div class="dialog-buttons">
+						<button class="dialog-confirm">${t('ok_btn')}</button>
+					</div>
+				`;
+			}
+			document.body.appendChild(dialog);
+			dialog.querySelector('.dialog-confirm').addEventListener('click', () => {
+				dialog.close();
+				document.body.removeChild(dialog);
+			});
+			dialog.showModal();
+		}
 
-        }
-		
-		
 		function showValidationError(errors) {
 			document.querySelectorAll('dialog').forEach(d => d.close());
 			const msgs = Array.isArray(errors) && errors.length
@@ -2414,17 +2464,7 @@
 			const query = document.getElementById('ftsQueryInput').value.trim();
 			
 			if (!query) {
-				const dialog = document.createElement('dialog');
-				dialog.innerHTML = `
-					<h3>${t('field_required_title')}</h3>
-					<p>${t('enter_search_term')}</p>
-					<div class="dialog-buttons">
-						<button class="dialog-confirm">${t('ok_btn')}</button>
-					</div>
-				`;
-				document.body.appendChild(dialog);
-				dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
-				dialog.showModal();
+				showValidationError([t('enter_search_term')]);
 				return;
 			}
 			
@@ -2441,10 +2481,7 @@
 			document.getElementById('loading').style.display = 'block';
 			document.getElementById('cancelButton').style.display = 'inline-block';
 			document.getElementById('clearResultsButton').style.display = 'none';
-			document.getElementById('resultsTable').innerHTML = '';
-			document.getElementById('pagination').innerHTML = '';
-			document.getElementById('resultsCount').textContent = '';
-			document.getElementById('executionTime').textContent = '';
+			resetResultsDisplay();
 
 			// Save the last FTS query
 			AppState.lastFtsQuery = query;
@@ -2472,15 +2509,7 @@
 					signal
 				});
 
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-
-				const data = await response.json();
-
-				if (data.error) {
-					throw new Error(data.error);
-				}
+				const data = await readJsonOrThrow(response);
 
 				if (data.count !== null && data.count !== undefined) {
 					AppState.cachedCount = data.count;
@@ -2496,20 +2525,8 @@
 					console.log('Búsqueda cancelada por el usuario');
 					return;
 				}
-				
-				const dialog = document.createElement('dialog');
-				dialog.innerHTML = `
-					<h3>${t('server_disconnected_title')}</h3>
-					<p>${t('server_disconnected_body')}</p>
-					<p>${t('server_disconnected_body2')}</p>
-					<div class="dialog-buttons">
-						<button class="dialog-confirm">${t('ok_btn')}</button>
-					</div>
-				`;
-				document.body.appendChild(dialog);
-				dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
-				dialog.showModal();
-				return;        
+				showFetchError(error);
+				return;
 			} finally {
 				document.getElementById('loading').style.display = 'none';
 				document.getElementById('cancelButton').style.display = 'none';
@@ -2744,24 +2761,7 @@
 				console.error('Error en exportToCSV:', error);
 
 				if (loadingModal && document.body.contains(loadingModal)) {
-					updateProgressBar(loadingModal, -1);
-					updateLoadingMessage(loadingModal, `Error: ${error.message}`);
-					
-					// Add a button to close the modal after an error
-					const closeBtn = document.createElement('button');
-					closeBtn.textContent = t('close_btn');
-					closeBtn.className = 'close-error-btn';
-					closeBtn.onclick = () => {
-						if (exportInterval) clearInterval(exportInterval);
-						document.body.removeChild(loadingModal);
-					};
-					
-					const loadingContent = loadingModal.querySelector('.loading-content');
-					// Clear existing buttons
-					const existingButtons = loadingContent.querySelectorAll('button');
-					existingButtons.forEach(btn => loadingContent.removeChild(btn));
-					
-					loadingContent.appendChild(closeBtn);
+					showExportErrorInModal(loadingModal, exportInterval, error);
 				} else {
 					alert(t('csv_export_error_alert') + error.message);
 				}
@@ -2888,6 +2888,47 @@
 			return modal;
 		}
 
+		// One click + one dblclick listener on the (never-replaced) #resultsTable
+		// container, instead of two per <td>: event.target.closest('td') finds
+		// the actual cell regardless of how many times the table inside has
+		// been rebuilt by displayResults(). Click expands/collapses a cell
+		// (single-click, after a short delay so a dblclick can cancel it);
+		// dblclick selects the cell's text and copies it.
+		let _resultsClickTimer = null;
+
+		function handleResultsTableClick(event) {
+			const cell = event.target.closest('td');
+			if (!cell) return;
+			clearTimeout(_resultsClickTimer);
+			_resultsClickTimer = setTimeout(() => {
+				const currentlyExpanded = cell.classList.contains('expanded');
+				document.querySelectorAll('.table td.expanded').forEach(td => {
+					td.classList.remove('expanded');
+				});
+				if (!currentlyExpanded) cell.classList.add('expanded');
+			}, 220);
+		}
+
+		function handleResultsTableDblClick(event) {
+			const cell = event.target.closest('td');
+			if (!cell) return;
+			event.stopPropagation();
+			event.preventDefault();
+			clearTimeout(_resultsClickTimer);
+			const sel = window.getSelection();
+			const range = document.createRange();
+			range.selectNodeContents(cell);
+			sel.removeAllRanges();
+			sel.addRange(range);
+			navigator.clipboard.writeText(cell.textContent.trim()).then(showCopyToast);
+		}
+
+		function setupResultsTableDelegation() {
+			const resultsTable = document.getElementById('resultsTable');
+			resultsTable.addEventListener('click', handleResultsTableClick);
+			resultsTable.addEventListener('dblclick', handleResultsTableDblClick);
+		}
+
 		function displayResults(data) {
 			const resultsCard = document.querySelector('.results-card');
 			document.getElementById('loading').style.display = 'none';
@@ -2917,9 +2958,9 @@
 			const formattedCount = numFmt.format(displayCount);
 
 			resultsCount.innerHTML = `
-				<span class="results-count">${formattedCount} records</span>
+				<span class="results-count">${formattedCount} ${t('total_records_suffix')}</span>
 			`;
-			executionTime.textContent = `Time: ${formatDuration(execution_time)}`;
+			executionTime.textContent = `${t('time_label')} ${formatDuration(execution_time)}`;
 
 			if (displayCount > 0) {
 				exportButton.style.display = 'block';
@@ -2950,15 +2991,17 @@
 					resizeHandle.addEventListener('dblclick', function(e) {
 						e.stopPropagation();
 						const cells = table.querySelectorAll(`tbody tr td:nth-child(${colIdx + 1})`);
-						const measurer = document.createElement('span');
-						measurer.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:0.94rem Roboto,sans-serif;padding:0 12px;';
-						document.body.appendChild(measurer);
+						// canvas.measureText() never touches layout, unlike the
+						// previous approach (write cell.textContent into a hidden
+						// span, then immediately read its offsetWidth): that forced
+						// one synchronous reflow per row on every double-click.
+						const measureCanvas = document.createElement('canvas').getContext('2d');
+						measureCanvas.font = cells.length ? getComputedStyle(cells[0]).font : getComputedStyle(th).font;
 						let maxWidth = th.offsetWidth;
 						cells.forEach(cell => {
-							measurer.textContent = cell.textContent;
-							maxWidth = Math.max(maxWidth, measurer.offsetWidth);
+							const textWidth = measureCanvas.measureText(cell.textContent).width + 24; // matches the old span's "padding:0 12px"
+							maxWidth = Math.max(maxWidth, textWidth);
 						});
-						document.body.removeChild(measurer);
 						const newWidth = Math.min(maxWidth + 8, 600) + 'px';
 						th.style.maxWidth = newWidth;
 						th.style.width = newWidth;
@@ -2981,34 +3024,12 @@
 					
 					orderedColumns.forEach(col => {
 						const td = document.createElement("td");
-						td.textContent = row[col] || "";
-						
-						// Expand/collapse with a single click; copy with a double click
-						let _clickTimer = null;
-						td.addEventListener('click', function() {
-							const cell = this;
-							clearTimeout(_clickTimer);
-							_clickTimer = setTimeout(() => {
-								const currentlyExpanded = cell.classList.contains('expanded');
-								document.querySelectorAll('.table td.expanded').forEach(td => {
-									td.classList.remove('expanded');
-								});
-								if (!currentlyExpanded) cell.classList.add('expanded');
-							}, 220);
-						});
-
-						td.addEventListener('dblclick', function(e) {
-							e.stopPropagation();
-							e.preventDefault();
-							clearTimeout(_clickTimer);
-							const sel = window.getSelection();
-							const range = document.createRange();
-							range.selectNodeContents(this);
-							sel.removeAllRanges();
-							sel.addRange(range);
-							navigator.clipboard.writeText(this.textContent.trim()).then(showCopyToast);
-						});
-						
+						td.textContent = (row[col] === null || row[col] === undefined) ? "" : row[col];
+						// Click (expand/collapse) and double-click (copy) are handled by
+						// one delegated listener each on #resultsTable (see
+						// setupResultsTableDelegation), instead of two listeners per
+						// cell - a default 50x23 page would otherwise allocate 2,300
+						// closures on every single search or page turn.
 						tr.appendChild(td);
 					});
 					tbody.appendChild(tr);
@@ -3027,27 +3048,16 @@
 				
 				toggleBtn.onclick = function() {
 					const isExpanded = this.dataset.state === 'expanded';
-					const allCells = document.querySelectorAll('.table td');
-					
-					allCells.forEach(cell => {
-						if (isExpanded) {
-							cell.style.whiteSpace = 'nowrap';
-							cell.style.overflow = 'hidden';
-							cell.style.maxWidth = '';
-						} else {
-							cell.style.whiteSpace = 'normal';
-							cell.style.overflow = 'visible';
-							cell.style.maxWidth = 'none';
-						}
-						
-						// Keep the background color according to the row class
-						if (cell.parentElement.classList.contains('even-row')) {
-							cell.style.backgroundColor = '#ffffff';
-						} else {
-							cell.style.backgroundColor = '#f9f9f9';
-						}
+					// Same '.expanded' class the single-cell click handler uses:
+					// its background-color: inherit already picks up the right
+					// even/odd-row shade from the <tr>, so there's no need to
+					// duplicate those colors here (the old inline-style version
+					// of this hardcoded '#f9f9f9', which didn't even match the
+					// '#f0f0f0' the CSS actually uses for odd rows).
+					document.querySelectorAll('.table td').forEach(cell => {
+						cell.classList.toggle('expanded', !isExpanded);
 					});
-					
+
 					this.dataset.state = isExpanded ? 'collapsed' : 'expanded';
 					this.textContent = isExpanded ? t('expand_rows') : t('collapse_rows');
 					
@@ -3108,21 +3118,25 @@
 			const extraWideColumns = ["Secuencia", "Sequence"];
 
 			// Get headers
-			const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
-			
-			// First pass: analyze the actual content to determine optimal widths
+			const headerCellEls = Array.from(table.querySelectorAll('thead th'));
+			const headers = headerCellEls.map(th => th.textContent);
+
+			// First pass: analyze the actual content to determine optimal widths,
+			// keeping the cell references themselves so the second pass doesn't
+			// have to re-query the whole table per column via nth-child.
 			const colContentLengths = headers.map(() => []);
-			
+			const colCells = headers.map(() => []);
+
 			// Collect content lengths for each column
 			const rows = table.querySelectorAll('tbody tr');
 			rows.forEach(row => {
 				const cells = row.querySelectorAll('td');
 				cells.forEach((cell, index) => {
-					const content = cell.textContent;
-					colContentLengths[index].push(content.length);
+					colContentLengths[index].push(cell.textContent.length);
+					colCells[index].push(cell);
 				});
 			});
-			
+
 			// Compute stats for each column
 			const colStats = colContentLengths.map(lengths => {
 				if (lengths.length === 0) return { max: 0, avg: 0 };
@@ -3130,13 +3144,13 @@
 				const avg = lengths.reduce((sum, len) => sum + len, 0) / lengths.length;
 				return { max, avg };
 			});
-			
+
 			// Apply widths based on content and predefined categories
 			headers.forEach((header, index) => {
 				const stats = colStats[index];
-				const columnCells = Array.from(table.querySelectorAll(`tr td:nth-child(${index + 1})`));
-				const headerCell = table.querySelector(`th:nth-child(${index + 1})`);
-				
+				const columnCells = colCells[index];
+				const headerCell = headerCellEls[index];
+
 				let widthClass = '';
 				let maxWidth = '';
 				
@@ -3190,32 +3204,21 @@
 			});
 
 			// Wait a moment for the browser to apply the styles, then check for actual truncation
-			setTimeout(() => {
-				document.querySelectorAll('.table td').forEach(cell => {
-					// Compare the actual width needed with the available width
-					if (cell.scrollWidth > cell.clientWidth) {
-						cell.setAttribute('title', cell.textContent);
-						cell.classList.add('truncated');
-					} else {
-						cell.classList.remove('truncated');
-						cell.removeAttribute('title');
-					}
-				});
-			}, 50);
-			
+			setTimeout(detectTruncatedCells, 50);
+
 			// Make sure the table's total width is at least 100%
 			table.style.minWidth = '100%';
 
-			// Add a listener for window resizing
-			window.removeEventListener('resize', detectTruncatedCells); // Remove any previous listeners
-			window.addEventListener('resize', detectTruncatedCells);
+			// Add a (debounced) listener for window resizing
+			window.removeEventListener('resize', debouncedDetectTruncatedCells); // Remove any previous listeners
+			window.addEventListener('resize', debouncedDetectTruncatedCells);
 		}
 
 		// Separate function to detect truncated cells (for use with resize events)
 		function detectTruncatedCells() {
 			document.querySelectorAll('.table td').forEach(cell => {
-				// Skip cells that are already expanded
-				if (cell.style.whiteSpace === 'normal') return;
+				// Skip cells that are already expanded (single-cell click or "expand all")
+				if (cell.classList.contains('expanded')) return;
 				
 				if (cell.scrollWidth > cell.clientWidth) {
 					cell.setAttribute('title', cell.textContent);
@@ -3226,9 +3229,12 @@
 				}
 			});
 		}
-		
-		
-		
+
+		// A stable reference (not a fresh closure per call) so add/removeEventListener
+		// above always target the same function - otherwise every adjustColumnWidths()
+		// call would leak one more resize listener instead of replacing the last one.
+		const debouncedDetectTruncatedCells = debounce(detectTruncatedCells, 100);
+
 		function formatWithSpaces(digitsStr) {
 			return digitsStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 		}
@@ -3369,7 +3375,7 @@
 		
 		// Function to adjust the frame height
 		function adjustTableFrame() {
-			const headerHeight = document.querySelector('.card-header').offsetHeight;
+			const headerHeight = document.getElementById('resultsCardHeader').offsetHeight;
 			const paginationHeight = document.getElementById('pagination').offsetHeight;
 			const windowHeight = window.innerHeight;
 			
@@ -3384,103 +3390,6 @@
 		window.addEventListener('resize', debounce(adjustTableFrame, 100));
 
         
-        function explainQuery() {
-            document.getElementById('explainPanel').style.display = 'block';
-            document.getElementById('explainResults').textContent = t('analyzing_query');
-            
-            if (AppState.activeSearchType === 'fts') {
-                const query = document.getElementById('ftsQueryInput').value.trim();
-                
-				if (!query) {
-					const dialog = document.createElement('dialog');
-					dialog.innerHTML = `
-						<h3>${t('field_required_title')}</h3>
-						<p>${t('enter_search_term')}</p>
-						<div class="dialog-buttons">
-							<button class="dialog-confirm">${t('ok_btn')}</button>
-						</div>
-					`;
-					document.body.appendChild(dialog);
-					dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
-					dialog.showModal();
-					return;
-				}
-                
-                fetch('/api/explain', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        search_type: 'fts',
-                        query: query 
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        document.getElementById('explainResults').textContent = t('error_prefix') + data.error;
-                        return;
-                    }
-                    
-                    const planText = data.plan.map(item => 
-                        JSON.stringify(item, null, 2)
-                    ).join('\n');
-                    
-                    document.getElementById('explainResults').textContent = planText;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('explainResults').textContent = t('explain_query_error') + error;
-                });
-            } else {
-                const { conditions, errors } = getSearchConditions();
-
-				if (conditions.length === 0) {
-					const dialog = document.createElement('dialog');
-					dialog.innerHTML = `
-						<h3>${t('field_required_title')}</h3>
-						<p>${t('select_field_and_term')}</p>
-						<div class="dialog-buttons">
-							<button class="dialog-confirm">${t('ok_btn')}</button>
-						</div>
-					`;
-					document.body.appendChild(dialog);
-					dialog.querySelector('.dialog-confirm').addEventListener('click', () => dialog.close());
-					dialog.showModal();
-					return;
-				}
-
-                fetch('/api/explain', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ conditions })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        document.getElementById('explainResults').textContent = t('error_prefix') + data.error;
-                        return;
-                    }
-                    
-                    const planText = data.plan.map(item => 
-                        JSON.stringify(item, null, 2)
-                    ).join('\n');
-                    
-                    document.getElementById('explainResults').textContent = planText;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('explainResults').textContent = t('explain_query_error') + error;
-                });
-            }
-        }
-
-
-
-
 		function setupAutocomplete() {
 			let currentFocus = -1;
 			let hasSelection = false; // Flag to track whether a suggestion was selected
@@ -3492,7 +3401,7 @@
 						resultsDiv.innerHTML = "";
 
 						if (!data.results?.length) {
-							resultsDiv.innerHTML = "<div class='autocomplete-item'>No hay resultados</div>";
+							resultsDiv.innerHTML = `<div class='autocomplete-item'>${t('autocomplete_no_results')}</div>`;
 							return;
 						}
 
@@ -3516,13 +3425,13 @@
 					})
 					.catch(error => {
 						console.error("Error en autocompletar:", error);
-						resultsDiv.innerHTML = "<div class='autocomplete-item'>Error al buscar</div>";
+						resultsDiv.innerHTML = `<div class='autocomplete-item'>${t('autocomplete_error')}</div>`;
 					});
 			}, 300);
 
 		document.addEventListener('input', function(event) {
 				const input = event.target;
-				if (!input.matches('.value-input, #ftsQueryInput')) return;
+				if (!input.matches('.value-input, .value2-input, #ftsQueryInput')) return;
 
 				const resultsDiv = input.nextElementSibling?.classList?.contains('autocomplete-dropdown')
 					? input.nextElementSibling
@@ -3542,7 +3451,7 @@
 			
 			document.addEventListener('keydown', function(event) {
 				const input = event.target;
-				if (!input.matches('.value-input, #ftsQueryInput')) return;
+				if (!input.matches('.value-input, .value2-input, #ftsQueryInput')) return;
 				
 				const resultsDiv = input.nextElementSibling;
 				if (!resultsDiv?.classList?.contains('autocomplete-dropdown')) return;
@@ -3590,14 +3499,14 @@
 					
 			// Hide dropdown when clicking outside
 			document.addEventListener('click', function(event) {
-				if (!event.target.matches('.value-input, #ftsQueryInput, .autocomplete-item, .autocomplete-item *')) {
+				if (!event.target.matches('.value-input, .value2-input, #ftsQueryInput, .autocomplete-item, .autocomplete-item *')) {
 					clearAllAutocompleteDropdowns();
 				}
 			});
 			
 			// Clear autocomplete on Enter
 			document.addEventListener('keydown', function(event) {
-				if (event.key === 'Enter' && event.target.matches('.value-input, #ftsQueryInput')) {
+				if (event.key === 'Enter' && event.target.matches('.value-input, .value2-input, #ftsQueryInput')) {
 					clearAutocomplete(event.target.nextElementSibling);
 				}
 			});
@@ -3662,7 +3571,7 @@
 		// Shut down the server and terminal window when the browser tab is closed
 		window.addEventListener("unload", function () {
 			if (skipShutdownOnUnload) return;
-			navigator.sendBeacon("http://127.0.0.1:5001/shutdown");
+			navigator.sendBeacon("/shutdown");
 		});
 		
 		function scrollToResults() {
@@ -3763,24 +3672,43 @@
 				// collapsed spaces, no accents) and deduplicated case-insensitively,
 				// so the count shown matches the terms that are actually
 				// searched for.
+				//
+				// Processed in chunks via setTimeout instead of one single loop:
+				// this feature explicitly supports big term lists, and a plain
+				// for-loop over several hundred thousand lines would freeze the
+				// tab (no repaint, no input) for the whole parse.
+				const lines = e.target.result.split(/\r?\n/);
 				const seen = new Set();
 				const unique = [];
-				for (const line of e.target.result.split(/\r?\n/)) {
-					const val = stripAccents(line.replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
-					if (!val) continue;
-					const key = val.toLowerCase();
-					if (seen.has(key)) continue;
-					seen.add(key);
-					unique.push(val);
-				}
-				BatchState.values[n - 1] = unique;
-				BatchState.names[n - 1]  = file.name;
+				const CHUNK_LINES = 20000;
+				let i = 0;
 
-				document.getElementById(`batchFileName${n}`).textContent  = file.name;
-				document.getElementById(`batchFileCount${n}`).textContent = `${numFmt.format(unique.length)} ${t('unique_values')}`;
-				document.getElementById(`batchHint${n}`).classList.add('d-none');
-				document.getElementById(`batchFileInfo${n}`).classList.remove('d-none');
-				document.getElementById(`batchDropZone${n}`).classList.add('loaded');
+				function processChunk() {
+					const end = Math.min(i + CHUNK_LINES, lines.length);
+					for (; i < end; i++) {
+						const val = stripAccents(lines[i].replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
+						if (!val) continue;
+						const key = val.toLowerCase();
+						if (seen.has(key)) continue;
+						seen.add(key);
+						unique.push(val);
+					}
+					if (i < lines.length) {
+						setTimeout(processChunk, 0);
+						return;
+					}
+
+					BatchState.values[n - 1] = unique;
+					BatchState.names[n - 1]  = file.name;
+
+					document.getElementById(`batchFileName${n}`).textContent  = file.name;
+					document.getElementById(`batchFileCount${n}`).textContent = `${numFmt.format(unique.length)} ${t('unique_values')}`;
+					document.getElementById(`batchHint${n}`).classList.add('d-none');
+					document.getElementById(`batchFileInfo${n}`).classList.remove('d-none');
+					document.getElementById(`batchDropZone${n}`).classList.add('loaded');
+				}
+
+				processChunk();
 			};
 			reader.readAsText(file);
 		}
@@ -4070,7 +3998,7 @@
 		function showBatchDialog(msg) {
 			const d = document.createElement('dialog');
 			d.innerHTML = `
-				<h3>⛔ Error</h3>
+				<h3>${t('batch_error_title')}</h3>
 				<p>${msg}</p>
 				<div class="dialog-buttons">
 					<button class="dialog-confirm">${t('ok_btn')}</button>

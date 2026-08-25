@@ -133,10 +133,31 @@ EXPORT_TIMEOUT = 3600  # 1 hour timeout
 fasta_exports  = {}
 csv_exports    = {}
 batch_exports  = {}
+exports_lock   = threading.Lock()
 
 # Active searches: {search_id: connection} so they can be interrupted
 active_searches = {}
 active_searches_lock = threading.Lock()
+
+# Entries are never removed once an export finishes (only the on-disk files
+# get pruned, via _prune_export_dir), so a long-lived server would otherwise
+# accumulate one dict entry per export ever started. Called right after
+# adding a new entry, under exports_lock, so pruning can't race a status read.
+EXPORT_STATUS_KEEP = 200
+
+def _prune_export_status(status_dict, keep=EXPORT_STATUS_KEEP):
+    """Drops the oldest finished entries once there are more than `keep`.
+    Entries still 'processing' are never dropped."""
+    with exports_lock:
+        finished = [
+            (eid, st) for eid, st in status_dict.items()
+            if st.get('status') != 'processing'
+        ]
+        if len(finished) <= keep:
+            return
+        finished.sort(key=lambda kv: kv[1].get('start_time') or datetime.min)
+        for eid, _ in finished[:len(finished) - keep]:
+            status_dict.pop(eid, None)
 
 DATABASE_PATH = os.path.join(_PROJECT_ROOT, "app", "bold_db.db")
 
@@ -462,9 +483,14 @@ def get_technical_name(friendly_name):
     return REVERSE_MAPPING.get(friendly_name, friendly_name)
 
 
-def build_where_clause(conditions):
+def build_where_clause(conditions, technical_columns):
     """
     Builds a WHERE clause with support for AND, OR, NOT and parenthesized grouping.
+
+    `technical_columns` (the real column names from get_column_names()) is
+    required: it's the whitelist that keeps a condition's column name from
+    being interpolated into the SQL as a bare, unchecked identifier.
+
     Expected structure:
     [
         {
@@ -502,19 +528,27 @@ def build_where_clause(conditions):
             continue
         elif condition_type == 'GROUP_END':
             if group_level > 0:
-                query_parts.append(')')
                 group_level -= 1
+                if query_parts and query_parts[-1] == '(':
+                    # Nothing was added inside: drop the empty "()" rather
+                    # than emitting invalid SQL.
+                    query_parts.pop()
+                else:
+                    query_parts.append(')')
             continue
-        
+
         # Normal conditions
         column_friendly = condition.get('column')
         column = get_technical_name(column_friendly) if column_friendly else None
         operator = condition.get('operator')
         value = condition.get('value')
-        
+
         if not all([column, operator]):
             continue
-        
+
+        if column not in technical_columns:
+            raise ValueError(t('invalid_search_conditions'))
+
         # Build the individual condition
         value2 = condition.get('value2')
         condition_query = build_single_condition(column, operator, value, parameters, value2)
@@ -537,8 +571,11 @@ def build_where_clause(conditions):
 
     # Close any group left open
     while group_level > 0:
-        query_parts.append(')')
         group_level -= 1
+        if query_parts and query_parts[-1] == '(':
+            query_parts.pop()
+        else:
+            query_parts.append(')')
 
     if not query_parts:
         raise ValueError(t('invalid_search_conditions'))
@@ -577,7 +614,7 @@ def build_single_condition(column, operator, value, parameters, value2=None):
         parameters.append(value)
         return f"CAST({column} AS REAL) < CAST(? AS REAL)"
     elif operator == 'BETWEEN':
-        if not value or not value2:
+        if value in (None, '') or value2 in (None, ''):
             return None
         try:
             v1, v2 = float(value), float(value2)
@@ -766,6 +803,12 @@ def search():
     conditions = data.get('conditions', [])
     page = data.get('page', 1)
     per_page = data.get('per_page', 100)
+    try:
+        per_page = int(per_page)
+    except (TypeError, ValueError):
+        per_page = 100
+    if per_page < 1:
+        per_page = 100
 
     if not conditions:
         return jsonify({'error': t('no_search_conditions')}), 400
@@ -780,7 +823,7 @@ def search():
     skip_count = data.get('skip_count', False)
 
     try:
-        where_clause, parameters = build_where_clause(conditions)
+        where_clause, parameters = build_where_clause(conditions, technical_columns)
 
         offset = (page - 1) * per_page
         data_query = f"SELECT * FROM {table_name} WHERE {where_clause} LIMIT ? OFFSET ?"
@@ -852,6 +895,12 @@ def search_fts(data, start_time, search_id=None):
     query = data.get('query', '').strip()
     page = data.get('page', 1)
     per_page = data.get('per_page', 100)
+    try:
+        per_page = int(per_page)
+    except (TypeError, ValueError):
+        per_page = 100
+    if per_page < 1:
+        per_page = 100
 
     if not query:
         return jsonify({'error': t('no_search_query')}), 400
@@ -960,8 +1009,10 @@ def autocomplete():
             results = cursor.fetchall()
 
         else:
-            _, main_table = get_column_names()
-            columns = AUTOCOMPLETE_COLUMNS
+            technical_columns, main_table = get_column_names()
+            columns = [c for c in AUTOCOMPLETE_COLUMNS if c in technical_columns]
+            if not columns:
+                return jsonify({"results": []})
             sql_query = f"""
                 SELECT {', '.join(columns)}
                 FROM {main_table}
@@ -1014,6 +1065,7 @@ def start_fasta_export():
             'start_time': datetime.now(),
             'last_update': datetime.now()
         }
+        _prune_export_status(fasta_exports)
 
         # Start export thread
         thread = threading.Thread(
@@ -1052,6 +1104,16 @@ def get_fasta_export_status(export_id):
         'message': status['message'],
         'download_url': f'/api/download_fasta/{export_id}' if status['filename'] else None
     })
+
+
+@app.route('/api/cancel_fasta_export/<export_id>', methods=['POST'])
+def cancel_fasta_export(export_id):
+    """Marks a running FASTA export as cancelled; process_fasta_export checks
+    this status between batches and stops (see line ~1237)."""
+    if export_id not in fasta_exports:
+        return jsonify({'ok': False, 'error': t('invalid_export_id')}), 404
+    fasta_exports[export_id]['status'] = 'cancelled'
+    return jsonify({'ok': True})
 
 
 @app.route('/api/download_fasta/<export_id>', methods=['GET'])
@@ -1126,7 +1188,8 @@ def build_optimized_fasta_query(request_data):
         if not conditions:
             raise ValueError(t('no_search_conditions'))
 
-        where_clause, params = build_where_clause(conditions)
+        technical_columns, _ = get_column_names()
+        where_clause, params = build_where_clause(conditions, technical_columns)
 
         if where_clause:
             where_clause += " AND (col_nuc IS NOT NULL AND col_nuc != '')"
@@ -1145,40 +1208,6 @@ def build_optimized_fasta_query(request_data):
         return data_query, params
         
         
-
-def convert_to_fasta_batch(rows):
-    """Converts a whole batch of rows to FASTA format at once"""
-    fasta_entries = []
-
-    for row in rows:
-        # Use numeric indices for better performance with sqlite3.Row
-        id_bold = row[0] or ''
-        id_muestra = (row[1] or '').replace(' ', '_')
-        bin_uri = row[2] or ''
-        # Most specific taxon available: Species > Genus > Family > Order > Class > Phylum > Kingdom
-        taxon = get_best_taxon(row[3], row[4], row[5], row[6], row[7], row[8], row[9])
-        marker = row[10] or ''
-        sequence = row[11] or ''
-
-        if not sequence:
-            continue
-
-        # Clean the sequence more efficiently
-        # Build a translation table to remove unwanted characters
-        translation_table = str.maketrans('', '', '-Nn')
-        sequence = sequence.translate(translation_table).strip()
-
-        if not sequence:
-            continue
-
-        # Build the header more efficiently
-        header_parts = [str(part) for part in [id_bold, id_muestra, bin_uri, taxon, marker] if part]
-        header = "|".join(header_parts)
-        
-        fasta_entries.append(f">{header}\n{sequence}\n")
-    
-    return ''.join(fasta_entries)
-
 
 @contextmanager
 def get_export_connection():
@@ -1309,42 +1338,6 @@ def process_fasta_export(export_id, request_data):
         traceback.print_exc()
             
 
-def convert_to_fasta_entry(row):
-    """Converts a database row to FASTA format"""
-    id_bold = row.get('col_processid', '') or ''
-    id_muestra = (row.get('col_sampleid') or '').replace(' ', '_')
-    bin_uri = row.get('col_bin_uri', '') or ''
-    # Most specific taxon available: Species > Genus > Family > Order > Class > Phylum > Kingdom
-    taxon = get_best_taxon(
-        row.get('col_species'), row.get('col_genus'), row.get('col_family'),
-        row.get('col_order'), row.get('col_class'), row.get('col_phylum'),
-        row.get('col_kingdom')
-    )
-    marker = row.get('col_marker_code', '') or ''
-    sequence = row.get('col_nuc', '') or ''
-    
-    if not sequence:
-        return None
-    
-    # Clean the sequence
-    sequence = sequence.replace('-', '').strip('Nn')
-
-    if not sequence:
-        return None
-
-    # Build the header
-    header_parts = []
-    if id_bold: header_parts.append(str(id_bold))
-    if id_muestra: header_parts.append(str(id_muestra))
-    if bin_uri: header_parts.append(str(bin_uri))
-    if taxon: header_parts.append(str(taxon))
-    if marker: header_parts.append(str(marker))
-    
-    header = "|".join(header_parts)
-    return f">{header}\n{sequence}\n"
-
-
-
 @app.route('/api/export_csv', methods=['POST'])
 def export_csv():
     try:
@@ -1368,6 +1361,7 @@ def export_csv():
             'start_time': datetime.now(),
             'last_update': datetime.now()
         }
+        _prune_export_status(csv_exports)
 
         thread = threading.Thread(
             target=process_export,
@@ -1419,6 +1413,9 @@ def process_export(data, export_path, export_id, export_filename, include_nuc=Tr
                 csv_writer.writerow(friendly_headers)
 
                 while batch:
+                    if csv_exports[export_id].get('status') == 'cancelled':
+                        break
+
                     for row in batch:
                         csv_writer.writerow('' if row[i] is None else str(row[i]) for i in col_indices)
                         total_rows += 1
@@ -1435,6 +1432,11 @@ def process_export(data, export_path, export_id, export_filename, include_nuc=Tr
                         last_update_time = current_time
 
                     batch = cursor.fetchmany(BATCH_SIZE)
+
+        if csv_exports[export_id].get('status') == 'cancelled':
+            if os.path.exists(export_path):
+                os.remove(export_path)
+            return
 
         duration = datetime.now() - csv_exports[export_id]['start_time']
         duration_str = f"{int(duration.total_seconds() // 60)}m {int(duration.total_seconds() % 60)}s"
@@ -1489,7 +1491,8 @@ def prepare_query(data, include_nuc=True):
         if not conditions:
             raise ValueError(t('no_search_conditions'))
 
-        where_clause, parameters = build_where_clause(conditions)
+        technical_columns, _ = get_column_names()
+        where_clause, parameters = build_where_clause(conditions, technical_columns)
         data_query = f"SELECT {col_select} FROM bold_records WHERE {where_clause}"
 
     return data_query, parameters
@@ -1510,6 +1513,16 @@ def export_status(export_id):
         'message': status['message'],
         'download_url': f'/api/download_export/{export_id}' if status.get('filename') else None
     })
+
+
+@app.route('/api/cancel_export/<export_id>', methods=['POST'])
+def cancel_csv_export(export_id):
+    """Marks a running CSV export as cancelled; process_export checks this
+    status between batches and stops."""
+    if export_id not in csv_exports:
+        return jsonify({'ok': False, 'error': t('invalid_export_id')}), 404
+    csv_exports[export_id]['status'] = 'cancelled'
+    return jsonify({'ok': True})
 
 
 @app.route('/api/download_export/<export_id>', methods=['GET'])
@@ -1557,54 +1570,22 @@ def explain_query():
     try:
         cursor = conn.cursor()
 
-        # Get the actual table name
-        _, table_name = get_column_names()
+        # Reuse the exact same clause builder /api/search uses, instead of a
+        # separate hand-rolled one: keeps the shown plan from silently
+        # diverging from the query that actually runs (missing operators,
+        # missing COLLATE NOCASE, ignored OR/NOT/grouping) and keeps the
+        # column whitelist check in one place.
+        technical_columns, table_name = get_column_names()
+        where_clause, parameters = build_where_clause(conditions, technical_columns)
 
-        # Build the SQL query
-        query_parts = []
-        parameters = []
+        explain_sql = f"EXPLAIN QUERY PLAN SELECT * FROM {table_name} WHERE {where_clause}"
 
-        for condition in conditions:
-            # Convert friendly name to technical name
-            column_friendly = condition.get('column')
-            column = get_technical_name(column_friendly)
-
-            operator = condition.get('operator')
-            value = condition.get('value')
-
-            if not all([column, operator, value]):
-                continue
-
-            if operator == 'LIKE':
-                query_parts.append(f"{column} LIKE ?")
-                parameters.append(f"%{value}%")
-            elif operator == 'EQUALS':
-                query_parts.append(f"{column} = ?")
-                parameters.append(value)
-            elif operator == 'STARTS_WITH':
-                query_parts.append(f"{column} LIKE ?")
-                parameters.append(f"{value}%")
-            elif operator == 'ENDS_WITH':
-                query_parts.append(f"{column} LIKE ?")
-                parameters.append(f"%{value}")
-            elif operator == 'GREATER_THAN':
-                query_parts.append(f"{column} > ?")
-                parameters.append(value)
-            elif operator == 'LESS_THAN':
-                query_parts.append(f"{column} < ?")
-                parameters.append(value)
-
-        if not query_parts:
-            return jsonify({'error': t('invalid_search_conditions_alt')}), 400
-
-        explain_query = f"EXPLAIN QUERY PLAN SELECT * FROM {table_name} WHERE " + " AND ".join(query_parts)
-
-        cursor.execute(explain_query, parameters)
+        cursor.execute(explain_sql, parameters)
         explanation = cursor.fetchall()
         plan = [dict(row) for row in explanation]
         return jsonify({'plan': plan})
-    except sqlite3.Error as e:
-        return jsonify({'error': str(e)}), 500
+    except (ValueError, sqlite3.Error) as e:
+        return jsonify({'error': str(e)}), 400 if isinstance(e, ValueError) else 500
     finally:
         conn.close()
 
@@ -1694,22 +1675,22 @@ def list_static_files():
 @app.route("/shutdown", methods=["POST"])
 def shutdown():
     """Shut down the server and terminal window when the browser tab is closed"""
-    print("✅ Recibida petición de apagado")
+    print("✅ Shutdown request received")
     shutdown_server = request.environ.get("werkzeug.server.shutdown")
     if shutdown_server:
-        print("✅ Señal de apagado procesada correctamente")
+        print("✅ Shutdown signal processed successfully")
         shutdown_server()
-        return "Servidor detenido."
+        return "Server stopped."
     else:
-        print("⚠️ Error: No se encuentra el método de apagado")
+        print("⚠️ Error: shutdown method not found")
         # For more recent versions of Flask/Werkzeug
         try:
             import os, signal
-            print("⏳ Intentando terminar proceso...")
+            print("⏳ Attempting to terminate process...")
             os.kill(os.getpid(), signal.SIGINT)
-            return "Servidor detenido con SIGINT."
-        except:
-            return "⚠ Error: No se puede detener el servidor."
+            return "Server stopped with SIGINT."
+        except Exception:
+            return "⚠ Error: could not stop the server."
 
 # ── Batch search ──────────────────────────────────────────────────────────────
 
@@ -2450,6 +2431,7 @@ def start_batch_search():
             'total_rows': 0,
             'start_time': datetime.now(),
         }
+        _prune_export_status(batch_exports)
 
         threading.Thread(
             target=process_batch_search,

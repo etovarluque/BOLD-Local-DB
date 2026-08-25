@@ -79,7 +79,7 @@ from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 app = Flask(__name__)
 
@@ -541,7 +541,7 @@ def build_where_clause(conditions, technical_columns):
         column_friendly = condition.get('column')
         column = get_technical_name(column_friendly) if column_friendly else None
         operator = condition.get('operator')
-        value = condition.get('value')
+        value = _strip_accents(condition.get('value')) if isinstance(condition.get('value'), str) else condition.get('value')
 
         if not all([column, operator]):
             continue
@@ -549,8 +549,13 @@ def build_where_clause(conditions, technical_columns):
         if column not in technical_columns:
             raise ValueError(t('invalid_search_conditions'))
 
-        # Build the individual condition
+        # Build the individual condition. Values are accent-stripped above:
+        # bold_db_creator.py strips accents from every text field on import
+        # (see _strip_accents there), so the table never has an accented
+        # value to match against — 'México' typed here has to become
+        # 'Mexico' or it would silently match nothing.
         value2 = condition.get('value2')
+        value2 = _strip_accents(value2) if isinstance(value2, str) else value2
         condition_query = build_single_condition(column, operator, value, parameters, value2)
         if not condition_query:
             continue
@@ -987,7 +992,11 @@ def build_case_sensitive_filter(raw_query: str, table_alias: str = ''):
 
 def search_fts(data, start_time, search_id=None):
     """Optimized FTS implementation"""
-    raw_query = data.get('query', '').strip()
+    # Accent-stripped like every text field was on import (see
+    # _strip_accents / bold_db_creator.py's normalize_field): the trigram
+    # tokenizer doesn't fold diacritics, so 'México' would otherwise match
+    # nothing against the accent-free 'Mexico' actually stored.
+    raw_query = _strip_accents(data.get('query', '').strip())
     query = raw_query
     page = data.get('page', 1)
     per_page = data.get('per_page', 100)
@@ -1262,6 +1271,9 @@ def build_optimized_fasta_query(request_data):
             raise ValueError(t('no_search_term'))
         if not fts_table_available():
             raise ValueError(t('fts_unavailable_short'))
+
+        # Accent-stripped like search_fts() does — see the comment there.
+        raw_query = _strip_accents(raw_query)
 
         query = escape_fts_query(raw_query)
 
@@ -1571,6 +1583,8 @@ def prepare_query(data, include_nuc=True):
         if not fts_table_available():
             raise ValueError(t('fts_unavailable_short'))
 
+        # Accent-stripped like search_fts() does — see the comment there.
+        raw_query = _strip_accents(raw_query)
         query = escape_fts_query(raw_query)
 
         cs_clause, cs_params = ('', [])

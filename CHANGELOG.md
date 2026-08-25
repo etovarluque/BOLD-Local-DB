@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [1.1.1]
+
+### Fixed
+- Full-text search and advanced field search both failed to match anything
+  when the user typed accented characters (e.g. searching "México" or
+  "Perú" returned zero results). `bold_db_creator.py` strips accents from
+  every text field on import, so the table never has an accented value to
+  compare against. Both search paths now strip accents from the user's
+  input the same way (`_strip_accents`), matching what Batch Search already
+  did.
+
 ## [1.1.0]
 
 ### Added

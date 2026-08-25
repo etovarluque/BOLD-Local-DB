@@ -730,13 +730,40 @@ STRINGS = {
     },
 }
 
+_lang_override = threading.local()
+
 def get_lang():
+    # Background export/search threads have no Flask request context, so
+    # `request.cookies` would raise RuntimeError there. start_background()
+    # captures the caller's language and stashes it here before the thread
+    # runs, so t() keeps working once the request context is gone.
+    override = getattr(_lang_override, 'value', None)
+    if override:
+        return override
     lang = request.cookies.get('lang', 'en')
     return lang if lang in STRINGS else 'en'
 
 def t(key, **kwargs):
     template = STRINGS[get_lang()].get(key) or STRINGS['en'].get(key, key)
     return template.format(**kwargs) if kwargs else template
+
+def start_background(target, *args, **kwargs):
+    """Starts a daemon thread carrying over the current request's language.
+
+    Plain threading.Thread() gives the new thread no Flask request context,
+    so any t()/get_lang() call inside it would crash with "Working outside
+    of request context" (or, before that was noticed, would silently die on
+    the first status update and leave the export stuck at 0% forever).
+    """
+    lang = get_lang()
+
+    def runner():
+        _lang_override.value = lang
+        target(*args, **kwargs)
+
+    thread = threading.Thread(target=runner, daemon=True)
+    thread.start()
+    return thread
 
 
 @app.route('/')
@@ -1068,12 +1095,7 @@ def start_fasta_export():
         _prune_export_status(fasta_exports)
 
         # Start export thread
-        thread = threading.Thread(
-            target=process_fasta_export,
-            args=(export_id, data),
-            daemon=True
-        )
-        thread.start()
+        start_background(process_fasta_export, export_id, data)
 
         return jsonify({
             'export_id': export_id,
@@ -1363,12 +1385,7 @@ def export_csv():
         }
         _prune_export_status(csv_exports)
 
-        thread = threading.Thread(
-            target=process_export,
-            args=(data, export_path, export_id, export_filename, include_nuc, export_columns),
-            daemon=True
-        )
-        thread.start()
+        start_background(process_export, data, export_path, export_id, export_filename, include_nuc, export_columns)
 
         return jsonify({
             'export_id': export_id,
@@ -2433,11 +2450,7 @@ def start_batch_search():
         }
         _prune_export_status(batch_exports)
 
-        threading.Thread(
-            target=process_batch_search,
-            args=(export_id, fields_data, include_fasta, report),
-            daemon=True,
-        ).start()
+        start_background(process_batch_search, export_id, fields_data, include_fasta, report)
 
         return jsonify({'export_id': export_id})
 

@@ -1300,6 +1300,9 @@
                 status_check_error_prefix: 'Error al verificar estado: ',
                 cancelling_btn: 'Cancelando...',
                 analyzing_query: 'Analizando consulta...',
+                exporting_fasta_title: 'Exportando FASTA',
+                exporting_csv_title: 'Exportando CSV',
+                exporting_generic_title: 'Exportando',
             },
             en: {
                 title_line1: 'DATA', title_line2: 'BASE', title_local: 'Local',
@@ -1413,6 +1416,9 @@
                 status_check_error_prefix: 'Error checking status: ',
                 cancelling_btn: 'Cancelling...',
                 analyzing_query: 'Analyzing query...',
+                exporting_fasta_title: 'Exporting FASTA',
+                exporting_csv_title: 'Exporting CSV',
+                exporting_generic_title: 'Exporting',
             },
         };
 
@@ -2002,7 +2008,7 @@
 
 		// Alias for compatibility with exportToFasta
 		function createLoadingModalF() {
-			return createLoadingModal('Exportando FASTA');
+			return createLoadingModal(t('exporting_fasta_title'));
 		}
 
 		function updateLoadingMessage(modal, message) {
@@ -2615,7 +2621,7 @@
 				return; // cancelled by the user
 			}
 
-			const loadingModal = createLoadingModal('Exportando CSV');
+			const loadingModal = createLoadingModal(t('exporting_csv_title'));
 			let exportInterval = null;
 			
 			try {
@@ -2769,7 +2775,7 @@
 		}
 
 		// Utility functions for the modal and the UI
-		function createLoadingModal(modalTitle = 'Exportando') {
+		function createLoadingModal(modalTitle = t('exporting_generic_title')) {
 			const modal = document.createElement('div');
 			modal.className = 'export-loading-modal';
 			modal.style.position = 'fixed';

@@ -11,10 +11,7 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 - Case-sensitive option for full-text search. The FTS index uses a trigram
   tokenizer that's inherently case-insensitive, so this is implemented as a
   cheap post-filter (`instr()`, case-sensitive in SQLite) applied to the
-  already-narrow `MATCH` results, instead of a second case-sensitive FTS
-  index — which would have roughly doubled both the index's build time and
-  its disk footprint (~12 GB / ~30% of the database on a typical full BOLD
-  dump).
+  already-narrow `MATCH` results.
 
 ### Fixed
 - FASTA/CSV/batch export threads could hang indefinitely at 0% progress.

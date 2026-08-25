@@ -2532,6 +2532,26 @@ PREP_IDX   = len(STEPS)
 FIELDS_IDX = len(STEPS) + 1
 
 
+# ---- data/ initialization ------------------------------------------------------
+#
+# data/ is entirely generated content (see .gitignore) and git never tracks
+# empty folders, so a fresh clone from GitHub has no data/ tree at all — not
+# even data/raw/, where Step 1 expects the downloaded .tar.gz to be dropped.
+# Recreated here on every startup, the same way app/ is, so a first-time user
+# always has somewhere to put the file instead of hitting a missing-folder error.
+
+def _ensure_data_dirs():
+    """Recreates the data/ folder tree (raw, processed, exports/*) if missing."""
+    for parts in (
+        ("data", "raw"),
+        ("data", "processed"),
+        ("data", "exports", "csv_exports"),
+        ("data", "exports", "fasta_exports"),
+        ("data", "exports", "batch_exports"),
+    ):
+        os.makedirs(_proj_dir(*parts), exist_ok=True)
+
+
 # ---- app/ initialization -------------------------------------------------------
 
 def _ensure_app_initialized():
@@ -4062,6 +4082,7 @@ class App(QMainWindow):
         self._elapsed_timer.timeout.connect(self._tick_timer)
         self._log_file    = None
         self._log_flush_t = 0.0
+        _ensure_data_dirs()
         self._init_msg = _ensure_app_initialized()
         self._init_log_file()
         # Before _build(): resize events start arriving as soon as the

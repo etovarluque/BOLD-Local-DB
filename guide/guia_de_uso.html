@@ -599,7 +599,7 @@
 ├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← acceso directo al visor web</span>
 ├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenera los accesos si mueves la carpeta</span>
 ├── <span class="path">data/</span>
-│   ├── <span class="path">raw/</span>          <span class="pin">← aquí debes colocar el archivo descargado de BOLD</span>
+│   ├── <span class="path">raw/</span>          <span class="pin">← aquí debes colocar el archivo descargado de BOLD; se crea sola</span>
 │   ├── <span class="path">processed/</span>    <span class="comment">← archivos intermedios (TSV filtrado); se crea sola</span>
 │   └── <span class="path">exports/</span>      <span class="comment">← copia de todo lo que exportas; se crea sola</span>
 ├── <span class="path">dev/</span>
@@ -612,9 +612,10 @@
     <div class="callout ok">
       <span class="icon">✅</span>
       <div>
-        <strong>No tienes que crear ninguna carpeta a mano</strong>, salvo <code>data/raw/</code> si no existiera.
-        La carpeta <code>app/</code> se genera automáticamente la primera vez que abres el Constructor, con todo
-        lo necesario para el visor web.
+        <strong>No tienes que crear ninguna carpeta a mano.</strong> Al igual que <code>app/</code>, toda la
+        carpeta <code>data/</code> (<code>raw/</code>, <code>processed/</code> y <code>exports/</code>) se genera
+        automáticamente cada vez que abres el Constructor, aunque partas de una copia recién descargada de GitHub
+        sin ninguna de estas carpetas.
       </div>
     </div>
   </section>

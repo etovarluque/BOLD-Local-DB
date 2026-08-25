@@ -98,12 +98,15 @@ BOLD_DB/
 │   │   ├── static/
 │   │   └── templates/
 │   └── screenshots/
-├── data/                      # raw / processed / exports (not versioned)
+├── data/                      # raw / processed / exports (not versioned, auto-created)
 └── guide/                     # user guide (ES/EN)
 ```
 
 The generated database and raw/processed data are **not** part of this
-repository (see `.gitignore`).
+repository (see `.gitignore`). Git doesn't track empty folders, so a fresh
+clone won't include `data/` at all — `dev/bold_db_creator.py` recreates the
+whole `data/raw`, `data/processed` and `data/exports/*` tree on every
+startup, the same way it does for `app/`. No manual folder creation needed.
 
 ## Documentation
 

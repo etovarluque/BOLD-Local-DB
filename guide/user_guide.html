@@ -600,7 +600,7 @@
 ├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← shortcut to the web viewer</span>
 ├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenerates the shortcuts if you move the folder</span>
 ├── <span class="path">data/</span>
-│   ├── <span class="path">raw/</span>          <span class="pin">← place the file downloaded from BOLD here</span>
+│   ├── <span class="path">raw/</span>          <span class="pin">← place the file downloaded from BOLD here; created automatically</span>
 │   ├── <span class="path">processed/</span>    <span class="comment">← intermediate files (filtered TSV); created automatically</span>
 │   └── <span class="path">exports/</span>      <span class="comment">← copy of everything you export; created automatically</span>
 ├── <span class="path">dev/</span>
@@ -613,9 +613,10 @@
     <div class="callout ok">
       <span class="icon">✅</span>
       <div>
-        <strong>You don't have to create any folder by hand</strong>, except <code>data/raw/</code> if it doesn't
-        exist yet. The <code>app/</code> folder is generated automatically the first time you open the Creator,
-        with everything the web viewer needs.
+        <strong>You don't have to create any folder by hand.</strong> Just like <code>app/</code>, the whole
+        <code>data/</code> tree (<code>raw/</code>, <code>processed/</code> and <code>exports/</code>) is generated
+        automatically every time you open the Creator, even if you're starting from a fresh GitHub clone that has
+        none of these folders yet.
       </div>
     </div>
   </section>

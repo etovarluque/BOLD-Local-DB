@@ -2541,7 +2541,13 @@ FIELDS_IDX = len(STEPS) + 1
 # always has somewhere to put the file instead of hitting a missing-folder error.
 
 def _ensure_data_dirs():
-    """Recreates the data/ folder tree (raw, processed, exports/*) if missing."""
+    """Recreates the data/ folder tree (raw, processed, exports/*) if missing.
+
+    Best-effort: a permission error or antivirus lock here must not prevent the
+    window from opening at all, the way an unguarded os.makedirs would (unlike
+    Step 1's own os.makedirs calls, this one runs before any per-step error
+    handling exists to catch it).
+    """
     for parts in (
         ("data", "raw"),
         ("data", "processed"),
@@ -2549,7 +2555,10 @@ def _ensure_data_dirs():
         ("data", "exports", "fasta_exports"),
         ("data", "exports", "batch_exports"),
     ):
-        os.makedirs(_proj_dir(*parts), exist_ok=True)
+        try:
+            os.makedirs(_proj_dir(*parts), exist_ok=True)
+        except OSError:
+            pass
 
 
 # ---- app/ initialization -------------------------------------------------------

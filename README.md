@@ -16,6 +16,7 @@ Two programs, used in order:
    > **Note:** only records with a DNA sequence (`nuc` field) are kept —
    > records without a sequence are discarded during Step 1 (TSV filtering)
    > and never make it into the SQLite database.
+   > That explains the difference in the number of records between the platform database and the local database.
 2. **Web viewer** (`dev/frontend/server.py`) — local Flask web app to search,
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.

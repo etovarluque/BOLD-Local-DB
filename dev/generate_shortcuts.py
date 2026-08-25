@@ -102,13 +102,48 @@ def _generate_macos():
     print("(They can't carry a custom Finder icon; see the README for details.)")
 
 
+# Files a first-time user has no reason to touch: repo/dev metadata plus
+# the "step 0" scripts for OSes they aren't running. GitHub still renders
+# them normally for anyone browsing the project online - this only tidies
+# a local, already-downloaded copy.
+_ROOT_CLUTTER = ("README.md", "CHANGELOG.md", "LICENSE", ".gitignore", ".gitattributes", ".git")
+
+_ALL_GENERATOR_SCRIPTS = (
+    "0_Generate_Shortcuts_Windows.bat",
+    "0_Generate_Shortcuts_Linux.sh",
+    "0_Generate_Shortcuts_macOS.command",
+)
+
+
+def _tidy_root(current_script):
+    """Moves repo clutter and the other OSes' generator scripts into
+    project_files/, so the root only shows what a user actually needs to
+    double-click. Best-effort and idempotent: already-moved items are
+    silently skipped on a re-run (e.g. after moving the project again).
+    """
+    dest = os.path.join(PROJECT_ROOT, "project_files")
+    os.makedirs(dest, exist_ok=True)
+    to_move = _ROOT_CLUTTER + tuple(s for s in _ALL_GENERATOR_SCRIPTS if s != current_script)
+    for name in to_move:
+        src = os.path.join(PROJECT_ROOT, name)
+        if os.path.exists(src):
+            try:
+                shutil.move(src, os.path.join(dest, name))
+            except OSError:
+                pass
+
+
 def main():
     if sys.platform == "win32":
         _generate_windows()
+        current_script = "0_Generate_Shortcuts_Windows.bat"
     elif sys.platform == "darwin":
         _generate_macos()
+        current_script = "0_Generate_Shortcuts_macOS.command"
     else:
         _generate_linux()
+        current_script = "0_Generate_Shortcuts_Linux.sh"
+    _tidy_root(current_script)
 
 
 if __name__ == "__main__":

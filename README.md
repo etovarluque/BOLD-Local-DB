@@ -44,6 +44,11 @@ Two programs, used in order:
    - Windows: `0_Generate_Shortcuts_Windows.bat`
    - Linux: `0_Generate_Shortcuts_Linux.sh`
    - macOS: `0_Generate_Shortcuts_macOS.command`
+
+   This also tidies the project root: repo files you don't need day-to-day
+   (`README.md`, `CHANGELOG.md`, `LICENSE`, `.git*`) and the "step 0"
+   scripts for the *other* two OSes move into `project_files/`, so only the
+   numbered shortcuts for your OS are left to double-click.
    Run it again any time you move the project to another drive, computer or
    user account, to regenerate broken shortcuts. (Or run
    `python dev/generate_shortcuts.py` from a terminal instead, on any OS.)
@@ -84,6 +89,11 @@ BOLD_DB/
 ├── 0_Generate_Shortcuts_macOS.command      # macOS: creates the 1/2 shortcuts
 ├── 1_Create_DB.lnk / .command / .desktop            # generated shortcut, not versioned
 ├── 2_Open_web_viewer_BOLD_DB.lnk / .command / .desktop  # generated shortcut, not versioned
+├── project_files/              # repo metadata + other-OS "step 0" scripts,
+│                                # moved here by generate_shortcuts.py
+│   ├── README.md, CHANGELOG.md, LICENSE
+│   ├── .git/, .gitignore, .gitattributes
+│   └── the two 0_Generate_Shortcuts_* scripts not matching your OS
 ├── dev/
 │   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
 │   ├── bold_db_creator.bat    # Windows launcher, called by 1_Create_DB.lnk

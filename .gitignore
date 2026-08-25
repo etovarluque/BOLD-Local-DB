@@ -31,3 +31,7 @@ Thumbs.db
 /2_Open_web_viewer_BOLD_DB.lnk
 /2_Open_web_viewer_BOLD_DB.desktop
 /2_Open_web_viewer_BOLD_DB.command
+
+# Root tidy-up (created by dev/generate_shortcuts.py on a downloaded copy;
+# should never exist inside an actual dev clone)
+/project_files/

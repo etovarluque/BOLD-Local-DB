@@ -525,7 +525,7 @@
     <div class="badge-row">
       <span class="badge">Windows</span>
       <span class="badge">Python 3.10+</span>
-      <a href="user_guide_en.html" class="badge" style="color:#fff;text-decoration:none;border-bottom:none;cursor:pointer;">🌐 English version</a>
+      <a href="user_guide.html" class="badge" style="color:#fff;text-decoration:none;border-bottom:none;cursor:pointer;">🌐 English version</a>
     </div>
   </div>
 </header>
@@ -599,7 +599,7 @@
 ├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← acceso directo al visor web</span>
 ├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenera los accesos si mueves la carpeta</span>
 ├── <span class="path">data/</span>
-│   ├── <span class="path">raw/</span>          <span class="pin">← aquí debes colocar el archivo descargado de BOLD; se crea sola</span>
+│   ├── <span class="path">raw/</span>          <span class="pin">← el Constructor guarda aquí el .tar.gz que arrastres o selecciones; se crea sola</span>
 │   ├── <span class="path">processed/</span>    <span class="comment">← archivos intermedios (TSV filtrado); se crea sola</span>
 │   └── <span class="path">exports/</span>      <span class="comment">← copia de todo lo que exportas; se crea sola</span>
 ├── <span class="path">dev/</span>
@@ -628,11 +628,22 @@
     <!-- Paso 0 -->
     <h2 class="sub-title" id="paso0">Descargar el archivo de BOLD</h2>
     <ol class="steps">
-      <li>Desde <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> descarga el archivo completo de datos (se requiere de una cuenta en BOLD). Tendrá un nombre similar a <code>BOLD_Public.DIA-MES-AÑO.tar.gz</code>.</li>
-      <li><strong>Copia</strong> ese archivo <code>.tar.gz</code> dentro de la carpeta <code>BOLD_DB/data/raw/</code> —
-          copiarlo, no moverlo (ver el aviso siguiente).</li>
+      <li>Desde <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> descarga el archivo completo de datos (se requiere de una cuenta en BOLD). Tendrá un nombre similar a <code>BOLD_Public.DIA-MES-AÑO.tar.gz</code>. Puedes dejarlo donde sea (por ejemplo, tu carpeta de Descargas).</li>
+      <li>Abre el Constructor (acceso directo <code>1_Crear_base_de_datos</code>) y, en la barra lateral, entra en
+          <strong>«1. Preparar datos»</strong> (sección PASOS INDIVIDUALES).</li>
+      <li><strong>Arrastra</strong> el archivo <code>.tar.gz</code> sobre el recuadro que aparece ahí — o pulsa
+          <strong>«Examinar»</strong> y selecciónalo. El Constructor lo <strong>copia</strong> automáticamente a
+          <code>data/raw/</code>; no hace falta moverlo a mano ni crear ninguna carpeta primero.</li>
       <li><strong>No descomprimas el archivo</strong>; el programa lo hace solo.</li>
     </ol>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        Si prefieres copiarlo tú mismo con el explorador de archivos en lugar de usar el recuadro, también
+        funciona: solo tiene que quedar directamente dentro de <code>data/raw/</code>. El recuadro es simplemente
+        un atajo que hace esa copia por ti y evita tener que localizar la carpeta.
+      </div>
+    </div>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
@@ -640,10 +651,10 @@
         borra de <code>data/raw/</code> tanto el <code>.tar.gz</code> como el TSV sin filtrar, para liberar los
         10–15 GB que ocupan una vez ya procesados.
         <br><br>
-        Por eso conviene <strong>copiar</strong> el archivo descargado a <code>data/raw/</code> y
-        <strong>no moverlo</strong>: así conservas el original en tu carpeta de descargas. Si algo falla a mitad
-        del proceso, o quieres reconstruir la base más adelante, vuelves a copiarlo sin tener que descargar otra
-        vez esos 10–15 GB desde BOLD.
+        Por eso conviene dejar el original donde lo descargaste (p. ej. Descargas) y que el Constructor solo
+        trabaje con la <strong>copia</strong> en <code>data/raw/</code>. Si algo falla a mitad del proceso, o
+        quieres reconstruir la base más adelante, vuelves a arrastrarlo sin tener que descargar otra vez esos
+        10–15 GB desde BOLD.
       </div>
     </div>
     <div class="callout warn">

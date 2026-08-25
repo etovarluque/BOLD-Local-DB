@@ -600,7 +600,7 @@
 ├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← shortcut to the web viewer</span>
 ├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenerates the shortcuts if you move the folder</span>
 ├── <span class="path">data/</span>
-│   ├── <span class="path">raw/</span>          <span class="pin">← place the file downloaded from BOLD here; created automatically</span>
+│   ├── <span class="path">raw/</span>          <span class="pin">← the Creator saves here the .tar.gz you drag in or pick; created automatically</span>
 │   ├── <span class="path">processed/</span>    <span class="comment">← intermediate files (filtered TSV); created automatically</span>
 │   └── <span class="path">exports/</span>      <span class="comment">← copy of everything you export; created automatically</span>
 ├── <span class="path">dev/</span>
@@ -629,11 +629,22 @@
     <!-- Step 0 -->
     <h2 class="sub-title" id="paso0">Download the file from BOLD</h2>
     <ol class="steps">
-      <li>From <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> download the complete data file (a BOLD account is required). It will have a name similar to <code>BOLD_Public.DAY-MONTH-YEAR.tar.gz</code>.</li>
-      <li><strong>Copy</strong> that <code>.tar.gz</code> file into the <code>BOLD_DB/data/raw/</code> folder —
-          copy it, don't move it (see the note below).</li>
+      <li>From <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> download the complete data file (a BOLD account is required). It will have a name similar to <code>BOLD_Public.DAY-MONTH-YEAR.tar.gz</code>. You can leave it wherever it lands (e.g. your Downloads folder).</li>
+      <li>Open the Creator (shortcut <code>1_Crear_base_de_datos</code>) and, in the sidebar, go to
+          <strong>"1. Prepare data"</strong> (INDIVIDUAL STEPS section).</li>
+      <li><strong>Drag</strong> the <code>.tar.gz</code> file onto the box shown there — or click
+          <strong>"Browse"</strong> and select it. The Creator <strong>copies</strong> it automatically into
+          <code>data/raw/</code>; you don't need to move it by hand or create any folder first.</li>
       <li><strong>Don't extract the file</strong>; the program does that on its own.</li>
     </ol>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        If you'd rather copy it yourself with the file explorer instead of using the box, that also works: it
+        just has to end up directly inside <code>data/raw/</code>. The box is simply a shortcut that does that
+        copy for you and saves you locating the folder.
+      </div>
+    </div>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
@@ -641,10 +652,10 @@
         deletes from <code>data/raw/</code> both the <code>.tar.gz</code> and the unfiltered TSV, to free up the
         10–15 GB they take up once processed.
         <br><br>
-        That's why it's best to <strong>copy</strong> the downloaded file into <code>data/raw/</code> and
-        <strong>not move it</strong>: that way you keep the original in your downloads folder. If something fails
-        partway through, or you want to rebuild the database later, you can just copy it again instead of having
-        to download those 10–15 GB from BOLD a second time.
+        That's why it's best to leave the original where you downloaded it (e.g. Downloads) and let the Creator
+        work only with the <strong>copy</strong> in <code>data/raw/</code>. If something fails partway through,
+        or you want to rebuild the database later, you can just drag it in again instead of having to download
+        those 10–15 GB from BOLD a second time.
       </div>
     </div>
     <div class="callout warn">

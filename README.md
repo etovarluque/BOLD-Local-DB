@@ -43,48 +43,47 @@ Two programs, used in order:
    Double-click, once:
    - Windows: `0_Generate_Shortcuts_Windows.bat`
    - Linux: `0_Generate_Shortcuts_Linux.sh`
-   - macOS: not needed — the shortcuts in `macos_shortcuts/` already work
+   - macOS: `0_Generate_Shortcuts_macOS.command`
    Run it again any time you move the project to another drive, computer or
    user account, to regenerate broken shortcuts. (Or run
    `python dev/generate_shortcuts.py` from a terminal instead, on any OS.)
-3. Build the database — double-click the **"1"** shortcut for your OS:
-   - Windows: `1_Create_DB.lnk` (project root)
-   - macOS: `macos_shortcuts/1_Create_DB.command`
-   - Linux: `linux_launchers/1_Create_DB.desktop`
+3. Build the database — double-click the **"1"** shortcut for your OS, at
+   the project root:
+   - Windows: `1_Create_DB.lnk`
+   - macOS: `1_Create_DB.command`
+   - Linux: `1_Create_DB.desktop`
 4. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"**
-   shortcut:
-   - Windows: `2_Open_web_viewer_BOLD_DB.lnk` (project root)
-   - macOS: `macos_shortcuts/2_Open_web_viewer_BOLD_DB.command`
-   - Linux: `linux_launchers/2_Open_web_viewer_BOLD_DB.desktop`
+   shortcut, at the project root:
+   - Windows: `2_Open_web_viewer_BOLD_DB.lnk`
+   - macOS: `2_Open_web_viewer_BOLD_DB.command`
+   - Linux: `2_Open_web_viewer_BOLD_DB.desktop`
 
-The Windows and Linux shortcuts aren't stored in the repository — they're
-machine-specific, so `generate_shortcuts.py` creates them locally instead
-(Windows shortcuts at the project root; Linux ones in `linux_launchers/`).
-The macOS `.command` files *are* stored as-is, since they locate their own
-folder at run time and never go stale. All of them just call the matching
+None of the OS shortcuts are stored in the repository — they're
+machine-specific, so `generate_shortcuts.py` creates them locally at the
+project root for all three platforms (the macOS ones are copied from the
+templates in `dev/macos_shortcuts/`). All of them just call the matching
 script in `dev/` (`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) —
 use those directly instead if you'd rather run them from a terminal.
 
 **First-run OS quirks:**
 - **macOS**: Gatekeeper blocks scripts downloaded from the internet the
-  first time — right-click the `.command` file → *Open* once to allow it.
+  first time — right-click a `.command` file → *Open* once to allow it.
+  This applies to `0_Generate_Shortcuts_macOS.command` and to the
+  generated `1_Create_DB.command` / `2_Open_web_viewer_BOLD_DB.command`.
 - **Linux**: GNOME/KDE require marking a downloaded `.desktop` launcher as
   trusted — right-click it → *Allow Launching* (or *Trust*) once.
-- If double-clicking doesn't work at all, run the `.sh` script directly
-  from a terminal instead.
+- If double-clicking doesn't work at all, run the `.sh`/`.command` script
+  directly from a terminal instead.
 
 ## Project structure
 
 ```
 BOLD_DB/
-├── 0_Generate_Shortcuts_Windows.bat       # Windows: creates the 1/2 shortcuts
-├── 0_Generate_Shortcuts_Linux.sh          # Linux: creates the 1/2 shortcuts
-├── 1_Create_DB.lnk                        # Windows shortcut (generated, not versioned)
-├── 2_Open_web_viewer_BOLD_DB.lnk          # Windows shortcut (generated, not versioned)
-├── macos_shortcuts/
-│   ├── 1_Create_DB.command                # macOS shortcut
-│   └── 2_Open_web_viewer_BOLD_DB.command  # macOS shortcut
-├── linux_launchers/                       # Linux shortcuts (generated, not versioned)
+├── 0_Generate_Shortcuts_Windows.bat        # Windows: creates the 1/2 shortcuts
+├── 0_Generate_Shortcuts_Linux.sh           # Linux: creates the 1/2 shortcuts
+├── 0_Generate_Shortcuts_macOS.command      # macOS: creates the 1/2 shortcuts
+├── 1_Create_DB.lnk / .command / .desktop            # generated shortcut, not versioned
+├── 2_Open_web_viewer_BOLD_DB.lnk / .command / .desktop  # generated shortcut, not versioned
 ├── dev/
 │   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
 │   ├── bold_db_creator.bat    # Windows launcher, called by 1_Create_DB.lnk
@@ -92,6 +91,7 @@ BOLD_DB/
 │   ├── launch_bold_db.bat     # Windows launcher, called by 2_Open_web_viewer_BOLD_DB.lnk
 │   ├── launch_bold_db.sh      # macOS/Linux launcher, called by the "2" shortcuts
 │   ├── generate_shortcuts.py  # creates/repairs the shortcuts for your OS
+│   ├── macos_shortcuts/       # .command templates, copied to the project root
 │   ├── icons/                 # icons used by the shortcuts and the GUI
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/

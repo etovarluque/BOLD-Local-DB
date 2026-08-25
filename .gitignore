@@ -26,5 +26,8 @@ Thumbs.db
 
 # Generated shortcuts (machine-specific; created by dev/generate_shortcuts.py)
 /1_Create_DB.lnk
+/1_Create_DB.desktop
+/1_Create_DB.command
 /2_Open_web_viewer_BOLD_DB.lnk
-/linux_launchers/*.desktop
+/2_Open_web_viewer_BOLD_DB.desktop
+/2_Open_web_viewer_BOLD_DB.command

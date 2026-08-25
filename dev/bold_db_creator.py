@@ -4,7 +4,7 @@ BOLD Database Creator - unified GUI
 Steps: 1-Filter TSV  2-TSV->SQLite  3-Index  4-FTS
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 # ---- Imports -----------------------------------------------------------------
 import sys, subprocess

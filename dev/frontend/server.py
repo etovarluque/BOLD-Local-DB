@@ -79,7 +79,7 @@ from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 app = Flask(__name__)
 
@@ -917,9 +917,78 @@ def escape_fts_query(query: str) -> str:
     return query.translate(_FTS_SPECIAL)
 
 
+_FTS_BOOLEAN_KEYWORDS = {'AND', 'OR', 'NOT'}
+
+def extract_fts_terms(query: str):
+    """Pulls the literal search terms out of a raw FTS query string, dropping
+    the AND/OR/NOT keywords and grouping parentheses.
+
+    Used for case-sensitive matching: the trigram tokenizer's MATCH is
+    always case-insensitive (see escape_fts_query), so "sensitive" search is
+    done by re-checking these literal terms against the actual row data
+    after MATCH has already narrowed things down.
+    """
+    terms = []
+    for m in re.finditer(r'"([^"]*)"|(\S+)', query):
+        phrase, word = m.groups()
+        if phrase is not None:
+            if phrase:
+                terms.append(phrase)
+            continue
+        token = word.strip('()')
+        if token and token not in _FTS_BOOLEAN_KEYWORDS:
+            terms.append(token)
+    return terms
+
+
+@lru_cache(maxsize=1)
+def get_fts_columns():
+    """Column names actually indexed by the FTS5 table (col_nuc excluded).
+
+    Read from the table itself rather than hardcoded, so this can't drift
+    from however bold_db_creator.py built it.
+    """
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM {FTS_TABLE_NAME} LIMIT 0")
+        return [d[0] for d in cursor.description]
+    finally:
+        conn.close()
+
+
+def build_case_sensitive_filter(raw_query: str, table_alias: str = ''):
+    """Builds an extra SQL condition (and its parameters) that re-checks the
+    literal terms of an FTS query case-sensitively against the real row data.
+
+    This is a cheap post-filter on top of the (already narrow) MATCH result,
+    using instr() — case-sensitive in SQLite, unlike LIKE/GLOB folding rules —
+    instead of building a second, case-sensitive FTS5 index. A second trigram
+    index would roughly double both the FTS build time and its disk
+    footprint (the current one already adds ~12 GB / ~30% of the database).
+
+    Returns ('', []) if the query has no literal terms to check.
+    """
+    terms = extract_fts_terms(raw_query)
+    if not terms:
+        return '', []
+
+    prefix = f'{table_alias}.' if table_alias else ''
+    columns = get_fts_columns()
+    params = []
+    term_clauses = []
+    for term in terms:
+        col_checks = ' OR '.join(f'instr({prefix}{col}, ?) > 0' for col in columns)
+        term_clauses.append(f'({col_checks})')
+        params.extend([term] * len(columns))
+
+    return ' AND ' + ' AND '.join(term_clauses), params
+
+
 def search_fts(data, start_time, search_id=None):
     """Optimized FTS implementation"""
-    query = data.get('query', '').strip()
+    raw_query = data.get('query', '').strip()
+    query = raw_query
     page = data.get('page', 1)
     per_page = data.get('per_page', 100)
     try:
@@ -940,6 +1009,10 @@ def search_fts(data, start_time, search_id=None):
 
     query = escape_fts_query(query)
 
+    cs_clause, cs_params = ('', [])
+    if data.get('case_sensitive'):
+        cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'm')
+
     conn = get_db_connection()
     if search_id:
         with active_searches_lock:
@@ -957,9 +1030,9 @@ def search_fts(data, start_time, search_id=None):
                 SELECT COUNT(*)
                 FROM {main_table} m
                 INNER JOIN {FTS_TABLE_NAME} f ON m.rowid = f.rowid
-                WHERE f.{FTS_TABLE_NAME} MATCH ?
+                WHERE f.{FTS_TABLE_NAME} MATCH ?{cs_clause}
             """
-            cursor.execute(count_query, (query,))
+            cursor.execute(count_query, (query, *cs_params))
             total_count = cursor.fetchone()[0]
 
         offset = (page - 1) * per_page
@@ -967,10 +1040,10 @@ def search_fts(data, start_time, search_id=None):
             SELECT m.*
             FROM {main_table} m
             INNER JOIN {FTS_TABLE_NAME} f ON m.rowid = f.rowid
-            WHERE f.{FTS_TABLE_NAME} MATCH ?
+            WHERE f.{FTS_TABLE_NAME} MATCH ?{cs_clause}
             LIMIT ? OFFSET ?
         """
-        cursor.execute(data_query, (query, per_page, offset))
+        cursor.execute(data_query, (query, *cs_params, per_page, offset))
         results_raw = cursor.fetchall()
 
         results = [
@@ -1184,15 +1257,19 @@ def build_optimized_fasta_query(request_data):
     """Build an optimized query for FASTA export"""
 
     if request_data.get('search_type') == 'fts':
-        query = request_data.get('query', '').strip()
-        if not query:
+        raw_query = request_data.get('query', '').strip()
+        if not raw_query:
             raise ValueError(t('no_search_term'))
         if not fts_table_available():
             raise ValueError(t('fts_unavailable_short'))
 
-        query = escape_fts_query(query)
+        query = escape_fts_query(raw_query)
 
-        data_query = """
+        cs_clause, cs_params = ('', [])
+        if request_data.get('case_sensitive'):
+            cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'r')
+
+        data_query = f"""
             SELECT r.col_processid, r.col_sampleid, r.col_bin_uri,
                    r.col_species, r.col_genus, r.col_family, r.col_order,
                    r.col_class, r.col_phylum, r.col_kingdom,
@@ -1200,10 +1277,10 @@ def build_optimized_fasta_query(request_data):
             FROM bold_records r
             INNER JOIN bold_records_fts fts ON r.rowid = fts.rowid
             WHERE fts.bold_records_fts MATCH ?
-            AND r.col_nuc IS NOT NULL AND r.col_nuc != ''
+            AND r.col_nuc IS NOT NULL AND r.col_nuc != ''{cs_clause}
         """
 
-        return data_query, (query,)
+        return data_query, (query, *cs_params)
 
     else:
         conditions = request_data.get('conditions', [])
@@ -1488,20 +1565,24 @@ def prepare_query(data, include_nuc=True):
         col_select_join = ', '.join(f'r."{c}"' for c in cols)
 
     if data.get('search_type') == 'fts':
-        query = data.get('query', '').strip()
-        if not query:
+        raw_query = data.get('query', '').strip()
+        if not raw_query:
             raise ValueError(t('no_search_term'))
         if not fts_table_available():
             raise ValueError(t('fts_unavailable_short'))
 
-        query = escape_fts_query(query)
+        query = escape_fts_query(raw_query)
+
+        cs_clause, cs_params = ('', [])
+        if data.get('case_sensitive'):
+            cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'r')
 
         data_query = f"""
             SELECT {col_select_join} FROM bold_records r
             INNER JOIN bold_records_fts fts ON r.rowid = fts.rowid
-            WHERE fts.bold_records_fts MATCH ?
+            WHERE fts.bold_records_fts MATCH ?{cs_clause}
         """
-        parameters = (query,)
+        parameters = (query, *cs_params)
 
     else:
         conditions = data.get('conditions', [])

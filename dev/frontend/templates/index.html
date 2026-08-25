@@ -829,6 +829,10 @@
                     <input type="text" class="form-control" id="ftsQueryInput" placeholder="Introduce tu consulta..." data-i18n-placeholder="fts_query_placeholder">
                     <button class="btn btn-primary" id="ftsSearchButton" data-i18n="search_btn">Buscar</button>
                 </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="ftsCaseSensitiveCheckbox">
+                    <label class="form-check-label" for="ftsCaseSensitiveCheckbox" data-i18n="fts_case_sensitive_label">Sensible a mayúsculas/minúsculas</label>
+                </div>
                 <div class="form-text" data-i18n="fts_help_text">
                     Busca en toda la base de datos con una consulta de texto completo.
                     Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.
@@ -1303,6 +1307,7 @@
                 exporting_fasta_title: 'Exportando FASTA',
                 exporting_csv_title: 'Exportando CSV',
                 exporting_generic_title: 'Exportando',
+                fts_case_sensitive_label: 'Sensible a mayúsculas/minúsculas',
             },
             en: {
                 title_line1: 'DATA', title_line2: 'BASE', title_local: 'Local',
@@ -1419,6 +1424,7 @@
                 exporting_fasta_title: 'Exporting FASTA',
                 exporting_csv_title: 'Exporting CSV',
                 exporting_generic_title: 'Exporting',
+                fts_case_sensitive_label: 'Case-sensitive search',
             },
         };
 
@@ -1855,6 +1861,12 @@
 			}
 		}
 
+		// Whether the full-text search's "case-sensitive" checkbox is checked.
+		function isFtsCaseSensitive() {
+			const checkbox = document.getElementById('ftsCaseSensitiveCheckbox');
+			return !!(checkbox && checkbox.checked);
+		}
+
 		// Main function for FASTA export with progress
 		// Shared by exportToFasta/exportToCSV's top-level catch (identical in
 		// both): shows the error in the already-open loading modal and swaps
@@ -1897,13 +1909,14 @@
 					
 					requestData = {
 						search_type: 'fts',
-						query: query
+						query: query,
+						case_sensitive: isFtsCaseSensitive()
 					};
 				} else {
 					if (errors && errors.length > 0) {
 						throw new Error(t('no_search_conditions_alert'));
 					}
-					
+
 					requestData = {
 						conditions: conditions
 					};
@@ -2103,6 +2116,16 @@
 					performFtsSearch();
 				}
 			});
+
+			// Re-run the search when case-sensitivity is toggled, if a query is already active
+			const ftsCaseSensitiveCheckbox = document.getElementById('ftsCaseSensitiveCheckbox');
+			if (ftsCaseSensitiveCheckbox) {
+				ftsCaseSensitiveCheckbox.addEventListener('change', function() {
+					if (ftsInput && ftsInput.value.trim()) {
+						performFtsSearch();
+					}
+				});
+			}
 
 			// Search by fields
 			document.getElementById('searchButton').addEventListener('click', performSearch);
@@ -2508,6 +2531,7 @@
 						search_id: AppState.currentSearchId,
 						search_type: 'fts',
 						query: query,
+						case_sensitive: isFtsCaseSensitive(),
 						page: AppState.currentPage,
 						per_page: AppState.resultsPerPage,
 						skip_count: !newSearch
@@ -2647,6 +2671,7 @@
 					requestData = {
 						search_type: 'fts',
 						query: query,
+						case_sensitive: isFtsCaseSensitive(),
 						include_nuc: opts.includeNuc,
 						...(exportColumns ? { export_columns: exportColumns } : {})
 					};

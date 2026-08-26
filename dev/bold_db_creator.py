@@ -429,15 +429,9 @@ STRINGS_ES = {
     'home_intro': 'Esta herramienta convierte la descarga pública de BOLD en una base de datos '
                   'local que puedes consultar con el visor. Se hace una sola vez por cada versión '
                   'de los datos.',
-    'before_start_header': 'Antes de empezar necesitas:',
-    'req_item1': 'El archivo <b>.tar.gz</b> descargado del portal de BOLD '
-                 '(bench.boldsystems.org → Data Packages → Latest). '
-                 'No lo descomprimas.',
-    'req_item2': 'Unos <b>150 GB libres</b> en este disco. El archivo descargado se '
-                 'borra solo al procesarlo; los ~20 GB de trabajo que quedan los '
-                 'recuperas al final con «Liberar espacio».',
-    'req_item3': '<b>Tiempo</b>: entre 0.5 y 2 horas para los pasos 1-3. Puedes dejarlo '
-                 'trabajando y volver luego; no hace falta vigilarlo.',
+    'home_req_note': 'Necesitas el <b>.tar.gz</b> del portal de BOLD (sin descomprimir), '
+                     'unos <b>150 GB libres</b> en este disco y entre <b>0,5 y 2 horas</b> '
+                     'para los pasos 1-3. Puedes dejarlo trabajando y volver luego.',
     'btn_open_viewer': 'Abrir el visor',
     'tip_open_viewer': 'Arranca el visor web y lo abre en el navegador (http://127.0.0.1:{port}).',
     'btn_manual': 'Manual de uso',
@@ -846,15 +840,9 @@ STRINGS_EN = {
     'home_title': 'Home',
     'home_intro': "This tool converts BOLD's public download into a local database "
                   "you can query with the viewer. It's done once per data version.",
-    'before_start_header': 'Before you start you need:',
-    'req_item1': 'The <b>.tar.gz</b> file downloaded from the BOLD portal '
-                 '(bench.boldsystems.org → Data Packages → Latest). '
-                 "Don't extract it.",
-    'req_item2': 'About <b>150 GB free</b> on this disk. The downloaded file is '
-                 'deleted automatically once processed; the ~20 GB of working files left over '
-                 'you can recover at the end with «Free up space».',
-    'req_item3': '<b>Time</b>: between 0.5 and 2 hours for steps 1-3. You can leave it '
-                 "working and come back later; no need to watch it.",
+    'home_req_note': 'You need the <b>.tar.gz</b> from the BOLD portal (do not extract it), '
+                     'about <b>150 GB free</b> on this disk and between <b>0.5 and 2 hours</b> '
+                     'for steps 1-3. You can leave it working and come back later.',
     'btn_open_viewer': 'Open the viewer',
     'tip_open_viewer': 'Starts the web viewer and opens it in the browser (http://127.0.0.1:{port}).',
     'btn_manual': 'User manual',
@@ -2910,7 +2898,13 @@ class DropFileCard(QFrame):
     # -- state ------------------------------------------------------------------
 
     def scan_existing(self):
-        """Reflects whatever's already in data/raw/ without the user dropping anything."""
+        """Reflects whatever's already in data/raw/ without the user dropping anything.
+
+        A copy in progress owns the card: rescanning mid-copy would replace the
+        progress bar with the state of a file that isn't finished yet.
+        """
+        if self._copier and self._copier.isRunning():
+            return
         found = []
         for ext in self._extensions:
             found += glob.glob(os.path.join(self._dest_dir, "*" + ext))
@@ -3459,31 +3453,25 @@ class PrepPanel(QWidget):
         intro.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
         lay.addWidget(intro)
 
-        req_hdr = QLabel(t('before_start_header'))
-        req_hdr.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(12)}; font-weight: bold;")
-        lay.addWidget(req_hdr)
+        # The three requirements used to be spelled out one by one here. What
+        # the user actually has to *do* is bring in the .tar.gz, so that gets
+        # the same drop zone as Step 1 and the rest is condensed into one line:
+        # otherwise the only way to load the file from Home was to go to Step 1.
+        req_note = QLabel(t('home_req_note'))
+        req_note.setTextFormat(Qt.TextFormat.RichText)
+        req_note.setWordWrap(True)
+        req_note.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(11)};")
+        lay.addWidget(req_note)
 
-        for num, txt in [
-            ("1", t('req_item1')),
-            ("2", t('req_item2')),
-            ("3", t('req_item3')),
-        ]:
-            row = QHBoxLayout()
-            row.setSpacing(10)
-            n = QLabel(num)
-            n.setFixedWidth(_px(22))
-            n.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            n.setStyleSheet(
-                f"color: {P['bg']}; background-color: {P['accent']}; font-weight: bold;"
-                f" font-size: {_fs(11)}; border-radius: 11px; padding: 2px 0;"
-            )
-            row.addWidget(n, alignment=Qt.AlignmentFlag.AlignTop)
-            item_lbl = QLabel(txt)
-            item_lbl.setTextFormat(Qt.TextFormat.RichText)
-            item_lbl.setWordWrap(True)
-            item_lbl.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
-            row.addWidget(item_lbl, stretch=1)
-            lay.addLayout(row)
+        self._drop_card = DropFileCard(
+            t('bold_downloaded_file'),
+            _proj_dir("data", "raw"),
+            (".tar.gz",),
+            t('drop_targz_hint'),
+            on_log=app.log,
+        )
+        self._drop_card.file_changed.connect(lambda *_: self.app._refresh_all_panels_input())
+        lay.addWidget(self._drop_card)
 
         sep = QFrame()
         sep.setFrameShape(QFrame.Shape.HLine)
@@ -3602,6 +3590,7 @@ class PrepPanel(QWidget):
 
     def refresh(self, st=None):
         st = st or _get_project_status()
+        self._drop_card.scan_existing()
         def mark(done): return f'<span style="color:{P["ok"]}">✅</span>' if done \
                           else f'<span style="color:{P["yellow"]}">○</span>'
         cnt = t('records_count_suffix', n=st["record_count"]) if st["record_count"] else ""
@@ -4798,6 +4787,8 @@ class App(QMainWindow):
         for panel in self._panels:
             if not panel.is_running():
                 panel._refresh_input_status()
+        if getattr(self, "_prep", None):
+            self._prep._drop_card.scan_existing()
 
     def _is_any_running(self):
         if self._seq_running:

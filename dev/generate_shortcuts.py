@@ -124,13 +124,19 @@ def _tidy_root(current_script):
     dest = os.path.join(PROJECT_ROOT, "project_files")
     os.makedirs(dest, exist_ok=True)
     to_move = _ROOT_CLUTTER + tuple(s for s in _ALL_GENERATOR_SCRIPTS if s != current_script)
+    moved = []
     for name in to_move:
         src = os.path.join(PROJECT_ROOT, name)
         if os.path.exists(src):
             try:
                 shutil.move(src, os.path.join(dest, name))
-            except OSError:
-                pass
+                moved.append(name)
+            except OSError as e:
+                print(f"Could not move '{name}' into project_files/: {e}")
+    if moved:
+        print(f"Tidied the project root: moved {', '.join(moved)} into project_files/.")
+    else:
+        print("Project root already tidy (project_files/ is up to date).")
 
 
 def main():

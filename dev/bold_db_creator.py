@@ -780,7 +780,7 @@ STRINGS_EN = {
     'step3_cost': '≈ 20-40 min · adds ~8 GB',
     'step4_cost': '≈ 5-15 min · adds ~25% to the DB size',
     'sidebar_group_individual_steps': 'INDIVIDUAL STEPS',
-    'sidebar_group_hint': 'To run one at a time. Not needed if you already used the Home button.',
+    'sidebar_group_hint': 'To run one at a time. Not needed if you already used the Start button.',
     'pipeline1_title': 'Option 1',
     'pipeline1_label': 'Create the database',
     'pipeline1_label_done': 'Redo the database',
@@ -837,7 +837,7 @@ STRINGS_EN = {
     'completed_status': '✓  Completed',
     'stopped_status': 'Stopped',
     'error_status': 'Error — see the detail in the log below',
-    'home_title': 'Home',
+    'home_title': 'Start',
     'home_intro': "This tool converts BOLD's public download into a local database "
                   "you can query with the viewer. It's done once per data version.",
     'home_req_note': 'You need the <b>.tar.gz</b> from the BOLD portal (do not extract it), '
@@ -940,7 +940,7 @@ STRINGS_EN = {
                            '(dev/fields_config.json)',
     'log_selection_stale': '⚠️ The already-prepared data uses the previous selection. To '
                            'apply the new one, Step 1 needs to be repeated with the BOLD .tar.gz.',
-    'nav_home': ' Home',
+    'nav_home': ' Start',
     'tip_home_nav': 'Requirements and full DB creation.',
     'config_section_label': 'SETTINGS',
     'nav_fields_selection': 'Field Selection (.tsv)',
@@ -988,7 +988,7 @@ STRINGS_EN = {
     'next_step2': 'Next: Step 2 — Build database',
     'next_step3': 'Next: Step 3 — Speed up searches (recommended)',
     'next_step4_optional': 'You can already use the viewer. Step 4 (full-text search) is optional.',
-    'next_all_done': 'All done. Click «Open the viewer» on Home.',
+    'next_all_done': 'All done. Click «Open the viewer» on Start.',
     'log_stopping_pipeline': '⚠️ Stopping pipeline...',
     'log_stopping_step': '⚠️ Stopping step...',
     'pipeline_running_title': 'Pipeline running',
@@ -1027,7 +1027,7 @@ STRINGS_EN = {
     'fts_table_present': 'FTS table present',
     'fts_not_created': 'FTS not created — run this step',
     'all_complete': '✅ All done — {n:,} records ready.',
-    'tap_open_viewer_home': '👉 Click «Open the viewer» on the Home screen.',
+    'tap_open_viewer_home': '👉 Click «Open the viewer» on the Start screen.',
     'records_count_paren': ' ({n:,} records)',
     'db_exists_can_query': '📋 The database already exists{cnt} — you can query it now '
                            'with «Open the viewer».',
@@ -1035,7 +1035,7 @@ STRINGS_EN = {
     'pending_step4': 'Step 4 — Full-text search  (optional: takes several minutes)',
     'pending_steps_header': '⚠️ Pending steps:',
     'no_db_yet_log': '⚠️ There is no database yet.',
-    'go_home_create_db': '👉 Go to «Home» and click «Create the database».',
+    'go_home_create_db': '👉 Go to «Start» and click «Create the database».',
     'process_running_close_title': 'A process is running',
     'process_running_close_body': "A step is still running.\n\n"
                                   "If you close now it will be interrupted abruptly and that step's work will "

@@ -1,6 +1,6 @@
 # BOLD-Local-DB
 
-**Version: 1.1.1**
+**Version: 1.1.2**
 
 Desktop tool to build and browse a local, **offline** SQLite database from
 [BOLD Systems](https://www.boldsystems.org/) (Barcode of Life Data System) TSV exports.

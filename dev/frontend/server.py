@@ -79,7 +79,7 @@ from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 app = Flask(__name__)
 

@@ -4658,6 +4658,7 @@ class App(QMainWindow):
             self.log(t('log_step_failed', time=time_str))
             self._seq_running = False
             self._set_shortcuts_state(True)
+            self.stop_timer()
             self._refresh_all_panels_input()
             self.refresh_sidebar_status()
             return

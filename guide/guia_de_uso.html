@@ -736,7 +736,7 @@
        <a href="#campos-panel">Campos</a> — 23 por defecto, ajustable.</p>
     <ul class="bullet">
       <li>Selecciona <strong>"1. Generar TSV"</strong> en el menú izquierdo → clic en <strong>Ejecutar</strong>.</li>
-      <li>Duración aproximada: <strong>10–40 minutos</strong>.</li>
+      <li>Duración aproximada: <strong>15–30 minutos</strong>.</li>
       <li>Resultado: un archivo <code>.filt.tsv</code> en <code>data/processed/</code>.</li>
       <li>Al terminar se <strong>borran de <code>data/raw/</code></strong> el <code>.tar.gz</code> y el TSV sin
           filtrar, para liberar espacio. Si copiaste el archivo en vez de moverlo, tu descarga original sigue
@@ -749,7 +749,7 @@
     <p>Importa los datos filtrados a la base de datos.</p>
     <ul class="bullet">
       <li>Selecciona <strong>"2. TSV → SQLite"</strong> → clic en <strong>Ejecutar</strong>.</li>
-      <li>Duración aproximada: <strong>30–90 minutos</strong>.</li>
+      <li>Duración aproximada: <strong>10–20 minutos</strong>.</li>
       <li>Resultado: el archivo <code>app/bold_db.db</code>.</li>
     </ul>
 
@@ -757,17 +757,17 @@
     <p>Crea índices para que las búsquedas sean rápidas. Sin este paso la base funciona, pero cada consulta puede tardar minutos en vez de segundos.</p>
     <ul class="bullet">
       <li>Selecciona <strong>"3. Indexar campos"</strong> → clic en <strong>Ejecutar</strong>.</li>
-      <li>Duración aproximada: <strong>5–20 minutos</strong>.</li>
+      <li>Duración aproximada: <strong>35–75 minutos</strong>.</li>
     </ul>
 
     <h3 class="step-title">Paso 4 — Crear FTS <em>(opcional)</em></h3>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
-        Este paso es <strong>opcional</strong>. Tarda <strong>varios minutos</strong> (unos 5–15 según el tamaño
-        de la base) y añade aproximadamente un <strong>25% al tamaño</strong> de la base de datos. Una vez
-        iniciada la reconstrucción del índice <strong>no se puede interrumpir</strong>, pero al ser rápida no
-        supone mayor riesgo. Solo es necesario si quieres usar la pestaña <em>"Búsqueda de texto completo"</em>.
+        Este paso es <strong>opcional</strong>. Tarda <strong>bastante rato</strong> (unos 50–90 minutos según el tamaño
+        de la base y la velocidad del disco) y añade aproximadamente un <strong>25% al tamaño</strong> de la base de datos. Una vez
+        iniciada la reconstrucción del índice <strong>no se puede interrumpir</strong>, así que asegúrate de poder
+        dejar el equipo encendido. Solo es necesario si quieres usar la pestaña <em>"Búsqueda de texto completo"</em>.
       </div>
     </div>
     <ul class="bullet">

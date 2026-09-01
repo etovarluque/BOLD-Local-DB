@@ -310,7 +310,7 @@ STRINGS_ES = {
     'empty_table': '⚠️ Tabla vacía',
     'creating_fts_table': '⏳ Creando tabla FTS5 ({n} columnas, excluye col_nuc)...',
     'rebuilding_fts_index': '⏳ Reconstruyendo índice FTS5 ({n:,} registros) — operación única, no interrumpible...',
-    'fts_may_take_minutes': '   Puede tardar varios minutos. La barra no avanza porque SQLite no informa del progreso: es normal, no está bloqueado.',
+    'fts_may_take_minutes': '   Puede tardar de 45 min a 1,5 h. La barra no avanza porque SQLite no informa del progreso: es normal, no está bloqueado.',
     'still_working': '\r   ⏳ Sigue trabajando — {mins:.0f} min transcurridos (no cierre la ventana)',
     'rebuild_finished': '   Reconstrucción terminada en {mins:.0f} min',
     'fts_created': '✅ FTS5 creada — {n} columnas, {total:,} registros',
@@ -353,7 +353,7 @@ STRINGS_ES = {
                   'Entrada: app/bold_db.db   Salida: índices en bold_records',
     'step4_desc': 'Añade búsqueda de texto completo (escribir cualquier palabra sin elegir campo, '
                   'incluso coincidencias parciales dentro de otra palabra). '
-                  'Tarda varios minutos y añade en torno a un 25% al tamaño de la base de datos: '
+                  'Puede tardar cerca de una hora y añade en torno a un 25% al tamaño de la base de datos: '
                   'actívalo solo si vas a usar esa función.\n'
                   'Entrada: app/bold_db.db   Salida: tabla bold_records_fts',
     'step1_tech': 'Descomprimir .tar.gz → filtrar TSV',
@@ -363,10 +363,10 @@ STRINGS_ES = {
     'badge_required': 'OBLIGATORIO',
     'badge_recommended': 'RECOMENDADO',
     'badge_optional': 'OPCIONAL',
-    'step1_cost': '≈ 30-60 min · necesita ~60 GB libres',
-    'step2_cost': '≈ 1-2 h · la BD ocupa ~25 GB',
-    'step3_cost': '≈ 20-40 min · añade ~8 GB',
-    'step4_cost': '≈ 5-15 min · añade ~25% al tamaño de la BD',
+    'step1_cost': '≈ 15-30 min · necesita ~60 GB libres',
+    'step2_cost': '≈ 10-20 min · la BD ocupa ~25 GB',
+    'step3_cost': '≈ 35-75 min · añade ~8 GB',
+    'step4_cost': '≈ 50-90 min · añade ~25% al tamaño de la BD',
     'sidebar_group_individual_steps': 'PASOS INDIVIDUALES',
     'sidebar_group_hint': 'Para ejecutar uno a uno. No hace falta si ya usaste el botón de Inicio.',
     'pipeline1_title': 'Opción 1',
@@ -374,12 +374,12 @@ STRINGS_ES = {
     'pipeline1_label_done': 'Rehacer la base de datos',
     'pipeline1_hint': 'Pasos 1 a 3. Es lo que necesita la mayoría: podrás buscar por '
                       'cualquier campo (especie, país, BIN…) y el visor irá rápido.',
-    'pipeline1_tip': 'Ejecuta seguidos los pasos 1, 2 y 3.\nDuración aproximada: 2-4 horas.',
+    'pipeline1_tip': 'Ejecuta seguidos los pasos 1, 2 y 3.\nDuración aproximada: 1-2,5 horas.',
     'pipeline2_title': 'Opción 2',
     'pipeline2_label': 'Crear la base de datos completa',
     'pipeline2_label_done': 'Rehacer la base de datos completa',
-    'pipeline2_hint': 'Pasos 1 a 4. Añade la búsqueda por texto libre. Suma unos '
-                      'minutos más y la base de datos crece en torno a un 25%.',
+    'pipeline2_hint': 'Pasos 1 a 4. Añade la búsqueda por texto libre. Suma cerca de '
+                      'una hora más y la base de datos crece en torno a un 25%.',
     'pipeline2_tip': 'Ejecuta seguidos los pasos 1, 2, 3 y 4.\n'
                      'Duración aproximada: 2-4 horas. Elige esta opción solo si vas a '
                      'buscar escribiendo palabras sueltas sin elegir campo.',
@@ -420,7 +420,7 @@ STRINGS_ES = {
     'run_only_step_tip': 'Ejecuta solo este paso.  {cost}',
     'stopping_status': 'Deteniendo...',
     'running_status': 'Ejecutando...',
-    'no_progress_note': 'Sin progreso medible — es normal en esta operación. Puede tardar varios minutos.',
+    'no_progress_note': 'Sin progreso medible — es normal en esta operación. Puede tardar un buen rato (hasta ~1,5 h en el Paso 4).',
     'already_running_tip': 'Este paso ya se está ejecutando.',
     'completed_status': '✓  Completado',
     'stopped_status': 'Detenido',
@@ -430,7 +430,7 @@ STRINGS_ES = {
                   'local que puedes consultar con el visor. Se hace una sola vez por cada versión '
                   'de los datos.',
     'home_req_note': 'Necesitas el <b>.tar.gz</b> del portal de BOLD (sin descomprimir), '
-                     'unos <b>150 GB libres</b> en este disco y entre <b>0,5 y 2 horas</b> '
+                     'unos <b>150 GB libres</b> en este disco y entre <b>1 y 2,5 horas</b> '
                      'para los pasos 1-3. Puedes dejarlo trabajando y volver luego.',
     'btn_open_viewer': 'Abrir el visor',
     'tip_open_viewer': 'Arranca el visor web y lo abre en el navegador (http://127.0.0.1:{port}).',
@@ -565,7 +565,7 @@ STRINGS_ES = {
                                'Qué pierdes:\n'
                                '    • Para volver a construir la base de datos tendrías que descargar '
                                'otra vez el archivo de BOLD (~10 GB) y repetir el Paso 1 '
-                               '(30-60 minutos).\n\n'
+                               '(15-30 minutos).\n\n'
                                '¿Borrar estos archivos?',
     'btn_yes_delete': 'Sí, borrar',
     'btn_cancel': 'Cancelar',
@@ -621,7 +621,7 @@ STRINGS_ES = {
     'db_exists_can_query': '📋 La base de datos ya existe{cnt} — puedes consultarla desde ahora '
                            'con «Abrir el visor».',
     'pending_step3': 'Paso 3 — Acelerar búsquedas  (recomendado: el visor irá mucho más rápido)',
-    'pending_step4': 'Paso 4 — Búsqueda por texto libre  (opcional: tarda varios minutos)',
+    'pending_step4': 'Paso 4 — Búsqueda por texto libre  (opcional: tarda cerca de 1 h)',
     'pending_steps_header': '⚠️ Pasos pendientes:',
     'no_db_yet_log': '⚠️ Aún no hay base de datos.',
     'go_home_create_db': '👉 Ve a «Inicio» y pulsa «Crear la base de datos».',
@@ -722,7 +722,7 @@ STRINGS_EN = {
     'empty_table': '⚠️ Empty table',
     'creating_fts_table': '⏳ Creating FTS5 table ({n} columns, excludes col_nuc)...',
     'rebuilding_fts_index': '⏳ Rebuilding FTS5 index ({n:,} records) — one-off operation, cannot be interrupted...',
-    'fts_may_take_minutes': "   This may take several minutes. The bar doesn't move because SQLite doesn't report progress: that's normal, it isn't stuck.",
+    'fts_may_take_minutes': "   This may take 45 min to 1.5 h. The bar doesn't move because SQLite doesn't report progress: that's normal, it isn't stuck.",
     'still_working': '\r   ⏳ Still working — {mins:.0f} min elapsed (do not close the window)',
     'rebuild_finished': '   Rebuild finished in {mins:.0f} min',
     'fts_created': '✅ FTS5 created — {n} columns, {total:,} records',
@@ -765,7 +765,7 @@ STRINGS_EN = {
                   'Input: app/bold_db.db   Output: indexes on bold_records',
     'step4_desc': 'Adds full-text search (type any word without choosing a field, '
                   'including partial matches inside another word). '
-                  'It takes several minutes and adds about 25% to the database size: '
+                  'It can take around an hour and adds about 25% to the database size: '
                   'enable it only if you are going to use that feature.\n'
                   'Input: app/bold_db.db   Output: bold_records_fts table',
     'step1_tech': 'Extract .tar.gz → filter TSV',
@@ -775,10 +775,10 @@ STRINGS_EN = {
     'badge_required': 'REQUIRED',
     'badge_recommended': 'RECOMMENDED',
     'badge_optional': 'OPTIONAL',
-    'step1_cost': '≈ 30-60 min · needs ~60 GB free',
-    'step2_cost': '≈ 1-2 h · the DB takes up ~25 GB',
-    'step3_cost': '≈ 20-40 min · adds ~8 GB',
-    'step4_cost': '≈ 5-15 min · adds ~25% to the DB size',
+    'step1_cost': '≈ 15-30 min · needs ~60 GB free',
+    'step2_cost': '≈ 10-20 min · the DB takes up ~25 GB',
+    'step3_cost': '≈ 35-75 min · adds ~8 GB',
+    'step4_cost': '≈ 50-90 min · adds ~25% to the DB size',
     'sidebar_group_individual_steps': 'INDIVIDUAL STEPS',
     'sidebar_group_hint': 'To run one at a time. Not needed if you already used the Start button.',
     'pipeline1_title': 'Option 1',
@@ -786,12 +786,12 @@ STRINGS_EN = {
     'pipeline1_label_done': 'Redo the database',
     'pipeline1_hint': 'Steps 1 to 3. This is what most people need: you will be able to search by '
                       'any field (species, country, BIN…) and the viewer will be fast.',
-    'pipeline1_tip': 'Runs steps 1, 2 and 3 in sequence.\nApproximate duration: 2-4 hours.',
+    'pipeline1_tip': 'Runs steps 1, 2 and 3 in sequence.\nApproximate duration: 1-2.5 hours.',
     'pipeline2_title': 'Option 2',
     'pipeline2_label': 'Create the full database',
     'pipeline2_label_done': 'Redo the full database',
-    'pipeline2_hint': 'Steps 1 to 4. Adds full-text search. Takes a few extra '
-                      'minutes and the database grows by about 25%.',
+    'pipeline2_hint': 'Steps 1 to 4. Adds full-text search. Takes about an extra '
+                      'hour and the database grows by about 25%.',
     'pipeline2_tip': 'Runs steps 1, 2, 3 and 4 in sequence.\n'
                      'Approximate duration: 2-4 hours. Choose this option only if you are going to '
                      'search by typing loose words without choosing a field.',
@@ -832,7 +832,7 @@ STRINGS_EN = {
     'run_only_step_tip': 'Runs only this step.  {cost}',
     'stopping_status': 'Stopping...',
     'running_status': 'Running...',
-    'no_progress_note': "No measurable progress — that's normal for this operation. It may take several minutes.",
+    'no_progress_note': "No measurable progress — that's normal for this operation. It can take a good while (up to ~1.5 h on Step 4).",
     'already_running_tip': 'This step is already running.',
     'completed_status': '✓  Completed',
     'stopped_status': 'Stopped',
@@ -841,7 +841,7 @@ STRINGS_EN = {
     'home_intro': "This tool converts BOLD's public download into a local database "
                   "you can query with the viewer. It's done once per data version.",
     'home_req_note': 'You need the <b>.tar.gz</b> from the BOLD portal (do not extract it), '
-                     'about <b>150 GB free</b> on this disk and between <b>0.5 and 2 hours</b> '
+                     'about <b>150 GB free</b> on this disk and between <b>1 and 2.5 hours</b> '
                      'for steps 1-3. You can leave it working and come back later.',
     'btn_open_viewer': 'Open the viewer',
     'tip_open_viewer': 'Starts the web viewer and opens it in the browser (http://127.0.0.1:{port}).',
@@ -976,7 +976,7 @@ STRINGS_EN = {
                                'What you lose:\n'
                                '    • To rebuild the database you would need to download '
                                'the BOLD file again (~10 GB) and repeat Step 1 '
-                               '(30-60 minutes).\n\n'
+                               '(15-30 minutes).\n\n'
                                'Delete these files?',
     'btn_yes_delete': 'Yes, delete',
     'btn_cancel': 'Cancel',
@@ -1032,7 +1032,7 @@ STRINGS_EN = {
     'db_exists_can_query': '📋 The database already exists{cnt} — you can query it now '
                            'with «Open the viewer».',
     'pending_step3': 'Step 3 — Speed up searches  (recommended: the viewer will be much faster)',
-    'pending_step4': 'Step 4 — Full-text search  (optional: takes several minutes)',
+    'pending_step4': 'Step 4 — Full-text search  (optional: takes about 1 h)',
     'pending_steps_header': '⚠️ Pending steps:',
     'no_db_yet_log': '⚠️ There is no database yet.',
     'go_home_create_db': '👉 Go to «Start» and click «Create the database».',

@@ -735,7 +735,7 @@
        <a href="#campos-panel">Field Selection</a> panel — 23 by default, adjustable.</p>
     <ul class="bullet">
       <li>Select <strong>"1. Prepare data"</strong> in the left-hand menu → click <strong>Run</strong>.</li>
-      <li>Approximate duration: <strong>10–40 minutes</strong>.</li>
+      <li>Approximate duration: <strong>15–30 minutes</strong>.</li>
       <li>Result: a <code>.filt.tsv</code> file in <code>data/processed/</code>.</li>
       <li>When it finishes, the <code>.tar.gz</code> and the unfiltered TSV are <strong>deleted from
           <code>data/raw/</code></strong> to free up space. If you copied the file instead of moving it, your
@@ -748,7 +748,7 @@
     <p>Imports the filtered data into the database.</p>
     <ul class="bullet">
       <li>Select <strong>"2. Build database"</strong> → click <strong>Run</strong>.</li>
-      <li>Approximate duration: <strong>30–90 minutes</strong>.</li>
+      <li>Approximate duration: <strong>10–20 minutes</strong>.</li>
       <li>Result: the <code>app/bold_db.db</code> file.</li>
     </ul>
 
@@ -756,16 +756,16 @@
     <p>Creates indexes so searches are fast. Without this step the database still works, but every query can take minutes instead of seconds.</p>
     <ul class="bullet">
       <li>Select <strong>"3. Speed up searches"</strong> → click <strong>Run</strong>.</li>
-      <li>Approximate duration: <strong>5–20 minutes</strong>.</li>
+      <li>Approximate duration: <strong>35–75 minutes</strong>.</li>
     </ul>
 
     <h3 class="step-title">Step 4 — Full-text search <em>(optional)</em></h3>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
-        This step is <strong>optional</strong>. It takes <strong>several minutes</strong> (roughly 5–15 depending
-        on the database size) and adds about <strong>25% to the size</strong> of the database. Once the index
-        rebuild starts it <strong>cannot be interrupted</strong>, but since it's quick that's not much of a risk.
+        This step is <strong>optional</strong>. It takes <strong>a long time</strong> (roughly 50–90 minutes depending
+        on the database size and disk speed) and adds about <strong>25% to the size</strong> of the database. Once the index
+        rebuild starts it <strong>cannot be interrupted</strong>, so be sure you can leave the machine running.
         It's only needed if you want to use the <em>"Full-text search"</em> tab.
       </div>
     </div>

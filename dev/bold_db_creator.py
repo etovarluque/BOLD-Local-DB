@@ -310,10 +310,12 @@ STRINGS_ES = {
     'fts_already_built': '✅ FTS5 ya construida para esta BD — omitiendo reconstrucción',
     'empty_table': '⚠️ Tabla vacía',
     'creating_fts_table': '⏳ Creando tabla FTS5 ({n} columnas, excluye col_nuc)...',
-    'rebuilding_fts_index': '⏳ Reconstruyendo índice FTS5 ({n:,} registros) — operación única, no interrumpible...',
+    'rebuilding_fts_index': '⏳ Reconstruyendo índice FTS5 ({n:,} registros) — operación única...',
     'fts_may_take_minutes': '   Puede tardar un buen rato. La barra no avanza porque SQLite no informa del progreso: es normal, no está bloqueado.',
     'still_working': '\r   ⏳ Sigue trabajando — {mins:.0f} min transcurridos (no cierre la ventana)',
     'rebuild_finished': '   Reconstrucción terminada en {mins:.0f} min',
+    'fts_stopping': '⏳ Deteniendo la reconstrucción del índice FTS (puede tardar unos segundos)...',
+    'fts_interrupted': '⚠️ Reconstrucción FTS interrumpida — no se creó la tabla FTS',
     'fts_created': '✅ FTS5 creada — {n} columnas, {total:,} registros',
     'ctx_create_fts': 'Crear FTS',
     'new_fields_found': 'ℹ️ Campos nuevos en este TSV que no estaban en versiones anteriores de BOLD ({n}): {fields}',
@@ -716,10 +718,12 @@ STRINGS_EN = {
     'fts_already_built': '✅ FTS5 already built for this DB — skipping rebuild',
     'empty_table': '⚠️ Empty table',
     'creating_fts_table': '⏳ Creating FTS5 table ({n} columns, excludes col_nuc)...',
-    'rebuilding_fts_index': '⏳ Rebuilding FTS5 index ({n:,} records) — one-off operation, cannot be interrupted...',
+    'rebuilding_fts_index': '⏳ Rebuilding FTS5 index ({n:,} records) — one-off operation...',
     'fts_may_take_minutes': "   This can take a while. The bar doesn't move because SQLite doesn't report progress: that's normal, it isn't stuck.",
     'still_working': '\r   ⏳ Still working — {mins:.0f} min elapsed (do not close the window)',
     'rebuild_finished': '   Rebuild finished in {mins:.0f} min',
+    'fts_stopping': '⏳ Stopping the FTS index rebuild (may take a few seconds)...',
+    'fts_interrupted': '⚠️ FTS rebuild interrupted — FTS table not created',
     'fts_created': '✅ FTS5 created — {n} columns, {total:,} records',
     'ctx_create_fts': 'Create FTS',
     'new_fields_found': 'ℹ️ New fields in this TSV that were not in previous BOLD versions ({n}): {fields}',
@@ -2120,14 +2124,16 @@ def run_step6(log, progress, cfg):
         # 'rebuild' does a single internal merge-sort over the whole content
         # table: it avoids creating hundreds of intermediate FTS segments and
         # the later merge with 'optimize', which was the biggest bottleneck.
-        # It can't be interrupted partway through.
+        # It runs as a single statement, so Stop is honoured via conn.interrupt().
         log(t('rebuilding_fts_index', n=total))
         log(t('fts_may_take_minutes'))
         progress(-1)
 
-        # 'rebuild' reports no progress and can't be interrupted. Without a
-        # heartbeat, the GUI stays identical for several minutes and the user
-        # assumes it froze and kills the application.
+        # 'rebuild' reports no progress. Without a heartbeat the GUI stays
+        # identical for many minutes and the user assumes it froze. A Stop
+        # press is picked up in the wait loop and aborts the statement with
+        # conn.interrupt() (safe from this thread: check_same_thread=False).
+        stop      = cfg.get("_stop")
         _rb_done  = threading.Event()
         _rb_error = []
 
@@ -2143,10 +2149,28 @@ def run_step6(log, progress, cfg):
         _t_rb = threading.Thread(target=_rebuild, daemon=True)
         _rb_t0 = time.monotonic()
         _t_rb.start()
-        while not _rb_done.wait(30):
-            mins = (time.monotonic() - _rb_t0) / 60
-            log(t('still_working', mins=mins))
+        _rb_interrupted = False
+        _rb_beat = _rb_t0
+        while not _rb_done.wait(3):
+            _rb_now = time.monotonic()
+            if stop is not None and stop.is_set() and not _rb_interrupted:
+                _rb_interrupted = True
+                log(t('fts_stopping'))
+                conn.interrupt()
+                continue
+            if not _rb_interrupted and _rb_now - _rb_beat >= 30:
+                _rb_beat = _rb_now
+                log(t('still_working', mins=(_rb_now - _rb_t0) / 60))
         _t_rb.join()
+        if _rb_interrupted:
+            try:
+                conn.rollback()
+                conn.execute("DROP TABLE IF EXISTS bold_records_fts")
+                conn.commit()
+            except Exception:
+                pass
+            log(t('fts_interrupted'))
+            return False
         if _rb_error:
             raise _rb_error[0]
         log(t('rebuild_finished', mins=(time.monotonic() - _rb_t0) / 60))

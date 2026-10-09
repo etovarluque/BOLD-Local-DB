@@ -623,7 +623,8 @@
   <!-- 4. PARTE 1 -->
   <section id="parte1">
     <h1 class="section-title"><span class="num">4</span> Construir la base de datos</h1>
-    <p>Solo necesitas hacer esto <strong>una vez</strong>, o cuando descargues una versión nueva de BOLD.</p>
+    <p>Solo necesitas hacer esto <strong>una vez</strong>. Cuando BOLD publique una versión nueva puedes actualizar
+       la base en lugar de reconstruirla (ver <a href="#reanudar">Reanudar y actualizar</a>).</p>
 
     <!-- Paso 0 -->
     <h2 class="sub-title" id="paso0">Descargar el archivo de BOLD</h2>
@@ -655,11 +656,20 @@
         trabaje con la <strong>copia</strong> en <code>data/raw/</code>. Si algo falla a mitad del proceso, o
         quieres reconstruir la base más adelante, vuelves a arrastrarlo sin tener que descargar otra vez esos
         10–15 GB desde BOLD.
+        <br><br>
+        Si prefieres conservarlo, marca <strong>«Conservar el .tar.gz al terminar»</strong> en el Paso 1: el paquete
+        se queda en <code>data/raw/</code> y cambiar la selección de campos más adelante no obliga a descargarlo de
+        nuevo. Puedes borrarlo después con <strong>«Liberar espacio»</strong> en la pantalla de Inicio.
       </div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Mientras el Constructor copia el archivo, lo guarda como <code>.part</code> y todavía no cuenta como
+        entrada del Paso 1; los botones se habilitan cuando la copia termina.</div>
     </div>
     <div class="callout warn">
       <span class="icon">⚠️</span>
-      <div>Deja un solo archivo <code>.tar.gz</code> en <code>data/raw/</code>. Si hay varios, el Constructor usa el más reciente y <strong>elimina los demás</strong>.</div>
+      <div>Deja un solo archivo <code>.tar.gz</code> en <code>data/raw/</code>. Si hay varios, el Constructor usa el más reciente según la fecha de publicación de su nombre (p. ej. <code>BOLD_Public.02-Oct-2026</code>) e <strong>ignora los demás</strong> sin borrarlos.</div>
     </div>
 
     <!-- Campos -->
@@ -699,7 +709,8 @@
         <strong>Cambiar la selección obliga a repetir el Paso 1</strong> con el <code>.tar.gz</code> de BOLD,
         porque los campos se extraen al filtrar el TSV. El programa detecta el cambio solo y vuelve a filtrar
         automáticamente si el <code>.tar.gz</code> sigue disponible; si ya se borró (se elimina al terminar el
-        Paso 1), tendrás que volver a descargarlo para aplicar la nueva selección.
+        Paso 1, salvo que marcaras <em>«Conservar el .tar.gz al terminar»</em>), tendrás que volver a descargarlo
+        para aplicar la nueva selección.
       </div>
     </div>
     <div class="callout tip">
@@ -716,62 +727,73 @@
     <!-- Opción A -->
     <h2 class="sub-title" id="opcionA">Opción A — Ejecutar todos los pasos al tiempo <em>(recomendado)</em></h2>
     <ol class="steps">
-      <li>Haz doble clic en el acceso directo <strong>1_Crear_base_de_datos</strong>. Se abrirá el Constructor.</li>
-      <li>En el panel izquierdo, sección <strong>ATAJOS</strong>, haz clic en <strong>"Crear DB (1, 2, 3)"</strong>.</li>
+      <li>Haz doble clic en el acceso directo <strong>1_Crear_base_de_datos</strong>. Se abrirá el Constructor en la pantalla de <strong>Inicio</strong>.</li>
+      <li>Haz clic en <strong>«Crear la base de datos»</strong>, bajo la <strong>Opción 1</strong>.</li>
       <li>Confirma en el diálogo que aparece.</li>
       <li>Espera a que finalice. El proceso puede tardar <strong>varias horas</strong> dependiendo del tamaño del archivo y la velocidad de tu computadora.</li>
     </ol>
     <div class="callout ok">
       <span class="icon">✅</span>
-      <div>Cuando termine verás en el panel de salida: <strong>Pipeline completo — X,XXX,XXX registros listos.</strong></div>
+      <div>Cuando termine verás en el panel de salida: <strong>=== PROCESO TERMINADO ===</strong>, seguido de <strong>Todo completo. Pulsa «Abrir el visor» en Inicio.</strong></div>
     </div>
-    <p>Este atajo ejecuta los pasos 1, 2 y 3. El paso 4 (FTS) es opcional y se lanza aparte.</p>
+    <p>La Opción 1 ejecuta los pasos 1, 2 y 3. La Opción 2 de la misma pantalla («Crear la base de datos completa») ejecuta los cuatro pasos, incluido el Paso 4 opcional (búsqueda por texto libre); también puedes lanzar el Paso 4 más adelante desde la lista de pasos individuales. La Opción 3 («Actualizar la base de datos») es para después, cuando BOLD publique un paquete nuevo: ver <a href="#reanudar">Reanudar y actualizar</a>.</p>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Los botones de Inicio solo se habilitan cuando pueden ejecutarse: con un paquete en la zona de arrastre, o
+        cuando queda algún paso pendiente cuya entrada ya está en disco. Mientras un paso está en marcha permanecen
+        deshabilitados. Pasa el ratón por encima de un botón deshabilitado para ver por qué.</div>
+    </div>
 
     <!-- Opción B -->
     <h2 class="sub-title" id="opcionB">Opción B — Ejecutar los pasos uno a uno</h2>
     <p>Útil si necesitas retomar desde un punto específico o quieres ver el detalle de cada etapa.</p>
 
-    <h3 class="step-title">Paso 1 — Generar TSV <em>(obligatorio)</em></h3>
+    <h3 class="step-title">Paso 1 — Preparar datos <em>(obligatorio)</em></h3>
     <p>Descomprime el archivo <code>.tar.gz</code> y extrae solo las columnas marcadas en el panel
        <a href="#campos-panel">Campos</a> — 23 por defecto, ajustable.</p>
     <ul class="bullet">
-      <li>Selecciona <strong>"1. Generar TSV"</strong> en el menú izquierdo → clic en <strong>Ejecutar</strong>.</li>
+      <li>Selecciona <strong>«1. Preparar datos»</strong> en el menú izquierdo → clic en <strong>Ejecutar</strong>.</li>
       <li>Duración aproximada: <strong>15–30 minutos</strong>.</li>
       <li>Resultado: un archivo <code>.filt.tsv</code> en <code>data/processed/</code>.</li>
       <li>Al terminar se <strong>borran de <code>data/raw/</code></strong> el <code>.tar.gz</code> y el TSV sin
-          filtrar, para liberar espacio. Si copiaste el archivo en vez de moverlo, tu descarga original sigue
+          filtrar, para liberar espacio, salvo que marques <strong>«Conservar el .tar.gz al terminar»</strong> (la
+          opción se recuerda). Si copiaste el archivo en vez de moverlo, tu descarga original sigue
           intacta donde estaba.</li>
       <li>Antes de filtrar, el programa <strong>verifica</strong> que los campos configurados existan en la
           cabecera real del archivo descargado — ver <a href="#campos-panel">panel Campos</a>.</li>
     </ul>
 
-    <h3 class="step-title">Paso 2 — TSV → SQLite <em>(obligatorio)</em></h3>
+    <h3 class="step-title">Paso 2 — Construir base de datos <em>(obligatorio)</em></h3>
     <p>Importa los datos filtrados a la base de datos.</p>
     <ul class="bullet">
-      <li>Selecciona <strong>"2. TSV → SQLite"</strong> → clic en <strong>Ejecutar</strong>.</li>
+      <li>Selecciona <strong>«2. Construir base de datos»</strong> → clic en <strong>Ejecutar</strong>.</li>
       <li>Duración aproximada: <strong>10–20 minutos</strong>.</li>
       <li>Resultado: el archivo <code>app/bold_db.db</code>.</li>
+      <li>Si un <code>processid</code> aparece más de una vez, solo se conserva el primer registro; el registro de
+          actividad indica cuántos se omitieron.</li>
     </ul>
 
-    <h3 class="step-title">Paso 3 — Indexar campos <em>(recomendado)</em></h3>
+    <h3 class="step-title">Paso 3 — Acelerar búsquedas <em>(recomendado)</em></h3>
     <p>Crea índices para que las búsquedas sean rápidas. Sin este paso la base funciona, pero cada consulta puede tardar minutos en vez de segundos.</p>
     <ul class="bullet">
-      <li>Selecciona <strong>"3. Indexar campos"</strong> → clic en <strong>Ejecutar</strong>.</li>
+      <li>Selecciona <strong>«3. Acelerar búsquedas»</strong> → clic en <strong>Ejecutar</strong>.</li>
       <li>Duración aproximada: <strong>35–75 minutos</strong>.</li>
+      <li>Los índices de los campos que ya no marcas para indexar en el panel Campos se eliminan, y se recupera su
+          espacio en disco.</li>
     </ul>
 
-    <h3 class="step-title">Paso 4 — Crear FTS <em>(opcional)</em></h3>
+    <h3 class="step-title">Paso 4 — Búsqueda por texto libre <em>(opcional)</em></h3>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
         Este paso es <strong>opcional</strong>. Tarda <strong>bastante rato</strong> (unos 50–90 minutos según el tamaño
-        de la base y la velocidad del disco) y añade aproximadamente un <strong>25% al tamaño</strong> de la base de datos. Una vez
-        iniciada la reconstrucción del índice <strong>no se puede interrumpir</strong>, así que asegúrate de poder
-        dejar el equipo encendido. Solo es necesario si quieres usar la pestaña <em>"Búsqueda de texto completo"</em>.
+        de la base y la velocidad del disco) y añade aproximadamente un <strong>25% al tamaño</strong> de la base de datos. Puedes
+        detenerlo con <strong>Detener</strong> en cualquier momento, pero el índice no se guarda a medias: la
+        siguiente vez empieza de nuevo desde el principio. Solo es necesario si quieres usar la pestaña <em>"Búsqueda de texto completo"</em>.
       </div>
     </div>
     <ul class="bullet">
-      <li>Selecciona <strong>"4. Crear FTS"</strong> → clic en <strong>Ejecutar</strong>.</li>
+      <li>Selecciona <strong>«4. Búsqueda por texto libre»</strong> → clic en <strong>Ejecutar</strong>.</li>
       <li>Por defecto el índice cubre casi los mismos campos que la búsqueda por campos (19 de 20): ID Muestra, ID
           Campo, ID Museo, BIN, taxonomía completa (reino a especie), identificación, ID Nivel, país, estado,
           región, Bases, marcador y fecha de secuencia. Queda fuera <strong>código país</strong> (ver nota más
@@ -808,10 +830,35 @@
       <li>Si el FTS corresponde a los datos actuales, el Paso 4 se omite.</li>
     </ul>
     <p>
-      Para <strong>actualizar a una versión nueva de BOLD</strong>: coloca el nuevo <code>.tar.gz</code> en
-      <code>data/raw/</code> y vuelve a ejecutar el atajo <strong>"Crear DB (1, 2, 3)"</strong>. Los archivos de la
-      versión anterior se eliminan automáticamente y la base se reconstruye desde cero.
+      BOLD publica cada semana un paquete completo nuevo. Para pasar a esa versión hay dos caminos; en ambos
+      empiezas igual: coloca el nuevo <code>.tar.gz</code> en <code>data/raw/</code> (o arrástralo a Inicio).
     </p>
+    <ul class="bullet">
+      <li><strong>Actualizar</strong> (Opción 3 en Inicio): prepara el paquete nuevo (Paso 1), lo compara con la
+        base actual y aplica solo los registros nuevos, modificados y eliminados. Los índices y la búsqueda por
+        texto libre se actualizan a la vez, así que no se repiten los pasos 3 y 4, que son la mayor parte del
+        tiempo de una reconstrucción.</li>
+      <li><strong>Reconstruir</strong> (Opción 1 o 2): borra la base y la crea desde cero con el paquete nuevo.</li>
+    </ul>
+    <p>Qué opción conviene depende del equipo y de cuánto haya cambiado:</p>
+    <ul class="bullet">
+      <li>Con <strong>disco SSD y RAM suficiente</strong> para que quepan los índices (del orden del tamaño de la
+        base de datos o más), actualizar suele tardar una fracción de reconstruir. Inicio muestra la RAM del
+        equipo y el tamaño de la base para que puedas compararlos.</li>
+      <li>En un <strong>disco duro mecánico</strong>, o con mucha menos RAM que el tamaño de la base, cada cambio
+        cuesta bastante más y la ventaja se reduce: reconstruir puede tardar parecido.</li>
+      <li>Si cambia <strong>más del 10&nbsp;% de los registros</strong>, la actualización se detiene sin tocar nada
+        y recomienda reconstruir.</li>
+      <li>Tras muchas actualizaciones, conviene <strong>reconstruir de vez en cuando</strong> (por ejemplo, una vez
+        al mes): los índices se fragmentan con los cambios.</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div>Si una actualización falla o la detienes, la base de datos queda <strong>exactamente como estaba</strong>,
+        y el visor puede seguir usándose mientras se actualiza. La actualización necesita una base creada con
+        esta versión del programa (guarda una huella de cada registro); con una base anterior, reconstrúyela una
+        vez. Si cambias la selección de campos, también hay que reconstruir.</div>
+    </div>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>Si interrumpes un paso con el botón <strong>Detener</strong>, los archivos parciales se borran para evitar datos corruptos. Al volver a ejecutar, ese paso empieza de nuevo.</div>
@@ -836,10 +883,16 @@
     <h1 class="section-title"><span class="num">5</span> Consultar la base de datos</h1>
 
     <h2 class="sub-title" id="abrir">Abrir la base de datos</h2>
-    <p>Haz doble clic en el acceso directo <strong>2_Abrir_visor_web_BD_BOLD</strong>. Se abrirá una ventana de terminal y automáticamente el navegador en <code>http://127.0.0.1:5001</code>.</p>
+    <p>Haz doble clic en el acceso directo <strong>2_Abrir_visor_web_BD_BOLD</strong> (o pulsa <strong>«Abrir el visor»</strong> en la pantalla de Inicio del Constructor). Se abrirá una ventana de terminal y, en cuanto el servidor esté listo, el navegador en <code>http://127.0.0.1:5001</code>. Si el visor ya está en marcha, el acceso directo solo vuelve a abrirlo en el navegador.</p>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>La ventana de terminal debe <strong>permanecer abierta</strong> mientras uses la base de datos. Si la cierras, el navegador dejará de funcionar y verás el aviso <em>"SIN CONEXIÓN AL SERVIDOR"</em>.</div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>El servidor se cierra solo unos segundos después de cerrar la <strong>última</strong> pestaña del visor.
+        Recargar la página (<kbd>F5</kbd>) o tener varias pestañas abiertas no lo detiene. El visor solo lee la base
+        de datos, así que puede seguir abierto mientras el Constructor la actualiza.</div>
     </div>
     <p>
       Arriba a la derecha de la página aparece la <strong>versión de BOLD</strong> cargada, y junto al título el
@@ -866,7 +919,7 @@
     <!-- Búsqueda por campos -->
     <h2 class="sub-title" id="busqueda-campos">Búsqueda avanzada por campos</h2>
     <ol class="steps">
-      <li>Deja el primer selector (<strong>AND / OR / NOT</strong>) como está: en la primera condición no tiene efecto.</li>
+      <li>La primera fila no lleva conector: en su lugar verás la etiqueta <strong>Campo</strong>.</li>
       <li>Elige el <strong>campo</strong> por el que quieres buscar (ej. <em>Especie</em>, <em>País</em>, <em>BIN</em>).</li>
       <li>Elige el <strong>operador</strong>.</li>
       <li>Escribe el <strong>valor</strong>. Aparecerán sugerencias de autocompletar.</li>
@@ -913,7 +966,7 @@
     </div>
 
     <h3 class="step-title">Autocompletar</h3>
-    <p>Al escribir aparecen hasta <strong>10 sugerencias</strong> de valores que existen realmente en la base, tomadas de los campos taxonómicos, marcador, país, estado, región e identificación.</p>
+    <p>A partir del <strong>tercer carácter</strong> que escribes aparecen hasta <strong>10 sugerencias</strong> de valores que existen realmente en la base, tomadas de los campos taxonómicos, marcador, país, estado, región e identificación.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
@@ -930,7 +983,7 @@
     <h2 class="sub-title" id="busqueda-fts">Búsqueda de texto completo</h2>
     <div class="callout tip">
       <span class="icon">ℹ️</span>
-      <div>Disponible solo si completaste el <strong>Paso 4 (Crear FTS)</strong>.</div>
+      <div>Disponible solo si completaste el <strong>Paso 4 (Búsqueda por texto libre)</strong>.</div>
     </div>
     <ol class="steps">
       <li>Escribe una o varias palabras en el cuadro de búsqueda.</li>
@@ -953,6 +1006,7 @@
           <tr><td><code>Panthera AND Colombia</code></td><td>Ambas palabras presentes, en cualquier campo</td></tr>
           <tr><td><code>Panthera OR Felis</code></td><td>Cualquiera de las dos palabras</td></tr>
           <tr><td><code>Panthera NOT leo</code></td><td>Panthera pero sin leo</td></tr>
+          <tr><td><code>(Panthera OR Felis) AND Colombia</code></td><td>Los paréntesis agrupan condiciones</td></tr>
           <tr><td><code>"Ara macao"</code></td><td>Frase exacta: busca esa secuencia de texto completa y contigua dentro de un mismo campo</td></tr>
           <tr><td><code>Mexico</code></td><td>También encuentra <em>México</em>: los acentos se ignoran</td></tr>
         </tbody>
@@ -985,11 +1039,13 @@
       <span class="icon">⚠️</span>
       <div>
         Los conectores <code>AND</code>, <code>OR</code> y <code>NOT</code> deben escribirse en
-        <strong>MAYÚSCULAS</strong>. Fuera de una frase entre comillas, los símbolos
-        <code>( ) * : . - + | &amp; ! ^</code> se tratan como <strong>texto literal</strong>, no como sintaxis: el
-        asterisco no funciona como comodín y los paréntesis no agrupan. Dentro de una frase entre comillas,
-        <code>AND</code>/<code>OR</code>/<code>NOT</code> tampoco actúan como conectores: se buscan como
-        palabras literales de la frase.
+        <strong>MAYÚSCULAS</strong> y con un término a cada lado (<code>Panthera OR</code> busca la palabra «OR»).
+        Los paréntesis agrupan términos cuando están equilibrados; si no, se ignoran. Cualquier otro símbolo
+        (<code>* : . - + / ' | &amp; ! ^</code>) se busca como <strong>texto literal</strong>, así que valores como
+        <code>Cote d'Ivoire</code> o <code>Peru/Bolivia</code> funcionan tal cual, pero el asterisco no funciona
+        como comodín. Las comas y los puntos y coma separan palabras, igual que los espacios. Dentro de una frase
+        entre comillas, <code>AND</code>/<code>OR</code>/<code>NOT</code> no actúan como conectores: se buscan
+        como palabras literales de la frase.
       </div>
     </div>
 
@@ -1047,7 +1103,7 @@
       <table>
         <thead><tr><th>Archivo en el ZIP</th><th>Contenido</th></tr></thead>
         <tbody>
-          <tr><td><code>all_results.tsv</code></td><td>Todos los registros encontrados en un solo archivo</td></tr>
+          <tr><td><code>all_results.tsv</code></td><td>Todos los registros encontrados en un solo archivo, cada uno una sola vez aunque coincida con varios términos</td></tr>
           <tr><td><code>individual/Termino.tsv</code></td><td>Un archivo por cada término buscado</td></tr>
           <tr><td><code>individual/Termino.fasta</code></td><td>Secuencias de ese término (solo si marcaste la opción FASTA)</td></tr>
           <tr><td><code>summary.csv</code></td><td>Conteo de registros por término, incluidos los que dieron cero. Puede llevar <a href="#batch-resumen">columnas adicionales</a></td></tr>
@@ -1057,13 +1113,18 @@
       </table>
     </div>
 
+    <p>Las cabeceras de los resúmenes siguen el idioma del visor (<em>Registros</em> / <em>Records</em>). El total
+       que se muestra al terminar cuenta registros distintos: uno que coincide con varios términos (p. ej.
+       <code>Panthera</code> y <code>Panthera leo</code>) cuenta una vez, aunque <code>summary.csv</code> lo siga
+       contando en cada término.</p>
+
     <h3 class="step-title">Contenido del ZIP — con Campo 2 activado</h3>
     <p>La organización cambia: se crea <strong>una carpeta por cada valor del Campo 2</strong>.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Archivo en el ZIP</th><th>Contenido</th></tr></thead>
         <tbody>
-          <tr><td><code>all_results.tsv</code></td><td>Todos los registros encontrados</td></tr>
+          <tr><td><code>all_results.tsv</code></td><td>Todos los registros encontrados, cada uno una sola vez</td></tr>
           <tr><td><code>Colombia/Panthera_onca.tsv</code></td><td>Un archivo por término dentro de la carpeta de cada valor del Campo 2</td></tr>
           <tr><td><code>Colombia/not_found.txt</code></td><td>Términos sin resultados <em>en ese</em> valor del Campo 2</td></tr>
           <tr><td><code>summary.csv</code></td><td>Conteo por combinación de Campo 1 × Campo 2. Puede llevar <a href="#batch-resumen">columnas adicionales</a></td></tr>
@@ -1146,19 +1207,27 @@
 
     <!-- Tabla de resultados -->
     <h2 class="sub-title" id="tabla">Trabajar con la tabla de resultados</h2>
-    <p>Los resultados se muestran en páginas de <strong>50 registros</strong>. Bajo la tabla puedes avanzar página a página o escribir directamente el número de página al que quieres saltar.</p>
+    <p>Los resultados se muestran en páginas de <strong>50 registros</strong> (<em>«50 por página»</em>). Bajo la tabla puedes avanzar página a página o escribir directamente el número de página al que quieres saltar.</p>
+    <p>Los botones sobre la tabla, de izquierda a derecha: <strong>⠿ Orden de columnas</strong>, <strong>Mostrar/ocultar columnas</strong> y <strong>Expandir filas</strong>. Funcionan igual con resultados por campos y de texto libre.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
         <tbody>
           <tr><td><strong>Clic en una celda</strong></td><td>Expande la celda para ver el contenido completo (útil en secuencias largas)</td></tr>
           <tr><td><strong>Doble clic en una celda</strong></td><td>Copia su contenido al portapapeles; aparece el aviso <em>"Copiado"</em></td></tr>
-          <tr><td><strong>Columnas ▾</strong></td><td>Muestra u oculta columnas de la tabla. Tu selección se recuerda para la próxima vez</td></tr>
-          <tr><td><strong>⠿ Orden de columnas</strong></td><td>Arrastra los nombres para reordenar las columnas. <em>↺ Restablecer</em> vuelve al orden original</td></tr>
+          <tr><td><strong>⠿ Orden de columnas ▼</strong></td><td>Arrastra los nombres para reordenar las columnas. <em>↺ Restablecer</em> vuelve al orden original</td></tr>
+          <tr><td><strong>Mostrar/ocultar columnas ▼</strong></td><td>Muestra u oculta columnas de la tabla. Tu selección se recuerda para la próxima vez</td></tr>
+          <tr><td><strong>Expandir filas</strong></td><td>Muestra a la vez el contenido completo de todas las celdas</td></tr>
           <tr><td><strong>Cancelar Búsqueda</strong></td><td>Interrumpe una consulta que está tardando demasiado</td></tr>
-          <tr><td><strong>Limpiar Resultados</strong></td><td>Vacía la tabla y libera memoria</td></tr>
+          <tr><td><strong>Limpiar resultados</strong></td><td>El enlace discreto de la cabecera de resultados: vacía la tabla y libera memoria</td></tr>
         </tbody>
       </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Los resultados pertenecen a la pestaña donde hiciste la búsqueda: si cambias de pestaña se ocultan, y
+        vuelven al regresar. Cambiar de página y exportar actúan siempre sobre la búsqueda que muestra la tabla,
+        aunque hayas editado el formulario después.</div>
     </div>
 
     <!-- Exportar -->
@@ -1167,7 +1236,7 @@
     <div class="export-cards">
       <div class="export-card">
         <div class="label csv">Exportar CSV</div>
-        <p>Abre un diálogo con dos opciones: <strong>incluir la columna de secuencia de ADN</strong> (sin ella la exportación es 2–3× más rápida) y <strong>exportar solo las columnas visibles</strong> según tu selección del botón "Columnas".</p>
+        <p>Abre un diálogo con dos opciones: <strong>incluir la columna de secuencia de ADN</strong> (sin ella la exportación es 2–3× más rápida) y <strong>exportar solo las columnas visibles</strong> según tu selección de «Mostrar/ocultar columnas».</p>
       </div>
       <div class="export-card">
         <div class="label fasta">Exportar FASTA</div>
@@ -1183,12 +1252,9 @@
     </div>
 
     <h3 class="step-title">Formato de los archivos FASTA</h3>
-    <p>Cada encabezado combina los datos disponibles del registro, separados por <code>|</code>:</p>
-<pre><span class="comment"># Exportación desde la tabla de resultados</span>
-&gt;ID_BOLD|ID_Muestra|BIN|Especie|Marcador
-
-<span class="comment"># Exportación desde Búsqueda en Batch</span>
-&gt;ID_BOLD|ID_Muestra|BIN|Taxón_más_específico|Marcador</pre>
+    <p>Cada encabezado combina los datos disponibles del registro, separados por <code>|</code>. Es el mismo en la
+       exportación desde la tabla de resultados y en la Búsqueda en Batch:</p>
+<pre>&gt;ID_BOLD|ID_Muestra|BIN|Taxón_más_específico|Marcador</pre>
     <ul class="bullet">
       <li>El <em>taxón más específico</em> es el primero disponible en este orden: especie, género, familia, orden, clase, filo, reino.</li>
       <li>Se eliminan los guiones de alineamiento y las <code>N</code> de los extremos.</li>
@@ -1199,7 +1265,8 @@
       <span class="icon">ℹ️</span>
       <div>
         Para archivos grandes la exportación se procesa en segundo plano con una barra de progreso; cuando termina
-        aparece un botón de descarga. Una copia queda guardada en <code>data/exports/</code>
+        aparece un botón de descarga. Si ningún registro tiene una secuencia utilizable, el diálogo lo indica en
+        lugar de ofrecer un archivo vacío. Una copia queda guardada en <code>data/exports/</code>
         (subcarpetas <code>csv_exports</code>, <code>fasta_exports</code> y <code>batch_exports</code>); en cada una se
         conservan los <strong>20 archivos más recientes</strong> y los anteriores se borran solos.
       </div>
@@ -1257,17 +1324,17 @@
 
     <div class="faq-item">
       <div class="q">¿Puedo cerrar el Constructor mientras procesa?</div>
-      <div class="a">No. Cerrar la ventana detiene el proceso. Si lo cierras accidentalmente, vuelve a abrirlo y ejecuta el paso de nuevo; el programa detecta el progreso previo y retoma desde donde corresponde.</div>
+      <div class="a">Cerrar la ventana detiene el proceso. El Constructor pregunta antes y, si confirmas, detiene el paso en curso de forma segura y se cierra solo unos segundos después (no lo corta a medias, lo que podría dañar la base de datos). Vuelve a abrirlo y ejecuta el paso de nuevo; el programa detecta el progreso previo y retoma desde donde corresponde. Cambiar el idioma con un paso en marcha se guarda, pero solo se aplica la próxima vez que abras el Constructor.</div>
     </div>
 
     <div class="faq-item">
       <div class="q">El navegador dice "SIN CONEXIÓN AL SERVIDOR".</div>
-      <div class="a">Significa que la ventana de terminal del servidor está cerrada. Vuelve a abrir el acceso directo <strong>2_Abrir_visor_web_BD_BOLD</strong>.</div>
+      <div class="a">Significa que el servidor ya no está en marcha: se cerró su ventana de terminal, o se cerró solo tras cerrar la última pestaña del visor. Vuelve a abrir el acceso directo <strong>2_Abrir_visor_web_BD_BOLD</strong>.</div>
     </div>
 
     <div class="faq-item">
       <div class="q">La pestaña "Búsqueda de texto completo" no devuelve nada.</div>
-      <div class="a">Requiere el <strong>Paso 4 (Crear FTS)</strong>. Si no lo ejecutaste, usa la búsqueda por campos, que funciona siempre.</div>
+      <div class="a">Requiere el <strong>Paso 4 (Búsqueda por texto libre)</strong>. Si no lo ejecutaste, usa la búsqueda por campos, que funciona siempre.</div>
     </div>
 
     <div class="faq-item">
@@ -1277,7 +1344,7 @@
 
     <div class="faq-item">
       <div class="q">Las búsquedas tardan mucho.</div>
-      <div class="a">Verifica que ejecutaste el <strong>Paso 3 (Indexar campos)</strong>. Además, los operadores <em>Contiene</em>, <em>No contiene</em> y <em>Termina con</em> no pueden aprovechar los índices; cuando sea posible prefiere <em>Es igual a</em> o <em>Comienza con</em>.</div>
+      <div class="a">Verifica que ejecutaste el <strong>Paso 3 (Acelerar búsquedas)</strong>. Además, los operadores <em>Contiene</em>, <em>No contiene</em> y <em>Termina con</em> no pueden aprovechar los índices; cuando sea posible prefiere <em>Es igual a</em> o <em>Comienza con</em>.</div>
     </div>
 
     <div class="faq-item">
@@ -1292,12 +1359,12 @@
 
     <div class="faq-item">
       <div class="q">Cambié la selección de campos, guardé, pero el visor sigue mostrando lo mismo.</div>
-      <div class="a">Guardar la selección solo actualiza <code>dev/fields_config.json</code>; la base de datos no cambia hasta que repites el Paso 1 con el <code>.tar.gz</code> de BOLD (el programa detecta el cambio y vuelve a filtrar solo). Si ya se borró el <code>.tar.gz</code>, tendrás que descargarlo de nuevo.</div>
+      <div class="a">Guardar la selección solo actualiza <code>dev/fields_config.json</code>; la base de datos no cambia hasta que repites el Paso 1 con el <code>.tar.gz</code> de BOLD (el programa detecta el cambio y vuelve a filtrar solo). Si ya se borró el <code>.tar.gz</code>, tendrás que descargarlo de nuevo; para evitarlo la próxima vez, marca <em>«Conservar el .tar.gz al terminar»</em> en el Paso 1.</div>
     </div>
 
     <div class="faq-item">
       <div class="q">¿Con qué frecuencia debo actualizar la base de datos?</div>
-      <div class="a">BOLD publica nuevas versiones semanalmente. Para actualizar, descarga el nuevo <code>.tar.gz</code>, colócalo en <code>data/raw/</code> y vuelve a ejecutar los pasos 1–3. El programa elimina automáticamente la versión anterior.</div>
+      <div class="a">BOLD publica nuevas versiones semanalmente. Para actualizar, descarga el nuevo <code>.tar.gz</code>, arrástralo a la pantalla de Inicio (o colócalo en <code>data/raw/</code>) y elige la <strong>Opción 3 · Actualizar la base de datos</strong>: solo se aplica lo que ha cambiado. Reconstruir con la Opción 1 o 2 también sirve y conviene hacerlo de vez en cuando; ver <a href="#reanudar">Reanudar y actualizar</a>.</div>
     </div>
 
     <div class="faq-item">
@@ -1307,7 +1374,7 @@
 
     <div class="faq-item">
       <div class="q">¿Qué hago si el Paso 1 dice "Entrada no encontrada" aunque puse el archivo?</div>
-      <div class="a">Verifica que el archivo esté directamente dentro de <code>data/raw/</code> y que su extensión sea <code>.tar.gz</code> (no <code>.tar</code> ni <code>.gz</code> solo). El programa busca exactamente ese formato.</div>
+      <div class="a">Verifica que el archivo esté directamente dentro de <code>data/raw/</code> y que su extensión sea <code>.tar.gz</code> (no <code>.tar</code> ni <code>.gz</code> solo). El programa busca exactamente ese formato. Si el Constructor todavía lo está copiando (aparece como <code>.part</code>), espera a que termine la copia.</div>
     </div>
 
     <div class="faq-item">

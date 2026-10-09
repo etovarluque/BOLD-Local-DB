@@ -14,6 +14,9 @@ ui_state.ini
 *.sqlite
 *.sqlite3
 
+# Viewer copy synced from dev/frontend by the Creator, plus its runtime files
+/app/
+
 # Generated data (not versioned)
 data/raw/*
 data/processed/*

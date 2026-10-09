@@ -1,6 +1,6 @@
 # BOLD-Local-DB
 
-**Version: 1.1.2**
+**Version: 1.2.0**
 
 Desktop tool to build and browse a local, **offline** SQLite database from
 [BOLD Systems](https://www.boldsystems.org/) (Barcode of Life Data System) TSV exports.
@@ -48,7 +48,8 @@ Two programs, used in order:
    This also tidies the project root: repo files you don't need day-to-day
    (`README.md`, `CHANGELOG.md`, `LICENSE`, `.git*`) and the "step 0"
    scripts for the *other* two OSes move into `project_files/`, so only the
-   numbered shortcuts for your OS are left to double-click.
+   numbered shortcuts for your OS are left to double-click. (Skipped in a
+   `git clone`: there the root is left untouched.)
    Run it again any time you move the project to another drive, computer or
    user account, to regenerate broken shortcuts. (Or run
    `python dev/generate_shortcuts.py` from a terminal instead, on any OS.)
@@ -79,6 +80,24 @@ use those directly instead if you'd rather run them from a terminal.
   trusted — right-click it → *Allow Launching* (or *Trust*) once.
 - If double-clicking doesn't work at all, run the `.sh`/`.command` script
   directly from a terminal instead.
+
+## Weekly updates
+
+BOLD publishes a full new data package every week. Once a database exists,
+there's no need to rebuild it from scratch: drop the new `.tar.gz` on the
+Home screen and choose **Option 3 · Update the database**. It prepares the
+new package (Step 1), compares it with the current database record by record
+and applies only what's new, modified or removed; indexes and full-text
+search are kept up to date along the way, so Steps 3 and 4 (most of a
+rebuild's time) aren't repeated.
+
+How much faster it is depends on the machine: with an SSD and enough RAM for
+the indexes to fit, an update takes a fraction of a rebuild; on a mechanical
+disk or with little RAM the gain shrinks. The Home screen shows the
+computer's RAM next to the database size so you can choose. If more than 10%
+of the records changed, the update stops without modifying anything and
+recommends a rebuild. A failed or stopped update leaves the database exactly
+as it was, and the viewer keeps working while it runs.
 
 ## Project structure
 

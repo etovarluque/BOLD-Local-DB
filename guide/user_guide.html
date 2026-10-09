@@ -624,7 +624,8 @@
   <!-- 4. PART 1 -->
   <section id="parte1">
     <h1 class="section-title"><span class="num">4</span> Building the database</h1>
-    <p>You only need to do this <strong>once</strong>, or when you download a new version of BOLD.</p>
+    <p>You only need to do this <strong>once</strong>. When BOLD publishes a new version you can update the
+       database instead of rebuilding it (see <a href="#reanudar">Resuming and updating</a>).</p>
 
     <!-- Step 0 -->
     <h2 class="sub-title" id="paso0">Download the file from BOLD</h2>
@@ -656,11 +657,20 @@
         work only with the <strong>copy</strong> in <code>data/raw/</code>. If something fails partway through,
         or you want to rebuild the database later, you can just drag it in again instead of having to download
         those 10–15 GB from BOLD a second time.
+        <br><br>
+        If you'd rather keep it, tick <strong>"Keep the .tar.gz when done"</strong> in Step 1: the package stays in
+        <code>data/raw/</code>, so changing the field selection later doesn't require downloading it again. You can
+        delete it afterwards with <strong>"Free up space"</strong> on the Start screen.
       </div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>While the Creator is copying the file, it's saved as <code>.part</code> and doesn't count as Step 1's
+        input yet; the buttons are enabled once the copy has finished.</div>
     </div>
     <div class="callout warn">
       <span class="icon">⚠️</span>
-      <div>Leave only one <code>.tar.gz</code> file in <code>data/raw/</code>. If there are several, the Creator uses the most recent one and <strong>deletes the rest</strong>.</div>
+      <div>Leave only one <code>.tar.gz</code> file in <code>data/raw/</code>. If there are several, the Creator uses the most recent one, judging by the release date in its name (e.g. <code>BOLD_Public.02-Oct-2026</code>), and <strong>ignores the rest</strong> without deleting them.</div>
     </div>
 
     <!-- Fields -->
@@ -698,7 +708,8 @@
         <strong>Changing the selection means Step 1 has to be repeated</strong> with BOLD's <code>.tar.gz</code>,
         because fields are extracted while filtering the TSV. The program detects the change on its own and
         re-filters automatically if the <code>.tar.gz</code> is still available; if it was already deleted (it's
-        removed once Step 1 finishes), you'll need to download it again to apply the new selection.
+        removed once Step 1 finishes, unless you ticked <em>"Keep the .tar.gz when done"</em>), you'll need to
+        download it again to apply the new selection.
       </div>
     </div>
     <div class="callout tip">
@@ -715,16 +726,22 @@
     <!-- Option A -->
     <h2 class="sub-title" id="opcionA">Option A — Run all the steps at once <em>(recommended)</em></h2>
     <ol class="steps">
-      <li>Double-click the <strong>1_Crear_base_de_datos</strong> shortcut. The Creator will open on the <strong>Home</strong> screen.</li>
+      <li>Double-click the <strong>1_Crear_base_de_datos</strong> shortcut. The Creator will open on the <strong>Start</strong> screen.</li>
       <li>Click <strong>"Create the database"</strong>, under <strong>Option 1</strong>.</li>
       <li>Confirm in the dialog that appears.</li>
       <li>Wait for it to finish. The process can take <strong>several hours</strong> depending on the file size and your computer's speed.</li>
     </ol>
     <div class="callout ok">
       <span class="icon">✅</span>
-      <div>When it finishes you'll see in the output panel: <strong>=== PROCESS FINISHED ===</strong>, followed by <strong>All done. Click «Open the viewer» on Home.</strong></div>
+      <div>When it finishes you'll see in the output panel: <strong>=== PROCESS FINISHED ===</strong>, followed by <strong>All done. Click «Open the viewer» on Start.</strong></div>
     </div>
-    <p>Option 1 runs steps 1, 2 and 3. Option 2 on the same screen ("Create the full database") runs all four steps, including the optional Step 4 (FTS); you can also run Step 4 on its own later from the individual step list.</p>
+    <p>Option 1 runs steps 1, 2 and 3. Option 2 on the same screen ("Create the full database") runs all four steps, including the optional Step 4 (FTS); you can also run Step 4 on its own later from the individual step list. Option 3 ("Update the database") is for later, when BOLD publishes a new package: see <a href="#reanudar">Resuming and updating</a>.</p>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>The Start screen buttons are enabled only when they can run: with a package in the drop zone, or when some step
+        is still pending and its input is already on disk. While a step is running they stay disabled. Hover over a
+        disabled button to see why.</div>
+    </div>
 
     <!-- Option B -->
     <h2 class="sub-title" id="opcionB">Option B — Run the steps one at a time</h2>
@@ -738,8 +755,9 @@
       <li>Approximate duration: <strong>15–30 minutes</strong>.</li>
       <li>Result: a <code>.filt.tsv</code> file in <code>data/processed/</code>.</li>
       <li>When it finishes, the <code>.tar.gz</code> and the unfiltered TSV are <strong>deleted from
-          <code>data/raw/</code></strong> to free up space. If you copied the file instead of moving it, your
-          original download is still intact where it was.</li>
+          <code>data/raw/</code></strong> to free up space, unless you tick <strong>"Keep the .tar.gz when
+          done"</strong> (the option is remembered). If you copied the file instead of moving it, your original
+          download is still intact where it was.</li>
       <li>Before filtering, the program <strong>checks</strong> that the configured fields exist in the actual
           header of the downloaded file — see the <a href="#campos-panel">Field Selection panel</a>.</li>
     </ul>
@@ -750,6 +768,8 @@
       <li>Select <strong>"2. Build database"</strong> → click <strong>Run</strong>.</li>
       <li>Approximate duration: <strong>10–20 minutes</strong>.</li>
       <li>Result: the <code>app/bold_db.db</code> file.</li>
+      <li>If a <code>processid</code> appears more than once, only the first record is kept; the log says how many
+          were skipped.</li>
     </ul>
 
     <h3 class="step-title">Step 3 — Speed up searches <em>(recommended)</em></h3>
@@ -757,6 +777,8 @@
     <ul class="bullet">
       <li>Select <strong>"3. Speed up searches"</strong> → click <strong>Run</strong>.</li>
       <li>Approximate duration: <strong>35–75 minutes</strong>.</li>
+      <li>The indexes of fields you no longer mark as <em>"index"</em> in the Field Selection panel are dropped,
+          giving back their disk space.</li>
     </ul>
 
     <h3 class="step-title">Step 4 — Full-text search <em>(optional)</em></h3>
@@ -764,9 +786,9 @@
       <span class="icon">⚠️</span>
       <div>
         This step is <strong>optional</strong>. It takes <strong>a long time</strong> (roughly 50–90 minutes depending
-        on the database size and disk speed) and adds about <strong>25% to the size</strong> of the database. Once the index
-        rebuild starts it <strong>cannot be interrupted</strong>, so be sure you can leave the machine running.
-        It's only needed if you want to use the <em>"Full-text search"</em> tab.
+        on the database size and disk speed) and adds about <strong>25% to the size</strong> of the database. You can
+        stop it with <strong>Stop</strong> at any time, but the index isn't saved half-built: the next run starts it
+        over from the beginning. It's only needed if you want to use the <em>"Full-text search"</em> tab.
       </div>
     </div>
     <ul class="bullet">
@@ -807,10 +829,35 @@
       <li>If the FTS index matches the current data, Step 4 is skipped.</li>
     </ul>
     <p>
-      To <strong>update to a new version of BOLD</strong>: place the new <code>.tar.gz</code> in
-      <code>data/raw/</code> and click <strong>"Create the database"</strong> (Option 1) on the Home screen
-      again. The previous version's files are removed automatically and the database is rebuilt from scratch.
+      BOLD publishes a new full package every week. There are two ways to move to it; both start the same way:
+      place the new <code>.tar.gz</code> in <code>data/raw/</code> (or drop it on the Start screen).
     </p>
+    <ul class="bullet">
+      <li><strong>Update</strong> (Option 3 on Start): prepares the new package (Step 1), compares it with the
+        current database and applies only the records that are new, modified or removed. Indexes and full-text
+        search are updated along the way, so Steps 3 and 4, most of a rebuild's time, aren't repeated.</li>
+      <li><strong>Rebuild</strong> (Option 1 or 2): deletes the database and creates it from scratch with the new
+        package.</li>
+    </ul>
+    <p>Which one pays off depends on the computer and on how much changed:</p>
+    <ul class="bullet">
+      <li>With an <strong>SSD and enough RAM</strong> for the indexes to fit (around the size of the database or
+        more), updating usually takes a fraction of a rebuild. Start shows the computer's RAM and the database
+        size so you can compare them.</li>
+      <li>On a <strong>mechanical hard disk</strong>, or with much less RAM than the database size, each change
+        costs considerably more and the advantage shrinks: a rebuild may take about as long.</li>
+      <li>If <strong>more than 10&nbsp;% of the records</strong> changed, the update stops without touching
+        anything and recommends a rebuild.</li>
+      <li>After many updates, <strong>rebuild now and then</strong> (e.g. once a month): the indexes get
+        fragmented by the changes.</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div>If an update fails or you stop it, the database stays <strong>exactly as it was</strong>, and the viewer
+        can still be used while it runs. Updating needs a database built with this version of the program (it
+        stores a fingerprint of every record); with an older one, rebuild it once. Changing the field selection
+        also requires a rebuild.</div>
+    </div>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>If you interrupt a step with the <strong>Stop</strong> button, the partial files are deleted to avoid corrupted data. Running it again starts that step over from the beginning.</div>
@@ -835,10 +882,16 @@
     <h1 class="section-title"><span class="num">5</span> Querying the database</h1>
 
     <h2 class="sub-title" id="abrir">Opening the database</h2>
-    <p>Double-click the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut. A terminal window will open and your browser will automatically open at <code>http://127.0.0.1:5001</code>.</p>
+    <p>Double-click the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut (or click <strong>"Open the viewer"</strong> on the Creator's Start screen). A terminal window will open and your browser will open at <code>http://127.0.0.1:5001</code> as soon as the server is ready. If the viewer is already running, the shortcut just opens it in the browser again.</p>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>The terminal window must <strong>stay open</strong> while you use the database. If you close it, the browser will stop working and you'll see the <em>"SERVER DISCONNECTED"</em> notice.</div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>The server closes by itself a few seconds after you close the <strong>last</strong> viewer tab. Reloading
+        the page (<kbd>F5</kbd>) or having several tabs open doesn't stop it. The viewer only reads the database, so
+        it can stay open while the Creator updates it.</div>
     </div>
     <p>
       In the top right of the page you'll see the loaded <strong>BOLD version</strong>, and next to the title the
@@ -865,7 +918,7 @@
     <!-- Field search -->
     <h2 class="sub-title" id="busqueda-campos">Advanced field search</h2>
     <ol class="steps">
-      <li>Leave the first selector (<strong>AND / OR / NOT</strong>) as it is: it has no effect on the first condition.</li>
+      <li>The first row has no connector: in its place you'll see the label <strong>Field</strong>.</li>
       <li>Choose the <strong>field</strong> you want to search by (e.g. <em>Species</em>, <em>Country</em>, <em>BIN</em>).</li>
       <li>Choose the <strong>operator</strong>.</li>
       <li>Type the <strong>value</strong>. Autocomplete suggestions will appear.</li>
@@ -912,7 +965,7 @@
     </div>
 
     <h3 class="step-title">Autocomplete</h3>
-    <p>As you type, up to <strong>10 suggestions</strong> appear, taken from values that actually exist in the database, drawn from the taxonomic fields, marker, country, state, region and identification.</p>
+    <p>From the <strong>third character</strong> you type, up to <strong>10 suggestions</strong> appear, taken from values that actually exist in the database, drawn from the taxonomic fields, marker, country, state, region and identification.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Key</th><th>Action</th></tr></thead>
@@ -952,6 +1005,7 @@
           <tr><td><code>Panthera AND Colombia</code></td><td>Both words present, in any field</td></tr>
           <tr><td><code>Panthera OR Felis</code></td><td>Either of the two words</td></tr>
           <tr><td><code>Panthera NOT leo</code></td><td>Panthera but not leo</td></tr>
+          <tr><td><code>(Panthera OR Felis) AND Colombia</code></td><td>Parentheses group conditions</td></tr>
           <tr><td><code>"Ara macao"</code></td><td>Exact phrase: searches for that complete, contiguous sequence of text within the same field</td></tr>
           <tr><td><code>Mexico</code></td><td>Also finds <em>México</em>: accents are ignored</td></tr>
         </tbody>
@@ -984,11 +1038,13 @@
       <span class="icon">⚠️</span>
       <div>
         The connectors <code>AND</code>, <code>OR</code> and <code>NOT</code> must be written in
-        <strong>UPPERCASE</strong>. Outside a quoted phrase, the symbols
-        <code>( ) * : . - + | &amp; ! ^</code> are treated as <strong>literal text</strong>, not syntax: the
-        asterisk doesn't work as a wildcard and parentheses don't group anything. Inside a quoted phrase,
-        <code>AND</code>/<code>OR</code>/<code>NOT</code> also don't act as connectors: they're searched as
-        literal words of the phrase.
+        <strong>UPPERCASE</strong>, with a term on each side (<code>Panthera OR</code> searches the word "OR").
+        Parentheses group terms when they're balanced; otherwise they're ignored. Any other symbol
+        (<code>* : . - + / ' | &amp; ! ^</code>) is searched as <strong>literal text</strong>, so values like
+        <code>Cote d'Ivoire</code> or <code>Peru/Bolivia</code> work as typed, but the asterisk doesn't work as a
+        wildcard. Commas and semicolons separate words, like spaces. Inside a quoted phrase,
+        <code>AND</code>/<code>OR</code>/<code>NOT</code> don't act as connectors: they're searched as literal
+        words of the phrase.
       </div>
     </div>
 
@@ -1045,7 +1101,7 @@
       <table>
         <thead><tr><th>File in the ZIP</th><th>Content</th></tr></thead>
         <tbody>
-          <tr><td><code>all_results.tsv</code></td><td>All found records in a single file</td></tr>
+          <tr><td><code>all_results.tsv</code></td><td>All found records in a single file, each one once even if it matched several terms</td></tr>
           <tr><td><code>individual/Term.tsv</code></td><td>One file per searched term</td></tr>
           <tr><td><code>individual/Term.fasta</code></td><td>Sequences for that term (only if you checked the FASTA option)</td></tr>
           <tr><td><code>summary.csv</code></td><td>Record count per term, including terms with zero. May carry <a href="#batch-resumen">extra columns</a></td></tr>
@@ -1055,13 +1111,18 @@
       </table>
     </div>
 
+    <p>The headers of the summary files follow the viewer's language (<em>Records</em> / <em>Registros</em>).
+       The total shown when the search finishes counts distinct records: one that matches several terms
+       (e.g. <code>Panthera</code> and <code>Panthera leo</code>) counts once, although <code>summary.csv</code>
+       still counts it under each term.</p>
+
     <h3 class="step-title">ZIP contents — with Field 2 enabled</h3>
     <p>The layout changes: <strong>one folder per value of Field 2</strong> is created.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>File in the ZIP</th><th>Content</th></tr></thead>
         <tbody>
-          <tr><td><code>all_results.tsv</code></td><td>All found records</td></tr>
+          <tr><td><code>all_results.tsv</code></td><td>All found records, each one once</td></tr>
           <tr><td><code>Colombia/Panthera_onca.tsv</code></td><td>One file per term, inside the folder for each Field 2 value</td></tr>
           <tr><td><code>Colombia/not_found.txt</code></td><td>Terms with no results <em>for that</em> Field 2 value</td></tr>
           <tr><td><code>summary.csv</code></td><td>Count per Field 1 × Field 2 combination. May carry <a href="#batch-resumen">extra columns</a></td></tr>
@@ -1144,19 +1205,27 @@
 
     <!-- Results table -->
     <h2 class="sub-title" id="tabla">Working with the results table</h2>
-    <p>Results are shown in pages of <strong>50 records</strong>. Below the table you can move page by page or type the page number you want to jump to directly.</p>
+    <p>Results are shown in pages of <strong>50 records</strong> (<em>"50 per page"</em>). Below the table you can move page by page or type the page number you want to jump to directly.</p>
+    <p>The buttons above the table, from left to right: <strong>⠿ Column order</strong>, <strong>Show/hide columns</strong> and <strong>Expand rows</strong>. They work the same for field and full-text results.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Control</th><th>What it does</th></tr></thead>
         <tbody>
           <tr><td><strong>Click a cell</strong></td><td>Expands the cell to show its full content (useful for long sequences)</td></tr>
           <tr><td><strong>Double-click a cell</strong></td><td>Copies its content to the clipboard; the <em>"Copied"</em> notice appears</td></tr>
-          <tr><td><strong>Columns ▾</strong></td><td>Shows or hides table columns. Your selection is remembered for next time</td></tr>
-          <tr><td><strong>⠿ Column order</strong></td><td>Drag the names to reorder the columns. <em>↺ Reset</em> returns to the original order</td></tr>
+          <tr><td><strong>⠿ Column order ▼</strong></td><td>Drag the names to reorder the columns. <em>↺ Reset</em> returns to the original order</td></tr>
+          <tr><td><strong>Show/hide columns ▼</strong></td><td>Shows or hides table columns. Your selection is remembered for next time</td></tr>
+          <tr><td><strong>Expand rows</strong></td><td>Shows every cell's full content at once</td></tr>
           <tr><td><strong>Cancel Search</strong></td><td>Interrupts a query that's taking too long</td></tr>
-          <tr><td><strong>Clear Results</strong></td><td>Empties the table and frees up memory</td></tr>
+          <tr><td><strong>Clear results</strong></td><td>The discreet link in the results header: empties the table and frees up memory</td></tr>
         </tbody>
       </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>The results belong to the tab where you ran the search: if you switch tabs they're hidden, and they come
+        back when you return. Changing pages and exporting always act on the search shown in the table, even if
+        you've edited the form since.</div>
     </div>
 
     <!-- Export -->
@@ -1165,7 +1234,7 @@
     <div class="export-cards">
       <div class="export-card">
         <div class="label csv">Export CSV</div>
-        <p>Opens a dialog with two options: <strong>include the DNA sequence column</strong> (without it the export is 2–3× faster) and <strong>export only the visible columns</strong> based on your "Columns" button selection.</p>
+        <p>Opens a dialog with two options: <strong>include the DNA sequence column</strong> (without it the export is 2–3× faster) and <strong>export only the visible columns</strong> based on your "Show/hide columns" selection.</p>
       </div>
       <div class="export-card">
         <div class="label fasta">Export FASTA</div>
@@ -1181,12 +1250,9 @@
     </div>
 
     <h3 class="step-title">FASTA file format</h3>
-    <p>Each header combines the record's available data, separated by <code>|</code>:</p>
-<pre><span class="comment"># Export from the results table</span>
-&gt;BOLD_ID|Sample_ID|BIN|Species|Marker
-
-<span class="comment"># Export from Batch search</span>
-&gt;BOLD_ID|Sample_ID|BIN|Most_specific_taxon|Marker</pre>
+    <p>Each header combines the record's available data, separated by <code>|</code>. It's the same for the
+       results-table export and for Batch search:</p>
+<pre>&gt;BOLD_ID|Sample_ID|BIN|Most_specific_taxon|Marker</pre>
     <ul class="bullet">
       <li>The <em>most specific taxon</em> is the first one available in this order: species, genus, family, order, class, phylum, kingdom.</li>
       <li>Alignment dashes and trailing/leading <code>N</code>s are removed.</li>
@@ -1197,7 +1263,8 @@
       <span class="icon">ℹ️</span>
       <div>
         For large files the export is processed in the background with a progress bar; a download button appears
-        when it finishes. A copy is saved in <code>data/exports/</code>
+        when it finishes. If no record has a usable sequence, the dialog says so instead of offering an empty
+        file. A copy is saved in <code>data/exports/</code>
         (subfolders <code>csv_exports</code>, <code>fasta_exports</code>, and <code>batch_exports</code>); each one
         keeps the <strong>20 most recent files</strong> and older ones are deleted automatically.
       </div>
@@ -1255,12 +1322,12 @@
 
     <div class="faq-item">
       <div class="q">Can I close the Creator while it's processing?</div>
-      <div class="a">No. Closing the window stops the process. If you close it by accident, reopen it and run the step again; the program detects the previous progress and resumes from the right place.</div>
+      <div class="a">Closing the window stops the process. The Creator asks first and, if you confirm, stops the current step safely and closes on its own a few seconds later (it doesn't kill it halfway, which could damage the database). Reopen it and run the step again; the program detects the previous progress and resumes from the right place. Changing the language while a step is running is saved but only applies the next time you open the Creator.</div>
     </div>
 
     <div class="faq-item">
       <div class="q">The browser says "SERVER DISCONNECTED".</div>
-      <div class="a">This means the server's terminal window is closed. Reopen the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut.</div>
+      <div class="a">This means the server is no longer running: its terminal window was closed, or it closed by itself after the last viewer tab was closed. Reopen the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut.</div>
     </div>
 
     <div class="faq-item">
@@ -1290,12 +1357,12 @@
 
     <div class="faq-item">
       <div class="q">I changed the field selection, saved it, but the viewer still shows the same thing.</div>
-      <div class="a">Saving the selection only updates <code>dev/fields_config.json</code>; the database doesn't change until you repeat Step 1 with BOLD's <code>.tar.gz</code> (the program detects the change and re-filters on its own). If the <code>.tar.gz</code> was already deleted, you'll need to download it again.</div>
+      <div class="a">Saving the selection only updates <code>dev/fields_config.json</code>; the database doesn't change until you repeat Step 1 with BOLD's <code>.tar.gz</code> (the program detects the change and re-filters on its own). If the <code>.tar.gz</code> was already deleted, you'll need to download it again; to avoid that next time, tick <em>"Keep the .tar.gz when done"</em> in Step 1.</div>
     </div>
 
     <div class="faq-item">
       <div class="q">How often should I update the database?</div>
-      <div class="a">BOLD publishes new versions weekly. To update, download the new <code>.tar.gz</code>, place it in <code>data/raw/</code>, and run steps 1–3 again. The program automatically removes the previous version.</div>
+      <div class="a">BOLD publishes new versions weekly. To update, download the new <code>.tar.gz</code>, drop it on the Start screen (or place it in <code>data/raw/</code>) and choose <strong>Option 3 · Update the database</strong>: only what changed is applied. Rebuilding with Option 1 or 2 also works and is recommended now and then; see <a href="#reanudar">Resuming and updating</a>.</div>
     </div>
 
     <div class="faq-item">
@@ -1305,7 +1372,7 @@
 
     <div class="faq-item">
       <div class="q">What do I do if Step 1 says "Input not found" even though I put the file there?</div>
-      <div class="a">Check that the file is directly inside <code>data/raw/</code> and that its extension is <code>.tar.gz</code> (not just <code>.tar</code> or <code>.gz</code>). The program looks for exactly that format.</div>
+      <div class="a">Check that the file is directly inside <code>data/raw/</code> and that its extension is <code>.tar.gz</code> (not just <code>.tar</code> or <code>.gz</code>). The program looks for exactly that format. If the Creator is still copying it (it shows up as <code>.part</code>), wait for the copy to finish.</div>
     </div>
 
     <div class="faq-item">

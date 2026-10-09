@@ -121,6 +121,13 @@ def _tidy_root(current_script):
     double-click. Best-effort and idempotent: already-moved items are
     silently skipped on a re-run (e.g. after moving the project again).
     """
+    # A .git folder means a git clone, not a downloaded copy: moving .git
+    # out of the root detaches the working tree from its repository (git
+    # stops seeing it), and moving README/LICENSE shows up as deletions.
+    if os.path.isdir(os.path.join(PROJECT_ROOT, ".git")):
+        print("Git repository detected: the project root was left as it is "
+              "(tidying only applies to downloaded copies).")
+        return
     dest = os.path.join(PROJECT_ROOT, "project_files")
     os.makedirs(dest, exist_ok=True)
     to_move = _ROOT_CLUTTER + tuple(s for s in _ALL_GENERATOR_SCRIPTS if s != current_script)

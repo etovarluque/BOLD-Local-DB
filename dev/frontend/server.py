@@ -15,38 +15,38 @@ for _stream in (sys.stdout, sys.stderr):
 def install_package(package):
     """Check whether a package is installed. If not, try to install it with pip."""
     if importlib.util.find_spec(package) is None:
-        print(f"⚠️ {package} no encontrado. Intentando instalarlo...")
+        print(f"⚠️ {package} not found. Trying to install it...")
         try:
             subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
-            print(f"✅ {package} instalado correctamente.")
+            print(f"✅ {package} installed.")
         except subprocess.CalledProcessError as e:
-            print(f"❌ No se pudo instalar {package}: {e}")
+            print(f"❌ Could not install {package}: {e}")
             sys.exit(1)
 
 def check_and_install_pip():
     """Check whether pip is installed and install it if necessary."""
     try:
         subprocess.run([sys.executable, "-m", "pip", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        #print("✅ pip ya está instalado.")
+        #print("✅ pip is already installed.")
     except subprocess.CalledProcessError:
-        print("⚠️ pip no encontrado. Intentando instalar...")
+        print("⚠️ pip not found. Trying to install it...")
         try:
             if sys.platform.startswith("linux"):
                 package_manager = shutil.which("apt") or shutil.which("dnf") or shutil.which("yum")
                 if package_manager:
                     subprocess.run(["sudo", package_manager, "install", "-y", "python3-pip"], check=True)
                 else:
-                    print("❌ No se pudo determinar el gestor de paquetes en Linux.")
+                    print("❌ Could not determine the Linux package manager.")
                     sys.exit(1)
             elif sys.platform == "win32":
                 subprocess.run([sys.executable, "-m", "ensurepip"], check=True)
                 subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], check=True)
             else:
-                print(f"❌ Sistema operativo no soportado: {sys.platform}")
+                print(f"❌ Unsupported operating system: {sys.platform}")
                 sys.exit(1)
-            print("✅ pip instalado correctamente.")
+            print("✅ pip installed.")
         except subprocess.CalledProcessError as e:
-            print(f"❌ No se pudo instalar pip: {e}")
+            print(f"❌ Could not install pip: {e}")
             sys.exit(1)
 
 # List of required packages
@@ -65,6 +65,7 @@ from functools import lru_cache
 import sqlite3
 import os
 import gc
+import pathlib
 import time
 import psutil
 import io
@@ -79,7 +80,7 @@ from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 
 app = Flask(__name__)
 
@@ -128,6 +129,29 @@ FASTA_BATCH_SIZE = 50000  # Specific to FASTA
 UPDATE_INTERVAL = 10000  # Update status every 10k records
 BUFFER_SIZE = 1024 * 1024  # 1MB buffer for writing
 EXPORT_TIMEOUT = 3600  # 1 hour timeout
+
+
+def _expected_total(data):
+    """Record count the frontend already got from the search, if any.
+
+    Only an estimate for the progress bar (the form may have changed since
+    that search), which is why progress is capped at 99% until the export
+    really finishes. Counting again here would cost a second full query.
+    """
+    try:
+        n = int(data.get('expected_total') or 0)
+    except (TypeError, ValueError):
+        return 0
+    return max(n, 0)
+
+
+def _export_progress(status):
+    total = status.get('total_rows') or 0
+    if status.get('status') == 'completed':
+        return 100
+    if total <= 0:
+        return 0
+    return min(99, int(status.get('rows_read', 0) / total * 100))
 
 # Export state (in memory)
 fasta_exports  = {}
@@ -417,26 +441,47 @@ METRIC_OVERFLOW_LIST = 1000
 # Name of the FTS table
 FTS_TABLE_NAME = 'bold_records_fts'  # Adjust to match your actual FTS table name
 
+def _connect_readonly(timeout):
+    """Read-only connection to the database.
+
+    The viewer never writes to it. Opening it read-write (and switching it
+    to WAL, a setting that persists in the file) let the viewer alter a
+    database bold_db_creator.py might be rebuilding at that very moment, and
+    connecting to a missing file silently created an empty bold_db.db.
+    Temporary tables (batch search) still work: they live in a separate,
+    writable temp database.
+    """
+    uri = pathlib.Path(DATABASE_PATH).as_uri() + '?mode=ro'
+    conn = sqlite3.connect(uri, uri=True, timeout=timeout)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 def get_db_connection():
     """Optimized connection for interactive searches"""
-    conn = sqlite3.connect(DATABASE_PATH, timeout=60.0)
-    conn.row_factory = sqlite3.Row
+    conn = _connect_readonly(60.0)
 
     cursor = conn.cursor()
-    cursor.execute('PRAGMA synchronous = OFF')
-    cursor.execute('PRAGMA journal_mode = WAL')
     cursor.execute('PRAGMA cache_size = -262144')  # 256MB cache
     cursor.execute('PRAGMA temp_store = MEMORY')
     cursor.execute('PRAGMA mmap_size = 1073741824')  # 1GB memory-mapped
 
     return conn
 
+# Table built by bold_db_creator.py (TABLE_NAME there)
+MAIN_TABLE_NAME = 'bold_records'
+
 @lru_cache(maxsize=1)
 def get_column_names():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != ? LIMIT 1", (FTS_TABLE_NAME,))
+        # Looked up by name. It used to take "the first table that isn't the
+        # FTS one" with no ORDER BY: that only worked because bold_records
+        # happens to be created before the FTS index's shadow tables
+        # (bold_records_fts_data, _idx, ...), which the filter didn't exclude.
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                       (MAIN_TABLE_NAME,))
         row = cursor.fetchone()
         if row is None:
             raise RuntimeError(t('no_table_found'))
@@ -446,6 +491,29 @@ def get_column_names():
         return columns, table_name
     finally:
         conn.close()
+
+@lru_cache(maxsize=1)
+def get_numeric_columns():
+    """Columns declared with a numeric type (today only col_nuc_basecount).
+
+    Their range comparisons are written against the bare column so SQLite
+    can use its index: CAST(col AS REAL) > ? turned the comparison into an
+    expression no index covers, and every such search scanned the table.
+    """
+    columns, table_name = get_column_names()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        numeric = set()
+        for row in cursor.fetchall():
+            decl = (row[2] or '').upper()
+            if any(k in decl for k in ('INT', 'REAL', 'FLOA', 'DOUB', 'NUM')):
+                numeric.add(row[1])
+        return numeric
+    finally:
+        conn.close()
+
 
 @lru_cache(maxsize=1)
 def fts_table_available():
@@ -556,7 +624,9 @@ def build_where_clause(conditions, technical_columns):
         # 'Mexico' or it would silently match nothing.
         value2 = condition.get('value2')
         value2 = _strip_accents(value2) if isinstance(value2, str) else value2
-        condition_query = build_single_condition(column, operator, value, parameters, value2)
+        condition_query = build_single_condition(
+            column, operator, value, parameters, value2,
+            numeric=column in get_numeric_columns())
         if not condition_query:
             continue
 
@@ -588,8 +658,14 @@ def build_where_clause(conditions, technical_columns):
     return ''.join(query_parts), parameters
 
 
-def build_single_condition(column, operator, value, parameters, value2=None):
-    """Builds a single condition"""
+def build_single_condition(column, operator, value, parameters, value2=None, numeric=False):
+    """Builds a single condition.
+
+    `numeric`: the column has a numeric type, so range comparisons use the
+    bare column (indexable) instead of CAST(column AS REAL). Text columns
+    keep the CAST: their values have to be converted to compare as numbers.
+    """
+    lhs = column if numeric else f"CAST({column} AS REAL)"
     if operator == 'IS_NOT_EMPTY':
         return f"({column} IS NOT NULL AND {column} != '')"
     elif operator == 'IS_EMPTY':
@@ -614,10 +690,10 @@ def build_single_condition(column, operator, value, parameters, value2=None):
         return f"{column} COLLATE NOCASE LIKE ?"
     elif operator == 'GREATER_THAN':
         parameters.append(value)
-        return f"CAST({column} AS REAL) > CAST(? AS REAL)"
+        return f"{lhs} > CAST(? AS REAL)"
     elif operator == 'LESS_THAN':
         parameters.append(value)
-        return f"CAST({column} AS REAL) < CAST(? AS REAL)"
+        return f"{lhs} < CAST(? AS REAL)"
     elif operator == 'BETWEEN':
         if value in (None, '') or value2 in (None, ''):
             return None
@@ -630,7 +706,7 @@ def build_single_condition(column, operator, value, parameters, value2=None):
             v1, v2 = (v1, v2) if v1 <= v2 else (v2, v1)
         parameters.append(v1)
         parameters.append(v2)
-        return f"CAST({column} AS REAL) BETWEEN CAST(? AS REAL) AND CAST(? AS REAL)"
+        return f"{lhs} BETWEEN CAST(? AS REAL) AND CAST(? AS REAL)"
     else:
         return None
 
@@ -687,6 +763,11 @@ STRINGS = {
         'invalid_id': 'ID no válido',
         'not_available': 'No disponible',
         'invalid_field': 'Campo no válido: {field}',
+        'col_records': 'Registros',
+        'col_total_records': 'Total Registros',
+        'col_found': '{field} Encontrados',
+        'col_not_found': '{field} No Encontrados',
+        'and_n_more': '… y {n} más',
     },
     'en': {
         'no_table_found': 'No table found in the database',
@@ -732,6 +813,11 @@ STRINGS = {
         'invalid_id': 'Invalid ID',
         'not_available': 'Not available',
         'invalid_field': 'Invalid field: {field}',
+        'col_records': 'Records',
+        'col_total_records': 'Total Records',
+        'col_found': '{field} Found',
+        'col_not_found': '{field} Not Found',
+        'and_n_more': '… and {n} more',
     },
 }
 
@@ -897,11 +983,77 @@ def search():
 
 
 
-_FTS_SPECIAL = str.maketrans({
-    '-': '"-"', '+': '"+"', '|': '"|"', '&': '"&"',
-    '!': '"!"', '(': '"("', ')': '")"', '^': '"^"',
-    '"': '""',  '*': '"*"', ':': '":"', '.': '"."'
-})
+_FTS_BOOLEAN_KEYWORDS = {'AND', 'OR', 'NOT'}
+
+# A quoted phrase (an unterminated one runs to the end), a parenthesis, or a
+# bare word: anything up to whitespace, a parenthesis or a quote. Commas and
+# semicolons outside quotes separate words ("Panthera, onca"), like spaces.
+_FTS_TOKEN_RE = re.compile(r'"([^"]*)"?|([()])|([^\s()",;]+)')
+
+
+def _fts_tokens(query: str):
+    """Splits the user's query into ('phrase' | 'op' | 'paren', text) tokens,
+    keeping AND/OR/NOT and parentheses only where FTS5 can parse them.
+
+    Every word ends up quoted as an FTS5 string, so no character the user
+    types can be read as syntax: a bare `Cote d'Ivoire`, `Peru/Bolivia` or
+    `Panthera, onca` used to raise "fts5: syntax error". An operator with no
+    operand on one side ("AND Panthera", "Panthera OR") and unbalanced or
+    empty parentheses are demoted to literal text / dropped for the same
+    reason.
+    """
+    raw = []
+    for m in _FTS_TOKEN_RE.finditer(query):
+        phrase, paren, word = m.groups()
+        if paren:
+            raw.append(('paren', paren))
+        elif word is not None:
+            raw.append(('op', word) if word in _FTS_BOOLEAN_KEYWORDS else ('phrase', word))
+        elif phrase and phrase.strip():
+            raw.append(('phrase', phrase))
+
+    # Parentheses are kept only if they're balanced and none of the groups is empty
+    depth, prev = 0, None
+    parens_ok = True
+    for kind, text in raw:
+        if kind == 'paren':
+            if text == '(':
+                depth += 1
+            else:
+                depth -= 1
+                if depth < 0 or prev == ('paren', '('):
+                    parens_ok = False
+                    break
+        prev = (kind, text)
+    if depth != 0:
+        parens_ok = False
+    if not parens_ok:
+        raw = [tok for tok in raw if tok[0] != 'paren']
+
+    # "a AND NOT b" means "a NOT b": FTS5's NOT is already binary, and
+    # keeping both would turn NOT into a literal word below.
+    raw = [tok for i, tok in enumerate(raw)
+           if not (tok == ('op', 'AND') and i + 1 < len(raw) and raw[i + 1] == ('op', 'NOT'))]
+
+    # An operator needs an operand on each side; otherwise it's just a word
+    out = []
+    for i, (kind, text) in enumerate(raw):
+        if kind == 'op':
+            before = out[-1] if out else None
+            after  = raw[i + 1] if i + 1 < len(raw) else None
+            left_ok  = before is not None and (before[0] == 'phrase' or before == ('paren', ')'))
+            right_ok = after is not None and (after[0] in ('phrase', 'op') or after == ('paren', '('))
+            if not (left_ok and right_ok):
+                kind = 'phrase'
+        # FTS5's implicit AND only works between two phrases: next to a
+        # parenthesis ("Panthera (onca)", "(a) (b)") it must be written out.
+        if out and (out[-1][0] == 'phrase' or out[-1] == ('paren', ')')) \
+               and (kind == 'phrase' and out[-1] == ('paren', ')')
+                    or (kind, text) == ('paren', '(')):
+            out.append(('op', 'AND'))
+        out.append((kind, text))
+    return out
+
 
 def escape_fts_query(query: str) -> str:
     """Translates the user's query into FTS5 syntax.
@@ -914,15 +1066,16 @@ def escape_fts_query(query: str) -> str:
     allows false positives when each word matches in a different, unrelated
     field (e.g. "Ara macao" would match both the genus "Hylarana", which
     contains "ara" as a substring, and a region called "Macao").
+    AND/OR/NOT and parentheses keep working as operators (see _fts_tokens).
     """
-    stripped = query.strip()
-    if len(stripped) >= 2 and stripped[0] == '"' and stripped[-1] == '"':
-        phrase = stripped[1:-1].replace('"', '""')
-        return '"{}"'.format(phrase)
-    return query.translate(_FTS_SPECIAL)
+    parts = []
+    for kind, text in _fts_tokens(query):
+        if kind == 'phrase':
+            parts.append('"{}"'.format(text.replace('"', '""')))
+        else:
+            parts.append(text)
+    return ' '.join(parts)
 
-
-_FTS_BOOLEAN_KEYWORDS = {'AND', 'OR', 'NOT'}
 
 def extract_fts_terms(query: str):
     """Pulls the literal search terms out of a raw FTS query string, dropping
@@ -931,19 +1084,10 @@ def extract_fts_terms(query: str):
     Used for case-sensitive matching: the trigram tokenizer's MATCH is
     always case-insensitive (see escape_fts_query), so "sensitive" search is
     done by re-checking these literal terms against the actual row data
-    after MATCH has already narrowed things down.
+    after MATCH has already narrowed things down. Shares the tokenizer with
+    escape_fts_query, so both always agree on what is a term.
     """
-    terms = []
-    for m in re.finditer(r'"([^"]*)"|(\S+)', query):
-        phrase, word = m.groups()
-        if phrase is not None:
-            if phrase:
-                terms.append(phrase)
-            continue
-        token = word.strip('()')
-        if token and token not in _FTS_BOOLEAN_KEYWORDS:
-            terms.append(token)
-    return terms
+    return [text for kind, text in _fts_tokens(query) if kind == 'phrase']
 
 
 @lru_cache(maxsize=1)
@@ -1017,6 +1161,9 @@ def search_fts(data, start_time, search_id=None):
         return jsonify({'error': t('fts_unavailable')}), 400
 
     query = escape_fts_query(query)
+    # Nothing searchable left (e.g. the query was just "()")
+    if not query:
+        return jsonify({'error': t('no_search_query')}), 400
 
     cs_clause, cs_params = ('', [])
     if data.get('case_sensitive'):
@@ -1082,6 +1229,8 @@ def search_fts(data, start_time, search_id=None):
 
 
 
+AUTOCOMPLETE_MIN_CHARS = 3
+
 AUTOCOMPLETE_COLUMNS = [
     'col_marker_code', 'col_species', 'col_genus', 'col_family',
     'col_order', 'col_class', 'col_phylum', 'col_country_ocean',
@@ -1091,7 +1240,9 @@ AUTOCOMPLETE_COLUMNS = [
 @app.route('/api/autocomplete')
 def autocomplete():
     query = request.args.get("query", "").strip()
-    if not query:
+    # Under 3 characters the trigram index can't help (it has no n-gram to
+    # look up) and LIKE '%xy%' scans all ~20M rows on every keystroke.
+    if len(query) < AUTOCOMPLETE_MIN_CHARS:
         return jsonify({"results": []})
 
     conn = get_db_connection()
@@ -1168,7 +1319,8 @@ def start_fasta_export():
         fasta_exports[export_id] = {
             'status': 'processing',
             'rows_processed': 0,
-            'total_rows': 0,
+            'rows_read': 0,
+            'total_rows': _expected_total(data),
             'message': t('fasta_preparing'),
             'filename': None,
             'start_time': datetime.now(),
@@ -1195,18 +1347,14 @@ def get_fasta_export_status(export_id):
 
     status = fasta_exports[export_id]
 
-    # Calculate progress
-    progress = 0
-    if status['total_rows'] > 0:
-        progress = min(100, int((status['rows_processed'] / status['total_rows']) * 100))
-
     return jsonify({
         'status': status['status'],
         'rows_processed': status['rows_processed'],
         'total_rows': status['total_rows'],
-        'progress': progress,
+        'progress': _export_progress(status),
         'message': status['message'],
-        'download_url': f'/api/download_fasta/{export_id}' if status['filename'] else None
+        'download_url': f'/api/download_fasta/{export_id}'
+                        if status['filename'] and status['status'] == 'completed' else None
     })
 
 
@@ -1276,6 +1424,8 @@ def build_optimized_fasta_query(request_data):
         raw_query = _strip_accents(raw_query)
 
         query = escape_fts_query(raw_query)
+        if not query:
+            raise ValueError(t('no_search_term'))
 
         cs_clause, cs_params = ('', [])
         if request_data.get('case_sensitive'):
@@ -1323,12 +1473,9 @@ def build_optimized_fasta_query(request_data):
 @contextmanager
 def get_export_connection():
     """Context manager for export connections optimized for bulk reads"""
-    conn = sqlite3.connect(DATABASE_PATH, timeout=300.0)
-    conn.row_factory = sqlite3.Row
+    conn = _connect_readonly(300.0)
 
     cursor = conn.cursor()
-    cursor.execute('PRAGMA synchronous = OFF')
-    cursor.execute('PRAGMA journal_mode = WAL')
     cursor.execute('PRAGMA cache_size = -512000')  # 512MB
     cursor.execute('PRAGMA temp_store = MEMORY')
     cursor.execute('PRAGMA mmap_size = 2147483648')  # 2GB
@@ -1352,7 +1499,9 @@ def process_fasta_export(export_id, request_data):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'bold_sequences_{timestamp}.fasta'
         filepath = os.path.join(FASTA_EXPORTS_DIR, filename)
-        fasta_exports[export_id]['filename'] = filename
+        # 'filename' is only set once the file is complete (see the end):
+        # set here, an export with no sequences finished offering a
+        # download of a file that was never written.
 
         data_query, params = build_optimized_fasta_query(request_data)
 
@@ -1361,6 +1510,7 @@ def process_fasta_export(export_id, request_data):
             cursor.execute(data_query, params)
 
             rows_processed = 0
+            rows_read = 0
             batch_count = 0
             last_update = 0
 
@@ -1378,41 +1528,24 @@ def process_fasta_export(export_id, request_data):
                         break
 
                     batch_count += 1
-                    fasta_entries = []
-
-                    for row in batch:
-                        sequence = row[11] or ''
-                        if not sequence:
-                            continue
-
-                        sequence = sequence.replace('-', '').strip('Nn')
-                        if len(sequence) < 50:
-                            continue
-
-                        # Most specific taxon available: Species > Genus > Family > Order > Class > Phylum > Kingdom
-                        taxon = get_best_taxon(row[3], row[4], row[5], row[6], row[7], row[8], row[9])
-
-                        header_parts = []
-                        if row[0]: header_parts.append(str(row[0]))
-                        if row[1]: header_parts.append(str(row[1]).replace(' ', '_'))
-                        if row[2]: header_parts.append(str(row[2]))
-                        if taxon: header_parts.append(taxon)
-                        if row[10]: header_parts.append(str(row[10]))
-                        fasta_entries.append(f">{'|'.join(header_parts)}\n{sequence}\n")
+                    rows_read += len(batch)
+                    keys = batch[0].keys()
+                    fasta_entries = [e for e in (_row_to_fasta_entry(row, keys) for row in batch) if e]
 
                     if fasta_entries:
                         fasta_file.write(''.join(fasta_entries))
                         rows_processed += len(fasta_entries)
 
-                    if rows_processed - last_update >= UPDATE_INTERVAL:
+                    if rows_read - last_update >= UPDATE_INTERVAL:
                         elapsed = (datetime.now() - fasta_exports[export_id]['start_time']).total_seconds()
                         rate = int(rows_processed / elapsed) if elapsed > 0 else 0
                         fasta_exports[export_id].update({
                             'rows_processed': rows_processed,
+                            'rows_read': rows_read,
                             'message': t('fasta_progress', count=f'{rows_processed:,}', rate=f'{rate:,}'),
                             'last_update': datetime.now()
                         })
-                        last_update = rows_processed
+                        last_update = rows_read
 
                     batch = cursor.fetchmany(FASTA_BATCH_SIZE)
 
@@ -1421,16 +1554,28 @@ def process_fasta_export(export_id, request_data):
                 os.remove(filepath)
             return
 
+        # Records matched, but none had a usable sequence (all under 50 bp):
+        # same outcome as no records at all, rather than an empty download.
+        if rows_processed == 0:
+            if filepath and os.path.exists(filepath):
+                os.remove(filepath)
+            fasta_exports[export_id].update({
+                'status': 'completed',
+                'message': t('no_sequences_found'),
+            })
+            return
+
         duration = datetime.now() - fasta_exports[export_id]['start_time']
         duration_str = f"{int(duration.total_seconds() // 60)}m {int(duration.total_seconds() % 60)}s"
         fasta_exports[export_id].update({
             'status': 'completed',
+            'filename': filename,
             'rows_processed': rows_processed,
             'message': t('fasta_completed', count=f'{rows_processed:,}', duration=duration_str),
             'last_update': datetime.now()
         })
         _prune_export_dir(FASTA_EXPORTS_DIR)
-        print(f"FASTA Export OK — {export_id} | {rows_processed:,} seqs | {batch_count} lotes | {duration_str}")
+        print(f"FASTA Export OK — {export_id} | {rows_processed:,} seqs | {batch_count} batches | {duration_str}")
 
     except Exception as e:
         error_msg = t('fasta_export_error', error=str(e))
@@ -1466,6 +1611,8 @@ def export_csv():
         csv_exports[export_id] = {
             'status': 'processing',
             'rows_processed': 0,
+            'rows_read': 0,
+            'total_rows': _expected_total(data),
             'message': t('csv_preparing'),
             'filename': None,
             'include_nuc': include_nuc,
@@ -1496,7 +1643,10 @@ def process_export(data, export_path, export_id, export_filename, include_nuc=Tr
 
             if export_columns is not None:
                 # Filter and reorder to only the user-selected visible columns
-                tech_order = [REVERSE_MAPPING.get(fn) for fn in export_columns]
+                # get_technical_name falls back to the name itself: a column
+                # with no friendly name (a new BOLD field) is shown under its
+                # technical name, and REVERSE_MAPPING.get() dropped it here.
+                tech_order = [get_technical_name(fn) for fn in export_columns]
                 col_indices = [technical_headers.index(tc) for tc in tech_order if tc and tc in technical_headers]
             else:
                 col_indices = list(range(len(technical_headers)))
@@ -1532,6 +1682,7 @@ def process_export(data, export_path, export_id, export_filename, include_nuc=Tr
                         rate = int(total_rows / elapsed) if elapsed > 0 else 0
                         csv_exports[export_id].update({
                             'rows_processed': total_rows,
+                            'rows_read': total_rows,
                             'message': t('csv_progress', count=f'{total_rows:,}', rate=f'{rate:,}'),
                             'last_update': datetime.now()
                         })
@@ -1586,6 +1737,8 @@ def prepare_query(data, include_nuc=True):
         # Accent-stripped like search_fts() does — see the comment there.
         raw_query = _strip_accents(raw_query)
         query = escape_fts_query(raw_query)
+        if not query:
+            raise ValueError(t('no_search_term'))
 
         cs_clause, cs_params = ('', [])
         if data.get('case_sensitive'):
@@ -1621,7 +1774,7 @@ def export_status(export_id):
     return jsonify({
         'status': status['status'],
         'rows_processed': status['rows_processed'],
-        'progress': 0,
+        'progress': _export_progress(status),
         'message': status['message'],
         'download_url': f'/api/download_export/{export_id}' if status.get('filename') else None
     })
@@ -1703,8 +1856,13 @@ def explain_query():
 
 def explain_fts_query(data):
     """Endpoint to explain the FTS query's execution plan"""
-    query = data.get('query', '').strip()
+    query = _strip_accents(data.get('query', '').strip())
 
+    if not query:
+        return jsonify({'error': t('no_search_query')}), 400
+    # Same translation search_fts() applies: explaining the raw text would
+    # fail on any query that the real search accepts.
+    query = escape_fts_query(query)
     if not query:
         return jsonify({'error': t('no_search_query')}), 400
 
@@ -1733,14 +1891,44 @@ def explain_fts_query(data):
         conn.close()
         
 
-# Function to get the total record count
+_total_cache = {"key": None, "value": None}
+
+
 def get_total_records():
+    """Total records in the database, shown in the page header.
+
+    Read from the bold_meta table that bold_db_creator.py fills at the end
+    of Step 2 (and keeps up to date when updating), instead of a COUNT(*)
+    over ~20M rows on every page load. Databases built before that table
+    existed fall back to COUNT(*). Cached until the database file changes:
+    the viewer can stay open while the database is updated.
+    """
+    try:
+        key = os.path.getmtime(DATABASE_PATH)
+    except OSError:
+        key = None
+    if key is not None and _total_cache["key"] == key:
+        return _total_cache["value"]
+    value = _count_total_records()
+    _total_cache.update(key=key, value=value)
+    return value
+
+
+def _count_total_records():
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM bold_records")
-    total = cursor.fetchone()[0]
-    conn.close()
-    return total
+    try:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT value FROM bold_meta WHERE key = 'record_count'")
+            row = cursor.fetchone()
+            if row and str(row[0]).isdigit():
+                return int(row[0])
+        except sqlite3.Error:
+            pass   # no bold_meta: database built by an older version
+        cursor.execute(f"SELECT COUNT(*) FROM {MAIN_TABLE_NAME}")
+        return cursor.fetchone()[0]
+    finally:
+        conn.close()
 
 @app.route('/total_records', methods=['GET'])
 def total_records():
@@ -1768,12 +1956,12 @@ def _report_fts_availability():
     """
     try:
         if fts_table_available():
-            print(f"✅ Índice FTS disponible ({FTS_TABLE_NAME}).")
+            print(f"✅ Full-text index available ({FTS_TABLE_NAME}).")
         else:
-            print(f"⚠️ Sin índice FTS ({FTS_TABLE_NAME}): la búsqueda de texto "
-                  "completo se mostrará deshabilitada.")
+            print(f"⚠️ No full-text index ({FTS_TABLE_NAME}): the full-text "
+                  "search tab will be shown disabled.")
     except Exception as e:
-        print(f"⚠️ No se pudo comprobar el índice FTS: {e}")
+        print(f"⚠️ Could not check the full-text index: {e}")
 
 _report_fts_availability()
 
@@ -1784,25 +1972,74 @@ def list_static_files():
     return jsonify(files)
 
 
-@app.route("/shutdown", methods=["POST"])
-def shutdown():
-    """Shut down the server and terminal window when the browser tab is closed"""
-    print("✅ Shutdown request received")
-    shutdown_server = request.environ.get("werkzeug.server.shutdown")
-    if shutdown_server:
-        print("✅ Shutdown signal processed successfully")
-        shutdown_server()
-        return "Server stopped."
-    else:
-        print("⚠️ Error: shutdown method not found")
-        # For more recent versions of Flask/Werkzeug
-        try:
-            import os, signal
-            print("⏳ Attempting to terminate process...")
-            os.kill(os.getpid(), signal.SIGINT)
-            return "Server stopped with SIGINT."
-        except Exception:
-            return "⚠ Error: could not stop the server."
+# ── Server lifetime ───────────────────────────────────────────────────────────
+#
+# The server (and its terminal window) closes once no browser tab has it open.
+# It used to stop on the page's `unload` event, which also fires on a reload:
+# F5 killed the server under the page that was about to reload, and closing
+# one of two tabs killed it for the other. Now every tab registers with its
+# own id, re-registers periodically and says goodbye on `pagehide`; the
+# server only exits after SHUTDOWN_GRACE_SECS with no tab registered, which
+# comfortably covers a reload.
+
+SHUTDOWN_GRACE_SECS = 10
+# Chrome throttles timers in hidden tabs to about once a minute, so a tab
+# that goes quiet for less than this is still considered open. It only
+# matters when the goodbye never arrives (browser crash, killed process).
+CLIENT_STALE_SECS = 180
+
+_clients       = {}      # client id -> time.monotonic() of its last message
+_clients_lock  = threading.Lock()
+_had_client    = False   # nothing shuts down before the first tab connects
+_empty_since   = None
+_CLIENT_ID_RE  = re.compile(r'^[A-Za-z0-9-]{8,64}$')
+
+
+def _is_local_origin():
+    """Rejects cross-site requests: any web page can POST to 127.0.0.1,
+    and the old /shutdown endpoint let any of them stop the server."""
+    origin = request.headers.get('Origin')
+    if origin is None:
+        return True
+    return re.match(r'^https?://(127\.0\.0\.1|localhost)(:\d+)?$', origin) is not None
+
+
+@app.route('/api/client/<kind>/<client_id>', methods=['POST'])
+def client_presence(kind, client_id):
+    global _had_client, _empty_since
+    if kind not in ('hello', 'bye') or not _CLIENT_ID_RE.match(client_id):
+        return '', 400
+    if not _is_local_origin():
+        return '', 403
+    with _clients_lock:
+        if kind == 'hello':
+            _clients[client_id] = time.monotonic()
+            _had_client  = True
+            _empty_since = None
+        else:
+            _clients.pop(client_id, None)
+    return '', 204
+
+
+def _lifetime_watchdog():
+    global _empty_since
+    while True:
+        time.sleep(2)
+        now = time.monotonic()
+        with _clients_lock:
+            for cid, seen in list(_clients.items()):
+                if now - seen > CLIENT_STALE_SECS:
+                    _clients.pop(cid, None)
+            if _clients or not _had_client:
+                _empty_since = None
+                continue
+            if _empty_since is None:
+                _empty_since = now
+            if now - _empty_since < SHUTDOWN_GRACE_SECS:
+                continue
+        print("✅ No browser tab open: stopping the server.")
+        sys.stdout.flush()
+        os._exit(0)
 
 # ── Batch search ──────────────────────────────────────────────────────────────
 
@@ -1883,26 +2120,38 @@ def _safe_name(s, max_len=80):
     return re.sub(r'[^\w\s-]', '', str(s)).replace(' ', '_').strip('_')[:max_len] or 'unknown'
 
 
-_FASTA_HEADER_COLS = [
-    ('col_processid',   False),
-    ('col_sampleid',    True),
-    ('col_bin_uri',     False),
-    ('col_species',     True),
-    ('col_marker_code', False),
+_FASTA_TAXON_COLS = [
+    'col_species', 'col_genus', 'col_family', 'col_order',
+    'col_class', 'col_phylum', 'col_kingdom',
 ]
 
 def _row_to_fasta_entry(row, keys):
-    """Converts an sqlite3.Row to a FASTA entry, or '' if not applicable."""
+    """Converts an sqlite3.Row to a FASTA entry, or '' if not applicable.
+
+    Shared by the FASTA export and the batch search, so both write the same
+    header: processid|sampleid|bin|taxon|marker, where taxon is the most
+    specific level available (see get_best_taxon). The batch search used to
+    write only the species, leaving records identified to genus or family
+    with no taxon at all.
+    """
     seq = row['col_nuc'] or ''
     seq = seq.replace('-', '').strip('Nn')
     if len(seq) < 50:
         return ''
+
+    def val(col):
+        return row[col] if col in keys else None
+
+    taxon = get_best_taxon(*(val(c) for c in _FASTA_TAXON_COLS))
     parts = []
-    for col, underscore in _FASTA_HEADER_COLS:
-        val = row[col] if col in keys else ''
-        if val:
-            val = str(val)
-            parts.append(val.replace(' ', '_') if underscore else val)
+    for value, underscore in ((val('col_processid'), False),
+                              (val('col_sampleid'), True),
+                              (val('col_bin_uri'), False),
+                              (taxon, False),
+                              (val('col_marker_code'), False)):
+        if value:
+            value = str(value)
+            parts.append(value.replace(' ', '_') if underscore else value)
     if not parts:
         return ''
     return f">{'|'.join(parts)}\n{seq}\n"
@@ -1929,10 +2178,8 @@ def get_batch_connection():
     matches table can have millions of rows and shouldn't compete for RAM
     with the rest of the process.
     """
-    conn = sqlite3.connect(DATABASE_PATH, timeout=300.0)
-    conn.row_factory = sqlite3.Row
+    conn = _connect_readonly(300.0)
     cursor = conn.cursor()
-    cursor.execute('PRAGMA journal_mode = WAL')
     cursor.execute('PRAGMA cache_size = -262144')   # 256MB
     cursor.execute('PRAGMA temp_store = FILE')
     cursor.execute('PRAGMA mmap_size = 2147483648')  # 2GB
@@ -2088,7 +2335,8 @@ def _format_metric_list(items, n_distinct, opts):
         text = '; '.join(str(v) for v, n in shown)
     rest = n_distinct - len(shown)
     if rest > 0:
-        text = f'{text}; … y {rest:,} más' if text else f'… y {rest:,} más'
+        more = t('and_n_more', n=f'{rest:,}')
+        text = f'{text}; {more}' if text else more
     return text
 
 
@@ -2129,7 +2377,6 @@ def _empty_metric_cells(metrics):
 def process_batch_search(export_id, fields_data, include_fasta=False, report=None):
     zip_path   = None
     conn       = None
-    spool_path = None
     try:
         technical_columns, _ = get_column_names()
 
@@ -2175,7 +2422,6 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
         timestamp    = datetime.now().strftime('%Y%m%d_%H%M%S')
         zip_filename = f'batch_{timestamp}.zip'
         zip_path     = os.path.join(BATCH_EXPORTS_DIR, zip_filename)
-        spool_path   = os.path.join(BATCH_EXPORTS_DIR, f'.all_{export_id}.tsv')
 
         conn = get_batch_connection()
         batch_exports[export_id]['_conn'] = conn
@@ -2213,7 +2459,10 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
             cursor.execute('SELECT term, COUNT(DISTINCT rid) FROM _m GROUP BY term')
             counts = {term: n for term, n in cursor.fetchall()}
 
-        total_rows = sum(counts.values())
+        # Distinct records: one matching several terms counts once. The
+        # per-term figures in summary.csv still count it under each term.
+        cursor.execute('SELECT COUNT(DISTINCT rid) FROM _m')
+        total_rows = cursor.fetchone()[0]
 
         # No ZIP is generated when there are no matches: its three files would
         # be a not_found.txt with the full input list, a summary.csv with
@@ -2278,9 +2527,8 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                 _batch_check_cancel(export_id)
                 exact[(gkey, col)] = _metric_exact(conn, where_rows, gkey, col, list_cap)
 
-        def stream_group_tsv(zf, arcname, params, spool_writer):
-            """Dumps a group to `arcname` (and to the all_results spool) without
-            materializing the rows in memory.
+        def stream_group_tsv(zf, arcname, params):
+            """Dumps a group to `arcname` without materializing the rows in memory.
 
             `params` identifies the group — `(term,)` or `(field2, term)` —
             so it also serves as the key for the metrics accumulator."""
@@ -2303,7 +2551,6 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                     for row in rows:
                         rec = row_to_list(row)
                         w.writerow(rec)
-                        spool_writer.writerow(rec)
                         if metric_idx:
                             tally_row(params, rec)
             gcur.close()
@@ -2337,148 +2584,155 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                 # deleting entries), but the case is marginal (all sequences < 50 bp).
                 pass
 
-        with open(spool_path, 'w', encoding='utf-8-sig', newline='', buffering=BUFFER_SIZE) as spool_fh:
-            spool_writer = csv.writer(spool_fh, delimiter='\t')
-            spool_writer.writerow(friendly_cols)
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            if not has_field2:
+                found_terms = sorted(counts)
+                found_lower = {t.lower() for t in found_terms}
+                not_found   = [v for v in values1 if v.lower() not in found_lower]
 
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-                if not has_field2:
-                    found_terms = sorted(counts)
-                    found_lower = {t.lower() for t in found_terms}
-                    not_found   = [v for v in values1 if v.lower() not in found_lower]
-
-                    for i, term in enumerate(found_terms):
-                        _batch_check_cancel(export_id)
-                        sn = _safe_name(term)
-                        stream_group_tsv(zf, f'individual/{sn}.tsv', (term,), spool_writer)
-                        if include_fasta:
-                            stream_group_fasta(zf, f'individual/{sn}.fasta', (term,))
-                        batch_exports[export_id]['progress'] = \
-                            20 + int((i + 1) / max(len(found_terms), 1) * 75)
-
-                    # not_found.txt is intentionally written without a BOM: its
-                    # content is always ASCII and it's the file the user
-                    # typically re-uploads as a term list.
-                    if not_found:
-                        zf.writestr('not_found.txt', '\n'.join(not_found))
-
-                    resolve_overflow()
-
-                    buf = io.StringIO()
-                    w   = csv.writer(buf)
-                    w.writerow([get_friendly_name(col1), 'Registros'] + metric_head)
-                    for term in found_terms:
-                        w.writerow(
-                            [term, counts[term]]
-                            + _metric_cells((term,), metrics, tally, exact, report_opts)
-                        )
-                    for term in not_found:
-                        w.writerow([term, 0] + _empty_metric_cells(metrics))
-                    zf.writestr('summary.csv', buf.getvalue().encode('utf-8-sig'))
-
-                else:
-                    # counts: {(field2_value, term): n}
-                    by_k2 = {}
-                    for (k2, term), n in counts.items():
-                        by_k2.setdefault('' if k2 is None else str(k2), {})[term] = (n, k2)
-
-                    summary_rows = []
-                    for i, val2 in enumerate(values2):
-                        _batch_check_cancel(export_id)
-                        actual_key = next((k for k in by_k2 if k.lower() == val2.lower()), None)
-                        dir_name   = _safe_name(val2)
-                        val2_data  = by_k2.get(actual_key, {}) if actual_key else {}
-
-                        found_lower    = {t.lower() for t in val2_data}
-                        not_found_here = [v for v in values1 if v.lower() not in found_lower]
-
-                        for term, (n, raw_k2) in sorted(val2_data.items()):
-                            sn = _safe_name(term)
-                            stream_group_tsv(zf, f'{dir_name}/{sn}.tsv', (raw_k2, term), spool_writer)
-                            if include_fasta:
-                                stream_group_fasta(zf, f'{dir_name}/{sn}.fasta', (raw_k2, term))
-                            # The group key is stored: metrics are accumulated
-                            # per (field 2, term) pair, not per term.
-                            summary_rows.append((term, val2, n, (raw_k2, term)))
-
-                        if not_found_here:
-                            zf.writestr(f'{dir_name}/not_found.txt', '\n'.join(not_found_here))
-
-                        batch_exports[export_id]['progress'] = \
-                            20 + int((i + 1) / max(len(values2), 1) * 75)
-
-                    resolve_overflow()
-
-                    # summary.csv
-                    buf = io.StringIO()
-                    w   = csv.writer(buf)
-                    w.writerow(
-                        [get_friendly_name(col1), get_friendly_name(col2), 'Registros']
-                        + metric_head
-                    )
-                    for v1, v2, cnt, gkey in sorted(summary_rows, key=lambda r: (r[0], r[1])):
-                        w.writerow(
-                            [v1, v2, cnt]
-                            + _metric_cells(gkey, metrics, tally, exact, report_opts)
-                        )
-                    zf.writestr('summary.csv', buf.getvalue().encode('utf-8-sig'))
-
-                    # summary_by_field2.csv
-                    buf = io.StringIO()
-                    w   = csv.writer(buf)
-                    w.writerow([
-                        get_friendly_name(col2), 'Total Registros',
-                        f'{get_friendly_name(col1)} Encontrados',
-                        f'{get_friendly_name(col1)} No Encontrados',
-                    ])
-                    for val2 in values2:
-                        actual_key = next((k for k in by_k2 if k.lower() == val2.lower()), None)
-                        val2_data  = by_k2.get(actual_key, {}) if actual_key else {}
-                        found_cnt  = len(val2_data)
-                        total_cnt  = sum(n for n, _ in val2_data.values())
-                        w.writerow([val2, total_cnt, found_cnt, len(values1) - found_cnt])
-                    zf.writestr('summary_by_field2.csv', buf.getvalue().encode('utf-8-sig'))
-
-                # ── Breakdown reports ─────────────────────────────────────────
-                # Total records for each field value, across the whole result.
-                # Resolved in SQLite against `_m`, so they're exact and don't
-                # depend on the in-memory accumulator. COUNT(DISTINCT rid) is
-                # used because the same record can match more than one term
-                # (e.g. 'Panthera' and 'Panthera leo').
-                for bcol in breakdowns:
+                for i, term in enumerate(found_terms):
                     _batch_check_cancel(export_id)
-                    bcur = conn.cursor()
-                    try:
-                        bcur.execute(
-                            f'SELECT r."{bcol}", COUNT(DISTINCT m.rid) AS n '
-                            f'FROM _m m JOIN bold_records r ON r.rowid = m.rid '
-                            f'WHERE r."{bcol}" IS NOT NULL AND r."{bcol}" != \'\' '
-                            f'GROUP BY 1 ORDER BY n DESC, 1'
-                        )
-                        buf = io.StringIO()
-                        w   = csv.writer(buf)
-                        w.writerow([get_metric_label(bcol), 'Registros'])
-                        for value, n in bcur:
-                            w.writerow([value, n])
-                    finally:
-                        bcur.close()
-                    slug = _safe_name(_strip_accents(get_metric_label(bcol))).lower()
-                    zf.writestr(f'summary_by_{slug}.csv',
-                                buf.getvalue().encode('utf-8-sig'))
+                    sn = _safe_name(term)
+                    stream_group_tsv(zf, f'individual/{sn}.tsv', (term,))
+                    if include_fasta:
+                        stream_group_fasta(zf, f'individual/{sn}.fasta', (term,))
+                    batch_exports[export_id]['progress'] = \
+                        20 + int((i + 1) / max(len(found_terms), 1) * 75)
 
-        # all_results.tsv was accumulated on disk during the run; it's added
-        # at the end because zipfile doesn't allow two open entries at once.
-        batch_exports[export_id].update({'message': t('adding_all_results'), 'progress': 96})
-        with zipfile.ZipFile(zip_path, 'a', zipfile.ZIP_DEFLATED) as zf:
-            zf.write(spool_path, 'all_results.tsv')
+                # not_found.txt is intentionally written without a BOM: its
+                # content is always ASCII and it's the file the user
+                # typically re-uploads as a term list.
+                if not_found:
+                    zf.writestr('not_found.txt', '\n'.join(not_found))
+
+                resolve_overflow()
+
+                buf = io.StringIO()
+                w   = csv.writer(buf)
+                w.writerow([get_friendly_name(col1), t('col_records')] + metric_head)
+                for term in found_terms:
+                    w.writerow(
+                        [term, counts[term]]
+                        + _metric_cells((term,), metrics, tally, exact, report_opts)
+                    )
+                for term in not_found:
+                    w.writerow([term, 0] + _empty_metric_cells(metrics))
+                zf.writestr('summary.csv', buf.getvalue().encode('utf-8-sig'))
+
+            else:
+                # counts: {(field2_value, term): n}
+                by_k2 = {}
+                for (k2, term), n in counts.items():
+                    by_k2.setdefault('' if k2 is None else str(k2), {})[term] = (n, k2)
+
+                summary_rows = []
+                for i, val2 in enumerate(values2):
+                    _batch_check_cancel(export_id)
+                    actual_key = next((k for k in by_k2 if k.lower() == val2.lower()), None)
+                    dir_name   = _safe_name(val2)
+                    val2_data  = by_k2.get(actual_key, {}) if actual_key else {}
+
+                    found_lower    = {t.lower() for t in val2_data}
+                    not_found_here = [v for v in values1 if v.lower() not in found_lower]
+
+                    for term, (n, raw_k2) in sorted(val2_data.items()):
+                        sn = _safe_name(term)
+                        stream_group_tsv(zf, f'{dir_name}/{sn}.tsv', (raw_k2, term))
+                        if include_fasta:
+                            stream_group_fasta(zf, f'{dir_name}/{sn}.fasta', (raw_k2, term))
+                        # The group key is stored: metrics are accumulated
+                        # per (field 2, term) pair, not per term.
+                        summary_rows.append((term, val2, n, (raw_k2, term)))
+
+                    if not_found_here:
+                        zf.writestr(f'{dir_name}/not_found.txt', '\n'.join(not_found_here))
+
+                    batch_exports[export_id]['progress'] = \
+                        20 + int((i + 1) / max(len(values2), 1) * 75)
+
+                resolve_overflow()
+
+                # summary.csv
+                buf = io.StringIO()
+                w   = csv.writer(buf)
+                w.writerow(
+                    [get_friendly_name(col1), get_friendly_name(col2), t('col_records')]
+                    + metric_head
+                )
+                for v1, v2, cnt, gkey in sorted(summary_rows, key=lambda r: (r[0], r[1])):
+                    w.writerow(
+                        [v1, v2, cnt]
+                        + _metric_cells(gkey, metrics, tally, exact, report_opts)
+                    )
+                zf.writestr('summary.csv', buf.getvalue().encode('utf-8-sig'))
+
+                # summary_by_field2.csv
+                buf = io.StringIO()
+                w   = csv.writer(buf)
+                w.writerow([
+                    get_friendly_name(col2), t('col_total_records'),
+                    t('col_found', field=get_friendly_name(col1)),
+                    t('col_not_found', field=get_friendly_name(col1)),
+                ])
+                for val2 in values2:
+                    actual_key = next((k for k in by_k2 if k.lower() == val2.lower()), None)
+                    val2_data  = by_k2.get(actual_key, {}) if actual_key else {}
+                    found_cnt  = len(val2_data)
+                    total_cnt  = sum(n for n, _ in val2_data.values())
+                    w.writerow([val2, total_cnt, found_cnt, len(values1) - found_cnt])
+                zf.writestr('summary_by_field2.csv', buf.getvalue().encode('utf-8-sig'))
+
+            # ── Breakdown reports ─────────────────────────────────────────
+            # Total records for each field value, across the whole result.
+            # Resolved in SQLite against `_m`, so they're exact and don't
+            # depend on the in-memory accumulator. COUNT(DISTINCT rid) is
+            # used because the same record can match more than one term
+            # (e.g. 'Panthera' and 'Panthera leo').
+            for bcol in breakdowns:
+                _batch_check_cancel(export_id)
+                bcur = conn.cursor()
+                try:
+                    bcur.execute(
+                        f'SELECT r."{bcol}", COUNT(DISTINCT m.rid) AS n '
+                        f'FROM _m m JOIN bold_records r ON r.rowid = m.rid '
+                        f'WHERE r."{bcol}" IS NOT NULL AND r."{bcol}" != \'\' '
+                        f'GROUP BY 1 ORDER BY n DESC, 1'
+                    )
+                    buf = io.StringIO()
+                    w   = csv.writer(buf)
+                    w.writerow([get_metric_label(bcol), t('col_records')])
+                    for value, n in bcur:
+                        w.writerow([value, n])
+                finally:
+                    bcur.close()
+                slug = _safe_name(_strip_accents(get_metric_label(bcol))).lower()
+                zf.writestr(f'summary_by_{slug}.csv',
+                            buf.getvalue().encode('utf-8-sig'))
+
+            # all_results.tsv: every matching record once, even if it matched
+            # several terms ('Panthera' and 'Panthera leo'). It used to be the
+            # concatenation of the per-term files, so such records appeared
+            # once per term. Written last: zipfile allows one open entry at a time.
+            _batch_check_cancel(export_id)
+            batch_exports[export_id].update({'message': t('adding_all_results'), 'progress': 96})
+            acur = conn.cursor()
+            try:
+                acur.execute(f'SELECT {col_select} FROM bold_records r '
+                             f'WHERE r.rowid IN (SELECT rid FROM _m) ORDER BY r.rowid')
+                with io.TextIOWrapper(zf.open('all_results.tsv', 'w', force_zip64=True),
+                                      encoding='utf-8-sig', newline='') as fh:
+                    w = csv.writer(fh, delimiter='\t')
+                    w.writerow(friendly_cols)
+                    while True:
+                        rows = acur.fetchmany(2000)
+                        if not rows:
+                            break
+                        w.writerows(row_to_list(r) for r in rows)
+            finally:
+                acur.close()
 
         conn.close()
         conn = None
-        try:
-            os.remove(spool_path)
-        except Exception:
-            pass
-        spool_path = None
 
         batch_exports[export_id].update({
             'status':     'completed',
@@ -2508,12 +2762,6 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                 conn.close()
             except Exception:
                 pass
-        for path in (spool_path,):
-            if path and os.path.exists(path):
-                try:
-                    os.remove(path)
-                except Exception:
-                    pass
         if batch_exports.get(export_id, {}).get('status') in ('error', 'cancelled'):
             if zip_path and os.path.exists(zip_path):
                 try:
@@ -2603,6 +2851,47 @@ def download_batch(export_id):
     )
 
 
+SERVER_PORT = 5001
+SERVER_URL  = f'http://127.0.0.1:{SERVER_PORT}'
+
+
+def _port_in_use(port):
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex(('127.0.0.1', port)) == 0
+
+
+def _open_browser_when_ready():
+    """Opens the viewer once the server actually accepts connections.
+
+    The launchers used to open the browser themselves, before (or a fixed
+    second after) starting the server: with the startup checks in between,
+    the first page load often hit a server that wasn't listening yet.
+    """
+    import webbrowser
+    for _ in range(120):          # up to ~60 s
+        if _port_in_use(SERVER_PORT):
+            webbrowser.open(SERVER_URL)
+            return
+        time.sleep(0.5)
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5001, threaded=True)
+    open_browser = '--open-browser' in sys.argv[1:]
+    # A viewer already running (a second click on the shortcut or on "Open
+    # viewer"): starting another one would just fail on the busy port.
+    if _port_in_use(SERVER_PORT):
+        print(f"✅ The viewer is already running at {SERVER_URL}")
+        if open_browser:
+            import webbrowser
+            webbrowser.open(SERVER_URL)
+        sys.exit(0)
+    if open_browser:
+        threading.Thread(target=_open_browser_when_ready, daemon=True).start()
+    threading.Thread(target=_lifetime_watchdog, daemon=True).start()
+    # No debug mode: it served Werkzeug's interactive debugger (arbitrary
+    # code execution from the browser on any unhandled error) and its
+    # reloader ran this whole module twice, startup checks and pip included.
+    app.run(debug=False, port=SERVER_PORT, threaded=True)
 

@@ -292,6 +292,58 @@
 			color: white;
 		}
 
+		/* "Field" label in the first condition's AND/OR slot, so all rows align */
+		.first-cond-label {
+			display: none;
+			height: 100%;
+			align-items: center;
+			justify-content: flex-end;
+			padding-right: 6px;
+			color: #6c757d;
+			font-weight: 600;
+		}
+		/* Add condition on the left, Search on the right (like "Search in Batch") */
+		.field-actions {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 1rem;
+		}
+		/* Results header: the count stands out, the query time doesn't */
+		#resultsCardHeader h5 {
+			margin: 0;
+			display: flex;
+			align-items: baseline;
+			gap: 14px;
+		}
+		#executionTime {
+			font-size: .8rem;
+			opacity: .7;
+			font-weight: 400;
+		}
+		/* Clearing is the least important action: a quiet link, not a yellow button */
+		.results-clear-link {
+			color: rgba(255, 255, 255, .78) !important;
+			text-decoration: none;
+		}
+		.results-clear-link:hover {
+			color: #fff !important;
+			text-decoration: underline;
+		}
+		/* CSV export: pastel emerald */
+		.btn-emerald {
+			background-color: #6ee7b7;
+			border-color: #6ee7b7;
+			color: #064e3b;
+			font-weight: 600;
+		}
+		.btn-emerald:hover,
+		.btn-emerald:focus {
+			background-color: #34d399;
+			border-color: #34d399;
+			color: #064e3b;
+		}
+
 		.results-card.hidden {
 			display: none;
 		}
@@ -540,7 +592,7 @@
 			border-radius: 6px;
 			box-shadow: 0 4px 12px rgba(0,0,0,.12);
 			z-index: 1050;
-			min-width: 220px;
+			min-width: 290px;
 			max-height: 420px;
 			overflow-y: auto;
 		}
@@ -569,6 +621,7 @@
 			margin-bottom: 4px;
 		}
 		.col-picker-actions button {
+			white-space: nowrap;
 			font-size: 0.78rem;
 			padding: 2px 10px;
 			border-radius: 4px;
@@ -1085,6 +1138,7 @@
 									<option value="OR">OR</option>
 									<option value="NOT">NOT</option>
 								</select>
+								<div class="first-cond-label" data-i18n="first_condition_label">Campo</div>
 							</div>
 
                             <div class="col-md-3">
@@ -1122,34 +1176,12 @@
                     </div>
                 </div>
                 
-				<div class="row mt-3">
-					<div class="col-md-2"></div>
-					<div class="col-md-3"></div>
-					<div class="col-md-3 d-flex justify-content-center">
-						<button id="addCondition" class="btn btn-secondary" data-i18n="add_condition_btn">+ Añadir condición</button>
-					</div>
-					<div class="col-md-3 d-flex justify-content-center">
-						<button id="searchButton" class="btn btn-primary px-4" data-i18n="search_btn">Buscar</button>
-					</div>
-					<div class="col-md-1"></div>
+				<div class="field-actions">
+					<button id="addCondition" class="btn btn-outline-secondary" data-i18n="add_condition_btn">+ Añadir condición</button>
+					<button id="searchButton" class="btn btn-primary px-5" data-i18n="search_btn">Buscar</button>
 				</div>
 
                 
-                <div class="mt-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <button id="colOrderToggleBtn" class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleColOrderPanel()" data-i18n="col_order_toggle_btn_label">
-                            ⠿ Orden de columnas ▼
-                        </button>
-                        <button id="resetColOrderBtn" class="btn btn-sm btn-link text-muted p-0"
-                                onclick="resetColOrder()" title="Restablecer orden predeterminado" data-i18n-title="col_order_reset_title" style="display:none;" data-i18n="reset_btn">
-                            ↺ Restablecer
-                        </button>
-                    </div>
-                    <div id="colOrderPanel" style="display:none;" class="mt-2">
-                        <small class="text-muted d-block mb-1" data-i18n="col_order_hint">Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:</small>
-                        <ul id="colOrderList" class="col-order-list"></ul>
-                    </div>
-                </div>
 
                 <div id="explainPanel" class="explain-panel mt-3">
                     <h6 data-i18n="explain_plan_title">Plan de ejecución de la consulta:</h6>
@@ -1165,10 +1197,10 @@
 						<span class="execution-time" id="executionTime"></span>
 					</h5>
 				</div>
-				<div class="ms-auto d-flex gap-2">
+				<div class="ms-auto d-flex gap-2 align-items-center">
 					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
-					<button id="clearResultsButton" class="btn btn-warning" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
-					<button id="exportButton" class="btn btn-success" data-i18n="export_csv_btn">Exportar CSV</button>
+					<button id="clearResultsButton" class="btn btn-link btn-sm results-clear-link" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
+					<button id="exportButton" class="btn btn-emerald" data-i18n="export_csv_btn">Exportar CSV</button>
 				</div>
 			</div>
 			<div class="card-body results-container">
@@ -1177,6 +1209,27 @@
 					<p class="mt-2" data-i18n="loading_text">Cargando resultados...</p>
 				</div>
 				
+				<!-- Column order controls. They act on the results table, so they
+				     live with it (they used to sit in the field-search form, where
+				     they didn't apply to full-text results). The table toolbar is
+				     rebuilt on every render; displayResults() moves these nodes into
+				     it each time, and this hidden holder is their home until then. -->
+				<div id="colOrderHome" style="display:none;">
+					<span id="colOrderControls" class="d-inline-flex align-items-center gap-2">
+						<button id="resetColOrderBtn" class="btn btn-sm btn-link text-muted p-0"
+								onclick="resetColOrder()" title="Restablecer orden predeterminado" data-i18n-title="col_order_reset_title" style="display:none;" data-i18n="reset_btn">
+							↺ Restablecer
+						</button>
+						<button id="colOrderToggleBtn" class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleColOrderPanel()" data-i18n="col_order_toggle_btn_label">
+							⠿ Orden de columnas ▼
+						</button>
+					</span>
+					<div id="colOrderPanel" style="display:none;" class="mt-2 mb-2">
+						<small class="text-muted d-block mb-1" data-i18n="col_order_hint">Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:</small>
+						<ul id="colOrderList" class="col-order-list"></ul>
+					</div>
+				</div>
+
 				<div id="resultsTable"></div>
 				
 				<div id="pagination" class="pagination justify-content-center mt-3"></div>
@@ -1266,7 +1319,8 @@
                 no_search_conditions_alert2: '🚫 Por favor defina al menos una condición de búsqueda',
                 export_taking_long: 'La exportación puede estar tardando más de lo esperado.',
                 preparing_export: 'Preparando exportación...',
-                page_label: 'Página', page_of: 'de', results_per_page_title: 'Resultados por página',
+                first_condition_label: 'Campo',
+                page_label: 'Página', page_of: 'de', results_per_page_title: 'Resultados por página', per_page_suffix: 'por página',
                 first_page_title: 'Primera página', last_page_title: 'Última página',
                 prev_page: '&laquo; Anterior', next_page: 'Siguiente &raquo;',
                 goto_page_placeholder: 'Ir a...', goto_page_btn: 'Ir',
@@ -1282,7 +1336,7 @@
                 searching_database: 'Buscando en la base de datos...',
                 copied_toast: 'Copiado',
                 expand_rows: 'Expandir filas', collapse_rows: 'Contraer filas',
-                columns_btn: 'Columnas ▾', show_all_btn: 'Mostrar todas', hide_all_btn: 'Ocultar todas',
+                columns_btn: 'Mostrar/ocultar columnas', show_all_btn: 'Mostrar todas', hide_all_btn: 'Ocultar todas',
                 fasta_export_error_alert: '⛔ Error al exportar FASTA: ', csv_export_error_alert: '⛔ Error al exportar CSV: ',
                 batch_upload_file1: 'Carga un archivo para el campo 1', batch_upload_file2: 'Carga un archivo para el campo 2',
                 batch_select_field1: 'Selecciona el campo 1',
@@ -1383,7 +1437,8 @@
                 no_search_conditions_alert2: '🚫 Please define at least one search condition',
                 export_taking_long: 'The export may be taking longer than expected.',
                 preparing_export: 'Preparing export...',
-                page_label: 'Page', page_of: 'of', results_per_page_title: 'Results per page',
+                first_condition_label: 'Field',
+                page_label: 'Page', page_of: 'of', results_per_page_title: 'Results per page', per_page_suffix: 'per page',
                 first_page_title: 'First page', last_page_title: 'Last page',
                 prev_page: '&laquo; Previous', next_page: 'Next &raquo;',
                 goto_page_placeholder: 'Go to...', goto_page_btn: 'Go',
@@ -1400,7 +1455,7 @@
                 searching_database: 'Searching the database...',
                 copied_toast: 'Copied',
                 expand_rows: 'Expand rows', collapse_rows: 'Collapse rows',
-                columns_btn: 'Columns ▾', show_all_btn: 'Show all', hide_all_btn: 'Hide all',
+                columns_btn: 'Show/hide columns', show_all_btn: 'Show all', hide_all_btn: 'Hide all',
                 fasta_export_error_alert: '⛔ Error exporting FASTA: ', csv_export_error_alert: '⛔ Error exporting CSV: ',
                 batch_upload_file1: 'Upload a file for field 1', batch_upload_file2: 'Upload a file for field 2',
                 batch_select_field1: 'Select field 1',
@@ -1429,10 +1484,6 @@
         };
 
         let currentLang = (document.documentElement.lang === 'es') ? 'es' : 'en';
-        // `unload` fires both when the tab is closed and when the page is
-        // reloaded (e.g. switching language); this flag skips the server
-        // shutdown in the reload case, where the tab isn't actually closing.
-        let skipShutdownOnUnload = false;
 
         function t(key, vars) {
             const dict = I18N[currentLang] || I18N.es;
@@ -1463,7 +1514,7 @@
             const colBtn = document.getElementById('colOrderToggleBtn');
             if (colBtn) {
                 const isOpen = document.getElementById('colOrderPanel') && document.getElementById('colOrderPanel').style.display !== 'none';
-                colBtn.textContent = `${t('col_order_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
+                colBtn.textContent = `⠿ ${t('col_order_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
             }
             const totalRecordsEl = document.getElementById('total-records');
             if (totalRecordsEl && totalRecordsEl.dataset.total) {
@@ -1476,7 +1527,6 @@
             localStorage.setItem('boldLang', lang);
             document.cookie = 'lang=' + lang + ';path=/;max-age=31536000';
             if (lang === currentLang) { applyTranslations(); return; }
-            skipShutdownOnUnload = true;
             location.reload();
         }
 
@@ -1511,6 +1561,13 @@
             cachedResults: {},
             resultsPerPage: 50,
             activeSearchType: 'field',
+            // The search whose results are on screen, with its own parameters:
+            // { type: 'field', conditions } or { type: 'fts', query, case_sensitive }.
+            // Pagination and exports use this, not the active tab or the form
+            // as it is now: switching tabs (or editing the form) after a search
+            // made "Export" and "Next page" act on a different search than the
+            // one in the table.
+            resultsSearch: null,
             lastFtsQuery: '',
             abortController: null,
             currentSearchId: null,
@@ -1639,6 +1696,20 @@
             document.getElementById('resetColOrderBtn').style.display = 'none';
         }
 
+        // The column-order controls, kept across renders of the results table
+        // (which wipes and rebuilds its toolbar): looked up once while they're
+        // still in their hidden holder, then reused.
+        let _colOrderNodes = null;
+        function colOrderNodes() {
+            if (!_colOrderNodes) {
+                _colOrderNodes = {
+                    controls: document.getElementById('colOrderControls'),
+                    panel:    document.getElementById('colOrderPanel'),
+                };
+            }
+            return _colOrderNodes;
+        }
+
         function toggleColOrderPanel() {
             const panel = document.getElementById('colOrderPanel');
             const btn = document.getElementById('colOrderToggleBtn');
@@ -1725,6 +1796,12 @@
             applyColumnVisibility();
         }
 
+        // Same arrows as "Column order": ▼ closed, ▲ open
+        function setColPickerArrow(open) {
+            const btn = document.getElementById('colPickerBtn');
+            if (btn) btn.textContent = `${t('columns_btn')} ${open ? '▲' : '▼'}`;
+        }
+
         function toggleColPicker(btn) {
             const dd = document.getElementById('colPickerDropdown');
             if (!dd) return;
@@ -1735,6 +1812,7 @@
             } else {
                 dd.style.display = 'none';
             }
+            setColPickerArrow(!isOpen);
         }
 
         document.addEventListener('click', e => {
@@ -1743,6 +1821,7 @@
             const wrap = dd.closest('.position-relative');
             if (wrap && !wrap.contains(e.target)) {
                 dd.style.display = 'none';
+                setColPickerArrow(false);
             }
         });
 
@@ -1897,31 +1976,13 @@
 				document.body.appendChild(loadingModal);
 				updateLoadingMessage(loadingModal, t('starting_fasta_export'));
 				
-				// Prepare request data
-				let requestData = {};
-				const { conditions, errors } = getSearchConditions();
-				
-				if (AppState.activeSearchType === 'fts') {
-					const query = document.getElementById('ftsQueryInput').value.trim();
-					if (!query) {
-						throw new Error(t('no_search_term_alert'));
-					}
-					
-					requestData = {
-						search_type: 'fts',
-						query: query,
-						case_sensitive: isFtsCaseSensitive()
-					};
-				} else {
-					if (errors && errors.length > 0) {
-						throw new Error(t('no_search_conditions_alert'));
-					}
+				// Prepare request data: the search whose results are on screen
+				let requestData = resultsSearchRequest();
 
-					requestData = {
-						conditions: conditions
-					};
-				}
-				
+				// Only an estimate for the progress bar: the form may have changed
+				// since the search that produced this count (see server.py)
+				requestData.expected_total = AppState.totalCount;
+
 				// Start the export
 				const response = await fetch('/api/export_fasta', {
 					method: 'POST',
@@ -1995,6 +2056,24 @@
 							loadingContent.removeChild(loadingContent.querySelector('.cancel-export-btn'));
 							loadingContent.appendChild(downloadBtn);
 							
+						} else if (statusData.status === 'completed') {
+							// Finished with nothing to download (no records, or no
+							// sequence long enough): without this branch the modal
+							// kept polling forever.
+							clearInterval(exportInterval);
+							updateProgressBar(loadingModal, 100);
+							updateLoadingMessage(loadingModal, statusData.message || t('no_results_short'));
+							const closeBtn = document.createElement('button');
+							closeBtn.textContent = t('ok_btn');
+							closeBtn.className = 'download-export-btn';
+							closeBtn.onclick = () => {
+								if (document.body.contains(loadingModal)) document.body.removeChild(loadingModal);
+							};
+							const content = loadingModal.querySelector('.loading-content');
+							const cancelBtn = content.querySelector('.cancel-export-btn');
+							if (cancelBtn) content.removeChild(cancelBtn);
+							content.appendChild(closeBtn);
+
 						} else if (statusData.status === 'error') {
 							clearInterval(exportInterval);
 							throw new Error(`${t('export_error_prefix')}${statusData.message}`);
@@ -2024,10 +2103,23 @@
 			return createLoadingModal(t('exporting_fasta_title'));
 		}
 
-		function updateLoadingMessage(modal, message) {
+		function escapeHtml(text) {
+			const div = document.createElement('div');
+			div.textContent = (text === null || text === undefined) ? '' : String(text);
+			return div.innerHTML;
+		}
+
+		// Plain text by default: the messages often carry the server's error
+		// text, which can echo search terms back. Callers that need markup
+		// pass {html: true} and escape any server-provided part themselves.
+		function updateLoadingMessage(modal, message, opts) {
 			const messageElement = modal.querySelector('.loading-message');
 			if (messageElement) {
-				messageElement.innerHTML = message;
+				if (opts && opts.html) {
+					messageElement.innerHTML = message;
+				} else {
+					messageElement.textContent = message;
+				}
 			}
 		}
 
@@ -2097,6 +2189,7 @@
                     this.classList.add('active-tab');
                     document.getElementById(panel).style.display = 'block';
                     AppState.activeSearchType = type;
+                    syncResultsCardToTab();
                 });
             });
         }
@@ -2213,6 +2306,7 @@
 			document.getElementById('clearResultsButton').addEventListener('click', function() {
 				// Clear results
 				resetResultsDisplay();
+				AppState.resultsSearch = null;
 
 				document.querySelector('.results-card').classList.add('hidden');
 
@@ -2273,6 +2367,9 @@
             conditions.forEach((condition, index) => {
                 const conditionTypeSelect = condition.querySelector('.condition-type');
                 
+                // The first condition has no AND/OR: its slot shows the "Field" label
+                const firstLabel = condition.querySelector('.first-cond-label');
+                if (firstLabel) firstLabel.style.display = index === 0 ? 'flex' : 'none';
                 if (index === 0) {
                     conditionTypeSelect.style.display = 'none';
                 } else {
@@ -2336,14 +2433,21 @@
 	
 
 		async function performSearch(newSearch = true) {
-			// Get conditions and errors
-			const { conditions, errors } = getSearchConditions();
-
-			// Show errors if any
-			if (errors.length > 0) {
-				showValidationError(errors);
-				return;
+			let conditions;
+			const prev = AppState.resultsSearch;
+			if (!newSearch && prev && prev.type === 'field') {
+				// Page change: the search that produced the table, not whatever
+				// the form holds now (it may have been edited since)
+				conditions = JSON.parse(JSON.stringify(prev.conditions));
+			} else {
+				const parsed = getSearchConditions();
+				if (parsed.errors.length > 0) {
+					showValidationError(parsed.errors);
+					return;
+				}
+				conditions = parsed.conditions;
 			}
+			AppState.resultsSearch = { type: 'field', conditions: JSON.parse(JSON.stringify(conditions)) };
 
 			// Cancel previous search if any
 			cancelCurrentSearch();
@@ -2490,13 +2594,23 @@
 		}
 
 		async function performFtsSearch(newSearch = true) {
-			const query = document.getElementById('ftsQueryInput').value.trim();
-			
+			let query, caseSensitive;
+			const prev = AppState.resultsSearch;
+			if (!newSearch && prev && prev.type === 'fts') {
+				// Page change: the query that produced the table (see performSearch)
+				query = prev.query;
+				caseSensitive = prev.case_sensitive;
+			} else {
+				query = document.getElementById('ftsQueryInput').value.trim();
+				caseSensitive = isFtsCaseSensitive();
+			}
+
 			if (!query) {
 				showValidationError([t('enter_search_term')]);
 				return;
 			}
-			
+			AppState.resultsSearch = { type: 'fts', query: query, case_sensitive: caseSensitive };
+
 			// Cancel previous search if any
 			cancelCurrentSearch();
 
@@ -2531,7 +2645,7 @@
 						search_id: AppState.currentSearchId,
 						search_type: 'fts',
 						query: query,
-						case_sensitive: isFtsCaseSensitive(),
+						case_sensitive: caseSensitive,
 						page: AppState.currentPage,
 						per_page: AppState.resultsPerPage,
 						skip_count: !newSearch
@@ -2565,11 +2679,30 @@
 		}
 		
 		function executeCurrentSearch() {
-			if (AppState.activeSearchType === 'fts') {
+			// Page change: re-runs the search on screen, whatever tab is active
+			const s = AppState.resultsSearch;
+			if (!s) return;
+			if (s.type === 'fts') {
 				performFtsSearch(false);  // Indicates this is NOT a new search
 			} else {
 				performSearch(false);  // Indicates this is NOT a new search
 			}
+		}
+
+		// Request body (search part) for the results on screen, for the exports
+		function resultsSearchRequest() {
+			const s = AppState.resultsSearch;
+			if (!s) throw new Error(t('no_search_conditions_alert'));
+			return s.type === 'fts'
+				? { search_type: 'fts', query: s.query, case_sensitive: s.case_sensitive }
+				: { conditions: JSON.parse(JSON.stringify(s.conditions)) };
+		}
+
+		// The results card belongs to the tab whose search produced it
+		function syncResultsCardToTab() {
+			const card = document.querySelector('.results-card');
+			const s = AppState.resultsSearch;
+			card.classList.toggle('hidden', !(s && s.type === AppState.activeSearchType));
 		}
 
 
@@ -2652,9 +2785,8 @@
 				document.body.appendChild(loadingModal);
 				updateLoadingMessage(loadingModal, t('starting_export'));
 				
-				// Prepare the request data
+				// Prepare the request data: the search whose results are on screen
 				let requestData = {};
-				const { conditions, errors } = getSearchConditions();
 				
 				// Compute visible columns when "only visible" is selected
 				let exportColumns = null;
@@ -2662,30 +2794,14 @@
 					exportColumns = customColOrder.filter(c => !hiddenColumns.has(c));
 				}
 
-				if (AppState.activeSearchType === 'fts') {
-					const query = document.getElementById('ftsQueryInput').value.trim();
-					if (!query) {
-						throw new Error(t('no_search_term_alert2'));
-					}
+				requestData = {
+					...resultsSearchRequest(),
+					include_nuc: opts.includeNuc,
+					...(exportColumns ? { export_columns: exportColumns } : {})
+				};
 
-					requestData = {
-						search_type: 'fts',
-						query: query,
-						case_sensitive: isFtsCaseSensitive(),
-						include_nuc: opts.includeNuc,
-						...(exportColumns ? { export_columns: exportColumns } : {})
-					};
-				} else {
-					if (errors && errors.length > 0) {
-						throw new Error(t('no_search_conditions_alert2'));
-					}
-
-					requestData = {
-						conditions: conditions,
-						include_nuc: opts.includeNuc,
-						...(exportColumns ? { export_columns: exportColumns } : {})
-					};
-				}
+				// Estimate for the progress bar (see the FASTA export)
+				requestData.expected_total = AppState.totalCount;
 
 				// Start the export
 				const response = await fetch('/api/export_csv', {
@@ -2752,6 +2868,7 @@
 						} else {
 							updateLoadingMessage(loadingModal, statusData.message || t('processing_ellipsis'));
 						}
+						updateProgressBar(loadingModal, statusData.progress || 0);
 
 						// Export completed
 						if (statusData.status === 'completed' && statusData.download_url) {
@@ -2775,6 +2892,24 @@
 							loadingContent.removeChild(loadingContent.querySelector('.cancel-export-btn'));
 							loadingContent.appendChild(downloadBtn);
 							
+						} else if (statusData.status === 'completed') {
+							// Finished with nothing to download (no records, or no
+							// sequence long enough): without this branch the modal
+							// kept polling forever.
+							clearInterval(exportInterval);
+							updateProgressBar(loadingModal, 100);
+							updateLoadingMessage(loadingModal, statusData.message || t('no_results_short'));
+							const closeBtn = document.createElement('button');
+							closeBtn.textContent = t('ok_btn');
+							closeBtn.className = 'download-export-btn';
+							closeBtn.onclick = () => {
+								if (document.body.contains(loadingModal)) document.body.removeChild(loadingModal);
+							};
+							const content = loadingModal.querySelector('.loading-content');
+							const cancelBtn = content.querySelector('.cancel-export-btn');
+							if (cancelBtn) content.removeChild(cancelBtn);
+							content.appendChild(closeBtn);
+
 						} else if (statusData.status === 'error') {
 							clearInterval(exportInterval);
 							throw new Error(`${t('export_error_prefix')}${statusData.message}`);
@@ -2978,7 +3113,7 @@
 			}
 			const displayCount = AppState.totalCount;
 
-			resultsCard.classList.remove('hidden');
+			syncResultsCardToTab();
 
 			// Clear only the table content, not the whole container
 			resultsTable.innerHTML = '';
@@ -3100,18 +3235,24 @@
 				// Controls container
 				const controlsDiv = document.createElement('div');
 				controlsDiv.className = 'table-controls mt-2 mb-2 d-flex justify-content-end align-items-center gap-2';
-				controlsDiv.appendChild(toggleBtn);
+				// Column order button (moved here from its hidden holder: the
+				// toolbar is rebuilt on every render, the nodes are kept)
+				const colOrder = colOrderNodes();
+				if (colOrder.controls) controlsDiv.appendChild(colOrder.controls);
 
 				// Column picker button
 				const colPickerWrap = document.createElement('div');
 				colPickerWrap.className = 'position-relative';
 				colPickerWrap.innerHTML = `
-					<button class="btn btn-sm btn-outline-secondary" onclick="toggleColPicker(this)">${t('columns_btn')}</button>
+					<button id="colPickerBtn" class="btn btn-sm btn-outline-secondary" onclick="toggleColPicker(this)">${t('columns_btn')} ▼</button>
 					<div id="colPickerDropdown" class="col-picker-dropdown" style="display:none;"></div>`;
 				controlsDiv.appendChild(colPickerWrap);
+				// "Expand rows" last: order, show/hide, expand
+				controlsDiv.appendChild(toggleBtn);
 
 				// Add everything to the DOM
 				resultsTable.appendChild(controlsDiv);
+				if (colOrder.panel) resultsTable.appendChild(colOrder.panel);
 				resultsTable.appendChild(tableFrame);
 
 				// Make sure the scrollbars are visible
@@ -3282,10 +3423,10 @@
 			const wrapper = document.createElement('div');
 			wrapper.className = 'd-flex flex-wrap justify-content-center align-items-center gap-3 py-3 pagination-wrapper';
 
-			// "Page X of Y (N rpp)" text
+			// "Page X of Y (N per page)" text — "rpp" was an unexplained abbreviation
 			const info = document.createElement('span');
 			info.className = 'fw-semibold text-secondary';
-			info.innerHTML = `${t('page_label')} ${formatter.format(currentPage)} ${t('page_of')} ${formatter.format(totalPages)} <span class="text-muted fw-normal" style="font-size:0.9em;cursor:help;" title="${t('results_per_page_title')}">(${formatter.format(AppState.resultsPerPage)} rpp)</span>`;
+			info.innerHTML = `${t('page_label')} ${formatter.format(currentPage)} ${t('page_of')} ${formatter.format(totalPages)} <span class="text-muted fw-normal" style="font-size:0.9em;">(${formatter.format(AppState.resultsPerPage)} ${t('per_page_suffix')})</span>`;
 			wrapper.appendChild(info);
 
 			if (totalPages > 1) {
@@ -3442,7 +3583,8 @@
 
 						uniqueResults.forEach((item, index) => {
 							let div = document.createElement("div");
-							div.innerHTML = `<strong>${item.value}</strong> <small>(${item.field})</small>`;
+							// Values come from the database: escaped, never parsed as HTML
+							div.innerHTML = `<strong>${escapeHtml(item.value)}</strong> <small>(${escapeHtml(item.field)})</small>`;
 							div.classList.add("autocomplete-item");
 							div.dataset.index = index;
 							div.addEventListener("click", function() {
@@ -3472,7 +3614,9 @@
 				hasSelection = false; // Reset while typing
 
 				let query = input.value.trim();
-				if (query.length < 2) {
+				// Same minimum as AUTOCOMPLETE_MIN_CHARS in server.py: under 3
+				// characters the trigram index can't be used
+				if (query.length < 3) {
 					resultsDiv.innerHTML = "";
 					return;
 				}
@@ -3599,11 +3743,22 @@
 
 		
 		
-		// Shut down the server and terminal window when the browser tab is closed
-		window.addEventListener("unload", function () {
-			if (skipShutdownOnUnload) return;
-			navigator.sendBeacon("/shutdown");
-		});
+		// The server (and its terminal window) stops once no tab has it open:
+		// each tab registers with its own id, re-registers periodically and
+		// says goodbye on pagehide. The server waits a few seconds before
+		// exiting, so a reload or a second tab no longer kills it (see
+		// _lifetime_watchdog in server.py).
+		const CLIENT_ID = (window.crypto && crypto.randomUUID)
+			? crypto.randomUUID()
+			: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+		function sendPresence(kind) {
+			navigator.sendBeacon(`/api/client/${kind}/${CLIENT_ID}`);
+		}
+		sendPresence('hello');
+		setInterval(() => sendPresence('hello'), 30000);
+		window.addEventListener('pagehide', () => sendPresence('bye'));
+		// Restored from the back/forward cache: the goodbye was already sent
+		window.addEventListener('pageshow', e => { if (e.persisted) sendPresence('hello'); });
 		
 		function scrollToResults() {
 			// Get the position of the results panel
@@ -3959,7 +4114,8 @@
 						const sd = await sr.json();
 						const pct = sd.progress || 0;
 						updateLoadingMessage(modal,
-							`${sd.message || t('processing_ellipsis')}<br><small>${pct}%</small>`);
+							`${escapeHtml(sd.message || t('processing_ellipsis'))}<br><small>${escapeHtml(pct)}%</small>`,
+							{ html: true });
 						updateProgressBar(modal, pct);
 
 						if (sd.status === 'completed' && sd.download_url) {
@@ -3967,7 +4123,8 @@
 							removeCancelBtn();
 							updateProgressBar(modal, 100);
 							updateLoadingMessage(modal,
-								t('records_found_zip_ready', { n: numFmt.format(sd.total_rows) }));
+								t('records_found_zip_ready', { n: numFmt.format(sd.total_rows) }),
+								{ html: true });
 
 							const dlBtn = document.createElement('button');
 							dlBtn.textContent = t('download_zip_btn');

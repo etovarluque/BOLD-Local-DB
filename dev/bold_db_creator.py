@@ -4,7 +4,7 @@ BOLD Database Creator - unified GUI
 Steps: 1-Filter TSV  2-TSV->SQLite  3-Index  4-FTS
 """
 
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 
 # ---- Imports -----------------------------------------------------------------
 import sys, subprocess
@@ -35,12 +35,15 @@ def _ensure_deps():
     if not missing:
         return
 
-    _TITLE = "BOLD DB Creator — Instalando"
+    # Shown before the language preference can be read (t() and LANG don't
+    # exist yet at this point), so the message carries both languages.
+    _TITLE = "BOLD DB Creator — Instalando / Installing"
     _MSG   = (
-        "Instalando dependencias, por favor espere…\n\n"
-        "Paquetes: " + ", ".join(missing) + "\n\n"
-        "La aplicación iniciará automáticamente al terminar.\n"
-        "No cierre esta ventana."
+        "Instalando dependencias, por favor espere…\n"
+        "Installing dependencies, please wait…\n\n"
+        "Paquetes / Packages: " + ", ".join(missing) + "\n\n"
+        "La aplicación iniciará automáticamente al terminar. No cierre esta ventana.\n"
+        "The application will start automatically when done. Do not close this window."
     )
 
     if sys.platform == "win32":
@@ -258,7 +261,6 @@ STRINGS_ES = {
     'deleted_processed': '🗑 {label} eliminado (ya procesado): {name}',
     'could_not_delete_named': '⚠️ No se pudo eliminar {name}: {error}',
     'db_busy_retrying': '⏳ Base de datos ocupada (probablemente el antivirus escaneándola) — reintentando en {delay}s ({attempt}/{attempts})...',
-    'deleting_obsolete_targz': '🗑 Eliminando .tar.gz obsoleto: {name}',
     'could_not_delete': '⚠️ No se pudo eliminar: {error}',
     'deleting_old_version_file': '🗑 Eliminando archivo de versión anterior: {name}',
     'fields_changed_refiltering': '♻ La selección de campos cambió — rehaciendo el filtrado',
@@ -453,10 +455,10 @@ STRINGS_ES = {
                           'falta. La base de datos no se toca.',
     'viewer_ready_tip': 'Arranca el visor web en http://127.0.0.1:{port}',
     'viewer_not_ready_tip': 'Primero hay que crear la base de datos (pasos 1 y 2).',
-    'main_hint_ready': 'Ya puedes consultar los datos: pulsa «Abrir el visor». Solo hace falta '
-                       'rehacer la base de datos si descargas una versión nueva de BOLD.',
+    'main_hint_ready': 'Ya puedes consultar los datos: pulsa «Abrir el visor». Cuando descargues '
+                       'una versión nueva de BOLD, actualízala (Opción 3) o rehazla (Opción 1 o 2).',
     'main_hint_not_ready': 'Los pasos ya completados se omiten automáticamente, así que es seguro '
-                          'pulsar cualquiera de los dos aunque hayas empezado antes.',
+                          'pulsar la Opción 1 o la 2 aunque hayas empezado antes.',
     'src_tsv': 'TSV descargado',
     'src_catalog': 'catálogo de BOLD',
     'fields_panel_title': 'Selección de Campos del archivo TSV',
@@ -465,7 +467,7 @@ STRINGS_ES = {
                           'rápidos; más campos = más información en el visor y en las exportaciones.',
     'fields_panel_warning': '⚠️  La selección se aplica al <b>preparar los datos (Paso 1)</b>. Si la '
                             'cambias con la base de datos ya hecha, hay que repetir los pasos desde el '
-                            '1, y eso necesita el <b>.tar.gz</b> de BOLD otra vez (se borra al procesarlo).',
+                            '1, y eso necesita el <b>.tar.gz</b> de BOLD otra vez (se borra al procesarlo, salvo que marques «Conservar el .tar.gz» en el Paso 1).',
     'col_header_field': 'Campo TSV',
     'tip_include_field': 'Incluye el campo en la base de datos.',
     'col_header_index': 'Indexar',
@@ -553,7 +555,7 @@ STRINGS_ES = {
                          'perderás el trabajo del Paso 1 y tendrás que empezar de cero.',
     'file_list_item': '    • {name}   ({size})',
     'free_space_confirm_text': 'Se van a borrar {size} de archivos de trabajo.',
-    'free_space_confirm_info': 'Se eliminarán de data/processed/:\n\n{listado}\n\n'
+    'free_space_confirm_info': 'Se eliminarán de data/:\n\n{listado}\n\n'
                                '⚠️  ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n'
                                'Qué NO se ve afectado:\n'
                                '    • La base de datos (app/bold_db.db) queda intacta.\n'
@@ -579,7 +581,6 @@ STRINGS_ES = {
     'pipeline_running_title': 'Pipeline en curso',
     'pipeline_running_body': 'Ya hay un pipeline ejecutandose.',
     'step_running_title': 'Paso en ejecucion',
-    'step_running_body': 'Uno de los pasos ya esta corriendo.',
     'sequence_step_item': '  • {label}',
     'confirm_title': 'Confirmar',
     'run_sequence_confirm': 'Se ejecutarán estos pasos, uno detrás de otro:\n\n{pasos}\n\n'
@@ -637,6 +638,110 @@ STRINGS_ES = {
                              '¿Reiniciar ahora?',
     'btn_restart_now': 'Reiniciar ahora',
     'btn_restart_later': 'Más tarde',
+    'restart_blocked_body': 'Hay un proceso en marcha. El idioma se ha guardado y '
+                            'se aplicará la próxima vez que abras la aplicación.',
+    'copy_cancelled': 'copia cancelada',
+    'app_updated': '✅ app/ actualizada desde dev/frontend ({n} archivo(s))',
+    'log_closing_after_stop': '⏳ Deteniendo el proceso de forma segura… '
+                              'La ventana se cerrará sola al terminar.',
+    'closing_wait_title': 'Cerrando',
+    'closing_wait_body': 'Ya se está deteniendo el proceso. La ventana se cerrará '
+                         'en cuanto termine de forma segura.',
+    'pipeline_blocked_body': 'Hay otro paso en marcha. Espera a que termine o detenlo '
+                             'antes de lanzar la secuencia.',
+    'fields_verified': '✅ Campos verificados contra la cabecera del TSV: {n} de {configured} '
+                       'configurados, sobre {total} disponibles',
+    'other_targz_ignored': '⚠️ Hay más de un .tar.gz en data/raw/. Se usa el más reciente '
+                           '({name}); se ignoran (y no se borran): {others}',
+    'unsafe_tar_member': '⚠️ Entrada del .tar.gz omitida por seguridad: {name}',
+    'old_targz_ignored': '⚠️ {names}: de otra versión y anterior a los datos ya preparados '
+                         '({filt}). Se ignora (no se borra).',
+    'duplicates_skipped': '⚠️ {n:,} registros no se insertaron por tener un processid repetido '
+                          '(se conserva el primero).',
+    'indexes_dropped': '🗑 {n} índice(s) eliminado(s) porque su campo ya no está marcado '
+                       'para indexar: {names}',
+    'targz_kept': '📦 Se conserva {name} en data/raw/ (opción «Conservar el .tar.gz»)',
+    'keep_targz_label': 'Conservar el .tar.gz al terminar',
+    'keep_targz_tip': 'Por defecto el .tar.gz (~10 GB) se borra al terminar este paso.\n'
+                      'Si lo conservas, cambiar los campos más adelante no obliga a volver a '
+                      'descargarlo.\nPuedes borrarlo después con «Liberar espacio» en Inicio.',
+    # ---- Update (run_update) ----
+    'step_update_name': 'Actualizar base de datos',
+    'step_update_tech': '.filt.tsv nuevo → diferencias → bold_records, índices y FTS',
+    'step_update_desc': 'Aplica a la base de datos actual solo los registros nuevos, modificados y '
+                        'eliminados del paquete nuevo de BOLD, en lugar de reconstruirla. Necesita '
+                        'antes el Paso 1 con el .tar.gz nuevo (la opción «Actualizar» de Inicio hace '
+                        'los dos seguidos).\n'
+                        'Entrada: data/processed/*.filt.tsv + app/bold_db.db   Salida: app/bold_db.db actualizada',
+    'missing_update_input': '● Faltan los datos preparados del paquete nuevo — ejecuta antes el Paso 1 '
+                            '(la Opción 3 de Inicio hace los dos seguidos)',
+    'missing_update_no_db': '● Todavía no hay base de datos que actualizar — créala primero con la '
+                            'Opción 1 o 2 de Inicio',
+    'missing_update_old_db': '● La base de datos se creó con una versión anterior del programa — '
+                             'reconstrúyela una vez (Opción 1 o 2 de Inicio) para poder actualizarla',
+    'pipeline3_title': 'Opción 3 · Actualizar',
+    'pipeline3_label': 'Actualizar la base de datos',
+    'pipeline3_hint': 'Para el paquete semanal de BOLD: aplica solo lo que ha cambiado en lugar de '
+                      'rehacerlo todo. Rinde mejor con disco SSD y RAM de sobra; en un disco '
+                      'mecánico o con poca RAM la ventaja se reduce. Este equipo: {ram}{db}. '
+                      'Pasa el ratón por el botón para ver los detalles.',
+    'pipeline3_tip': 'Ejecuta el Paso 1 con el .tar.gz nuevo y aplica las diferencias a la base '
+                     'de datos actual. Los índices y la búsqueda por texto libre se actualizan '
+                     'solos: no hay que repetir los pasos 3 y 4, que son la mayor parte del '
+                     'tiempo de una reconstrucción.\n\n'
+                     'Cuándo conviene:\n'
+                     '• Con disco SSD y RAM suficiente para que quepan los índices (en torno al '
+                     'tamaño de la base de datos o más), suele tardar una fracción de reconstruir.\n'
+                     '• En un disco duro mecánico, o con mucha menos RAM que el tamaño de la base '
+                     'de datos, cada cambio cuesta bastante más y la ventaja se reduce: '
+                     'reconstruir puede tardar parecido.\n'
+                     '• Si cambia más del {pct} % de los registros se detiene sin tocar nada y '
+                     'recomienda reconstruir.\n'
+                     '• Tras muchas actualizaciones conviene reconstruir de vez en cuando (p. ej. '
+                     'una vez al mes): los índices se fragmentan.\n\n'
+                     'Si falla o lo detienes, la base de datos queda exactamente como estaba, y el '
+                     'visor puede seguir usándose mientras se actualiza.',
+    'update_unavailable_tip': 'Tu base de datos se creó con una versión anterior del programa y no '
+                              'guarda las huellas de los registros que necesita la actualización. '
+                              'Reconstrúyela una vez con la Opción 1 o 2; después ya podrás actualizarla.',
+    'update_needs_package_tip': 'Arrastra primero el .tar.gz nuevo de BOLD a la zona de arriba (o '
+                                'cópialo a data/raw/): la actualización compara ese paquete con tu base de datos.',
+    'pipeline_needs_package_tip': 'Arrastra primero el .tar.gz descargado de BOLD a la zona de arriba '
+                                  '(o cópialo a data/raw/).',
+    'pipeline_done_needs_package_tip': 'Ya está hecho: no queda ningún paso pendiente. Para rehacer la '
+                                       'base de datos con una versión nueva de BOLD, arrastra antes el '
+                                       '.tar.gz nuevo a la zona de arriba.',
+    'log_step_skipped_done': '⏭ {label}: ya hecho y sus archivos de entrada ya no están (se liberó '
+                             'espacio) — se omite',
+    'update_no_db_tip': 'Todavía no hay base de datos que actualizar. Créala primero con la Opción 1 '
+                        'o 2; a partir de ahí podrás actualizarla con cada paquete nuevo de BOLD.',
+    'ram_gb': '{n:.0f} GB de RAM',
+    'ram_unknown': 'RAM no detectada',
+    'db_size_part': '; base de datos actual: {size}',
+    'ctx_update': 'Actualizar base de datos',
+    'update_needs_rebuild_once': '❌ Esta base de datos se creó con una versión anterior del programa y '
+                                 'no guarda las huellas de los registros que necesita la actualización. '
+                                 'Reconstrúyela una vez («Crear la base de datos» en Inicio); a partir de '
+                                 'ahí podrás actualizarla.',
+    'update_fields_mismatch': '❌ Los campos del paquete nuevo no coinciden con los de la base de datos '
+                              '(¿cambiaste la selección de campos?). Hay que reconstruirla.\n'
+                              '   Solo en el paquete: {extra}\n   Solo en la base de datos: {missing}',
+    'update_pass1': '⏳ Calculando la huella de cada registro del paquete nuevo...',
+    'update_pass1_progress': '\r   {n:,} registros leídos ({pct:.0f} %)',
+    'update_diff': '🔍 Comparando con la base de datos actual...',
+    'update_stats': '📊 Cambios: {new:,} nuevos · {chg:,} modificados · {gone:,} eliminados '
+                    '— {pct:.2f} % de {total:,} registros',
+    'update_too_many': '⚠️ Cambia más del {limit} % de los registros: reconstruir desde cero '
+                       'probablemente sea más rápido. No se ha modificado nada; usa «Crear la base '
+                       'de datos» en Inicio.',
+    'update_nothing': '✅ La base de datos ya estaba al día: no hay cambios que aplicar.',
+    'update_applying': '⏳ Aplicando los cambios (índices{fts} incluidos)...',
+    'update_with_fts': ' y búsqueda por texto libre',
+    'update_apply_progress': '\r   {done:,} de {total:,} cambios aplicados ({pct:.0f} %)',
+    'update_done': '✅ Base de datos actualizada en {mins:.1f} min: {new:,} nuevos, {chg:,} '
+                   'modificados, {gone:,} eliminados. Total: {total:,} registros.',
+    'update_interrupted': '⚠️ Actualización detenida. La base de datos queda exactamente como estaba.',
+    'update_failed_rolled_back': '   La base de datos no se ha modificado: los cambios se han descartado.',
 }
 STRINGS_EN = {
     'field_renamed_hint': '{name} (now called «{hint}»?)',
@@ -666,7 +771,6 @@ STRINGS_EN = {
     'deleted_processed': '🗑 {label} deleted (already processed): {name}',
     'could_not_delete_named': '⚠️ Could not delete {name}: {error}',
     'db_busy_retrying': '⏳ Database busy (likely the antivirus scanning it) — retrying in {delay}s ({attempt}/{attempts})...',
-    'deleting_obsolete_targz': '🗑 Deleting obsolete .tar.gz: {name}',
     'could_not_delete': '⚠️ Could not delete: {error}',
     'deleting_old_version_file': '🗑 Deleting old version file: {name}',
     'fields_changed_refiltering': '♻ Field selection changed — redoing the filtering',
@@ -860,10 +964,10 @@ STRINGS_EN = {
                           'needed. The database is not touched.',
     'viewer_ready_tip': 'Starts the web viewer at http://127.0.0.1:{port}',
     'viewer_not_ready_tip': 'The database needs to be created first (steps 1 and 2).',
-    'main_hint_ready': 'You can already browse the data: click «Open the viewer». You only need to '
-                       'redo the database if you download a new version of BOLD.',
+    'main_hint_ready': 'You can already browse the data: click «Open the viewer». When you download '
+                       'a new version of BOLD, update it (Option 3) or redo it (Option 1 or 2).',
     'main_hint_not_ready': "Steps already completed are skipped automatically, so it's safe "
-                          'to click either one even if you started before.',
+                          'to click Option 1 or 2 even if you started before.',
     'src_tsv': 'downloaded TSV',
     'src_catalog': 'BOLD catalog',
     'fields_panel_title': 'TSV File Field Selection',
@@ -872,7 +976,7 @@ STRINGS_EN = {
                           "more fields = more information in the viewer and exports.",
     'fields_panel_warning': '⚠️  The selection applies when <b>preparing the data (Step 1)</b>. If you '
                             'change it after the database is already built, the steps need to be repeated from '
-                            'Step 1, and that needs the BOLD <b>.tar.gz</b> again (it is deleted once processed).',
+                            'Step 1, and that needs the BOLD <b>.tar.gz</b> again (it is deleted once processed, unless you tick "Keep the .tar.gz" in Step 1).',
     'col_header_field': 'TSV Field',
     'tip_include_field': 'Includes the field in the database.',
     'col_header_index': 'Index',
@@ -960,7 +1064,7 @@ STRINGS_EN = {
                          "you'll lose Step 1's work and have to start over.",
     'file_list_item': '    • {name}   ({size})',
     'free_space_confirm_text': '{size} of working files are about to be deleted.',
-    'free_space_confirm_info': 'These will be removed from data/processed/:\n\n{listado}\n\n'
+    'free_space_confirm_info': 'These will be removed from data/:\n\n{listado}\n\n'
                                '⚠️  THIS ACTION CANNOT BE UNDONE.\n\n'
                                'What is NOT affected:\n'
                                '    • The database (app/bold_db.db) stays intact.\n'
@@ -986,7 +1090,6 @@ STRINGS_EN = {
     'pipeline_running_title': 'Pipeline running',
     'pipeline_running_body': 'A pipeline is already running.',
     'step_running_title': 'Step running',
-    'step_running_body': 'One of the steps is already running.',
     'sequence_step_item': '  • {label}',
     'confirm_title': 'Confirm',
     'run_sequence_confirm': 'These steps will run one after another:\n\n{pasos}\n\n'
@@ -1044,6 +1147,106 @@ STRINGS_EN = {
                              'Restart now?',
     'btn_restart_now': 'Restart now',
     'btn_restart_later': 'Later',
+    'restart_blocked_body': 'A process is running. The language has been saved and '
+                            'will apply the next time you open the application.',
+    'copy_cancelled': 'copy cancelled',
+    'app_updated': '✅ app/ updated from dev/frontend ({n} file(s))',
+    'log_closing_after_stop': '⏳ Stopping the process safely… '
+                              'The window will close by itself when it finishes.',
+    'closing_wait_title': 'Closing',
+    'closing_wait_body': 'The process is already stopping. The window will close '
+                         'as soon as it has finished safely.',
+    'pipeline_blocked_body': 'Another step is running. Wait for it to finish or stop '
+                             'it before starting the sequence.',
+    'fields_verified': '✅ Fields verified against the TSV header: {n} of {configured} '
+                       'configured, out of {total} available',
+    'other_targz_ignored': '⚠️ There is more than one .tar.gz in data/raw/. Using the most '
+                           'recent one ({name}); ignored (not deleted): {others}',
+    'unsafe_tar_member': '⚠️ .tar.gz entry skipped for safety: {name}',
+    'old_targz_ignored': '⚠️ {names}: a different version, older than the data already '
+                         'prepared ({filt}). Ignored (not deleted).',
+    'duplicates_skipped': '⚠️ {n:,} records were not inserted because their processid was '
+                          'repeated (the first one is kept).',
+    'indexes_dropped': '🗑 {n} index(es) dropped because their field is no longer marked '
+                       'for indexing: {names}',
+    'targz_kept': '📦 Keeping {name} in data/raw/ ("Keep the .tar.gz" option)',
+    'keep_targz_label': 'Keep the .tar.gz when done',
+    'keep_targz_tip': 'By default the .tar.gz (~10 GB) is deleted when this step finishes.\n'
+                      'If you keep it, changing the fields later does not require downloading '
+                      'it again.\nYou can delete it afterwards with "Free disk space" on Home.',
+    # ---- Update (run_update) ----
+    'step_update_name': 'Update database',
+    'step_update_tech': 'New .filt.tsv → differences → bold_records, indexes and FTS',
+    'step_update_desc': 'Applies to the current database only the records that are new, modified '
+                        'or removed in the new BOLD package, instead of rebuilding it. Needs Step 1 '
+                        'run first with the new .tar.gz (the "Update" option on Home runs both in '
+                        'sequence).\n'
+                        'Input: data/processed/*.filt.tsv + app/bold_db.db   Output: updated app/bold_db.db',
+    'missing_update_input': '● The new package\'s prepared data is missing — run Step 1 first '
+                            '(Option 3 on Home runs both in sequence)',
+    'missing_update_no_db': '● There is no database to update yet — create it first with Option 1 '
+                            'or 2 on Home',
+    'missing_update_old_db': '● The database was built by an older version of the program — rebuild '
+                             'it once (Option 1 or 2 on Home) to be able to update it',
+    'pipeline3_title': 'Option 3 · Update',
+    'pipeline3_label': 'Update the database',
+    'pipeline3_hint': 'For BOLD\'s weekly package: applies only what changed instead of redoing '
+                      'everything. Works best with an SSD and plenty of RAM; on a mechanical disk '
+                      'or with little RAM the advantage shrinks. This computer: {ram}{db}. '
+                      'Hover over the button for details.',
+    'pipeline3_tip': 'Runs Step 1 with the new .tar.gz and applies the differences to the current '
+                     'database. Indexes and full-text search are updated along the way: Steps 3 '
+                     'and 4, most of a rebuild\'s time, don\'t have to be repeated.\n\n'
+                     'When it pays off:\n'
+                     '• With an SSD and enough RAM for the indexes to fit (around the size of the '
+                     'database or more), it usually takes a fraction of a rebuild.\n'
+                     '• On a mechanical hard disk, or with much less RAM than the database size, '
+                     'each change costs considerably more and the advantage shrinks: a rebuild '
+                     'may take about as long.\n'
+                     '• If more than {pct}% of the records changed, it stops without touching '
+                     'anything and recommends a rebuild.\n'
+                     '• After many updates, rebuild from scratch now and then (e.g. once a '
+                     'month): the indexes get fragmented.\n\n'
+                     'If it fails or you stop it, the database stays exactly as it was, and the '
+                     'viewer can still be used while the update runs.',
+    'update_unavailable_tip': 'Your database was built by an older version of the program and '
+                              'doesn\'t store the record fingerprints the update needs. Rebuild it '
+                              'once with Option 1 or 2; after that you can update it.',
+    'update_needs_package_tip': 'First drop the new BOLD .tar.gz on the area above (or copy it to '
+                                'data/raw/): the update compares that package with your database.',
+    'pipeline_needs_package_tip': 'First drop the .tar.gz downloaded from BOLD on the area above (or '
+                                  'copy it to data/raw/).',
+    'pipeline_done_needs_package_tip': 'Already done: no step is pending. To rebuild the database with a '
+                                       'new BOLD version, first drop the new .tar.gz on the area above.',
+    'log_step_skipped_done': '⏭ {label}: already done and its input files are gone (disk space was '
+                             'freed) — skipped',
+    'update_no_db_tip': 'There is no database to update yet. Create it first with Option 1 or 2; '
+                        'from then on you can update it with each new BOLD package.',
+    'ram_gb': '{n:.0f} GB of RAM',
+    'ram_unknown': 'RAM not detected',
+    'db_size_part': '; current database: {size}',
+    'ctx_update': 'Update database',
+    'update_needs_rebuild_once': '❌ This database was built by an older version of the program and '
+                                 'doesn\'t store the record fingerprints the update needs. Rebuild it '
+                                 'once ("Create the database" on Home); from then on you can update it.',
+    'update_fields_mismatch': '❌ The fields of the new package don\'t match the database\'s (did you '
+                              'change the field selection?). It has to be rebuilt.\n'
+                              '   Only in the package: {extra}\n   Only in the database: {missing}',
+    'update_pass1': '⏳ Fingerprinting every record of the new package...',
+    'update_pass1_progress': '\r   {n:,} records read ({pct:.0f}%)',
+    'update_diff': '🔍 Comparing with the current database...',
+    'update_stats': '📊 Changes: {new:,} new · {chg:,} modified · {gone:,} removed '
+                    '— {pct:.2f}% of {total:,} records',
+    'update_too_many': '⚠️ More than {limit}% of the records changed: rebuilding from scratch is '
+                       'probably faster. Nothing was modified; use "Create the database" on Home.',
+    'update_nothing': '✅ The database was already up to date: no changes to apply.',
+    'update_applying': '⏳ Applying the changes (indexes{fts} included)...',
+    'update_with_fts': ' and full-text search',
+    'update_apply_progress': '\r   {done:,} of {total:,} changes applied ({pct:.0f}%)',
+    'update_done': '✅ Database updated in {mins:.1f} min: {new:,} new, {chg:,} modified, '
+                   '{gone:,} removed. Total: {total:,} records.',
+    'update_interrupted': '⚠️ Update stopped. The database stays exactly as it was.',
+    'update_failed_rolled_back': '   The database was not modified: the changes were discarded.',
 }
 
 def t(key, **kwargs):
@@ -1385,6 +1588,77 @@ def _connect_retry(path, pragmas, log, attempts=6, delay=1.5, **connect_kwargs):
             time.sleep(delay)
 
 
+DB_META_TABLE = "bold_meta"
+
+
+def _write_db_meta(conn, values):
+    """Stores facts about the build inside the database itself (key/value).
+
+    The viewer reads record_count from here instead of running COUNT(*)
+    over ~20M rows on every page load, and the data travels with the .db
+    if it's copied elsewhere.
+    """
+    conn.execute('CREATE TABLE IF NOT EXISTS {0} (key TEXT PRIMARY KEY, value TEXT)'
+                 .format(DB_META_TABLE))
+    conn.executemany('INSERT OR REPLACE INTO {0} (key, value) VALUES (?, ?)'
+                     .format(DB_META_TABLE),
+                     [(k, str(v)) for k, v in values.items()])
+    conn.commit()
+
+
+# Fingerprint of every stored record, written by Step 2 and kept up to date by
+# the update (run_update), which compares it against the new package.
+ROW_HASH_TABLE = "bold_row_hash"
+
+
+def _tsv_row_values(row, n_cols):
+    """A .filt.tsv row as it's stored: missing columns, empty strings and
+    BOLD's literal "None" become None (SQL NULL). Shared by Step 2 and the
+    update so both fingerprint exactly the same values."""
+    if len(row) == n_cols:
+        return tuple(None if v in _NULLISH else v for v in row)
+    return tuple(
+        None if (row[i] if i < len(row) else "") in _NULLISH else row[i]
+        for i in range(n_cols)
+    )
+
+
+def _hash_order(cols_clean):
+    """Column order for the fingerprint: by name, so the same record hashes
+    the same even if the column order of the TSV changes."""
+    return sorted(range(len(cols_clean)), key=lambda i: cols_clean[i])
+
+
+def _row_hash(values, order):
+    """64-bit fingerprint of a record's values (signed, to fit SQLite's INTEGER)."""
+    data = "\x1f".join("" if values[i] is None else values[i] for i in order)
+    return int.from_bytes(hashlib.blake2b(data.encode("utf-8"), digest_size=8).digest(),
+                          "big", signed=True)
+
+
+def _interrupt_on_stop(conn, stop):
+    """Aborts the SQL statement in progress as soon as Stop is pressed.
+
+    A single CREATE INDEX over ~20M rows takes minutes, and Stop was only
+    checked between statements. Returns an Event the caller sets when done,
+    which ends the watcher thread. conn.interrupt() is safe to call from
+    another thread; the interrupted statement raises 'interrupted'.
+    """
+    done = threading.Event()
+    if stop is None:
+        return done
+
+    def _watch():
+        while not done.wait(0.5):
+            if stop.is_set():
+                try: conn.interrupt()
+                except Exception: pass
+                return
+
+    threading.Thread(target=_watch, daemon=True).start()
+    return done
+
+
 # ---- Error handling ---------------------------------------------------------------
 
 _ERROR_MAP = [
@@ -1452,8 +1726,17 @@ def _fmt_error(e, context=""):
 
 # ---- Step 1: Filter TSV --------------------------------------------------------
 
-def _cleanup_raw_files(log, gz_path, tsv_path):
-    """Deletes the .tar.gz and the unfiltered TSV once filtering is complete."""
+def _cleanup_raw_files(log, gz_path, tsv_path, keep_gz=False):
+    """Deletes the .tar.gz and the unfiltered TSV once filtering is complete.
+
+    keep_gz (the "Keep the .tar.gz" option in Step 1): the package stays in
+    data/raw/, so changing the field selection later re-filters from it
+    instead of requiring a new ~10 GB download. "Free disk space" on the
+    Home screen can still delete it afterwards.
+    """
+    if keep_gz and gz_path and os.path.exists(gz_path):
+        log(t('targz_kept', name=os.path.basename(gz_path)))
+        gz_path = None
     for path, label in [(gz_path, ".tar.gz"), (tsv_path, t('unfiltered_tsv'))]:
         if path and os.path.exists(path):
             try:
@@ -1464,6 +1747,27 @@ def _cleanup_raw_files(log, gz_path, tsv_path):
 
 
 _FIELDS_MARKER = "../data/processed/fields_source.txt"
+
+_PKG_DATE_RE = re.compile(r"(\d{1,2})-([A-Za-z]{3})-(\d{4})")
+_MONTHS = {m: i for i, m in enumerate(
+    ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
+
+
+def _package_date(name):
+    """Release date in a BOLD package name ("BOLD_Public.02-Oct-2026"), or None."""
+    m = _PKG_DATE_RE.search(os.path.basename(name))
+    if not m or m.group(2).lower() not in _MONTHS:
+        return None
+    try:
+        return datetime(int(m.group(3)), _MONTHS[m.group(2).lower()], int(m.group(1)))
+    except ValueError:
+        return None
+
+
+def _package_sort_key(path):
+    """Newest package first: by the release date in its name, falling back to
+    the file's modification time for names without one."""
+    return _package_date(path) or datetime.fromtimestamp(os.path.getmtime(path))
 
 
 def _resolve_fields(headers, log):
@@ -1505,8 +1809,7 @@ def _resolve_fields(headers, log):
     if not cols:
         log(t('no_configured_fields_exist'))
         return None, None
-    log("✅ Campos verificados contra la cabecera del TSV: {} de {} configurados, "
-        "sobre {} disponibles".format(len(cols), len(cfg["fields"]), rep["total"]))
+    log(t('fields_verified', n=len(cols), configured=len(cfg["fields"]), total=rep["total"]))
     return cols, filt_idx
 
 
@@ -1516,14 +1819,42 @@ def run_step1(log, progress, cfg):
         os.makedirs("../data/processed", exist_ok=True)
 
         # ---- Version detection and cleanup of obsolete files -----------------
-        gz_files   = sorted(glob.glob("../data/raw/*.tar.gz"), key=os.path.getmtime, reverse=True)
+        gz_files   = sorted(glob.glob("../data/raw/*.tar.gz"), key=_package_sort_key, reverse=True)
         gz_path    = gz_files[0] if gz_files else None
         gz_version = None
+
+        # A package older than the .filt.tsv already on disk, and of another
+        # version, is a leftover (old packages are no longer deleted, see
+        # below), not a new download: letting it "win" would delete the newer
+        # filtered data as if it were obsolete.
+        _filt_now = glob.glob("../data/processed/*.filt.tsv")
+        if gz_path and _filt_now:
+            _filt_new  = max(_filt_now, key=os.path.getmtime)
+            _filt_ver  = os.path.basename(_filt_new)[:-len(".filt.tsv")]
+            _gz_name   = os.path.basename(gz_path)
+            _gz_ver    = _gz_name[:-len(".tar.gz")]
+            # By the release date in the name when both have one (BOLD names
+            # packages "BOLD_Public.02-Oct-2026"); the file's modification
+            # time is only a fallback: moving or extracting a file can keep
+            # an old one.
+            _gz_date, _filt_date = _package_date(_gz_name), _package_date(_filt_ver)
+            if _gz_date and _filt_date:
+                _gz_is_older = _gz_date < _filt_date
+            else:
+                _gz_is_older = os.path.getmtime(gz_path) <= os.path.getmtime(_filt_new)
+            if _gz_ver != _filt_ver and _gz_is_older:
+                log(t('old_targz_ignored', filt=os.path.basename(_filt_new),
+                      names=", ".join(os.path.basename(f) for f in gz_files)))
+                gz_files, gz_path = [], None
+
         if gz_path:
-            for old in gz_files[1:]:
-                log(t('deleting_obsolete_targz', name=os.path.basename(old)))
-                try: os.remove(old)
-                except OSError as e: log(t('could_not_delete', error=str(e)))
+            # The other packages are no longer deleted: "most recent" is by
+            # modification time, and copying a file in resets it, so bringing
+            # in an older package made it the "newest" and the actually newer
+            # 10 GB download was deleted without asking.
+            if gz_files[1:]:
+                log(t('other_targz_ignored', name=os.path.basename(gz_path),
+                      others=", ".join(os.path.basename(f) for f in gz_files[1:])))
             name = os.path.basename(gz_path)
             gz_version = name[:-len(".tar.gz")] if name.endswith(".tar.gz") else os.path.splitext(name)[0]
             os.makedirs("../app/static", exist_ok=True)
@@ -1577,7 +1908,8 @@ def run_step1(log, progress, cfg):
                 except OSError: pass
             open("../app/static/" + tsv_marker, "w").close()
             log(t('filtered_tsv_exists', name=os.path.basename(filt_best)))
-            _cleanup_raw_files(log, gz_path, max(raw_tsv, key=os.path.getsize) if raw_tsv else None)
+            _cleanup_raw_files(log, gz_path, max(raw_tsv, key=os.path.getsize) if raw_tsv else None,
+                               keep_gz=cfg.get("keep_targz", False))
             progress(100)
             return True
 
@@ -1605,18 +1937,30 @@ def run_step1(log, progress, cfg):
             # to verify the CRC, which for 10 GB takes about 1 minute.
             _tf  = _TrackedFile(gz_path, progress, 49)
             _tar = tarfile.open(fileobj=_tf, mode="r:gz")
+            out_root = os.path.realpath("../data/processed")
             try:
                 for member in _tar:
                     if extract_abort:
                         break
-                    if not member.isfile():
-                        _tar.extract(member, "../data/processed")
+                    # Only regular files and folders, and only inside
+                    # data/processed. normpath + lstrip(os.sep) didn't stop a
+                    # '../' name from writing outside it, and links or devices
+                    # were extracted as-is. BOLD's package only holds plain
+                    # files, so nothing legitimate is lost.
+                    out_path = os.path.realpath(os.path.join(out_root, member.name))
+                    try:
+                        inside = os.path.commonpath([out_root, out_path]) == out_root
+                    except ValueError:   # another drive (absolute name on Windows)
+                        inside = False
+                    if not inside or not (member.isfile() or member.isdir()):
+                        log(t('unsafe_tar_member', name=member.name))
+                        continue
+                    if member.isdir():
+                        os.makedirs(out_path, exist_ok=True)
                         continue
                     f_in = _tar.extractfile(member)
                     if f_in is None:
                         continue
-                    safe = os.path.normpath(member.name).lstrip(os.sep)
-                    out_path = os.path.join("../data/processed", safe)
                     os.makedirs(os.path.dirname(out_path), exist_ok=True)
                     with open(out_path, "wb") as f_out:
                         while True:
@@ -1680,7 +2024,9 @@ def run_step1(log, progress, cfg):
         open("../app/static/" + tsv_filename, "w").close()
 
         # ---- Sub-step B: Filter .tsv -> .filt.tsv ------------------------------
-        archivo_filtrado = archivo_tsv.replace(".tsv", ".filt.tsv")
+        # Only the extension is replaced: str.replace() changed every ".tsv"
+        # in the path, folders included
+        archivo_filtrado = archivo_tsv[:-len(".tsv")] + ".filt.tsv"
         file_size = os.path.getsize(archivo_tsv)
         log(t('size_mb', mb=file_size / (1024 * 1024)))
         log(t('filtering_info'))
@@ -1725,15 +2071,23 @@ def run_step1(log, progress, cfg):
                 parts = line.rstrip('\r\n').split('\t', _MAX_COL + 1)
                 if len(parts) > filt_idx:
                     val = parts[filt_idx].strip()
-                    if val and val != "None":
-                        row = tuple(parts[c] if c < len(parts) else "" for c in col_idx)
+                    # Normalized before deciding: a sequence made only of
+                    # alignment gaps ('---') is non-empty as text but empty
+                    # once the gaps go, and used to get in as a record
+                    # without a sequence.
+                    nuc = normalize_nuc(val) if val != "None" else ""
+                    if nuc:
+                        # strip() on every row, not just the non-ASCII ones that
+                        # go through normalize_field: otherwise a stray space
+                        # around a plain-ASCII value made exact-match search miss it.
+                        row = tuple(parts[c].strip() if c < len(parts) else "" for c in col_idx)
                         # str.isascii() is O(1) in CPython (a flag in the object's
                         # header), so the vast majority of rows — already pure
                         # ASCII — pay nothing for this check.
                         if not line.isascii():
                             row = tuple(normalize_field(v) for v in row)
-                        if nuc_pos is not None and row[nuc_pos]:
-                            row = row[:nuc_pos] + (normalize_nuc(row[nuc_pos]),) + row[nuc_pos + 1:]
+                        if nuc_pos is not None:
+                            row = row[:nuc_pos] + (nuc,) + row[nuc_pos + 1:]
                         batch.append(row)
                         written += 1
                         if len(batch) >= _BATCH:
@@ -1768,7 +2122,7 @@ def run_step1(log, progress, cfg):
             pass
         log(t('filtered_records', n=total_filtrado))
         log(t('file_label', name=os.path.basename(archivo_filtrado)))
-        _cleanup_raw_files(log, gz_path, archivo_tsv)
+        _cleanup_raw_files(log, gz_path, archivo_tsv, keep_gz=cfg.get("keep_targz", False))
         progress(100)
         return True
     except Exception as e:
@@ -1848,13 +2202,27 @@ def run_step2(log, progress, cfg):
             "PRAGMA mmap_size     = 30000000000",
         ], log)
         try:
-            # Invalidate FTS before rebuilding the table — fts_source will stop matching
-            try: os.remove("../data/processed/fts_source.txt")
-            except OSError: pass
+            # Invalidate both markers before touching the table. db_source is
+            # rewritten only once the import finishes: if it survived from a
+            # previous build of this same .filt.tsv, a rebuild cut short
+            # (crash, forced close) left a half-filled table that the check
+            # above took for finished, and Step 2 was skipped from then on.
+            for _m in ("../data/processed/db_source.txt",
+                       "../data/processed/fts_source.txt"):
+                try: os.remove(_m)
+                except OSError: pass
 
             cur = conn.cursor()
             cur.execute("DROP TABLE IF EXISTS bold_records")
+            # The previous build's facts (record count...) stop being true now
+            cur.execute("DROP TABLE IF EXISTS {0}".format(DB_META_TABLE))
+            cur.execute("DROP TABLE IF EXISTS {0}".format(ROW_HASH_TABLE))
             cur.execute("CREATE TABLE bold_records ({})".format(", ".join(cols_sql)))
+            # Fingerprints for later updates (see run_update). Same NOCASE key
+            # and INSERT OR IGNORE as bold_records, so a duplicated processid
+            # keeps the same (first) row in both tables.
+            cur.execute("CREATE TABLE {0} (processid TEXT PRIMARY KEY COLLATE NOCASE, "
+                        "h INTEGER NOT NULL)".format(ROW_HASH_TABLE))
             conn.commit()
             log(t('table_created'))
 
@@ -1864,6 +2232,9 @@ def run_step2(log, progress, cfg):
             n_cols       = len(cols_clean)
             placeholders = ",".join(["?"] * n_cols)
             insert_q     = "INSERT OR IGNORE INTO bold_records VALUES ({})".format(placeholders)
+            hash_q       = "INSERT OR IGNORE INTO {0} VALUES (?, ?)".format(ROW_HASH_TABLE)
+            pid_idx      = cols_clean.index("col_processid") if "col_processid" in cols_clean else None
+            hash_order   = _hash_order(cols_clean)
 
             _IO_BUF    = 8 * 1024 * 1024   # 8 MB read buffer
             _COMMIT_N  = 5                  # commit every N chunks
@@ -1875,7 +2246,8 @@ def run_step2(log, progress, cfg):
                       newline="", buffering=_IO_BUF) as fin:
                 reader = csv.reader(fin, delimiter="\t")
                 next(reader)   # skip header
-                batch = []
+                batch  = []
+                hbatch = []
                 for row in reader:
                     if stop and stop.is_set():
                         stopped = True
@@ -1888,18 +2260,16 @@ def run_step2(log, progress, cfg):
                     # the FASTA taxonomic fallback and the With/Without data filters.
                     # The TSV was generated by Step 1, so almost every row carries
                     # exactly n_cols: this avoids the per-column index check.
-                    if len(row) == n_cols:
-                        batch.append(tuple(None if v in _NULLISH else v for v in row))
-                    else:
-                        batch.append(tuple(
-                            None if (row[i] if i < len(row) else "") in _NULLISH
-                            else row[i]
-                            for i in range(n_cols)
-                        ))
+                    vals = _tsv_row_values(row, n_cols)
+                    batch.append(vals)
+                    if pid_idx is not None and vals[pid_idx] is not None:
+                        hbatch.append((vals[pid_idx], _row_hash(vals, hash_order)))
                     processed += 1
                     if len(batch) >= chunk_n:
                         cur.executemany(insert_q, batch)
+                        cur.executemany(hash_q, hbatch)
                         batch.clear()
+                        hbatch.clear()
                         chunk_count += 1
                         if chunk_count % _COMMIT_N == 0:
                             conn.commit()
@@ -1919,6 +2289,7 @@ def run_step2(log, progress, cfg):
                                 log(t('import_progress_nototal', processed=processed))
                 if batch:
                     cur.executemany(insert_q, batch)
+                    cur.executemany(hash_q, hbatch)
             conn.commit()
             if stopped:
                 return False
@@ -1930,10 +2301,21 @@ def run_step2(log, progress, cfg):
 
             cur.execute("SELECT COUNT(*) FROM bold_records")
             real_count = cur.fetchone()[0]
+            _write_db_meta(conn, {
+                "record_count":    real_count,
+                "source_file":     os.path.basename(archivo_tsv),
+                "built_at":        datetime.now().isoformat(timespec="seconds"),
+                "creator_version": __version__,
+            })
             with open("../data/processed/db_source.txt", "w") as _f:
                 _f.write(os.path.basename(archivo_tsv))
             log(t('db_created', name=os.path.basename(cfg.get("db_file", DB_FILE))))
             log(t('records_inserted', n=real_count))
+            # INSERT OR IGNORE drops repeated processids without a word: the
+            # difference with the filtered count is reported, otherwise the
+            # viewer's total silently disagrees with Step 1's.
+            if total_lines > real_count:
+                log(t('duplicates_skipped', n=total_lines - real_count))
             progress(100)
             return True
         finally:
@@ -1972,6 +2354,7 @@ def run_step3(log, progress, cfg):
             "PRAGMA mmap_size    = 30000000000",
             "PRAGMA threads      = {}".format(min(4, os.cpu_count() or 1)),
         ], log)
+        watch_done = None
         try:
             cur = conn.cursor()
             cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='bold_records'")
@@ -2002,6 +2385,20 @@ def run_step3(log, progress, cfg):
                 log(t('no_index_fields_exist'))
                 return False
 
+            # Indexes of fields no longer marked "Index" in the Fields panel:
+            # they're dropped, otherwise unchecking a field never gave back
+            # its disk space. Only this step's own indexes (idx_col_*) are
+            # touched, never SQLite's or the FTS index's.
+            configured = {"idx_{0}".format(c.lower()) for c in index_cols()}
+            sobrantes  = sorted(n for n in existing_sql
+                                if n.startswith("idx_col_") and n not in configured)
+            for name in sobrantes:
+                cur.execute('DROP INDEX IF EXISTS "{0}"'.format(name))
+                existing_sql.pop(name, None)
+            if sobrantes:
+                conn.commit()
+                log(t('indexes_dropped', n=len(sobrantes), names=", ".join(sobrantes)))
+
             existing = set(existing_sql)
             pendientes = [c for c in wanted if "idx_{0}".format(c.lower()) not in existing]
 
@@ -2014,6 +2411,7 @@ def run_step3(log, progress, cfg):
             log(t('creating_indexes', n=len(pendientes), skipped=omitidos))
             stop   = cfg.get("_stop")
             nuevos = []
+            watch_done = _interrupt_on_stop(conn, stop)
             for i, col in enumerate(pendientes):
                 if stop and stop.is_set():
                     if nuevos:
@@ -2031,8 +2429,16 @@ def run_step3(log, progress, cfg):
                     nuevos.append(col)
                     log(t('index_created_progress', i=i + 1, n=len(pendientes), name=idx_name))
                 except sqlite3.Error as e:
+                    if stop and stop.is_set():
+                        continue   # interrupted by Stop: handled at the top of the loop
                     log(t('index_error', i=i + 1, n=len(pendientes), col=col, error=e))
                 progress((i + 1) / len(pendientes) * 100)
+            if stop and stop.is_set():
+                # Stop arrived during the last index
+                if nuevos:
+                    conn.commit()
+                log(t('indexing_interrupted', n=len(nuevos)))
+                return False
 
             conn.commit()  # a single commit at the end — removes the overhead of N intermediate commits
             conn.execute("PRAGMA optimize")
@@ -2040,6 +2446,8 @@ def run_step3(log, progress, cfg):
             progress(100)
             return True
         finally:
+            if watch_done is not None:
+                watch_done.set()
             try:
                 conn.execute("PRAGMA synchronous  = NORMAL")
                 conn.execute("PRAGMA journal_mode = DELETE")
@@ -2050,18 +2458,21 @@ def run_step3(log, progress, cfg):
         log(_fmt_error(e, t('ctx_index_fields')))
         return False
 
-# ---- Step 6: Create FTS ----------------------------------------------------------
+# ---- Step 4: Create FTS ----------------------------------------------------------
 
-def run_step6(log, progress, cfg):
+def run_step4(log, progress, cfg):
     os.chdir(PROJECT_ROOT)
-    if not os.path.exists(DB_FILE):
-        log(t('db_not_found', path=DB_FILE))
+    # Same source of the path as Steps 2 and 3: with a fixed DB_FILE, a
+    # cfg["db_file"] would build the FTS index on a different database.
+    db_path = cfg.get("db_file", DB_FILE)
+    if not os.path.exists(db_path):
+        log(t('db_not_found', path=db_path))
         return False
     conn = None
     try:
         # check_same_thread=False: the 'rebuild' runs in a helper thread so it
         # can emit heartbeats while it lasts. Only one thread touches the connection at a time.
-        conn = _connect_retry(DB_FILE, [
+        conn = _connect_retry(db_path, [
             "PRAGMA cache_size    = -1000000",   # ~1 GB page cache
             "PRAGMA synchronous   = OFF",
             "PRAGMA journal_mode  = MEMORY",
@@ -2203,54 +2614,471 @@ def run_step6(log, progress, cfg):
                 pass
 
 
+# ---- Update: apply a new BOLD package to the existing database ----------------
+#
+# BOLD publishes a full snapshot every week, never a list of changes, so the
+# new package always has to be downloaded and filtered (Step 1). What can be
+# avoided is rebuilding the indexes and the full-text index (Steps 3 and 4),
+# which take most of a full rebuild's time: only the records that changed are
+# written, and SQLite keeps every index in step as it goes.
+#
+# How the changes are found: Step 2 stores a fingerprint of every record in
+# bold_row_hash (processid -> hash of its stored values). Here the new
+# .filt.tsv is fingerprinted the same way into a staging database, and three
+# queries give the records that are new, modified (same processid, another
+# hash) and gone. Only those rows are then read again from the TSV and applied.
+#
+# Safety: everything is applied in a single transaction, in WAL mode. If the
+# update fails or is stopped, SQLite discards it and the database stays
+# exactly as it was; meanwhile the viewer keeps reading the previous version.
+#
+# When it pays off depends on how much changed and on the machine: changing a
+# row costs several times more than including it in a bulk index build (x6
+# measured on an NVMe SSD with the indexes fitting in RAM; much more on a
+# mechanical disk with little RAM). Above UPDATE_MAX_CHANGE nothing is
+# applied and a full rebuild is recommended instead.
+
+UPDATE_MAX_CHANGE = 0.10
+_STAGE_DB = "../data/processed/update_stage.db"
+
+
+class _UpdateStopped(Exception):
+    """Stop was pressed during the update."""
+
+
+def _total_ram_gb():
+    """Physical RAM in GB, or None if it can't be read. Shown on Home next to
+    the update option: whether the indexes fit in memory is what decides how
+    much faster updating is than rebuilding."""
+    try:
+        if sys.platform == "win32":
+            import ctypes
+
+            class _MemStatus(ctypes.Structure):
+                _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                            ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                            ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                            ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                            ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+            st = _MemStatus()
+            st.dwLength = ctypes.sizeof(_MemStatus)
+            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st)):
+                return st.ullTotalPhys / 1024 ** 3
+            return None
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 1024 ** 3
+    except (AttributeError, ValueError, OSError):
+        return None
+
+
+def run_update(log, progress, cfg):
+    os.chdir(PROJECT_ROOT)
+    db_path = cfg.get("db_file", DB_FILE)
+    if not os.path.exists(db_path):
+        log(t('db_not_found', path=db_path))
+        return False
+    archivos = glob.glob("../data/processed/*.filt.tsv")
+    if not archivos:
+        log(t('no_filt_tsv_found'))
+        return False
+    archivo_tsv = max(archivos, key=os.path.getsize)
+    stop = cfg.get("_stop")
+    t0 = time.monotonic()
+
+    def _check_stop():
+        if stop is not None and stop.is_set():
+            raise _UpdateStopped()
+
+    conn = None
+    attached = False
+    watch_done = None
+    wal = False        # main database switched to WAL for the apply phase
+    applied = False
+    try:
+        # The database itself isn't touched until the changes are known to be
+        # worth applying (see "Apply"): a refused update leaves it byte for byte.
+        conn = _connect_retry(db_path, [
+            "PRAGMA synchronous  = NORMAL",
+            "PRAGMA cache_size   = -1000000",   # ~1 GB page cache
+            "PRAGMA temp_store   = FILE",
+            "PRAGMA mmap_size    = 30000000000",
+        ], log, check_same_thread=False)
+        cur = conn.cursor()
+
+        # ---- Preconditions ---------------------------------------------------
+        tables = {r[0] for r in cur.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if "bold_records" not in tables:
+            log(t('table_not_exists'))
+            return False
+        if ROW_HASH_TABLE not in tables:
+            log(t('update_needs_rebuild_once'))
+            return False
+        db_cols = [r[1] for r in cur.execute("PRAGMA table_info(bold_records)")]
+        with open(archivo_tsv, "r", encoding="utf-8", errors="replace", newline="") as f:
+            headers = next(csv.reader(f, delimiter="\t"), [])
+        cols_clean = [_clean_col(h) for h in headers]
+        if set(cols_clean) != set(db_cols) or "col_processid" not in cols_clean:
+            log(t('update_fields_mismatch',
+                  extra=", ".join(sorted(set(cols_clean) - set(db_cols))) or "—",
+                  missing=", ".join(sorted(set(db_cols) - set(cols_clean))) or "—"))
+            return False
+        n_cols  = len(cols_clean)
+        pid_idx = cols_clean.index("col_processid")
+        order   = _hash_order(cols_clean)
+        fts_cols = []
+        if "bold_records_fts" in tables:
+            fts_cols = [d[0] for d in cur.execute("SELECT * FROM bold_records_fts LIMIT 0").description]
+        fts_idx = [cols_clean.index(c) for c in fts_cols]
+        log(t('file_label', name=os.path.basename(archivo_tsv)))
+
+        # ---- Pass 1: fingerprint the new package ---------------------------
+        for suffix in ("", "-journal", "-wal", "-shm"):
+            try: os.remove(_STAGE_DB + suffix)
+            except OSError: pass
+        cur.execute("ATTACH DATABASE ? AS st", (os.path.abspath(_STAGE_DB),))
+        attached = True
+        cur.execute("PRAGMA st.journal_mode = OFF")
+        cur.execute("PRAGMA st.synchronous  = OFF")
+        cur.execute("CREATE TABLE st.stage (processid TEXT COLLATE NOCASE, h INTEGER, line INTEGER)")
+        log(t('update_pass1'))
+        total_bytes = os.path.getsize(archivo_tsv) or 1
+        line = 0
+        batch = []
+        _last_ui = 0.0
+        with open(archivo_tsv, "r", encoding="utf-8", errors="replace",
+                  newline="", buffering=8 * 1024 * 1024) as fin:
+            reader = csv.reader(fin, delimiter="\t")
+            next(reader)
+            for row in reader:
+                line += 1
+                vals = _tsv_row_values(row, n_cols)
+                if vals[pid_idx] is None:
+                    continue
+                batch.append((vals[pid_idx], _row_hash(vals, order), line))
+                if len(batch) >= 100_000:
+                    cur.executemany("INSERT INTO st.stage VALUES (?, ?, ?)", batch)
+                    batch.clear()
+                    _check_stop()
+                    now = time.monotonic()
+                    if now - _last_ui >= 0.5:
+                        _last_ui = now
+                        pct = min(fin.buffer.tell() / total_bytes * 100, 100)
+                        progress(pct * 0.4)
+                        log(t('update_pass1_progress', n=line, pct=pct))
+            if batch:
+                cur.executemany("INSERT INTO st.stage VALUES (?, ?, ?)", batch)
+        conn.commit()
+        progress(40)
+
+        # ---- Diff --------------------------------------------------------------
+        log(t('update_diff'))
+        watch_done = _interrupt_on_stop(conn, stop)
+        # One row per processid (the first one, as Step 2 keeps the first of
+        # any duplicates), sorted, so the joins below walk both sides in order.
+        cur.execute("CREATE TABLE st.uniq (processid TEXT PRIMARY KEY COLLATE NOCASE, h INTEGER, line INTEGER)")
+        cur.execute("INSERT INTO st.uniq SELECT processid, h, MIN(line) FROM st.stage GROUP BY processid")
+        cur.execute("DROP TABLE st.stage")
+        cur.execute("CREATE TABLE st.todo (line INTEGER PRIMARY KEY, kind INTEGER)")   # 1 new, 2 changed
+        cur.execute("INSERT INTO st.todo SELECT u.line, 1 FROM st.uniq u WHERE NOT EXISTS "
+                    "(SELECT 1 FROM {0} b WHERE b.processid = u.processid)".format(ROW_HASH_TABLE))
+        cur.execute("INSERT INTO st.todo SELECT u.line, 2 FROM st.uniq u JOIN {0} b "
+                    "ON b.processid = u.processid WHERE b.h <> u.h".format(ROW_HASH_TABLE))
+        cur.execute("CREATE TABLE st.gone (processid TEXT)")
+        cur.execute("INSERT INTO st.gone SELECT b.processid FROM {0} b WHERE NOT EXISTS "
+                    "(SELECT 1 FROM st.uniq u WHERE u.processid = b.processid)".format(ROW_HASH_TABLE))
+        conn.commit()
+        _check_stop()
+        n_old  = cur.execute("SELECT COUNT(*) FROM {0}".format(ROW_HASH_TABLE)).fetchone()[0]
+        n_new  = cur.execute("SELECT COUNT(*) FROM st.todo WHERE kind = 1").fetchone()[0]
+        n_chg  = cur.execute("SELECT COUNT(*) FROM st.todo WHERE kind = 2").fetchone()[0]
+        n_gone = cur.execute("SELECT COUNT(*) FROM st.gone").fetchone()[0]
+        n_all  = n_new + n_chg + n_gone
+        frac   = n_all / max(n_old, 1)
+        log(t('update_stats', new=n_new, chg=n_chg, gone=n_gone, pct=frac * 100, total=n_old))
+        progress(50)
+
+        if frac > UPDATE_MAX_CHANGE:
+            log(t('update_too_many', limit=int(UPDATE_MAX_CHANGE * 100)))
+            return False
+
+        # ---- Apply -----------------------------------------------------------
+        _check_stop()
+        if n_all:
+            # WAL from here on: the viewer keeps reading the previous version
+            # while the transaction is open, and an aborted update leaves no trace.
+            conn.execute("PRAGMA main.journal_mode = WAL")
+            wal = True
+            log(t('update_applying', fts=t('update_with_fts') if fts_cols else ""))
+            todo = dict(cur.execute("SELECT line, kind FROM st.todo"))
+            gone = [r[0] for r in cur.execute("SELECT processid FROM st.gone")]
+
+            quoted   = ['"{0}"'.format(c) for c in cols_clean]
+            ins_q    = "INSERT INTO bold_records ({0}) VALUES ({1})".format(
+                           ", ".join(quoted), ", ".join("?" * n_cols))
+            upd_q    = "UPDATE bold_records SET {0} WHERE rowid = ?".format(
+                           ", ".join(q + " = ?" for q in quoted))
+            sel_q    = "SELECT rowid{0} FROM bold_records WHERE col_processid = ?".format(
+                           "".join(', "{0}"'.format(c) for c in fts_cols))
+            fts_list = ", ".join('"{0}"'.format(c) for c in fts_cols)
+            fts_del  = ("INSERT INTO bold_records_fts(bold_records_fts, rowid, {0}) VALUES ('delete', ?, {1})"
+                        .format(fts_list, ", ".join("?" * len(fts_cols)))) if fts_cols else None
+            fts_ins  = ("INSERT INTO bold_records_fts(rowid, {0}) VALUES (?, {1})"
+                        .format(fts_list, ", ".join("?" * len(fts_cols)))) if fts_cols else None
+            hash_q   = "INSERT OR REPLACE INTO {0} (processid, h) VALUES (?, ?)".format(ROW_HASH_TABLE)
+
+            done = 0
+            _last_ui = 0.0
+
+            def _tick():
+                nonlocal _last_ui
+                now = time.monotonic()
+                if now - _last_ui >= 0.5:
+                    _last_ui = now
+                    pct = done / max(n_all, 1) * 100
+                    progress(50 + pct * 0.49)
+                    log(t('update_apply_progress', done=done, total=n_all, pct=pct))
+
+            # Removed records
+            for pid in gone:
+                old = cur.execute(sel_q, (pid,)).fetchone()
+                if old is not None:
+                    if fts_cols:
+                        cur.execute(fts_del, old)
+                    cur.execute("DELETE FROM bold_records WHERE rowid = ?", (old[0],))
+                cur.execute("DELETE FROM {0} WHERE processid = ?".format(ROW_HASH_TABLE), (pid,))
+                done += 1
+                if done % 2000 == 0:
+                    _check_stop()
+                    _tick()
+
+            # New and modified records: read again from the TSV, only those lines
+            with open(archivo_tsv, "r", encoding="utf-8", errors="replace",
+                      newline="", buffering=8 * 1024 * 1024) as fin:
+                reader = csv.reader(fin, delimiter="\t")
+                next(reader)
+                line = 0
+                for row in reader:
+                    line += 1
+                    kind = todo.get(line)
+                    if kind is None:
+                        continue
+                    vals = _tsv_row_values(row, n_cols)
+                    pid  = vals[pid_idx]
+                    old  = cur.execute(sel_q, (pid,)).fetchone() if kind == 2 else None
+                    if old is not None:
+                        if fts_cols:
+                            cur.execute(fts_del, old)
+                        cur.execute(upd_q, vals + (old[0],))
+                        rowid = old[0]
+                    else:
+                        cur.execute(ins_q, vals)
+                        rowid = cur.lastrowid
+                    if fts_cols:
+                        cur.execute(fts_ins, (rowid,) + tuple(vals[i] for i in fts_idx))
+                    cur.execute(hash_q, (pid, _row_hash(vals, order)))
+                    done += 1
+                    if done % 2000 == 0:
+                        _check_stop()
+                        _tick()
+        else:
+            log(t('update_nothing'))
+
+        # ---- Commit ------------------------------------------------------------
+        _check_stop()
+        total = n_old + n_new - n_gone
+        _write_db_meta(conn, {      # also commits the whole transaction
+            "record_count":    total,
+            "source_file":     os.path.basename(archivo_tsv),
+            "updated_at":      datetime.now().isoformat(timespec="seconds"),
+            "last_update":     "+{0} ~{1} -{2}".format(n_new, n_chg, n_gone),
+            "creator_version": __version__,
+        })
+        applied = True
+        watch_done.set()
+        watch_done = None
+        for path, write in (("../data/processed/db_source.txt", True),
+                            ("../data/processed/fts_source.txt", bool(fts_cols))):
+            if write:
+                with open(path, "w") as _f:
+                    _f.write(os.path.basename(archivo_tsv))
+        log(t('update_done', mins=(time.monotonic() - t0) / 60,
+              new=n_new, chg=n_chg, gone=n_gone, total=total))
+        progress(100)
+        return True
+
+    except _UpdateStopped:
+        if conn is not None:
+            try: conn.rollback()
+            except Exception: pass
+        log(t('update_interrupted'))
+        return False
+    except sqlite3.OperationalError as e:
+        if conn is not None:
+            try: conn.rollback()
+            except Exception: pass
+        if stop is not None and stop.is_set() and "interrupt" in str(e).lower():
+            log(t('update_interrupted'))
+        else:
+            log(_fmt_error(e, t('ctx_update')))
+            log(t('update_failed_rolled_back'))
+        return False
+    except Exception as e:
+        if conn is not None:
+            try: conn.rollback()
+            except Exception: pass
+        log(_fmt_error(e, t('ctx_update')))
+        log(t('update_failed_rolled_back'))
+        return False
+    finally:
+        if watch_done is not None:
+            watch_done.set()
+        if conn is not None:
+            if attached:
+                try: conn.execute("DETACH DATABASE st")
+                except Exception: pass
+            # Fold the WAL back into the database file and leave it in the same
+            # journal mode as a freshly built one. If the viewer has it open
+            # right now the switch fails harmlessly; the next run retries it.
+            if wal:
+                try:
+                    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                    conn.execute("PRAGMA journal_mode = DELETE")
+                except Exception:
+                    pass
+            if applied:
+                try: conn.execute("PRAGMA optimize")
+                except Exception: pass
+            conn.close()
+        for suffix in ("", "-journal", "-wal", "-shm"):
+            try: os.remove(_STAGE_DB + suffix)
+            except OSError: pass
+
+
 # ==============================================================================
 # GUI — PySide6
 # ==============================================================================
 
 # ---- Palette & stylesheet ---------------------------------------------------------
+#
+# Named by role, not by hue. Contrast ratios are against the panel background
+# (#26262D) unless stated; body text should stay >= 4.5:1. Changes from the
+# previous palette: "white" (which was this same blue) and "green" (which was
+# cyan, and unused) are gone; "done" (#52547a, 2.1:1 — secondary text was
+# practically unreadable) is split into muted/disabled/dimmed; the loose hex
+# values that were scattered through the stylesheet now live here.
 
 P = {
-    "bg":      "#2a2d3a",
-    "panel":   "#26262D",
-    "sidebar": "#3B3A44",
-    "accent":  "#88A6D7",
-    "green":   "#61D8FD",
-    "red":     "#f38ba8",
-    "white":   "#88A6D7",
-    "gray":    "#45475a",
-    "yellow":  "#c09b07",
-    "blue":    "#295EB3",
-    "text":    "#d5d8dd",
-    "sub":     "#d6dcf8",
-    "surface": "#535366",
-    "overlay": "#477DD4",
-    "running": "#fab387",
-    "progbar": "#61D8FD",
-    "blue_mid": "#669AEE",
-    "done":     "#52547a",
-    # Readable green for confirmations: #52547a against the log background gave
-    # ~2:1 contrast, making unreadable exactly the thing that confirms success.
-    "ok":       "#7fe0a0",
-    "req":      "#f38ba8",   # REQUIRED badge
-    "rec":      "#e0b520",   # RECOMMENDED badge
-    "opt":      "#8a8da0",   # OPTIONAL badge
+    # Surfaces
+    "bg":          "#2a2d3a",
+    "panel":       "#26262D",
+    "sidebar":     "#3B3A44",
+    "surface":     "#535366",
+    "disabled_bg": "#45475a",
+    # Text
+    "text":        "#d5d8dd",   # 11:1
+    "sub":         "#d6dcf8",   # 11:1, secondary text
+    "muted":       "#a0a3bd",   # 6.1:1, technical labels, timestamps
+    "disabled":    "#8a8da0",   # 4.6:1, disabled controls
+    "dimmed":      "#7d8098",   # 3.9:1, finished log lines (de-emphasised on purpose)
+    "on_btn":      "#ffffff",   # text on the blue buttons
+    "on_light":    "#11111b",   # text on light fills (stop button hover)
+    # Accents and buttons
+    "accent":       "#88A6D7",  # 6.1:1
+    "accent_hover": "#a9c1e6",
+    "btn":          "#295EB3",  # primary / run (white text 6.3:1)
+    "btn_hover":    "#477DD4",
+    "card":         "#3D6DBB",  # small buttons (white text 5.1:1; was text on #477DD4, 2.9:1)
+    "border":       "#477DD4",  # outlines, scrollbar handle, checkbox frames
+    "progbar":       "#61D8FD",
+    "progbar_light": "#8ae8ff",
+    "blue_mid":      "#669AEE",
+    # States
+    "ok":          "#7fe0a0",
+    "running":     "#fab387",
+    "yellow":      "#c09b07",
+    "yellow_light": "#e0b520",
+    "red":         "#f38ba8",
+    "red_light":   "#f8afc0",
+    # Requirement badges
+    "req":         "#f38ba8",   # REQUIRED
+    "rec":         "#e0b520",   # RECOMMENDED
+    "opt":         "#8a8da0",   # OPTIONAL
 }
+
+# Monospace family for paths, the log and the timer. Resolved at startup
+# (_resolve_mono_font) to the first one installed: "Courier New" was
+# hardcoded, which is a poor fit on Windows and absent on many Linux systems.
+_MONO_PREFERENCE = ["Cascadia Mono", "Consolas", "SF Mono", "Menlo",
+                    "DejaVu Sans Mono", "Liberation Mono", "Courier New"]
+_FONT_MONO = ["monospace"]   # mutable: index 0 is set once at startup
+
+
+def _mono():
+    return _FONT_MONO[0]
+
+
+def _resolve_mono_font():
+    from PySide6.QtGui import QFontDatabase
+    installed = set(QFontDatabase.families())
+    for fam in _MONO_PREFERENCE:
+        if fam in installed:
+            _FONT_MONO[0] = fam
+            return
+    _FONT_MONO[0] = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont).family()
+
+
+def _styled(widget, role=None, tone=None):
+    """Applies a label role and/or tone defined in the app stylesheet.
+
+    Replaces the dozens of inline setStyleSheet(f"color: ...; font-size: ...")
+    calls that repeated the same few combinations: a role fixes size and
+    weight (and a default colour), a tone overrides the colour for states
+    (ok / warn / error / running). Changing a property after the widget is
+    shown needs an unpolish/polish for Qt to re-evaluate the selectors.
+    """
+    if role is not None:
+        widget.setProperty("role", role)
+    if tone is not None:
+        widget.setProperty("tone", tone)
+    widget.style().unpolish(widget)
+    widget.style().polish(widget)
+    return widget
+
+
+def _hsep_line():
+    """Thin horizontal separator (QFrame#hsep in the stylesheet)."""
+    f = QFrame()
+    f.setObjectName("hsep")
+    f.setFrameShape(QFrame.Shape.HLine)
+    return f
+
+
+# Step status markers (sidebar and Home summary)
+STATUS_DONE = "✓"
+STATUS_TODO = "○"
+
 
 def _make_app_qss() -> str:
     p = dict(P)
     p.update({
         "fs7":  _fs(7),  "fs9":  _fs(9),  "fs10": _fs(10),
         "fs11": _fs(11), "fs12": _fs(12), "fs13": _fs(13),
+        "fs14": _fs(14), "fs16": _fs(16),
         "px15": _px(15),
+        "mono": _mono(),
     })
+    # No font-family for the UI text: Qt then uses the platform's own UI font
+    # (Segoe UI on Windows, the system font on macOS and Linux). Forcing
+    # "Segoe UI" made every other platform fall back to an arbitrary font.
     return """
 QMainWindow, QWidget {
     background-color: %(bg)s;
     color: %(text)s;
-    font-family: "Segoe UI";
     font-size: %(fs13)s;
 }
 #sidebar { background-color: %(sidebar)s; }
+/* Without this, labels in the sidebar ("Language", the project path) were
+   painted with the window background, a darker box on the sidebar. */
+#sidebar QLabel { background-color: transparent; }
 QPushButton#navBtn {
     background-color: transparent;
     color: %(text)s;
@@ -2267,7 +3095,7 @@ QPushButton#navBtn[active="true"] {
     border-left: 5px solid %(progbar)s;
     padding-left: 11px;
 }
-QPushButton#navBtn[active="true"]:hover { background-color: %(gray)s; }
+QPushButton#navBtn[active="true"]:hover { background-color: %(disabled_bg)s; }
 /* Home button: its own treatment (always-tinted background, bold, bottom
    border) so it doesn't read as item 0 of the step list below. */
 QPushButton#homeBtn {
@@ -2286,31 +3114,31 @@ QPushButton#homeBtn[active="true"] {
     border-left: 5px solid %(progbar)s;
     padding-left: 11px;
 }
-QPushButton#homeBtn[active="true"]:hover { background-color: %(gray)s; }
+QPushButton#homeBtn[active="true"]:hover { background-color: %(disabled_bg)s; }
 /* This was inverted: the disabled button used to be painted bright blue and
    the enabled one dull gray — exactly the opposite of the expected signal. */
 QPushButton#runBtn {
-    background-color: %(blue)s;
-    color: #ffffff;
+    background-color: %(btn)s;
+    color: %(on_btn)s;
     border: none;
     padding: 7px 18px;
     font-weight: bold;
     font-size: %(fs12)s;
     border-radius: 6px;
 }
-QPushButton#runBtn:hover    { background-color: %(overlay)s; color: #ffffff; }
-QPushButton#runBtn:disabled { background-color: %(gray)s; color: %(done)s; }
+QPushButton#runBtn:hover    { background-color: %(btn_hover)s; color: %(on_btn)s; }
+QPushButton#runBtn:disabled { background-color: %(disabled_bg)s; color: %(muted)s; }
 QPushButton#primaryBtn {
-    background-color: %(blue)s;
-    color: #ffffff;
+    background-color: %(btn)s;
+    color: %(on_btn)s;
     border: none;
     padding: 10px 24px;
     font-weight: bold;
     font-size: %(fs13)s;
     border-radius: 8px;
 }
-QPushButton#primaryBtn:hover    { background-color: %(overlay)s; }
-QPushButton#primaryBtn:disabled { background-color: %(gray)s; color: %(sub)s; }
+QPushButton#primaryBtn:hover    { background-color: %(btn_hover)s; }
+QPushButton#primaryBtn:disabled { background-color: %(disabled_bg)s; color: %(sub)s; }
 /* Same visual hierarchy as the primary button but without weight: it's the
    alternative, not the default option. */
 QPushButton#secondaryBtn {
@@ -2321,9 +3149,8 @@ QPushButton#secondaryBtn {
     font-size: %(fs13)s;
     border-radius: 8px;
 }
-QPushButton#secondaryBtn:hover    { background-color: %(surface)s; border-color: %(overlay)s; }
-QPushButton#secondaryBtn:disabled { color: %(done)s; border-color: %(gray)s; }
-QPushButton#cardBtn:disabled    { background-color: %(gray)s; color: %(done)s; }
+QPushButton#secondaryBtn:hover    { background-color: %(surface)s; border-color: %(border)s; }
+QPushButton#secondaryBtn:disabled { color: %(disabled)s; border-color: %(disabled_bg)s; }
 QPushButton#stopBtn {
     background-color: transparent;
     color: %(red)s;
@@ -2332,25 +3159,26 @@ QPushButton#stopBtn {
     font-size: %(fs12)s;
     border-radius: 6px;
 }
-QPushButton#stopBtn:hover    { background-color: %(red)s; color: #11111b; border-color: %(red)s; }
-QPushButton#stopBtn:disabled { color: %(overlay)s; border-color: %(overlay)s; border-width: 1px; }
+QPushButton#stopBtn:hover    { background-color: %(red)s; color: %(on_light)s; border-color: %(red)s; }
+QPushButton#stopBtn:disabled { color: %(disabled)s; border-color: %(disabled_bg)s; border-width: 1px; }
 QPushButton#browseBtn {
-    background-color: %(overlay)s;
-    color: %(text)s;
+    background-color: %(card)s;
+    color: %(on_btn)s;
     border: none;
     padding: 3px 8px;
     border-radius: 6px;
 }
-QPushButton#browseBtn:hover { background-color: %(surface)s; color: %(accent)s; }
+QPushButton#browseBtn:hover { background-color: %(surface)s; color: %(on_btn)s; }
 QPushButton#cardBtn {
-    background-color: %(overlay)s;
-    color: %(text)s;
+    background-color: %(card)s;
+    color: %(on_btn)s;
     border: none;
     padding: 4px 12px;
     font-size: %(fs12)s;
     border-radius: 6px;
 }
-QPushButton#cardBtn:hover { background-color: %(surface)s; color: %(accent)s; }
+QPushButton#cardBtn:hover    { background-color: %(surface)s; color: %(on_btn)s; }
+QPushButton#cardBtn:disabled { background-color: %(disabled_bg)s; color: %(muted)s; }
 /* Destructive action: distinguished from the rest without drawing attention. */
 QPushButton#dangerBtn {
     background-color: transparent;
@@ -2361,7 +3189,7 @@ QPushButton#dangerBtn {
     border-radius: 6px;
 }
 QPushButton#dangerBtn:hover    { color: %(red)s; border-color: %(red)s; }
-QPushButton#dangerBtn:disabled { color: %(done)s; border-color: %(gray)s; }
+QPushButton#dangerBtn:disabled { color: %(disabled)s; border-color: %(disabled_bg)s; }
 QPushButton#clearBtn {
     background-color: transparent;
     color: %(sub)s;
@@ -2371,18 +3199,22 @@ QPushButton#clearBtn {
     border-radius: 2px;
 }
 QPushButton#clearBtn:hover { background-color: %(surface)s; color: %(text)s; }
+/* Language selector in the sidebar */
+QPushButton#langBtn {
+    font-size: %(fs10)s; font-weight: bold; border-radius: 4px; padding: 3px 0;
+    background-color: %(sidebar)s; color: %(sub)s; border: none;
+}
+QPushButton#langBtn:hover { background-color: %(surface)s; }
+QPushButton#langBtn[active="true"] { background-color: %(accent)s; color: %(bg)s; }
 /* Without this rule, every tooltip fell back to the system default color
-   (white or pale yellow on Windows) instead of the app's dark theme — and a
-   widget with its own setStyleSheet (like the headers in the Fields panel)
-   could also inherit a tone slightly different from a "default" tooltip.
-   With the explicit rule, every tooltip in the application always uses the
-   same colors, with no exceptions. */
+   (white or pale yellow on Windows) instead of the app's dark theme. With
+   the explicit rule, every tooltip in the application always uses the same
+   colors, with no exceptions. */
 QToolTip {
     background-color: %(surface)s;
     color: %(text)s;
-    border: 1px solid %(overlay)s;
+    border: 1px solid %(border)s;
     padding: 4px 8px;
-    font-family: "Segoe UI";
     font-size: %(fs11)s;
     font-weight: normal;
 }
@@ -2406,18 +3238,19 @@ QMessageBox QPushButton {
     font-size: %(fs10)s;
     border-radius: 2px;
 }
-QMessageBox QPushButton:hover   { background-color: %(overlay)s; color: %(accent)s; }
+QMessageBox QPushButton:hover   { background-color: %(card)s; color: %(on_btn)s; }
 QMessageBox QPushButton:default { background-color: %(accent)s; color: %(bg)s; }
-QMessageBox QPushButton:default:hover { background-color: #d4b8f8; color: %(bg)s; }
+QMessageBox QPushButton:default:hover { background-color: %(accent_hover)s; color: %(bg)s; }
 QSplitter#mainSplit::handle { background-color: %(sidebar)s; }
-QSplitter#mainSplit::handle:hover { background-color: %(overlay)s; }
+QSplitter#mainSplit::handle:hover { background-color: %(border)s; }
 #panel { background-color: %(panel)s; }
 #panel QLabel { background-color: transparent; }
+QFrame#hsep { background: %(surface)s; border: none; max-height: 1px; }
 QTextEdit#logEdit {
-    background-color: #26262D;
+    background-color: %(panel)s;
     color: %(text)s;
     border: none;
-    font-family: "Courier New", "Consolas", monospace;
+    font-family: "%(mono)s";
     font-size: %(fs11)s;
 }
 QProgressBar {
@@ -2427,7 +3260,7 @@ QProgressBar {
 }
 QProgressBar::chunk {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #8ae8ff, stop:1 %(progbar)s);
+        stop:0 %(progbar_light)s, stop:1 %(progbar)s);
     border-radius: 5px;
 }
 QLineEdit {
@@ -2438,31 +3271,73 @@ QLineEdit {
     selection-background-color: %(accent)s;
 }
 QScrollBar:vertical              { background: %(bg)s; width: 8px; border: none; }
-QScrollBar::handle:vertical      { background: %(overlay)s; border-radius: 4px; min-height: 20px; }
+QScrollBar::handle:vertical      { background: %(border)s; border-radius: 4px; min-height: 20px; }
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical    { height: 0px; }
 /* Checkboxes in the Fields panel. Without their own style, Qt paints them
    with the system's light theme, and against the dark background a checked
    box can't be told apart from an empty one. */
 QCheckBox { color: %(text)s; font-size: %(fs11)s; spacing: 7px; background: transparent; }
-QCheckBox:disabled { color: %(done)s; }
+QCheckBox:disabled { color: %(disabled)s; }
 QCheckBox::indicator {
     width: %(px15)spx; height: %(px15)spx;
-    border: 1px solid %(overlay)s;
+    border: 1px solid %(border)s;
     border-radius: 3px;
     background: %(bg)s;
 }
 QCheckBox::indicator:hover            { border-color: %(progbar)s; }
 QCheckBox::indicator:checked          { background: %(progbar)s; border-color: %(progbar)s; }
-QCheckBox::indicator:disabled         { border-color: %(gray)s; }
-QCheckBox::indicator:checked:disabled { background: %(done)s; border-color: %(done)s; }
+QCheckBox::indicator:disabled         { border-color: %(disabled_bg)s; }
+QCheckBox::indicator:checked:disabled { background: %(muted)s; border-color: %(muted)s; }
 QFrame#dropCard {
     background-color: transparent;
-    border: 2px dashed %(overlay)s;
+    border: 2px dashed %(border)s;
     border-radius: 6px;
 }
 QFrame#dropCard[loaded="true"]   { border: 1px solid %(accent)s; }
-QFrame#dropCard[dragging="true"] { border: 2px dashed %(blue)s; background-color: %(surface)s; }
+QFrame#dropCard[dragging="true"] { border: 2px dashed %(btn)s; background-color: %(surface)s; }
+
+/* ---- Label roles (see _styled) ------------------------------------------ */
+QLabel[role="pageTitle"]  { color: %(accent)s; font-size: %(fs16)s; font-weight: bold; }
+QLabel[role="stepTitle"]  { color: %(accent)s; font-size: %(fs14)s; font-weight: bold; }
+QLabel[role="optionTitle"]{ color: %(accent)s; font-size: %(fs12)s; font-weight: bold; }
+QLabel[role="cardTitle"]  { color: %(sub)s;    font-size: %(fs12)s; font-weight: bold; }
+QLabel[role="body"]       { color: %(text)s;   font-size: %(fs11)s; }
+QLabel[role="secondary"]  { color: %(sub)s;    font-size: %(fs11)s; }
+QLabel[role="small"]      { color: %(sub)s;    font-size: %(fs10)s; }
+QLabel[role="caption"]    { color: %(sub)s;    font-size: %(fs9)s; }
+QLabel[role="colHeader"]  { color: %(sub)s;    font-size: %(fs10)s; font-weight: bold; }
+QLabel[role="hint"]       { color: %(muted)s;  font-size: %(fs10)s; }
+QLabel[role="techLabel"]  { color: %(muted)s;  font-size: %(fs10)s; font-family: "%(mono)s"; }
+QLabel[role="pathsLabel"] { color: %(muted)s;  font-size: %(fs11)s; font-family: "%(mono)s"; }
+QLabel[role="dropHint"]   { color: %(accent)s; font-size: %(fs12)s; padding: 8px 0; }
+QLabel[role="dropFile"]   { color: %(ok)s;     font-size: %(fs12)s; }
+QLabel[role="note"] {
+    color: %(text)s; font-size: %(fs10)s; border-radius: 6px; padding: 8px 10px;
+}
+QLabel[role="badge"] {
+    color: %(bg)s; font-size: %(fs9)s; font-weight: bold;
+    border-radius: 4px; padding: 2px 9px;
+}
+/* Tones: override the role's colour for a state. After the roles so they win. */
+QLabel[tone="neutral"] { color: %(sub)s; }
+QLabel[tone="ok"]      { color: %(ok)s; }
+QLabel[tone="warn"]    { color: %(yellow)s; }
+QLabel[tone="rec"]     { color: %(rec)s; }
+QLabel[tone="error"]   { color: %(red)s; }
+QLabel[tone="running"] { color: %(running)s; }
+QLabel[tone="donePill"] {
+    color: %(bg)s; font-size: %(fs10)s; font-weight: bold;
+    border-radius: 4px; padding: 2px 10px;
+}
+/* Fills. Prefixed with #panel too: "#panel QLabel { background: transparent }"
+   has an ID in it, so it outranks any selector without one. */
+QLabel[role="note"],      #panel QLabel[role="note"]      { background-color: %(sidebar)s; }
+QLabel[tone="donePill"],  #panel QLabel[tone="donePill"]  { background-color: %(ok)s; }
+QLabel[role="badge"][level="req"], #panel QLabel[role="badge"][level="req"] { background-color: %(req)s; }
+QLabel[role="badge"][level="rec"], #panel QLabel[role="badge"][level="rec"] { background-color: %(rec)s; }
+QLabel[role="badge"][level="opt"], #panel QLabel[role="badge"][level="opt"] { background-color: %(opt)s; }
+QLabel[role="badge"][level="ok"],  #panel QLabel[role="badge"][level="ok"]  { background-color: %(ok)s; }
 """ % p
 
 # ---- Steps definition --------------------------------------------------------
@@ -2479,7 +3354,10 @@ STEPS = [
     ("1. " + STEP_NAMES[0], t('step1_desc'), run_step1, {}),
     ("2. " + STEP_NAMES[1], t('step2_desc'), run_step2, {}),
     ("3. " + STEP_NAMES[2], t('step3_desc'), run_step3, {}),
-    ("4. " + STEP_NAMES[3], t('step4_desc'), run_step6, {}),
+    ("4. " + STEP_NAMES[3], t('step4_desc'), run_step4, {}),
+    # Not a fifth build step but the alternative to Steps 2-4 for a new weekly
+    # package: no number, so it doesn't read as "the step after 4".
+    ("↻ " + t('step_update_name'), t('step_update_desc'), run_update, {}),
 ]
 
 # Technical label (for those who actually know the pipeline) and requirement
@@ -2490,6 +3368,7 @@ STEP_TECH = {
     STEPS[1][0]: t('step2_tech'),
     STEPS[2][0]: t('step3_tech'),
     STEPS[3][0]: t('step4_tech'),
+    STEPS[4][0]: t('step_update_tech'),
 }
 
 STEP_LEVEL = {
@@ -2500,7 +3379,7 @@ STEP_LEVEL = {
 }
 
 _SIDEBAR_GROUPS = [
-    (t('sidebar_group_individual_steps'), [0, 1, 2, 3], t('sidebar_group_hint')),
+    (t('sidebar_group_individual_steps'), [0, 1, 2, 3, 4], t('sidebar_group_hint')),
 ]
 
 # The two ways to build it, offered as buttons on the Home screen. Previously
@@ -2525,6 +3404,21 @@ _PIPELINES = [
         "hint":  t('pipeline2_hint'),
         "tip":   t('pipeline2_tip'),
     },
+    {
+        # Step 1 with the new package, then the update instead of Steps 2-4.
+        # The hint names this computer's RAM: whether the indexes fit in
+        # memory is what decides how much faster updating is, and the choice
+        # between updating and rebuilding is left to the user.
+        "title": t('pipeline3_title'),
+        "label": t('pipeline3_label'),
+        "label_done": t('pipeline3_label'),
+        "steps": [0, 4],
+        "badge": "",
+        "ram":   (t('ram_gb', n=_total_ram_gb()) if _total_ram_gb() else t('ram_unknown')),
+        "hint":  "",      # set in PrepPanel.refresh: it includes the current database size
+        "tip":   t('pipeline3_tip', pct=int(UPDATE_MAX_CHANGE * 100)),
+        "needs_updatable_db": True,
+    },
 ]
 
 # Web viewer port (app/server.py -> app.run(port=5001))
@@ -2532,6 +3426,10 @@ VIEWER_PORT = 5001
 
 # Portal from which Step 1's input .tar.gz is downloaded
 BOLD_DOWNLOAD_URL = "https://bench.boldsystems.org/index.php/datapackages/Latest"
+
+# Suffix of a .tar.gz still being copied into data/raw/ (see _CopyWorker).
+# Never matches the "*.tar.gz" globs, so it's invisible to Step 1.
+PART_SUFFIX = ".part"
 
 # The Home panel goes last in the stack but first in the sidebar
 PREP_IDX   = len(STEPS)
@@ -2565,25 +3463,55 @@ def _ensure_data_dirs():
             os.makedirs(_proj_dir(*parts), exist_ok=True)
         except OSError:
             pass
+    # Leftovers of a copy interrupted by a crash or a forced close: no copy
+    # can be running yet at startup, so any .part found is an orphan.
+    for part in glob.glob(_proj_dir("data", "raw", "*" + PART_SUFFIX)):
+        try:
+            os.remove(part)
+        except OSError:
+            pass
 
 
 # ---- app/ initialization -------------------------------------------------------
 
 def _ensure_app_initialized():
-    """Copies dev/frontend -> app/ if the folder hasn't been initialized. Returns a message or None."""
+    """Brings app/ in line with dev/frontend. Returns a message or None.
+
+    Every file of dev/frontend that's missing in app/ or differs from it is
+    copied over. It used to copy only when app/server.py didn't exist yet,
+    so after updating the project (git pull, a new download over the old
+    folder) the viewer kept running the old code indefinitely.
+    Only dev/frontend's own files are touched: what the application
+    generates in app/ (the database, logs, ui_state.ini, the version marker
+    in app/static/) has no counterpart there and is left alone.
+    """
+    import filecmp
     src = os.path.join(PROJECT_ROOT, "frontend")
     dst = os.path.normpath(os.path.join(PROJECT_ROOT, "..", "app"))
-    if (os.path.exists(os.path.join(dst, "server.py")) and
-            os.path.exists(os.path.join(dst, "templates", "index.html"))):
-        return None
     if not os.path.exists(src):
         return t('app_init_skipped')
+    first_time = not os.path.exists(os.path.join(dst, "server.py"))
     try:
-        os.makedirs(dst, exist_ok=True)
-        shutil.copytree(src, dst, dirs_exist_ok=True)
-        return t('app_init_done')
+        updated = 0
+        for dirpath, dirnames, filenames in os.walk(src):
+            dirnames[:] = [d for d in dirnames if d != "__pycache__"]
+            rel = os.path.relpath(dirpath, src)
+            out_dir = os.path.normpath(os.path.join(dst, rel))
+            os.makedirs(out_dir, exist_ok=True)
+            for name in filenames:
+                if name.endswith((".pyc", ".pyo")):
+                    continue
+                s = os.path.join(dirpath, name)
+                d = os.path.join(out_dir, name)
+                if os.path.exists(d) and filecmp.cmp(s, d, shallow=False):
+                    continue
+                shutil.copy2(s, d)
+                updated += 1
     except Exception as e:
         return t('app_init_error', error=e)
+    if first_time:
+        return t('app_init_done')
+    return t('app_updated', n=updated) if updated else None
 
 
 # ---- Per-step input verification --------------------------------------------
@@ -2626,9 +3554,11 @@ def _intermediate_files():
     The .filt.tsv (about 20 GB) is only Step 2's input: neither the viewer nor
     Steps 3 and 4 ever open it. It's kept solely to allow reimporting without
     repeating the download and filtering, so deleting it is the user's call.
+    A .tar.gz kept with Step 1's "Keep the .tar.gz" option is listed too.
     """
     out = []
-    for path in sorted(glob.glob(_proj_dir("data", "processed", "*.tsv"))):
+    for path in sorted(glob.glob(_proj_dir("data", "processed", "*.tsv")) +
+                       glob.glob(_proj_dir("data", "raw", "*.tar.gz"))):
         try:
             out.append((path, os.path.getsize(path)))
         except OSError:
@@ -2641,14 +3571,61 @@ def _check_input(step_label):
     checks = {
         STEPS[0][0]: lambda: (
             len(glob.glob(_proj_dir("data", "raw", "*.tar.gz"))) > 0 or
-            len(glob.glob(_proj_dir("data", "processed", "*.filt.tsv"))) > 0
+            len(glob.glob(_proj_dir("data", "processed", "*.tsv"))) > 0   # .filt.tsv or extracted .tsv
         ),
         STEPS[1][0]: lambda: len(glob.glob(_proj_dir("data", "processed", "*.filt.tsv"))) > 0,
         STEPS[2][0]: lambda: os.path.exists(db),
         STEPS[3][0]: lambda: os.path.exists(db),
+        # Same rule as the Home button: a database that stores fingerprints
+        STEPS[4][0]: lambda: (os.path.exists(db) and _get_project_status().get("updatable", False) and
+                              len(glob.glob(_proj_dir("data", "processed", "*.filt.tsv"))) > 0),
     }
     fn = checks.get(step_label)
     return fn() if fn else True
+
+
+def _has_new_package():
+    """Is there a .tar.gz in data/raw/ (the drop zone's folder)?"""
+    return bool(glob.glob(_proj_dir("data", "raw", "*.tar.gz")))
+
+
+def _prepared_data_is_new():
+    """Is there prepared data (.filt.tsv) other than the one the database was
+    built or last updated from? Then an update has something to compare."""
+    filt = glob.glob(_proj_dir("data", "processed", "*.filt.tsv"))
+    if not filt:
+        return False
+    try:
+        with open(_proj_dir("data", "processed", "db_source.txt")) as f:
+            src = f.read().strip()
+    except OSError:
+        src = ""
+    return os.path.basename(max(filt, key=os.path.getsize)) != src
+
+
+def _pipeline_blocker(pl, st, flags):
+    """Why a Home option can't run right now (a string key), or None.
+
+    Creating (Options 1 and 2) needs a package in the drop zone, unless some
+    step of the option is still pending and its input is already on disk
+    (e.g. the database exists but its indexes don't). Updating (Option 3)
+    always needs a new package: it's what gets compared with the database.
+    """
+    if pl.get("needs_updatable_db"):
+        if not st["step2"]:
+            return 'update_no_db_tip'
+        if not st.get("updatable"):
+            return 'update_unavailable_tip'
+        if not (_has_new_package() or _prepared_data_is_new()):
+            return 'update_needs_package_tip'
+        return None
+    if _has_new_package():
+        return None
+    if any(not flags[i] and _check_input(STEPS[i][0]) for i in pl["steps"]):
+        return None
+    if not st["done1"] and not st["step2"]:
+        return 'pipeline_needs_package_tip'
+    return 'pipeline_done_needs_package_tip'
 
 
 _STATUS_CACHE = {"t": 0.0, "v": None}
@@ -2747,12 +3724,17 @@ def _get_project_status(max_age=0.5):
             pass
 
     step4 = False
+    updatable = False
     if step2:
         try:
             conn = sqlite3.connect(db, timeout=0.3)
             cur  = conn.cursor()
             cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='bold_records_fts'")
             step4 = bool(cur.fetchone())
+            # Built by a version that stores the record fingerprints (see run_update)
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                        (ROW_HASH_TABLE,))
+            updatable = bool(cur.fetchone())
             conn.close()
         except Exception:
             pass
@@ -2762,7 +3744,7 @@ def _get_project_status(max_age=0.5):
     # marking it pending produced the absurd sequence "1 ○  2 ✅".
     st = {"version": version, "step1": step1, "step2": step2,
           "step3": step3, "step4": step4, "record_count": record_count,
-          "done1": step1 or step2}
+          "done1": step1 or step2, "updatable": updatable}
     _STATUS_CACHE.update(t=now, v=st)
     return st
 
@@ -2806,6 +3788,11 @@ class _CopyWorker(QThread):
 
     shutil.copy on a 10 GB .tar.gz freezes the GUI for several minutes, so the
     copy runs in its own thread and in chunks.
+
+    It's written as <name>.part and only renamed to its real name once
+    complete: under its final name, the half-copied file already counted as
+    Step 1's input (Run enabled mid-copy), and closing the app left a
+    truncated .tar.gz that looked valid.
     """
     progress_signal = Signal(float)
     finished_signal = Signal(bool, str)
@@ -2816,22 +3803,30 @@ class _CopyWorker(QThread):
         super().__init__(parent)
         self._src = src
         self._dst = dst
+        self._stop_evt = threading.Event()
+
+    def request_stop(self):
+        self._stop_evt.set()
 
     def run(self):
+        part = self._dst + PART_SUFFIX
         try:
             total = os.path.getsize(self._src) or 1
             copied = 0
-            with open(self._src, "rb") as fin, open(self._dst, "wb") as fout:
+            with open(self._src, "rb") as fin, open(part, "wb") as fout:
                 while True:
+                    if self._stop_evt.is_set():
+                        raise InterruptedError(t('copy_cancelled'))
                     chunk = fin.read(self._CHUNK)
                     if not chunk:
                         break
                     fout.write(chunk)
                     copied += len(chunk)
                     self.progress_signal.emit(min(copied / total * 100, 100))
+            os.replace(part, self._dst)
             self.finished_signal.emit(True, self._dst)
         except Exception as e:
-            try: os.remove(self._dst)
+            try: os.remove(part)
             except OSError: pass
             self.finished_signal.emit(False, str(e))
 
@@ -2865,7 +3860,7 @@ class DropFileCard(QFrame):
         hdr = QHBoxLayout()
         hdr.setSpacing(6)
         lbl = QLabel(label)
-        lbl.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(12)}; font-weight: bold;")
+        _styled(lbl, "cardTitle")
         hdr.addWidget(lbl)
         hdr.addStretch()
         self._browse_btn = QPushButton(t('btn_browse'))
@@ -2883,11 +3878,11 @@ class DropFileCard(QFrame):
         self._hint = QLabel(hint)
         self._hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._hint.setWordWrap(True)
-        self._hint.setStyleSheet(f"color: {P['overlay']}; font-size: {_fs(12)}; padding: 8px 0;")
+        _styled(self._hint, "dropHint")
         lay.addWidget(self._hint)
 
         self._file_lbl = QLabel()
-        self._file_lbl.setStyleSheet(f"color: {P['ok']}; font-size: {_fs(12)};")
+        _styled(self._file_lbl, "dropFile")
         self._file_lbl.setWordWrap(True)
         self._file_lbl.hide()
         lay.addWidget(self._file_lbl)
@@ -2947,6 +3942,14 @@ class DropFileCard(QFrame):
         if self._on_log:
             self._on_log(msg)
 
+    def is_copying(self):
+        return self._copier is not None and self._copier.isRunning()
+
+    def cancel_copy(self):
+        """Stops a copy in progress; the partial .part file is deleted."""
+        if self.is_copying():
+            self._copier.request_stop()
+
     # -- accepting a file ---------------------------------------------------
 
     def _accept(self, path):
@@ -2955,7 +3958,7 @@ class DropFileCard(QFrame):
         if not path.lower().endswith(self._extensions):
             QMessageBox.warning(
                 self, t('invalid_file_title'),
-                t('invalid_file_body', ext=" o ".join(self._extensions)),
+                t('invalid_file_body', ext=" / ".join(self._extensions)),
             )
             return
         if os.path.normcase(os.path.dirname(os.path.abspath(path))) == \
@@ -3053,6 +4056,10 @@ class StepPanel(QWidget):
         self.app       = app
         self._worker   = None
         self._stopping = False
+        # True from Run until set_done_ui. QThread.isRunning() isn't enough:
+        # the worker emits finished_signal from inside run(), so when the
+        # slot executes the thread may still report itself as running.
+        self._active   = False
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(22, 18, 22, 16)
@@ -3062,17 +4069,14 @@ class StepPanel(QWidget):
         title_row = QHBoxLayout()
         title_row.setSpacing(10)
         title = QLabel(label)
-        title.setStyleSheet(f"color: {P['accent']}; font-size: {_fs(14)}; font-weight: bold;")
+        _styled(title, "stepTitle")
         title_row.addWidget(title)
 
         level, level_key = STEP_LEVEL.get(label, ("", "opt"))
         if level:
             badge = QLabel(level)
-            badge.setStyleSheet(
-                f"color: {P['bg']}; background-color: {P[level_key]};"
-                f" font-size: {_fs(9)}; font-weight: bold;"
-                " border-radius: 4px; padding: 2px 9px;"
-            )
+            badge.setProperty("level", level_key)
+            _styled(badge, "badge")
             badge.setToolTip({
                 t('badge_required'):    t('badge_tip_required'),
                 t('badge_recommended'): t('badge_tip_recommended'),
@@ -3086,38 +4090,31 @@ class StepPanel(QWidget):
         tech = STEP_TECH.get(label, "")
         if tech:
             tech_lbl = QLabel(tech)
-            tech_lbl.setStyleSheet(
-                f"color: {P['done']}; font-size: {_fs(10)};"
-                " font-family: 'Courier New', monospace;"
-            )
+            _styled(tech_lbl, "techLabel")
             lay.addWidget(tech_lbl)
 
-        _cut = desc.find("\nEntrada:")
-        desc_body  = desc[:_cut].strip()  if _cut >= 0 else desc.strip()
-        desc_paths = desc[_cut + 1:].strip() if _cut >= 0 else ""
+        # The input/output paths are always the description's last line. It
+        # used to be located by searching for "\nEntrada:", which never
+        # matched the English text ("Input:"), so in English the paths were
+        # shown run into the description instead of in their own block.
+        desc_body, _nl, desc_paths = desc.strip().rpartition("\n")
+        if not _nl:
+            desc_body, desc_paths = desc_paths, ""
+        desc_body, desc_paths = desc_body.strip(), desc_paths.strip()
 
         desc_lbl = QLabel(desc_body)
-        desc_lbl.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(11)};")
+        _styled(desc_lbl, "secondary")
         desc_lbl.setWordWrap(True)
         lay.addWidget(desc_lbl)
 
         if desc_paths:
-            io_sep = QFrame()
-            io_sep.setFrameShape(QFrame.Shape.HLine)
-            io_sep.setStyleSheet(f"background: {P['surface']}; border: none; max-height: 1px;")
-            lay.addWidget(io_sep)
+            lay.addWidget(_hsep_line())
             paths_lbl = QLabel(desc_paths)
-            paths_lbl.setStyleSheet(
-                f"color: {P['done']}; font-size: {_fs(11)};"
-                " font-family: 'Courier New', monospace;"
-            )
+            _styled(paths_lbl, "pathsLabel")
             paths_lbl.setWordWrap(True)
             lay.addWidget(paths_lbl)
 
-        sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet(f"background: {P['surface']}; border: none; max-height: 1px;")
-        lay.addWidget(sep)
+        lay.addWidget(_hsep_line())
         lay.addSpacing(4)
 
         self._label = label
@@ -3136,10 +4133,29 @@ class StepPanel(QWidget):
             self._drop_card.file_changed.connect(lambda *_: self.app._refresh_all_panels_input())
             lay.addWidget(self._drop_card)
 
+            # Remembered in app/ui_state.ini. self.cfg is the same dict the
+            # Home pipelines pass to this step, so they honour it too.
+            settings = getattr(app, "_settings", None)
+            keep = False
+            if settings is not None:
+                keep = str(settings.value("step1/keep_targz", "false")).lower() == "true"
+            self.cfg["keep_targz"] = keep
+            keep_cb = QCheckBox(t('keep_targz_label'))
+            keep_cb.setChecked(keep)
+            keep_cb.setToolTip(t('keep_targz_tip'))
+
+            def _on_keep(on):
+                self.cfg["keep_targz"] = bool(on)
+                if settings is not None:
+                    settings.setValue("step1/keep_targz", "true" if on else "false")
+                    settings.sync()
+            keep_cb.toggled.connect(_on_keep)
+            lay.addWidget(keep_cb)
+
         input_row = QHBoxLayout()
         input_row.setSpacing(10)
         self._input_lbl = QLabel()
-        self._input_lbl.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(11)};")
+        _styled(self._input_lbl, "secondary")
         self._input_lbl.setWordWrap(True)
         input_row.addWidget(self._input_lbl, stretch=1)
         self._input_btn = QPushButton(t('btn_open_input_folder'))
@@ -3167,7 +4183,7 @@ class StepPanel(QWidget):
         self.stop_btn.clicked.connect(self._stop)
         ctrl.addWidget(self.stop_btn)
         self.status_lbl = QLabel("")
-        self.status_lbl.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(9)};")
+        _styled(self.status_lbl, "caption")
         ctrl.addWidget(self.status_lbl)
         ctrl.addStretch()
         lay.addLayout(ctrl)
@@ -3182,7 +4198,7 @@ class StepPanel(QWidget):
         # Note below the bar: without it, an indeterminate bar running for
         # hours (Step 4) looks like a hang.
         self._prog_note = QLabel("")
-        self._prog_note.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(9)};")
+        _styled(self._prog_note, "caption")
         self._prog_note.setWordWrap(True)
         self._prog_note.hide()
         lay.addWidget(self._prog_note)
@@ -3195,6 +4211,7 @@ class StepPanel(QWidget):
             STEPS[1][0]: _proj_dir("data", "processed"),
             STEPS[2][0]: _proj_dir("app"),
             STEPS[3][0]: _proj_dir("app"),
+            STEPS[4][0]: _proj_dir("data", "processed"),
         }
         _open_folder(folders.get(self._label, _proj_dir("data")))
 
@@ -3214,7 +4231,7 @@ class StepPanel(QWidget):
         row.setContentsMargins(0, 4, 0, 0)
         row.setSpacing(8)
         lbl = QLabel(t('records_per_batch_label'))
-        lbl.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
+        _styled(lbl, "body")
         row.addWidget(lbl)
         entry = QLineEdit(str(CHUNKSIZE))
         entry.setFixedWidth(_px(80))
@@ -3226,7 +4243,7 @@ class StepPanel(QWidget):
         )
         row.addWidget(entry)
         hint = QLabel(t('default_chunk_hint', n=CHUNKSIZE))
-        hint.setStyleSheet(f"color: {P['done']}; font-size: {_fs(10)};")
+        _styled(hint, "hint")
         row.addWidget(hint)
         row.addStretch()
         adv.hide()
@@ -3239,7 +4256,7 @@ class StepPanel(QWidget):
         toggle.clicked.connect(_toggle_adv)
 
     def is_running(self):
-        return self._worker is not None and self._worker.isRunning()
+        return self._active
 
     # What's missing and where, instead of a generic "Input not found".
     _MISSING_MSG = {
@@ -3247,7 +4264,23 @@ class StepPanel(QWidget):
         STEPS[1][0]: t('missing_prepared_data'),
         STEPS[2][0]: t('missing_database'),
         STEPS[3][0]: t('missing_database'),
+        STEPS[4][0]: t('missing_update_input'),
     }
+
+    def _missing_msg(self):
+        """What's missing for this step. For the update it depends on why it
+        can't run: no database yet, a database without fingerprints, or no
+        prepared data for the new package."""
+        if self.fn is run_update:
+            try:
+                st = _get_project_status()
+            except Exception:
+                st = {}
+            if not st.get("step2"):
+                return t('missing_update_no_db')
+            if not st.get("updatable"):
+                return t('missing_update_old_db')
+        return self._MISSING_MSG.get(self._label, t('input_not_found_generic'))
 
     def _is_done(self):
         """Has this step already produced its output? Shown differently from 'missing input'."""
@@ -3260,6 +4293,7 @@ class StepPanel(QWidget):
             STEPS[1][0]: st["step2"],
             STEPS[2][0]: st["step3"],
             STEPS[3][0]: st["step4"],
+            STEPS[4][0]: False,      # an update is never "done": each package brings new data
         }.get(self._label, False)
 
     def _refresh_input_status(self):
@@ -3268,16 +4302,15 @@ class StepPanel(QWidget):
         ok = _check_input(self._label)
         if self._is_done():
             self._input_lbl.setText(t('step_done_already'))
-            self._input_lbl.setStyleSheet(f"color: {P['ok']}; font-size: {_fs(11)};")
+            _styled(self._input_lbl, tone="ok")
             self._input_btn.hide()
         elif ok:
             self._input_lbl.setText(t('step_ready'))
-            self._input_lbl.setStyleSheet(f"color: {P['ok']}; font-size: {_fs(11)};")
+            _styled(self._input_lbl, tone="ok")
             self._input_btn.hide()
         else:
-            self._input_lbl.setText(self._MISSING_MSG.get(
-                self._label, t('input_not_found_generic')))
-            self._input_lbl.setStyleSheet(f"color: {P['yellow']}; font-size: {_fs(11)};")
+            self._input_lbl.setText(self._missing_msg())
+            _styled(self._input_lbl, tone="warn")
             self._input_btn.show()
         if not self.is_running():
             busy = self.app._is_any_running()
@@ -3290,14 +4323,20 @@ class StepPanel(QWidget):
                 self.run_btn.setToolTip(t('step_done_files_deleted_tip'))
             elif not ok:
                 self.run_btn.setToolTip(
-                    t('missing_input_files_tip', msg=self._MISSING_MSG.get(self._label, "").lstrip("● ")))
+                    t('missing_input_files_tip', msg=self._missing_msg().lstrip("● ")))
             else:
                 self.run_btn.setToolTip(t('run_only_step_tip'))
 
     def _start(self):
         if self.is_running():
             return
+        # Another step or a pipeline may be running (the button can be stale)
+        if self.app._is_any_running():
+            QMessageBox.warning(self, t('step_running_title'), t('pipeline_blocked_body'))
+            return
         self._refresh_input_status()
+        self._active = True
+        self.app.refresh_sidebar_status()   # disables the Home pipeline buttons
         self._set_running_ui()
         # The log isn't cleared: clearing it here made the initial status
         # summary disappear, and that's the only guide to where the project stands.
@@ -3312,9 +4351,9 @@ class StepPanel(QWidget):
 
     def _set_progbar_color(self, color):
         lighter = {
-            P["progbar"]: "#8ae8ff",
-            P["yellow"]:  "#e0b520",
-            P["red"]:     "#f8afc0",
+            P["progbar"]: P["progbar_light"],
+            P["yellow"]:  P["yellow_light"],
+            P["red"]:     P["red_light"],
         }.get(color, color)
         self.prog_bar.setStyleSheet(
             f"QProgressBar {{ background-color: {P['surface']}; border: none; border-radius: 5px; }}"
@@ -3341,7 +4380,7 @@ class StepPanel(QWidget):
         self.stop_btn.setEnabled(False)
         self.prog_bar.setRange(0, 100)
         self._set_progbar_color(P["yellow"])
-        self.status_lbl.setStyleSheet(f"color: {P['yellow']}; font-size: {_fs(9)};")
+        _styled(self.status_lbl, tone="warn")
         self.status_lbl.setText(t('stopping_status'))
 
     def _set_running_ui(self):
@@ -3353,13 +4392,14 @@ class StepPanel(QWidget):
         self.prog_bar.setRange(0, 100)
         self.prog_bar.setValue(0)
         self._set_progbar_color(P["progbar"])
-        self.status_lbl.setStyleSheet(f"color: {P['running']}; font-size: {_fs(9)};")
+        _styled(self.status_lbl, tone="running")
         self.status_lbl.setText(t('running_status'))
 
     def set_running_ui(self):
         self._set_running_ui()
 
     def set_done_ui(self, ok):
+        self._active = False
         _invalidate_status()          # the step just changed the on-disk state
         self.app._flush_log_file()    # the on-disk log is now up to date
         was_stopping   = self._stopping
@@ -3375,11 +4415,7 @@ class StepPanel(QWidget):
         if not self.app._seq_running:
             self.app._refresh_all_panels_input()
         if ok:
-            self.status_lbl.setStyleSheet(
-                f"color: {P['bg']}; background-color: {P['ok']};"
-                f" font-size: {_fs(10)}; font-weight: bold;"
-                " border-radius: 4px; padding: 2px 10px;"
-            )
+            _styled(self.status_lbl, tone="donePill")
             self.status_lbl.setText(t('completed_status'))
             self.prog_bar.setValue(100)
             if not self.app._seq_running:
@@ -3387,12 +4423,12 @@ class StepPanel(QWidget):
                 self.app.log_next_action()
         elif was_stopping:
             self._set_progbar_color(P["yellow"])
-            self.status_lbl.setStyleSheet(f"color: {P['yellow']}; font-size: {_fs(9)};")
+            _styled(self.status_lbl, tone="warn")
             self.status_lbl.setText(t('stopped_status'))
             self.prog_bar.setValue(0)
         else:
             self._set_progbar_color(P["red"])
-            self.status_lbl.setStyleSheet(f"color: {P['red']}; font-size: {_fs(9)};")
+            _styled(self.status_lbl, tone="error")
             self.status_lbl.setText(t('error_status'))
 
     def set_stopped_ui(self):
@@ -3402,7 +4438,7 @@ class StepPanel(QWidget):
         self.prog_bar.setRange(0, 100)
         self.prog_bar.setValue(0)
         self._set_progbar_color(P["yellow"])
-        self.status_lbl.setStyleSheet(f"color: {P['yellow']}; font-size: {_fs(9)};")
+        _styled(self.status_lbl, tone="warn")
         self.status_lbl.setText(t('stopped_status'))
 
     def _stop(self):
@@ -3444,12 +4480,12 @@ class PrepPanel(QWidget):
         lay.setSpacing(8)
 
         title = QLabel(t('home_title'))
-        title.setStyleSheet(f"color: {P['accent']}; font-size: {_fs(16)}; font-weight: bold;")
+        _styled(title, "pageTitle")
         lay.addWidget(title)
 
         intro = QLabel(t('home_intro'))
         intro.setWordWrap(True)
-        intro.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
+        _styled(intro, "body")
         lay.addWidget(intro)
 
         # The three requirements used to be spelled out one by one here. What
@@ -3459,7 +4495,7 @@ class PrepPanel(QWidget):
         req_note = QLabel(t('home_req_note'))
         req_note.setTextFormat(Qt.TextFormat.RichText)
         req_note.setWordWrap(True)
-        req_note.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(11)};")
+        _styled(req_note, "secondary")
         lay.addWidget(req_note)
 
         self._drop_card = DropFileCard(
@@ -3472,16 +4508,13 @@ class PrepPanel(QWidget):
         self._drop_card.file_changed.connect(lambda *_: self.app._refresh_all_panels_input())
         lay.addWidget(self._drop_card)
 
-        sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet(f"background: {P['surface']}; border: none; max-height: 1px;")
-        lay.addWidget(sep)
+        lay.addWidget(_hsep_line())
 
         # ---- Summary status ---------------------------------------------------
         self._status_lbl = QLabel("")
         self._status_lbl.setTextFormat(Qt.TextFormat.RichText)
         self._status_lbl.setWordWrap(True)
-        self._status_lbl.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
+        _styled(self._status_lbl, "body")
         lay.addWidget(self._status_lbl)
 
         lay.addStretch()
@@ -3502,17 +4535,12 @@ class PrepPanel(QWidget):
             hdr_row = QHBoxLayout()
             hdr_row.setSpacing(8)
             hdr = QLabel(pl["title"])
-            hdr.setStyleSheet(
-                f"color: {P['accent']}; font-size: {_fs(12)}; font-weight: bold;"
-            )
+            _styled(hdr, "optionTitle")
             hdr_row.addWidget(hdr)
             if pl["badge"]:
                 badge = QLabel(pl["badge"])
-                badge.setStyleSheet(
-                    f"color: {P['bg']}; background-color: {P['ok']};"
-                    f" font-size: {_fs(9)}; font-weight: bold;"
-                    " border-radius: 4px; padding: 2px 9px;"
-                )
+                badge.setProperty("level", "ok")
+                _styled(badge, "badge")
                 hdr_row.addWidget(badge)
             hdr_row.addStretch()
             opts.addLayout(hdr_row)
@@ -3530,8 +4558,10 @@ class PrepPanel(QWidget):
 
             hint = QLabel(pl["hint"])
             hint.setWordWrap(True)
-            hint.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(10)};")
+            _styled(hint, "small")
             opts.addWidget(hint)
+            if pl.get("needs_updatable_db"):
+                self._update_hint = hint
         lay.addLayout(opts)
 
         # Compatibility with the rest of the class (bulk enable/disable)
@@ -3539,7 +4569,7 @@ class PrepPanel(QWidget):
 
         self._main_hint = QLabel("")
         self._main_hint.setWordWrap(True)
-        self._main_hint.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(10)};")
+        _styled(self._main_hint, "small")
         lay.addWidget(self._main_hint)
 
         # ---- Secondary actions -------------------------------------------------
@@ -3590,8 +4620,8 @@ class PrepPanel(QWidget):
     def refresh(self, st=None):
         st = st or _get_project_status()
         self._drop_card.scan_existing()
-        def mark(done): return f'<span style="color:{P["ok"]}">✅</span>' if done \
-                          else f'<span style="color:{P["yellow"]}">○</span>'
+        def mark(done): return f'<span style="color:{P["ok"]}">{STATUS_DONE}</span>' if done \
+                          else f'<span style="color:{P["yellow"]}">{STATUS_TODO}</span>'
         cnt = t('records_count_suffix', n=st["record_count"]) if st["record_count"] else ""
         ver = st["version"] or t('no_data_detected')
         self._status_lbl.setText(
@@ -3624,10 +4654,33 @@ class PrepPanel(QWidget):
             if st["step2"] else t('viewer_not_ready_tip')
         )
         # Each button reflects whether its pipeline is already satisfied: redo, not create.
-        flags = [st["done1"], st["step2"], st["step3"], st["step4"]]
+        # RAM next to the database size: whether the indexes fit in memory is
+        # what decides how much faster updating is than rebuilding.
+        upd = next((pl for pl in _PIPELINES if pl.get("needs_updatable_db")), None)
+        if upd is not None and getattr(self, "_update_hint", None) is not None:
+            db_file = _proj_dir("app", "bold_db.db")
+            try:
+                db_part = (t('db_size_part', size=_fmt_size(os.path.getsize(db_file)))
+                           if st["step2"] else "")
+            except OSError:
+                db_part = ""
+            self._update_hint.setText(t('pipeline3_hint', ram=upd["ram"], db=db_part))
+        # One flag per entry of STEPS; the update (index 4) is never "done"
+        flags = [st["done1"], st["step2"], st["step3"], st["step4"], False]
+        # Disabled while any step runs, not just during a pipeline: launching
+        # Steps 1-3 while Step 4 ran on its own put two steps on the same DB.
+        busy = self.app._is_any_running()
         for btn, pl in zip(self.pipeline_btns, _PIPELINES):
             done = all(flags[i] for i in pl["steps"])
             btn.setText(("↻   " + pl["label_done"]) if done else ("▶   " + pl["label"]))
+            blocker = _pipeline_blocker(pl, st, flags)
+            btn.setEnabled(not busy and blocker is None)
+            if busy:
+                btn.setToolTip(t('other_step_running_tip'))
+            elif blocker:
+                btn.setToolTip(t(blocker))
+            else:
+                btn.setToolTip(pl["tip"])
         if ready:
             self._main_hint.setText(t('main_hint_ready'))
         else:
@@ -3750,26 +4803,23 @@ class FieldsPanel(QWidget):
         outer.setSpacing(8)
 
         title = QLabel(t('fields_panel_title'))
-        title.setStyleSheet(f"color: {P['accent']}; font-size: {_fs(16)}; font-weight: bold;")
+        _styled(title, "pageTitle")
         outer.addWidget(title)
 
         intro = QLabel(t('fields_panel_intro'))
         intro.setWordWrap(True)
-        intro.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
+        _styled(intro, "body")
         outer.addWidget(intro)
 
         warn = QLabel(t('fields_panel_warning'))
         warn.setTextFormat(Qt.TextFormat.RichText)
         warn.setWordWrap(True)
-        warn.setStyleSheet(
-            f"color: {P['text']}; font-size: {_fs(10)}; background-color: {P['sidebar']};"
-            " border-radius: 6px; padding: 8px 10px;"
-        )
+        _styled(warn, "note")
         outer.addWidget(warn)
 
         self._src_lbl = QLabel("")
         self._src_lbl.setWordWrap(True)
-        self._src_lbl.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(10)};")
+        _styled(self._src_lbl, "small")
         outer.addWidget(self._src_lbl)
 
         # ---- Header for the two checkbox columns -------------------------------
@@ -3777,12 +4827,12 @@ class FieldsPanel(QWidget):
         hdr.setContentsMargins(2, 0, _px(18), 0)
         h1 = QLabel(t('col_header_field'))
         h1.setToolTip(t('tip_include_field'))
-        h1.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(10)}; font-weight: bold;")
+        _styled(h1, "colHeader")
         hdr.addWidget(h1)
         hdr.addStretch()
         h2 = QLabel(t('col_header_index'))
         h2.setToolTip(t('tip_create_index'))
-        h2.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(10)}; font-weight: bold;")
+        _styled(h2, "colHeader")
         hdr.addWidget(h2)
         outer.addLayout(hdr)
 
@@ -3796,7 +4846,7 @@ class FieldsPanel(QWidget):
 
         self._count_lbl = QLabel("")
         self._count_lbl.setWordWrap(True)
-        self._count_lbl.setStyleSheet(f"color: {P['text']}; font-size: {_fs(11)};")
+        _styled(self._count_lbl, "body")
         outer.addWidget(self._count_lbl)
 
         # The main one takes the full width, as in PrepPanel. The two support
@@ -3871,7 +4921,7 @@ class FieldsPanel(QWidget):
             tag = QLabel("")
             if n in gone:
                 tag.setText(t('tag_not_in_tsv'))
-                tag.setStyleSheet(f"color: {P['red']}; font-size: {_fs(9)};")
+                _styled(tag, "caption", tone="error")
                 hint = rep["hints"].get(name)
                 tag.setToolTip(
                     t('tip_field_missing')
@@ -3879,7 +4929,7 @@ class FieldsPanel(QWidget):
                 )
             elif n in added:
                 tag.setText(t('tag_new_in_bold'))
-                tag.setStyleSheet(f"color: {P['rec']}; font-size: {_fs(9)};")
+                _styled(tag, "caption", tone="rec")
                 tag.setToolTip(t('tip_new_field'))
 
             inc.toggled.connect(
@@ -4179,6 +5229,10 @@ class App(QMainWindow):
         if self._settings:
             self._settings.setValue("language", lang)
             self._settings.sync()
+        # Restarting would kill the step in progress just like terminate() did
+        if self._is_any_running() or self._threads_alive():
+            QMessageBox.information(self, t('restart_required_title'), t('restart_blocked_body'))
+            return
         box = QMessageBox(self)
         box.setWindowTitle(t('restart_required_title'))
         box.setText(t('restart_required_body'))
@@ -4190,14 +5244,14 @@ class App(QMainWindow):
             self._restart_app()
 
     def _restart_app(self):
-        self._save_geometry()
-        if self._log_file:
-            try:
-                self._log_file.close()
-            except Exception:
-                pass
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+        # close() goes through closeEvent (unsaved fields, geometry, log) and
+        # returns False if the user decides to stay. A new process is started
+        # instead of os.execl: on Windows, execl doesn't quote its arguments,
+        # so a Python or project path with spaces broke the restart.
+        if not self.close():
+            return
+        script = os.path.abspath(__file__)
+        subprocess.Popen([sys.executable, script] + sys.argv[1:], cwd=SCRIPT_DIR)
 
     def _build(self):
         central = QWidget()
@@ -4218,7 +5272,7 @@ class App(QMainWindow):
         logo = QLabel("BOLD DB\nCreator")
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo.setStyleSheet(
-            f"color: {P['white']}; font-size: {_fs(16)}; font-weight: bold; padding: 20px 0 4px 0;"
+            f"color: {P['accent']}; font-size: {_fs(16)}; font-weight: bold; padding: 20px 0 4px 0;"
         )
         sb.addWidget(logo)
         sb.addWidget(self._hsep())
@@ -4242,7 +5296,7 @@ class App(QMainWindow):
             sb.addWidget(self._hsep())
             grp_lbl = QLabel(grp_name)
             grp_lbl.setStyleSheet(
-                f"color: {P['white']}; font-size: {_fs(10)}; font-weight: bold;"
+                f"color: {P['accent']}; font-size: {_fs(10)}; font-weight: bold;"
                 " padding: 8px 16px 2px 16px;"
             )
             sb.addWidget(grp_lbl)
@@ -4272,7 +5326,7 @@ class App(QMainWindow):
         sb.addWidget(self._hsep())
         cfg_lbl = QLabel(t('config_section_label'))
         cfg_lbl.setStyleSheet(
-            f"color: {P['white']}; font-size: {_fs(10)}; font-weight: bold;"
+            f"color: {P['accent']}; font-size: {_fs(10)}; font-weight: bold;"
             " padding: 8px 16px 8px 16px;"
         )
         sb.addWidget(cfg_lbl)
@@ -4295,18 +5349,15 @@ class App(QMainWindow):
         lang_row.setContentsMargins(12, 6, 12, 6)
         lang_row.setSpacing(6)
         lang_lbl = QLabel(t('language_label'))
-        lang_lbl.setStyleSheet(f"color: {P['sub']}; font-size: {_fs(9)};")
+        _styled(lang_lbl, "caption")
         lang_row.addWidget(lang_lbl)
         lang_row.addStretch()
         for code in ('es', 'en'):
             lbtn = QPushButton(code.upper())
             lbtn.setFixedWidth(_px(34))
             active = code == LANG
-            lbtn.setStyleSheet(
-                f"font-size: {_fs(10)}; font-weight: bold; border-radius: 4px; padding: 3px 0;"
-                + (f"background-color: {P['accent']}; color: {P['bg']};" if active
-                   else f"background-color: {P['sidebar']}; color: {P['sub']};")
-            )
+            lbtn.setObjectName("langBtn")
+            lbtn.setProperty("active", "true" if active else "false")
             lbtn.clicked.connect(lambda checked=False, c=code: self._change_language(c))
             lang_row.addWidget(lbtn)
         sb.addLayout(lang_row)
@@ -4357,7 +5408,7 @@ class App(QMainWindow):
         self._timer_lbl = QLabel("")
         self._timer_lbl.setStyleSheet(
             f"color: {P['running']}; font-size: {_fs(11)};"
-            " font-family: 'Courier New', 'Consolas', monospace;"
+            f" font-family: '{_mono()}';"
         )
         self._timer_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._timer_lbl.setMinimumWidth(_px(90))
@@ -4407,10 +5458,7 @@ class App(QMainWindow):
 
     @staticmethod
     def _hsep():
-        f = QFrame()
-        f.setFrameShape(QFrame.Shape.HLine)
-        f.setStyleSheet(f"background: {P['surface']}; border: none; max-height: 1px;")
-        return f
+        return _hsep_line()
 
     def _show(self, idx):
         if (self._current == FIELDS_IDX and idx != FIELDS_IDX
@@ -4447,7 +5495,10 @@ class App(QMainWindow):
         flags = [st["done1"], st["step2"], st["step3"], st["step4"]]
         for i, done in enumerate(flags):
             if self._btns[i]:
-                self._btns[i].setText("{}  {}".format("✅" if done else "○", STEPS[i][0]))
+                # Two glyphs from the same text font: "✅" rendered as a colour
+                # emoji next to a plain "○", at a different size and weight.
+                self._btns[i].setText("{}  {}".format(STATUS_DONE if done else STATUS_TODO,
+                                                      STEPS[i][0]))
         if getattr(self, "_prep", None):
             self._prep.refresh(st)
         # Only if it's visible: rebuilding its checkboxes while the user is
@@ -4475,10 +5526,12 @@ class App(QMainWindow):
                 cand = os.path.join(os.path.dirname(exe), "python.exe")
                 if os.path.exists(cand):
                     exe = cand
-            subprocess.Popen([exe, "server.py"], cwd=app_dir)
+            # The server opens the browser itself once it's listening, and if
+            # a viewer is already running it just opens the browser and exits
+            # (opening the browser here after a fixed 2 s raced the startup,
+            # and every click started another server on the same port).
+            subprocess.Popen([exe, "server.py", "--open-browser"], cwd=app_dir)
             self.log(t('log_viewer_started', port=VIEWER_PORT))
-            QTimer.singleShot(
-                2000, lambda: webbrowser.open("http://127.0.0.1:{}".format(VIEWER_PORT)))
         except Exception as e:
             self.log(_fmt_error(e, t('ctx_open_viewer')))
 
@@ -4506,7 +5559,9 @@ class App(QMainWindow):
             return
 
         total = sum(s for _, s in inter)
-        listado = "\n".join(t('file_list_item', name=os.path.basename(p), size=_fmt_size(s))
+        # Relative to data/: the list mixes data/processed/ and data/raw/
+        listado = "\n".join(t('file_list_item', name=os.path.relpath(p, _proj_dir("data")),
+                                                size=_fmt_size(s))
                             for p, s in inter)
         box = QMessageBox(self)
         box.setIcon(QMessageBox.Icon.Warning)
@@ -4573,21 +5628,13 @@ class App(QMainWindow):
         for btn in getattr(self._prep, "pipeline_btns", []):
             btn.setEnabled(enabled)
 
-    def _set_run_buttons_state(self, enabled):
-        for p in self._panels:
-            p.run_btn.setEnabled(enabled)
-        # Saving fields while a step is running would leave Step 1 filtering
-        # with one selection while writing the marker for another.
-        if getattr(self, "_fields", None):
-            self._fields._save_btn.setEnabled(enabled)
-
     def stop_current(self, panel):
         if self._seq_running and self._seq_worker and self._seq_worker.isRunning():
             self._seq_worker.request_stop()
             i = self._seq_step_indices[self._seq_step_pos]
             self._panels[i].set_stopping_ui()
             self.log(t('log_stopping_pipeline'))
-        elif panel._worker and panel._worker.isRunning():
+        elif panel is not None and panel._worker and panel._worker.isRunning():
             panel._worker.request_stop()
             panel.set_stopping_ui()
             self.log(t('log_stopping_step'))
@@ -4596,8 +5643,10 @@ class App(QMainWindow):
         if self._seq_running:
             QMessageBox.warning(self, t('pipeline_running_title'), t('pipeline_running_body'))
             return
-        if any(self._panels[i].is_running() for i in step_indices):
-            QMessageBox.warning(self, t('step_running_title'), t('step_running_body'))
+        # Any step, not only those in this sequence: two steps at once on the
+        # same database collide (Step 2 drops the table Step 4 is indexing).
+        if self._is_any_running():
+            QMessageBox.warning(self, t('step_running_title'), t('pipeline_blocked_body'))
             return
         pasos = "\n".join(
             t('sequence_step_item', label=STEPS[i][0])
@@ -4632,6 +5681,16 @@ class App(QMainWindow):
             return
         i     = self._seq_step_indices[self._seq_step_pos]
         panel = self._panels[i]
+        # A step already done whose input was deleted ("Free disk space"
+        # removes the .tar.gz and .filt.tsv) is skipped: running it failed
+        # ("no .tar.gz found") and stopped the whole sequence, so Option 2
+        # couldn't add full-text search to a database built with Option 1.
+        _invalidate_status()
+        if panel._is_done() and not _check_input(STEPS[i][0]):
+            self.log(t('log_step_skipped_done', label=STEPS[i][0]))
+            self._seq_step_pos += 1
+            self._run_next_seq_step()
+            return
         self._show(i)
         self._task_start_pos = self._log.document().characterCount() - 1
         self.log("\n[{}/{}] {}".format(
@@ -4654,6 +5713,16 @@ class App(QMainWindow):
         i     = self._seq_step_indices[self._seq_step_pos]
         panel = self._panels[i]
         panel.set_done_ui(ok)
+        # Stop pressed just as the step was finishing successfully: the
+        # sequence must not go on to the next step.
+        stop_requested = self._seq_worker is not None and self._seq_worker._stop_evt.is_set()
+        if ok and stop_requested:
+            self._seq_running = False
+            self._set_shortcuts_state(True)
+            self.stop_timer()
+            self._refresh_all_panels_input()
+            self.refresh_sidebar_status()
+            return
         if not ok:
             self.log(t('log_step_failed', time=time_str))
             self._seq_running = False
@@ -4685,11 +5754,30 @@ class App(QMainWindow):
     def log(self, message):
         live = message.startswith("\r")
         msg  = message[1:].rstrip("\n") if live else message.rstrip("\n")
+        if not live:
+            # Leading newlines (step headers use them to leave a gap) and empty
+            # messages are spacers: written without a timestamp. Before, the
+            # timestamp went in front of the newline, so it sat alone on the
+            # blank line and the header below was left without one.
+            lead = len(msg) - len(msg.lstrip("\n"))
+            msg  = msg.lstrip("\n")
+            if not msg.strip():
+                lead = max(lead, 1)
+            for _ in range(lead):
+                self._log.append("")
+                if self._log_file:
+                    try: self._log_file.write("\n")
+                    except Exception: pass
+            self._last_was_live = False
+            if not msg.strip():
+                return
         # Request text (monochrome) presentation for emoji
         msg  = re.sub(r'([\U0001F000-\U0001FAFF☀-➿])️?', r'\1︎', msg)
         stripped = msg.lstrip()
         bold = False
-        if stripped.startswith("❌") or "ERROR" in msg.upper():
+        # By prefix only: matching "error" anywhere painted red warnings that
+        # merely mention the word ("check the error message above").
+        if stripped.startswith("❌"):
             color = P["red"]
             bold  = True
         elif stripped.startswith("⚠"):
@@ -4703,7 +5791,7 @@ class App(QMainWindow):
             color = P["progbar"]
             if "===" in msg or re.match(r"^\s*\[\d+/\d+\]", msg):
                 bold = True
-        elif stripped.startswith(("📋", "📁", "💽", "📝", "📊", "📂", "🚀", "📄", "📜", "🔎", "📘", "📌")):
+        elif stripped.startswith(("📋", "📁", "💽", "💾", "📝", "📊", "📂", "🚀", "📄", "📜", "🔎", "📘", "📌")):
             color = P["blue_mid"]
         elif msg.startswith("  "):
             color = P["sub"]
@@ -4714,16 +5802,15 @@ class App(QMainWindow):
                      .replace("\n", "<br>"))
         weight = "bold" if bold else "normal"
         body   = (
-            f'<span style="color:{color}; font-family:\'Courier New\',monospace;'
+            f'<span style="color:{color}; font-family:\'{_mono()}\',monospace;'
             f' font-weight:{weight};">{safe}</span>'
         )
-        if live:
-            html = body
-        else:
-            html = (
-                f'<span style="color:{P["done"]}; font-family:\'Courier New\',monospace;">'
-                f'[{ts}]</span> {body}'
-            )
+        # Live (overwritten) progress lines carry a timestamp too: the time of
+        # their latest update.
+        html = (
+            f'<span style="color:{P["muted"]}; font-family:\'{_mono()}\',monospace;">'
+            f'[{ts}]</span> {body}'
+        )
         if live and self._last_was_live:
             cur = self._log.textCursor()
             cur.movePosition(QTextCursor.MoveOperation.End)
@@ -4771,7 +5858,7 @@ class App(QMainWindow):
         dim_end = max(self._task_start_pos, cur_last.position() - 1)
         if dim_end > self._task_start_pos:
             fmt = QTextCharFormat()
-            fmt.setForeground(QColor(P["done"]))
+            fmt.setForeground(QColor(P["dimmed"]))
             cur = QTextCursor(doc)
             cur.setPosition(self._task_start_pos)
             cur.setPosition(dim_end, QTextCursor.MoveMode.KeepAnchor)
@@ -4788,7 +5875,10 @@ class App(QMainWindow):
             if not panel.is_running():
                 panel._refresh_input_status()
         if getattr(self, "_prep", None):
-            self._prep._drop_card.scan_existing()
+            # Full refresh, not just the drop card: the Home buttons depend on
+            # whether a package has just been dropped or copied in.
+            _invalidate_status()
+            self._prep.refresh()
 
     def _is_any_running(self):
         if self._seq_running:
@@ -4887,8 +5977,36 @@ class App(QMainWindow):
         if getattr(self, "_prep", None):
             self._prep.refresh(st)
 
+    def _drop_cards(self):
+        cards = [self._prep._drop_card] if getattr(self, "_prep", None) else []
+        cards += [p._drop_card for p in self._panels if p._drop_card is not None]
+        return cards
+
+    def _threads_alive(self):
+        """Is any worker thread still alive? Stricter than _is_any_running():
+        the window must not be destroyed while a QThread is still unwinding."""
+        workers = [self._seq_worker] + [p._worker for p in self._panels]
+        if any(w is not None and w.isRunning() for w in workers):
+            return True
+        return any(c.is_copying() for c in self._drop_cards())
+
+    def _close_when_idle(self):
+        if self._is_any_running() or self._threads_alive():
+            QTimer.singleShot(200, self._close_when_idle)
+            return
+        self.close()
+
     def closeEvent(self, event):
-        if self._is_any_running():
+        # Unsaved fields are asked about first: asking after stopping the
+        # process could cancel the close with the work already lost.
+        if getattr(self, "_fields", None) and not self._fields.confirm_leave():
+            event.ignore()
+            return
+        if self._is_any_running() or self._threads_alive():
+            if getattr(self, "_closing", False):
+                QMessageBox.information(self, t('closing_wait_title'), t('closing_wait_body'))
+                event.ignore()
+                return
             resp = QMessageBox.question(
                 self, t('process_running_close_title'),
                 t('process_running_close_body'),
@@ -4898,15 +6016,23 @@ class App(QMainWindow):
             if resp != QMessageBox.StandardButton.Yes:
                 event.ignore()
                 return
-            if self._seq_running and self._seq_worker and self._seq_worker.isRunning():
-                self._seq_worker.terminate()
-                self._seq_worker.wait(3000)
-            for p in self._panels:
-                if p.is_running() and p._worker:
-                    p._worker.terminate()
-                    p._worker.wait(3000)
-        if getattr(self, "_fields", None) and not self._fields.confirm_leave():
+            # Stop cooperatively and close once everything has wound down.
+            # QThread.terminate() killed the thread wherever it was: with
+            # Step 2 writing under journal_mode=OFF, that corrupted the DB,
+            # and none of the steps' cleanup (finally blocks) ever ran.
+            self._closing = True
+            if self._seq_running:
+                self.stop_current(None)
+            else:
+                for p in self._panels:
+                    if p.is_running():
+                        self.stop_current(p)
+            for card in self._drop_cards():
+                card.cancel_copy()
+            self.log(t('log_closing_after_stop'))
+            self._flush_log_file()
             event.ignore()
+            QTimer.singleShot(200, self._close_when_idle)
             return
         # The timer may have a save pending if the app is closed right after
         # moving or resizing the window.
@@ -4924,6 +6050,7 @@ class App(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     _FONT_SCALE[0] = _compute_dpi_scale(app)
+    _resolve_mono_font()
     app.setStyleSheet(_make_app_qss())
     window = App()
     window.show()

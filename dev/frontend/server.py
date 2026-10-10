@@ -60,7 +60,7 @@ for package in required_packages:
     install_package(package)
 
 
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, Response
 from functools import lru_cache
 import sqlite3
 import os
@@ -1981,8 +1981,18 @@ def list_static_files():
 # own id, re-registers periodically and says goodbye on `pagehide`; the
 # server only exits after SHUTDOWN_GRACE_SECS with no tab registered, which
 # comfortably covers a reload.
+#
+# On top of that, one tab per browser keeps a Server-Sent Events connection
+# open (/api/client/stream): as soon as it drops, the server knows, even if
+# the browser closed without saying goodbye. Closing the whole browser window
+# often lost the goodbye, and the console stayed open ~3 min
+# (CLIENT_STALE_SECS). Once the first stream connects, the server's lifetime
+# depends on the streams alone; heartbeats remain for browsers without them.
 
 SHUTDOWN_GRACE_SECS = 10
+# How often the server writes on the open connection: writing is what finds
+# out that the other end is gone.
+STREAM_PING_SECS = 2
 # Chrome throttles timers in hidden tabs to about once a minute, so a tab
 # that goes quiet for less than this is still considered open. It only
 # matters when the goodbye never arrives (browser crash, killed process).
@@ -1992,6 +2002,8 @@ _clients       = {}      # client id -> time.monotonic() of its last message
 _clients_lock  = threading.Lock()
 _had_client    = False   # nothing shuts down before the first tab connects
 _empty_since   = None
+_streams       = {}      # client id -> number of open streams
+_stream_mode   = False   # a stream has connected: lifetime follows _streams
 _CLIENT_ID_RE  = re.compile(r'^[A-Za-z0-9-]{8,64}$')
 
 
@@ -2021,6 +2033,42 @@ def client_presence(kind, client_id):
     return '', 204
 
 
+@app.route('/api/client/stream/<client_id>')
+def client_stream(client_id):
+    """Connection kept open while the tab lives (see "Server lifetime")."""
+    if not _CLIENT_ID_RE.match(client_id):
+        return '', 400
+    if not _is_local_origin():
+        return '', 403
+
+    def _events():
+        global _had_client, _empty_since, _stream_mode
+        with _clients_lock:
+            _streams[client_id] = _streams.get(client_id, 0) + 1
+            _had_client  = True
+            _stream_mode = True
+            _empty_since = None
+        try:
+            # retry: if the connection drops while the tab stays open, the
+            # browser reconnects after 2 s, well within the shutdown grace.
+            yield "retry: 2000\n\n"
+            while True:
+                time.sleep(STREAM_PING_SECS)
+                yield ": ping\n\n"
+        finally:
+            # Werkzeug closes the generator once the write fails because the
+            # browser is gone.
+            with _clients_lock:
+                n = _streams.get(client_id, 0) - 1
+                if n > 0:
+                    _streams[client_id] = n
+                else:
+                    _streams.pop(client_id, None)
+
+    return Response(_events(), mimetype='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+
 def _lifetime_watchdog():
     global _empty_since
     while True:
@@ -2030,7 +2078,8 @@ def _lifetime_watchdog():
             for cid, seen in list(_clients.items()):
                 if now - seen > CLIENT_STALE_SECS:
                     _clients.pop(cid, None)
-            if _clients or not _had_client:
+            alive = bool(_streams) if _stream_mode else bool(_clients)
+            if alive or not _had_client:
                 _empty_since = None
                 continue
             if _empty_since is None:

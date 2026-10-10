@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [Unreleased]
+
+### Fixed
+- Viewer: after closing the browser window, the server console could stay
+  open for about 3 minutes (the browser often lost the goodbye message). One
+  tab now keeps a connection open to the server and, as soon as it drops, the
+  server stops and its console closes within about 15 s, even if the browser
+  was closed abruptly.
+
 ## [1.2.0]
 
 ### Upgrade notes

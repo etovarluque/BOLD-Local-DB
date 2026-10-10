@@ -7,7 +7,37 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 
 ## [Unreleased]
 
+### Changed
+- Batch search with two fields: `summary.csv` also lists, at the end and at
+  0, the term × Field 2 value combinations with no records, as the
+  single-field mode does with terms. Above a million they're left out (Excel
+  couldn't open the file) and the final message says so.
+- Batch search with two fields: a root `not_found.txt` lists the terms with
+  no records under any Field 2 value, as in the single-field mode, and Field 2
+  values with no records no longer get a folder (they still show up with 0 in
+  `summary_by_field2.csv`).
+- Batch search with two fields is faster when Field 1 finds few records or
+  Field 2 isn't indexed: the filter starts from the Field 1 results instead
+  of scanning the whole table.
+- Batch search: a three-word taxon (`Panthera leo persica`) is searched in
+  Subspecies when the database has that field indexed.
+- Batch search messages no longer say "1 terms" or "1 records found"; with a
+  single term or value and no results, they name it.
+
 ### Fixed
+- Two batch searches started in the same second wrote to the same ZIP, and
+  if one failed or was cancelled it deleted the other's.
+- Batch search: different terms that map to the same file name (`A.B` and
+  `AB`, or long names sharing a prefix) overwrote each other when the ZIP was
+  extracted. The second one now gets a `_2`, `_3`... suffix.
+- Batch search: a Field 2 file with only blank lines emptied the result.
+  It's now rejected with a message, as a blank Field 1 is.
+- Batch search: when the Field 2 filter discarded every record, the message
+  said none of the Field 1 terms had been found.
+- Batch search: a term with accented letters didn't find the same value
+  written with different capitalization (`Mérida` didn't find `MÉRIDA`).
+- Batch search: with the FASTA option, a term whose sequences were all
+  shorter than 50 bp left an empty `.fasta` in the ZIP.
 - Viewer: after closing the browser window, the server console could stay
   open for about 3 minutes (the browser often lost the goodbye message). One
   tab now keeps a connection open to the server and, as soon as it drops, the

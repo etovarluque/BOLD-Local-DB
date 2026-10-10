@@ -438,6 +438,11 @@ METRIC_MAX_DISTINCT = 50000
 # avoided.
 METRIC_OVERFLOW_LIST = 1000
 
+# With two fields, summary.csv also lists the term × value combinations with
+# no records, at 0. Above this many they're left out: Excel can't open more
+# than 1,048,576 rows, and the information is still in the not_found.txt files.
+SUMMARY_ZERO_ROWS_MAX = 1_000_000
+
 # Name of the FTS table
 FTS_TABLE_NAME = 'bold_records_fts'  # Adjust to match your actual FTS table name
 
@@ -750,6 +755,15 @@ STRINGS = {
         'file_not_found_system': 'Archivo no encontrado en el sistema',
         'invalid_search_conditions_alt': 'Condiciones de búsqueda no válidas',
         'searching_terms': 'Buscando {count} términos...',
+        'searching_terms_one': 'Buscando {count} término...',
+        'no_records_for_term': 'No se encontraron registros para «{term}». No se generó ningún archivo.',
+        'no_records_after_filter': 'El campo 1 tiene registros, pero no coinciden con {target}. No se generó ningún archivo.',
+        'filter_target_one': 'el valor de {field} «{value}»',
+        'filter_target_many': 'ninguno de los {count} valores de {field}',
+        'records_found_packing_one': '{count} registro encontrado. Empaquetando...',
+        'records_found_one': '{count} registro encontrado.',
+        'summary_zeros_omitted': ' summary.csv no incluye las {count} combinaciones sin registros (demasiadas para Excel): se deducen de los not_found.txt y de summary_by_field2.csv.',
+        'field2_no_values': 'El archivo del campo 2 no tiene ningún valor',
         'filtering_by': 'Filtrando por {field}...',
         'no_records_for_terms': 'No se encontraron registros para ninguno de los {count} términos. No se generó ningún archivo.',
         'records_found_packing': '{count} registros encontrados. Empaquetando...',
@@ -800,6 +814,15 @@ STRINGS = {
         'file_not_found_system': 'File not found on the system',
         'invalid_search_conditions_alt': 'Invalid search conditions',
         'searching_terms': 'Searching {count} terms...',
+        'searching_terms_one': 'Searching {count} term...',
+        'no_records_for_term': 'No records found for "{term}". No file was generated.',
+        'no_records_after_filter': 'Field 1 has records, but none of them match {target}. No file was generated.',
+        'filter_target_one': 'the {field} value "{value}"',
+        'filter_target_many': 'any of the {count} {field} values',
+        'records_found_packing_one': '{count} record found. Packaging...',
+        'records_found_one': '{count} record found.',
+        'summary_zeros_omitted': ' summary.csv leaves out the {count} combinations with no records (too many for Excel): they can be derived from the not_found.txt files and summary_by_field2.csv.',
+        'field2_no_values': 'The Field 2 file has no values',
         'filtering_by': 'Filtering by {field}...',
         'no_records_for_terms': 'No records found for any of the {count} terms. No file was generated.',
         'records_found_packing': '{count} records found. Packaging...',
@@ -837,6 +860,14 @@ def get_lang():
 def t(key, **kwargs):
     template = STRINGS[get_lang()].get(key) or STRINGS['en'].get(key, key)
     return template.format(**kwargs) if kwargs else template
+
+def tn(key, n, **kwargs):
+    """t() for a message that depends on a count: uses `<key>_one` when n == 1
+    ("1 term", not "1 terms") and passes n, formatted, as `count`."""
+    one = f'{key}_one'
+    if n == 1 and (one in STRINGS[get_lang()] or one in STRINGS['en']):
+        key = one
+    return t(key, count=f'{n:,}', **kwargs)
 
 def start_background(target, *args, **kwargs):
     """Starts a daemon thread carrying over the current request's language.
@@ -2124,6 +2155,17 @@ def _strip_accents(text):
     )
 
 
+_ASCII_LOWER = {c: c + 32 for c in range(ord('A'), ord('Z') + 1)}
+
+def _nocase_key(text):
+    """Key equivalent to SQLite's COLLATE NOCASE, which only folds A-Z.
+
+    'Mérida' and 'MÉRIDA' are different under NOCASE (É isn't folded), so
+    they must be different here too when deduplicating variants.
+    """
+    return text.translate(_ASCII_LOWER)
+
+
 def _batch_terms(raw_values, is_taxonomy):
     """Normalizes the list of terms for a batch field.
 
@@ -2141,7 +2183,9 @@ def _batch_terms(raw_values, is_taxonomy):
       duplicated (the queries use DISTINCT rid).
 
     Case-insensitivity is provided by the COLLATE NOCASE on the temporary
-    table and on the bold_records columns.
+    table and on the bold_records columns. NOCASE only folds ASCII, so terms
+    with non-ASCII letters also get their lowercase and uppercase forms
+    ('Mérida' finds 'MÉRIDA' and 'mérida').
     """
     canonical_by_key = {}
     seen_variants    = set()
@@ -2157,8 +2201,11 @@ def _batch_terms(raw_values, is_taxonomy):
         canonical_by_key.setdefault(key, canonical)
         # Variants accumulate per term: a list containing both 'Merida' and
         # 'Mérida' should search both forms, not just the first one seen.
-        for variant in (canonical, cleaned):
-            vkey = (key, variant.lower())
+        forms = [canonical, cleaned]
+        if not cleaned.isascii():
+            forms += [cleaned.lower(), cleaned.upper()]
+        for variant in forms:
+            vkey = (key, _nocase_key(variant))
             if vkey in seen_variants:
                 continue
             seen_variants.add(vkey)
@@ -2167,6 +2214,43 @@ def _batch_terms(raw_values, is_taxonomy):
 
 def _safe_name(s, max_len=80):
     return re.sub(r'[^\w\s-]', '', str(s)).replace(' ', '_').strip('_')[:max_len] or 'unknown'
+
+
+def _unique_name(s, used):
+    """`_safe_name(s)`, with a `_2`, `_3`... suffix if it was already taken.
+
+    `_safe_name` drops punctuation and truncates, so different terms can
+    collapse into the same name ('A.B' and 'AB', two long values sharing
+    their first 80 characters, any symbol-only term -> 'unknown'). zipfile
+    only warns about duplicate entries and writes them anyway; on extraction
+    one silently overwrites the other. `used` holds the names already given
+    in the same folder, compared case-insensitively because Windows and macOS
+    filesystems are.
+    """
+    base = _safe_name(s)
+    name, n = base, 1
+    while name.lower() in used:
+        n += 1
+        name = f'{base}_{n}'
+    used.add(name.lower())
+    return name
+
+
+def _indexed_columns(conn):
+    """Columns of bold_records that lead an index (the creator's `indexed` list)."""
+    cur = conn.cursor()
+    try:
+        cur.execute(f'PRAGMA index_list("{MAIN_TABLE_NAME}")')
+        names = [row[1] for row in cur.fetchall()]
+        cols = set()
+        for name in names:
+            cur.execute(f'PRAGMA index_info("{name}")')
+            info = cur.fetchall()
+            if info and info[0][2]:
+                cols.add(info[0][2])
+        return cols
+    finally:
+        cur.close()
 
 
 _FASTA_TAXON_COLS = [
@@ -2240,13 +2324,18 @@ def _batch_check_cancel(export_id):
         raise _BatchCancelled()
 
 
-def _batch_match_sql(col1, is_taxonomy):
+def _batch_match_sql(col1, is_taxonomy, search_subspecies=False):
     """SQL that populates the temporary table `_m` with (rowid, term).
 
     For taxonomy, a UNION ALL with one branch per level is emitted instead of
     an OR inside the JOIN: the OR forces SQLite to scan bold_records entirely
     (SCAN r × SCAN v1), whereas each UNION ALL branch is resolved using the
     corresponding level's index.
+
+    `search_subspecies` adds a branch for col_subspecies, so a trinomial
+    ("Panthera leo persica") can be found: col_species only holds binomials.
+    The caller enables it only when that column exists and is indexed;
+    without an index the branch would scan the whole table.
 
     The second field's filter is applied afterward, on `_m` (see
     `_batch_apply_field2`): including it here would make the level indexes
@@ -2270,22 +2359,50 @@ def _batch_match_sql(col1, is_taxonomy):
             branch(f"instr(v1.val, ' ') = 0 AND r.\"{lvl}\" = v1.val")
             for lvl in _TAXONOMY_LEVELS
         ]
+        if search_subspecies:
+            selects.append(branch(
+                "instr(v1.val, ' ') > 0 AND r.\"col_subspecies\" = v1.val"
+            ))
 
     return 'INSERT INTO _m (rid, term)\n' + '\nUNION ALL\n'.join(selects)
 
 
-def _batch_apply_field2(cursor, col2):
+# Above this many field-1 matches, an indexed field 2 is resolved through its
+# own index instead of looking up each match by rowid (see _batch_apply_field2).
+_FIELD2_FROM_MATCHES_MAX = 200_000
+
+
+def _batch_apply_field2(cursor, col2, n_matches, col2_indexed):
     """Restricts `_m` to records that also match field 2.
 
-    Resolved using `col2`'s index (if it exists) over a temporary table of
-    rowids, without touching bold_records again.
+    Two ways to find the records that match field 2:
+
+    - From `_m`: one rowid lookup per field-1 match. Its cost depends only
+      on how many matches there are, so it's the right one when they are few,
+      or when `col2` has no index (the alternative would scan the whole table).
+    - Through `col2`'s index: covering, but it walks every record with that
+      value — millions for a common value such as a country — even if `_m`
+      holds a handful. Only worth it for an indexed `col2` and many matches.
     """
     cursor.execute('CREATE TEMP TABLE _f2 (rid INTEGER PRIMARY KEY, val TEXT)')
-    cursor.execute(
-        f'INSERT OR IGNORE INTO _f2 (rid, val) '
-        f'SELECT r.rowid, v2.term FROM bold_records r '
-        f'INNER JOIN _bv2 v2 ON r."{col2}" = v2.val'
-    )
+    if col2_indexed and n_matches > _FIELD2_FROM_MATCHES_MAX:
+        cursor.execute(
+            f'INSERT OR IGNORE INTO _f2 (rid, val) '
+            f'SELECT r.rowid, v2.term FROM bold_records r '
+            f'INNER JOIN _bv2 v2 ON r."{col2}" = v2.val'
+        )
+    else:
+        # CROSS JOIN pins the loop order (SQLite never reorders it): left to
+        # itself, the planner may start from col2's index again. The index on
+        # _bv2 (NOCASE, like the bold_records columns) turns the per-record
+        # comparison into a lookup instead of a scan of _bv2.
+        cursor.execute('CREATE INDEX _bv2_idx ON _bv2 (val)')
+        cursor.execute(
+            f'INSERT OR IGNORE INTO _f2 (rid, val) '
+            f'SELECT r.rowid, v2.term FROM (SELECT DISTINCT rid FROM _m) m '
+            f'CROSS JOIN bold_records r ON r.rowid = m.rid '
+            f'CROSS JOIN _bv2 v2 ON r."{col2}" = v2.val'
+        )
     cursor.execute('DELETE FROM _m WHERE rid NOT IN (SELECT rid FROM _f2)')
     cursor.execute('UPDATE _m SET k2 = (SELECT val FROM _f2 WHERE _f2.rid = _m.rid)')
 
@@ -2434,14 +2551,19 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
         is_taxonomy = col1 in _TAXONOMY_COLS
 
         values1, variants1 = _batch_terms(raw_vals1, is_taxonomy)
+        if not values1:
+            raise ValueError(t('field_required'))
 
-        has_field2 = len(fields_data) > 1 and fields_data[1].get('values')
         col2, values2, variants2 = None, [], []
-        if has_field2:
+        if len(fields_data) > 1 and fields_data[1].get('values'):
             col2 = fields_data[1]['technical']
             values2, variants2 = _batch_terms(
                 fields_data[1]['values'], col2 in _TAXONOMY_COLS
             )
+        # Decided after normalizing: a field 2 holding only blank lines used to
+        # count as present, filter against an empty list and discard every
+        # field-1 match, reporting "no records".
+        has_field2 = bool(values2)
 
         # Validate column names to prevent SQL injection
         if col1 not in technical_columns:
@@ -2464,12 +2586,15 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
         exact         = {}                     # results recalculated with SQL
 
         batch_exports[export_id].update({
-            'message':  t('searching_terms', count=f'{len(values1):,}'),
+            'message':  tn('searching_terms', len(values1)),
             'progress': 5,
         })
 
+        # The export_id suffix keeps two searches started in the same second
+        # (a double click, two tabs) from writing — and, on failure,
+        # deleting — the same file.
         timestamp    = datetime.now().strftime('%Y%m%d_%H%M%S')
-        zip_filename = f'batch_{timestamp}.zip'
+        zip_filename = f'batch_{timestamp}_{export_id[:8]}.zip'
         zip_path     = os.path.join(BATCH_EXPORTS_DIR, zip_filename)
 
         conn = get_batch_connection()
@@ -2485,16 +2610,24 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
             cursor.executemany('INSERT INTO _bv2 (val, term) VALUES (?, ?)', variants2)
 
         cursor.execute('CREATE TEMP TABLE _m (rid INTEGER, term TEXT, k2 TEXT COLLATE NOCASE)')
+        indexed_cols = _indexed_columns(conn)
+        search_subspecies = (
+            is_taxonomy
+            and 'col_subspecies' in indexed_cols
+            and any(v.count(' ') >= 2 for v, _ in variants1)
+        )
         _batch_check_cancel(export_id)
-        cursor.execute(_batch_match_sql(col1, is_taxonomy))
+        cursor.execute(_batch_match_sql(col1, is_taxonomy, search_subspecies))
 
         _batch_check_cancel(export_id)
+        cursor.execute('SELECT COUNT(*) FROM _m')
+        n_matches = cursor.fetchone()[0]
         if has_field2:
             batch_exports[export_id].update({
                 'message':  t('filtering_by', field=get_friendly_name(col2)),
                 'progress': 12,
             })
-            _batch_apply_field2(cursor, col2)
+            _batch_apply_field2(cursor, col2, n_matches, col2 in indexed_cols)
             _batch_check_cancel(export_id)
             cursor.execute('CREATE INDEX _m_idx ON _m (k2, term)')
         else:
@@ -2519,17 +2652,30 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
         # The search finishes successfully (it's not an error), but without a
         # `filename`, so the frontend doesn't offer a download.
         if total_rows == 0:
+            # A single term or value is named instead of counted.
+            if has_field2 and n_matches:
+                # Field 1 did find records; the field-2 filter discarded them.
+                field2_name = get_friendly_name(col2)
+                if len(values2) == 1:
+                    target = t('filter_target_one', field=field2_name, value=values2[0])
+                else:
+                    target = tn('filter_target_many', len(values2), field=field2_name)
+                message = t('no_records_after_filter', target=target)
+            elif len(values1) == 1:
+                message = t('no_records_for_term', term=values1[0])
+            else:
+                message = tn('no_records_for_terms', len(values1))
             batch_exports[export_id].update({
                 'status':     'completed',
                 'progress':   100,
                 'total_rows': 0,
-                'message':    t('no_records_for_terms', count=f'{len(values1):,}'),
+                'message':    message,
             })
             return
 
         batch_exports[export_id].update({
             'total_rows': total_rows,
-            'message':    t('records_found_packing', count=f'{total_rows:,}'),
+            'message':    tn('records_found_packing', total_rows),
             'progress':   20,
         })
 
@@ -2615,33 +2761,41 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
             if 'col_nuc' not in keys:
                 gcur.close()
                 return
-            wrote = False
+            # The entry is opened only once there is something to write: a ZIP
+            # entry can't be deleted afterwards, and a group whose sequences
+            # are all < 50 bp used to leave an empty .fasta behind.
+            rows, chunk = first, ''
+            while rows:
+                chunk = ''.join(_row_to_fasta_entry(r, keys) for r in rows)
+                if chunk:
+                    break
+                rows = gcur.fetchmany(2000)
+            if not chunk:
+                gcur.close()
+                return
             # No BOM: FASTA files are consumed by bioinformatics tools, which
             # would interpret the BOM as part of the first header.
             with io.TextIOWrapper(zf.open(arcname, 'w', force_zip64=True),
                                   encoding='utf-8', newline='') as fh:
-                rows = first
-                while rows:
-                    chunk = ''.join(_row_to_fasta_entry(r, keys) for r in rows)
-                    if chunk:
-                        fh.write(chunk)
-                        wrote = True
+                fh.write(chunk)
+                while True:
                     rows = gcur.fetchmany(2000)
+                    if not rows:
+                        break
+                    fh.write(''.join(_row_to_fasta_entry(r, keys) for r in rows))
             gcur.close()
-            if not wrote:
-                # Empty entry: it's left in place regardless (ZIP doesn't allow
-                # deleting entries), but the case is marginal (all sequences < 50 bp).
-                pass
 
+        zero_omitted = 0   # zero combinations that don't fit in summary.csv
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
             if not has_field2:
                 found_terms = sorted(counts)
                 found_lower = {t.lower() for t in found_terms}
                 not_found   = [v for v in values1 if v.lower() not in found_lower]
 
+                used_names = set()
                 for i, term in enumerate(found_terms):
                     _batch_check_cancel(export_id)
-                    sn = _safe_name(term)
+                    sn = _unique_name(term, used_names)
                     stream_group_tsv(zf, f'individual/{sn}.tsv', (term,))
                     if include_fasta:
                         stream_group_fasta(zf, f'individual/{sn}.fasta', (term,))
@@ -2669,51 +2823,79 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                 zf.writestr('summary.csv', buf.getvalue().encode('utf-8-sig'))
 
             else:
-                # counts: {(field2_value, term): n}
+                # counts: {(field2_value, term): n}. k2 is v2.term, i.e. the
+                # same canonical string as in values2, so values2 indexes
+                # by_k2 directly (no case-insensitive search needed).
                 by_k2 = {}
                 for (k2, term), n in counts.items():
-                    by_k2.setdefault('' if k2 is None else str(k2), {})[term] = (n, k2)
+                    by_k2.setdefault(k2, {})[term] = n
 
-                summary_rows = []
+                found_anywhere = set()
+                summary_rows   = []
+                used_dirs      = set()
                 for i, val2 in enumerate(values2):
                     _batch_check_cancel(export_id)
-                    actual_key = next((k for k in by_k2 if k.lower() == val2.lower()), None)
-                    dir_name   = _safe_name(val2)
-                    val2_data  = by_k2.get(actual_key, {}) if actual_key else {}
+                    val2_data = by_k2.get(val2, {})
+                    # A field-2 value with no records gets no folder: its
+                    # not_found.txt would just repeat the whole field-1 list,
+                    # and summary_by_field2.csv already reports it with 0.
+                    if not val2_data:
+                        continue
+                    found_anywhere.update(val2_data)
+                    dir_name   = _unique_name(val2, used_dirs)
+                    used_names = set()
 
-                    found_lower    = {t.lower() for t in val2_data}
-                    not_found_here = [v for v in values1 if v.lower() not in found_lower]
-
-                    for term, (n, raw_k2) in sorted(val2_data.items()):
-                        sn = _safe_name(term)
-                        stream_group_tsv(zf, f'{dir_name}/{sn}.tsv', (raw_k2, term))
+                    for term, n in sorted(val2_data.items()):
+                        sn = _unique_name(term, used_names)
+                        stream_group_tsv(zf, f'{dir_name}/{sn}.tsv', (val2, term))
                         if include_fasta:
-                            stream_group_fasta(zf, f'{dir_name}/{sn}.fasta', (raw_k2, term))
+                            stream_group_fasta(zf, f'{dir_name}/{sn}.fasta', (val2, term))
                         # The group key is stored: metrics are accumulated
                         # per (field 2, term) pair, not per term.
-                        summary_rows.append((term, val2, n, (raw_k2, term)))
+                        summary_rows.append((term, val2, n, (val2, term)))
 
+                    not_found_here = [v for v in values1 if v not in val2_data]
                     if not_found_here:
                         zf.writestr(f'{dir_name}/not_found.txt', '\n'.join(not_found_here))
 
                     batch_exports[export_id]['progress'] = \
                         20 + int((i + 1) / max(len(values2), 1) * 75)
 
+                # Terms with no records under any field-2 value: listed at the
+                # root as in the single-field mode, so the file can be
+                # re-uploaded as is.
+                not_found = [v for v in values1 if v not in found_anywhere]
+                if not_found:
+                    zf.writestr('not_found.txt', '\n'.join(not_found))
+
                 resolve_overflow()
 
-                # summary.csv
-                buf = io.StringIO()
-                w   = csv.writer(buf)
-                w.writerow(
-                    [get_friendly_name(col1), get_friendly_name(col2), t('col_records')]
-                    + metric_head
-                )
-                for v1, v2, cnt, gkey in sorted(summary_rows, key=lambda r: (r[0], r[1])):
+                # summary.csv: as in the single-field mode, first the
+                # combinations with records, then those without any, at 0:
+                # the full term × value matrix, ready for a pivot table. It
+                # can get very large, so it's streamed and, above the cap, the
+                # zeros are left out (the final message says so).
+                n_zero = len(values1) * len(values2) - len(summary_rows)
+                if n_zero > SUMMARY_ZERO_ROWS_MAX:
+                    zero_omitted = n_zero
+                with io.TextIOWrapper(zf.open('summary.csv', 'w', force_zip64=True),
+                                      encoding='utf-8-sig', newline='') as fh:
+                    w = csv.writer(fh)
                     w.writerow(
-                        [v1, v2, cnt]
-                        + _metric_cells(gkey, metrics, tally, exact, report_opts)
+                        [get_friendly_name(col1), get_friendly_name(col2), t('col_records')]
+                        + metric_head
                     )
-                zf.writestr('summary.csv', buf.getvalue().encode('utf-8-sig'))
+                    for v1, v2, cnt, gkey in sorted(summary_rows, key=lambda r: (r[0], r[1])):
+                        w.writerow(
+                            [v1, v2, cnt]
+                            + _metric_cells(gkey, metrics, tally, exact, report_opts)
+                        )
+                    empty_cells = _empty_metric_cells(metrics)
+                    for v1 in ([] if zero_omitted else values1):
+                        _batch_check_cancel(export_id)
+                        for v2 in values2:
+                            if v1 not in by_k2.get(v2, {}):
+                                w.writerow([v1, v2, 0] + empty_cells)
 
                 # summary_by_field2.csv
                 buf = io.StringIO()
@@ -2724,10 +2906,9 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                     t('col_not_found', field=get_friendly_name(col1)),
                 ])
                 for val2 in values2:
-                    actual_key = next((k for k in by_k2 if k.lower() == val2.lower()), None)
-                    val2_data  = by_k2.get(actual_key, {}) if actual_key else {}
+                    val2_data  = by_k2.get(val2, {})
                     found_cnt  = len(val2_data)
-                    total_cnt  = sum(n for n, _ in val2_data.values())
+                    total_cnt  = sum(val2_data.values())
                     w.writerow([val2, total_cnt, found_cnt, len(values1) - found_cnt])
                 zf.writestr('summary_by_field2.csv', buf.getvalue().encode('utf-8-sig'))
 
@@ -2783,10 +2964,13 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
         conn.close()
         conn = None
 
+        message = tn('records_found', total_rows)
+        if zero_omitted:
+            message += t('summary_zeros_omitted', count=f'{zero_omitted:,}')
         batch_exports[export_id].update({
             'status':     'completed',
             'progress':   100,
-            'message':    t('records_found', count=f'{total_rows:,}'),
+            'message':    message,
             'total_rows': total_rows,
             'filename':   zip_filename,
         })
@@ -2819,17 +3003,32 @@ def process_batch_search(export_id, fields_data, include_fasta=False, report=Non
                     pass
 
 
+def _has_terms(values):
+    """True if `values` is a list with at least one non-blank term."""
+    return isinstance(values, list) and any(v is not None and str(v).strip() for v in values)
+
+
 @app.route('/api/batch_search', methods=['POST'])
 def start_batch_search():
     try:
-        data         = request.get_json()
-        fields_data  = data.get('fields', [])
+        data         = request.get_json(silent=True) or {}
+        fields_data  = data.get('fields') or []
         include_fasta = bool(data.get('include_fasta', False))
         # Optional: without it, the summary comes out as usual (see _parse_report_spec)
         report        = data.get('report') or None
 
-        if not fields_data or not fields_data[0].get('values'):
+        # Blank lines don't count: a list of only blanks used to start a
+        # search for 0 terms instead of being rejected here.
+        if (not isinstance(fields_data, list) or not fields_data
+                or not isinstance(fields_data[0], dict)
+                or not _has_terms(fields_data[0].get('values'))):
             return jsonify({'error': t('field_required')}), 400
+        # A field-2 file with only blank lines is rejected too: silently
+        # searching without the filter would answer a different question.
+        if len(fields_data) > 1:
+            f2 = fields_data[1]
+            if not isinstance(f2, dict) or (f2.get('values') and not _has_terms(f2['values'])):
+                return jsonify({'error': t('field2_no_values')}), 400
 
         export_id = str(uuid.uuid4())
         batch_exports[export_id] = {

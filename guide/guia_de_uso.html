@@ -1094,6 +1094,7 @@
     <ul class="bullet">
       <li>Un término de <strong>una sola palabra</strong> (ej. <code>Felidae</code>) se busca en <strong>todos los niveles</strong> a la vez: reino, clase, orden, familia, género y especie. No hace falta acertar el nivel exacto.</li>
       <li>Un término de <strong>dos palabras</strong> (ej. <code>Panthera leo</code>) se busca solo en <em>Especie</em>.</li>
+      <li>Un término de <strong>tres palabras</strong> (ej. <code>Panthera leo persica</code>) se busca en <em>Subespecie</em>, si la base incluye ese campo indexado; si no, aparece en <code>not_found.txt</code>.</li>
       <li>Los guiones bajos se convierten en espacios (<code>Panthera_leo</code> = <code>Panthera leo</code>), la primera letra se pone en mayúscula y se descartan los duplicados.</li>
     </ul>
     <p>Para cualquier otro campo (BIN, marcador, IDs, país…) la coincidencia es <strong>exacta</strong>, sin distinguir mayúsculas.</p>
@@ -1119,7 +1120,7 @@
        contando en cada término.</p>
 
     <h3 class="step-title">Contenido del ZIP — con Campo 2 activado</h3>
-    <p>La organización cambia: se crea <strong>una carpeta por cada valor del Campo 2</strong>.</p>
+    <p>La organización cambia: se crea <strong>una carpeta por cada valor del Campo 2</strong> que tenga registros (los que no tienen ninguno aparecen a 0 en <code>summary_by_field2.csv</code>).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Archivo en el ZIP</th><th>Contenido</th></tr></thead>
@@ -1127,7 +1128,8 @@
           <tr><td><code>all_results.tsv</code></td><td>Todos los registros encontrados, cada uno una sola vez</td></tr>
           <tr><td><code>Colombia/Panthera_onca.tsv</code></td><td>Un archivo por término dentro de la carpeta de cada valor del Campo 2</td></tr>
           <tr><td><code>Colombia/not_found.txt</code></td><td>Términos sin resultados <em>en ese</em> valor del Campo 2</td></tr>
-          <tr><td><code>summary.csv</code></td><td>Conteo por combinación de Campo 1 × Campo 2. Puede llevar <a href="#batch-resumen">columnas adicionales</a></td></tr>
+          <tr><td><code>not_found.txt</code></td><td>Términos sin resultados en <em>ningún</em> valor del Campo 2, listos para volver a cargar</td></tr>
+          <tr><td><code>summary.csv</code></td><td>Conteo por combinación de Campo 1 × Campo 2, incluidas al final las combinaciones a cero: la matriz completa, lista para una tabla dinámica. Si las combinaciones a cero pasan de un millón se omiten (Excel no abriría el archivo) y el mensaje final lo avisa. Puede llevar <a href="#batch-resumen">columnas adicionales</a></td></tr>
           <tr><td><code>summary_by_field2.csv</code></td><td>Resumen por valor del Campo 2: total de registros, términos encontrados y no encontrados</td></tr>
           <tr><td><code>summary_by_pais.csv</code></td><td>Solo si pediste un <a href="#batch-resumen">reporte de desglose</a>: total de registros por cada valor del campo</td></tr>
         </tbody>

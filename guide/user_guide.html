@@ -1092,6 +1092,7 @@
     <ul class="bullet">
       <li>A <strong>single-word</strong> term (e.g. <code>Felidae</code>) is searched across <strong>all levels</strong> at once: kingdom, class, order, family, genus, and species. You don't need to get the exact level right.</li>
       <li>A <strong>two-word</strong> term (e.g. <code>Panthera leo</code>) is only searched in <em>Species</em>.</li>
+      <li>A <strong>three-word</strong> term (e.g. <code>Panthera leo persica</code>) is searched in <em>Subspecies</em>, if the database includes that field indexed; otherwise it goes to <code>not_found.txt</code>.</li>
       <li>Underscores are converted to spaces (<code>Panthera_leo</code> = <code>Panthera leo</code>), the first letter is capitalized, and duplicates are dropped.</li>
     </ul>
     <p>For any other field (BIN, marker, IDs, country…) the match is <strong>exact</strong>, case-insensitive.</p>
@@ -1117,7 +1118,7 @@
        still counts it under each term.</p>
 
     <h3 class="step-title">ZIP contents — with Field 2 enabled</h3>
-    <p>The layout changes: <strong>one folder per value of Field 2</strong> is created.</p>
+    <p>The layout changes: <strong>one folder per value of Field 2</strong> with records is created (values with none show up with 0 in <code>summary_by_field2.csv</code>).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>File in the ZIP</th><th>Content</th></tr></thead>
@@ -1125,7 +1126,8 @@
           <tr><td><code>all_results.tsv</code></td><td>All found records, each one once</td></tr>
           <tr><td><code>Colombia/Panthera_onca.tsv</code></td><td>One file per term, inside the folder for each Field 2 value</td></tr>
           <tr><td><code>Colombia/not_found.txt</code></td><td>Terms with no results <em>for that</em> Field 2 value</td></tr>
-          <tr><td><code>summary.csv</code></td><td>Count per Field 1 × Field 2 combination. May carry <a href="#batch-resumen">extra columns</a></td></tr>
+          <tr><td><code>not_found.txt</code></td><td>Terms with no results for <em>any</em> Field 2 value, ready to upload again</td></tr>
+          <tr><td><code>summary.csv</code></td><td>Count per Field 1 × Field 2 combination, with the zero combinations at the end: the full matrix, ready for a pivot table. If there are more than a million zero combinations they're left out (Excel couldn't open the file) and the final message says so. May carry <a href="#batch-resumen">extra columns</a></td></tr>
           <tr><td><code>summary_by_field2.csv</code></td><td>Summary per Field 2 value: total records, terms found and not found</td></tr>
           <tr><td><code>summary_by_pais.csv</code></td><td>Only if you requested a <a href="#batch-resumen">breakdown report</a>: total records for each value of the field</td></tr>
         </tbody>

@@ -3759,6 +3759,16 @@
 		window.addEventListener('pagehide', () => sendPresence('bye'));
 		// Restored from the back/forward cache: the goodbye was already sent
 		window.addEventListener('pageshow', e => { if (e.persisted) sendPresence('hello'); });
+		// Open connection to the server: when it drops (tab or browser closed,
+		// even abruptly) the server stops within seconds and its console
+		// closes. Only one tab per browser keeps it (shared lock): each
+		// connection takes one of the ~6 the browser allows per site. If that
+		// tab closes, another one takes the lock and opens its own.
+		if (window.EventSource && navigator.locks) {
+			navigator.locks.request('bold-viewer-presence', () => new Promise(() => {
+				new EventSource(`/api/client/stream/${CLIENT_ID}`);
+			}));
+		}
 		
 		function scrollToResults() {
 			// Get the position of the results panel

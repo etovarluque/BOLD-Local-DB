@@ -1216,6 +1216,44 @@
 		.rp-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 		.rp-actions .btn { font-size: .8rem; }
 		.rp-hint { font-size: .75rem; color: var(--mute); margin: 0; }
+
+		/* Checkboxes and switches: one look in every panel, with a border dark
+		   enough (3.7:1 on white) to read on white and on the tinted rows */
+		:root {
+			--check-border: #7a8494;
+			--check-tick: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+			--check-dash: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e");
+		}
+		input[type="checkbox"]:not(.form-switch input) {
+			appearance: none;
+			-webkit-appearance: none;
+			flex-shrink: 0;
+			background: #fff center / 100% no-repeat;
+			border: 1.5px solid var(--check-border);
+			border-radius: 4px;
+			cursor: pointer;
+			transition: background-color .15s, border-color .15s;
+		}
+		input[type="checkbox"]:not(.form-check-input) { width: 16px; height: 16px; vertical-align: middle; }
+		input[type="checkbox"]:not(.form-switch input):hover { border-color: var(--slate); }
+		input[type="checkbox"]:not(.form-switch input):checked {
+			background-color: var(--slate);
+			background-image: var(--check-tick);
+			border-color: var(--slate);
+		}
+		input[type="checkbox"]:not(.form-switch input):indeterminate {
+			background-color: var(--slate);
+			background-image: var(--check-dash);
+			border-color: var(--slate);
+		}
+		input[type="checkbox"]:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; box-shadow: none; }
+		input[type="checkbox"]:focus:not(:focus-visible) { box-shadow: none; }
+		input[type="checkbox"]:disabled { opacity: .5; cursor: default; }
+		.form-switch .form-check-input {
+			border: 1.5px solid var(--check-border);
+			--bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%237a8494'/%3e%3c/svg%3e");
+		}
+		.form-switch .form-check-input:checked { background-color: var(--slate); border-color: var(--slate); }
     </style>
 </head>
 <body>

@@ -90,12 +90,22 @@ __version__ = db_contract.APP_VERSION
 app = Flask(__name__)
 
 def _find_project_root():
-    p = os.path.dirname(os.path.abspath(__file__))
+    """The project root: the folder holding dev/bold_db_creator.py.
+
+    The viewer runs from app/ and, while developing, from dev/frontend/; both
+    sit under the root. Looking for data/raw or app/ instead failed on a
+    fresh copy where neither exists yet, and the fallback (this file's own
+    folder) made the viewer create a second data/exports tree inside
+    dev/frontend/, which the Creator then copied into app/.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    p = here
     for _ in range(3):
-        if os.path.isdir(os.path.join(p, "data", "raw")) or os.path.isdir(os.path.join(p, "app")):
+        if os.path.isfile(os.path.join(p, "dev", "bold_db_creator.py")):
             return p
         p = os.path.dirname(p)
-    return os.path.dirname(os.path.abspath(__file__))
+    # A viewer copied out of the project: app/'s parent, as in the normal layout
+    return os.path.dirname(here)
 
 _PROJECT_ROOT     = _find_project_root()
 _EXPORTS_ROOT     = os.path.join(_PROJECT_ROOT, "data", "exports")

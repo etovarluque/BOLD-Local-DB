@@ -3767,6 +3767,19 @@ def _ensure_data_dirs():
 
 # ---- app/ initialization -------------------------------------------------------
 
+def _remove_empty_tree(path):
+    """Deletes a folder tree that holds no files; leaves it alone otherwise."""
+    if not os.path.isdir(path):
+        return
+    for dirpath, _dirs, files in os.walk(path):
+        if files:
+            return
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        pass
+
+
 def _ensure_app_initialized():
     """Brings app/ in line with dev/frontend. Returns a message or None.
 
@@ -3787,10 +3800,13 @@ def _ensure_app_initialized():
     try:
         updated = 0
         for dirpath, dirnames, filenames in os.walk(src):
-            dirnames[:] = [d for d in dirnames if d != "__pycache__"]
+            # data/ is what a viewer run from dev/frontend/ generates (exports),
+            # never part of its code. Folders are created only to hold a copied
+            # file: copying every folder brought empty ones over, which is how
+            # an unused app/data/exports/ appeared.
+            dirnames[:] = [d for d in dirnames if d not in ("__pycache__", "data")]
             rel = os.path.relpath(dirpath, src)
             out_dir = os.path.normpath(os.path.join(dst, rel))
-            os.makedirs(out_dir, exist_ok=True)
             for name in filenames:
                 if name.endswith((".pyc", ".pyo")):
                     continue
@@ -3798,10 +3814,14 @@ def _ensure_app_initialized():
                 d = os.path.join(out_dir, name)
                 if os.path.exists(d) and filecmp.cmp(s, d, shallow=False):
                     continue
+                os.makedirs(out_dir, exist_ok=True)
                 shutil.copy2(s, d)
                 updated += 1
     except Exception as e:
         return t('app_init_error', error=e)
+    # Leftovers of the above in existing copies, removed only while empty
+    for stray in (os.path.join(dst, "data"), os.path.join(src, "data")):
+        _remove_empty_tree(stray)
     if first_time:
         return t('app_init_done')
     return t('app_updated', n=updated) if updated else None

@@ -4,8 +4,6 @@ BOLD Database Creator - unified GUI
 Steps: 1-Filter TSV  2-TSV->SQLite  3-Index  4-FTS
 """
 
-__version__ = "1.2.0"
-
 # ---- Imports -----------------------------------------------------------------
 import sys, subprocess
 import os, re, sqlite3, csv, glob, tarfile, time, threading, shutil, unicodedata, webbrowser
@@ -88,9 +86,15 @@ SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = SCRIPT_DIR
 ICON_HOME    = os.path.join(SCRIPT_DIR, "icons", "home.png")
 
+# What this program writes and the viewer reads: file and table names, the
+# version and the database layout version (see dev/frontend/db_contract.py)
+sys.path.insert(0, os.path.join(SCRIPT_DIR, "frontend"))
+import db_contract
+__version__ = db_contract.APP_VERSION
+
 # ---- Configuration constants ----------------------------------------------------
-DB_FILE    = "../app/bold_db.db"
-TABLE_NAME = "bold_records"
+DB_FILE    = "../app/" + db_contract.DB_FILENAME
+TABLE_NAME = db_contract.MAIN_TABLE
 CHUNKSIZE  = 50_000
 
 # Field whose value decides whether a row makes it into the database: without a
@@ -294,7 +298,21 @@ STRINGS_ES = {
     'import_progress_nototal': '\r  {processed:,} filas importadas',
     'db_created': '✅ BD creada: {name}',
     'records_inserted': '✅ Registros insertados: {n:,}',
-    'import_interrupted': '⚠️ Importación interrumpida — BD parcial eliminada',
+    'import_interrupted': '⚠️ Importación interrumpida — se borró la BD a medio crear; la actual no se ha tocado',
+    'db_build_target': '💾 La BD nueva se crea en {name}: el visor sigue usando la actual hasta que '
+                       'termine y la reemplace',
+    'db_build_space_warn': '⚠️ Espacio libre en disco: {free}. Mientras se crea, la BD nueva convive con '
+                           'la actual y necesitará unos {need}. Si se llena el disco, el paso falla '
+                           'y la BD actual queda intacta.',
+    'db_build_promoted': '✅ BD nueva puesta en servicio: {name} (el visor ya la usa)',
+    'db_build_orphan_removed': '🧹 Borrada una BD a medio crear ({name}) de una ejecución que no terminó',
+    'db_build_promote_failed': '⚠️ La BD nueva está lista en {name}, pero no se pudo reemplazar la actual '
+                               '({error}). Suele ser el visor en mitad de una búsqueda o exportación: '
+                               'espera a que acabe y vuelve a ejecutar cualquier paso, o reinicia el Creador.',
+    'db_build_pending_title': 'BD nueva pendiente',
+    'db_build_pending_body': 'Hay una base de datos nueva terminada que todavía no ha reemplazado a la '
+                             'actual (el visor la tenía ocupada). Espera a que el visor termine lo que '
+                             'esté haciendo, o ciérralo, y vuelve a intentarlo.',
     'ctx_tsv_to_sqlite': 'TSV → SQLite',
     'db_not_found': '❌ BD no encontrada: {path}',
     'table_not_exists': '❌ Tabla bold_records no existe',
@@ -723,6 +741,9 @@ STRINGS_ES = {
                                  'no guarda las huellas de los registros que necesita la actualización. '
                                  'Reconstrúyela una vez («Crear la base de datos» en Inicio); a partir de '
                                  'ahí podrás actualizarla.',
+    'update_schema_mismatch': '❌ Esta base de datos tiene el formato {have} y esta versión del programa '
+                              'escribe el formato {want}: no se puede actualizar sin mezclar los dos. '
+                              'Reconstrúyela una vez («Crear la base de datos» en Inicio).',
     'update_fields_mismatch': '❌ Los campos del paquete nuevo no coinciden con los de la base de datos '
                               '(¿cambiaste la selección de campos?). Hay que reconstruirla.\n'
                               '   Solo en el paquete: {extra}\n   Solo en la base de datos: {missing}',
@@ -804,7 +825,21 @@ STRINGS_EN = {
     'import_progress_nototal': '\r  {processed:,} rows imported',
     'db_created': '✅ DB created: {name}',
     'records_inserted': '✅ Records inserted: {n:,}',
-    'import_interrupted': '⚠️ Import interrupted — partial DB deleted',
+    'import_interrupted': '⚠️ Import interrupted — the half-built DB was deleted; the current one was not touched',
+    'db_build_target': '💾 The new DB is built in {name}: the viewer keeps using the current one until '
+                       'it finishes and replaces it',
+    'db_build_space_warn': '⚠️ Free disk space: {free}. While it\'s being built, the new DB sits next to '
+                           'the current one and will need about {need}. If the disk fills up, the '
+                           'step fails and the current DB stays intact.',
+    'db_build_promoted': '✅ New DB in service: {name} (the viewer now uses it)',
+    'db_build_orphan_removed': '🧹 Deleted a half-built DB ({name}) left by a run that didn\'t finish',
+    'db_build_promote_failed': '⚠️ The new DB is ready in {name}, but the current one couldn\'t be replaced '
+                               '({error}). Usually the viewer is in the middle of a search or export: '
+                               'wait for it to finish and run any step again, or restart the Creator.',
+    'db_build_pending_title': 'New DB pending',
+    'db_build_pending_body': 'A finished new database hasn\'t replaced the current one yet (the viewer '
+                             'was using it). Wait for the viewer to finish what it\'s doing, or close '
+                             'it, and try again.',
     'ctx_tsv_to_sqlite': 'TSV → SQLite',
     'db_not_found': '❌ DB not found: {path}',
     'table_not_exists': '❌ Table bold_records does not exist',
@@ -1229,6 +1264,9 @@ STRINGS_EN = {
     'update_needs_rebuild_once': '❌ This database was built by an older version of the program and '
                                  'doesn\'t store the record fingerprints the update needs. Rebuild it '
                                  'once ("Create the database" on Home); from then on you can update it.',
+    'update_schema_mismatch': '❌ This database has layout {have} and this version of the program '
+                              'writes layout {want}: it can\'t be updated without mixing the two. '
+                              'Rebuild it once ("Create the database" on Home).',
     'update_fields_mismatch': '❌ The fields of the new package don\'t match the database\'s (did you '
                               'change the field selection?). It has to be rebuilt.\n'
                               '   Only in the package: {extra}\n   Only in the database: {missing}',
@@ -1588,7 +1626,7 @@ def _connect_retry(path, pragmas, log, attempts=6, delay=1.5, **connect_kwargs):
             time.sleep(delay)
 
 
-DB_META_TABLE = "bold_meta"
+DB_META_TABLE = db_contract.META_TABLE
 
 
 def _write_db_meta(conn, values):
@@ -1606,9 +1644,115 @@ def _write_db_meta(conn, values):
     conn.commit()
 
 
+# ---- Building next to the current database ---------------------------------------
+#
+# Step 2 builds the new database in "<db>.building" and Steps 3 and 4 index
+# it there. It replaces the current one only when the run ends (the whole
+# Home option, or the single step that was run), so the viewer never sees a
+# half-built or unindexed database, and a rebuild that fails leaves the
+# current one untouched. The update (run_update) doesn't need this: it works
+# on the current database in a single transaction.
+
+def _build_path(db_path):
+    return db_path + db_contract.BUILD_SUFFIX
+
+
+def _remove_db_files(path):
+    """Deletes a database file together with its journal/WAL files."""
+    for suffix in ("", "-journal", "-wal", "-shm"):
+        try: os.remove(path + suffix)
+        except OSError: pass
+
+
+def _target_db(cfg):
+    """Database Steps 3 and 4 work on: the one Step 2 built in this run while
+    it hasn't replaced the current one yet, otherwise the current one."""
+    db_path = cfg.get("db_file", DB_FILE)
+    build   = _build_path(db_path)
+    return build if os.path.exists(build) else db_path
+
+
+def _warn_build_space(log, db_path, tsv_path):
+    """Warns when the disk looks too small to hold the new database next to
+    the current one. Only a warning: the estimate is rough, and running out
+    of space fails the step without touching the current database."""
+    try:
+        need = max(os.path.getsize(db_path) if os.path.exists(db_path) else 0,
+                   os.path.getsize(tsv_path))
+        free = shutil.disk_usage(os.path.dirname(os.path.abspath(db_path))).free
+    except OSError:
+        return
+    if free < need:
+        log(t('db_build_space_warn', free=_fmt_size(free), need=_fmt_size(need)))
+
+
+def _build_is_complete(path):
+    """Step 2 writes the record count to META_TABLE as its last action, so a
+    build without it was cut short."""
+    import pathlib
+    try:
+        conn = sqlite3.connect(pathlib.Path(path).resolve().as_uri() + "?mode=ro",
+                               uri=True, timeout=1)
+        try:
+            return "record_count" in db_contract.read_meta(conn)
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return False
+
+
+def _promote_pending_build(log):
+    """Puts a finished build in place of the current database.
+
+    Called when nothing is running: at startup and before and after every
+    run. An unfinished build (a crash or forced close during Step 2) is
+    deleted. Returns False only when a finished build couldn't replace the
+    current database: on Windows a file can't be replaced while another
+    program has it open, which the viewer does for the length of a search
+    or an export.
+    """
+    live  = _proj_dir("app", db_contract.DB_FILENAME)
+    build = _build_path(live)
+    if not os.path.exists(build):
+        return True
+    name = os.path.basename(build)
+    if not _build_is_complete(build):
+        _remove_db_files(build)
+        log(t('db_build_orphan_removed', name=name))
+        return True
+    try:
+        # A WAL left by an update whose last switch back to DELETE failed
+        # (see run_update) belongs to the old file: next to the new one,
+        # SQLite would apply it there.
+        if os.path.exists(live + "-wal"):
+            conn = sqlite3.connect(live, timeout=2)
+            try:
+                conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                conn.execute("PRAGMA journal_mode = DELETE")
+            finally:
+                conn.close()
+        for attempt in range(8):
+            try:
+                os.replace(build, live)
+                break
+            except PermissionError:
+                if attempt == 7:
+                    raise
+                time.sleep(0.5)
+    except (OSError, sqlite3.Error) as e:
+        log(t('db_build_promote_failed', name=name, error=e))
+        return False
+    for suffix in ("-journal", "-wal", "-shm"):
+        try: os.remove(live + suffix)
+        except OSError: pass
+    _invalidate_status()
+    log(t('db_build_promoted', name=db_contract.DB_FILENAME))
+    return True
+
+
 # Fingerprint of every stored record, written by Step 2 and kept up to date by
 # the update (run_update), which compares it against the new package.
-ROW_HASH_TABLE = "bold_row_hash"
+ROW_HASH_TABLE = db_contract.ROW_HASH_TABLE
 
 
 def _tsv_row_values(row, n_cols):
@@ -2187,13 +2331,25 @@ def run_step2(log, progress, cfg):
             tipo = _types.get(_norm_name(orig), "TEXT COLLATE NOCASE")
             cols_sql.append("{} {}".format(clean, tipo))
 
-        # Must exist before the try/finally: the finally block reads it, and an
+        # The new database is built next to the current one and only replaces
+        # it when the run ends (see _promote_pending_build). Until then the
+        # viewer keeps serving the previous version, and a failed or stopped
+        # build leaves it untouched. Before, the table was dropped and refilled
+        # in place: the viewer showed a half-empty database for hours, and a
+        # stop deleted the only copy.
+        build_path = _build_path(_db_path)
+        _remove_db_files(build_path)   # leftovers of an earlier, unfinished build
+        _warn_build_space(log, _db_path, archivo_tsv)
+        log(t('db_build_target', name=os.path.basename(build_path)))
+
+        # Must exist before the try/finally: the finally block reads them, and an
         # early failure (e.g. CREATE TABLE) would raise NameError, hiding the real cause
         stopped = False
-        # OFF instead of MEMORY: the table is rebuilt from scratch and the DB
-        # is deleted if the step fails or is interrupted, so there's nothing
+        built   = False
+        # OFF instead of MEMORY: the table is built from scratch in a new file
+        # that's deleted if the step fails or is interrupted, so there's nothing
         # to roll back. Avoids writing the journal for every transaction.
-        conn = _connect_retry(cfg.get("db_file", DB_FILE), [
+        conn = _connect_retry(build_path, [
             "PRAGMA synchronous   = OFF",
             "PRAGMA journal_mode  = OFF",
             "PRAGMA cache_size    = -500000",   # ~500 MB cache
@@ -2202,16 +2358,9 @@ def run_step2(log, progress, cfg):
             "PRAGMA mmap_size     = 30000000000",
         ], log)
         try:
-            # Invalidate both markers before touching the table. db_source is
-            # rewritten only once the import finishes: if it survived from a
-            # previous build of this same .filt.tsv, a rebuild cut short
-            # (crash, forced close) left a half-filled table that the check
-            # above took for finished, and Step 2 was skipped from then on.
-            for _m in ("../data/processed/db_source.txt",
-                       "../data/processed/fts_source.txt"):
-                try: os.remove(_m)
-                except OSError: pass
-
+            # db_source.txt and fts_source.txt aren't touched until the import
+            # finishes: they describe the current database, which a build cut
+            # short (crash, forced close, Stop) no longer damages.
             cur = conn.cursor()
             cur.execute("DROP TABLE IF EXISTS bold_records")
             # The previous build's facts (record count...) stop being true now
@@ -2306,16 +2455,18 @@ def run_step2(log, progress, cfg):
                 "source_file":     os.path.basename(archivo_tsv),
                 "built_at":        datetime.now().isoformat(timespec="seconds"),
                 "creator_version": __version__,
+                "schema_version":  db_contract.SCHEMA_VERSION,
             })
             with open("../data/processed/db_source.txt", "w") as _f:
                 _f.write(os.path.basename(archivo_tsv))
-            log(t('db_created', name=os.path.basename(cfg.get("db_file", DB_FILE))))
+            log(t('db_created', name=os.path.basename(_db_path)))
             log(t('records_inserted', n=real_count))
             # INSERT OR IGNORE drops repeated processids without a word: the
             # difference with the filtered count is reported, otherwise the
             # viewer's total silently disagrees with Step 1's.
             if total_lines > real_count:
                 log(t('duplicates_skipped', n=total_lines - real_count))
+            built = True
             progress(100)
             return True
         finally:
@@ -2326,12 +2477,9 @@ def run_step2(log, progress, cfg):
             except Exception:
                 pass
             conn.close()
+            if not built:
+                _remove_db_files(build_path)
             if stopped:
-                db_path = cfg.get("db_file", DB_FILE)
-                try: os.remove(db_path)
-                except OSError: pass
-                try: os.remove("../data/processed/db_source.txt")
-                except OSError: pass
                 log(t('import_interrupted'))
     except Exception as e:
         log(_fmt_error(e, t('ctx_tsv_to_sqlite')))
@@ -2341,7 +2489,7 @@ def run_step2(log, progress, cfg):
 
 def run_step3(log, progress, cfg):
     os.chdir(PROJECT_ROOT)
-    db_path = cfg.get("db_file", DB_FILE)
+    db_path = _target_db(cfg)
     if not os.path.exists(db_path):
         log(t('db_not_found', path=db_path))
         return False
@@ -2464,7 +2612,7 @@ def run_step4(log, progress, cfg):
     os.chdir(PROJECT_ROOT)
     # Same source of the path as Steps 2 and 3: with a fixed DB_FILE, a
     # cfg["db_file"] would build the FTS index on a different database.
-    db_path = cfg.get("db_file", DB_FILE)
+    db_path = _target_db(cfg)
     if not os.path.exists(db_path):
         log(t('db_not_found', path=db_path))
         return False
@@ -2712,6 +2860,12 @@ def run_update(log, progress, cfg):
         if ROW_HASH_TABLE not in tables:
             log(t('update_needs_rebuild_once'))
             return False
+        # Rows are written here in this version's layout: applied to a database
+        # with another one, they'd mix two layouts in the same table.
+        have = db_contract.schema_version(conn)
+        if have != db_contract.SCHEMA_VERSION:
+            log(t('update_schema_mismatch', have=have, want=db_contract.SCHEMA_VERSION))
+            return False
         db_cols = [r[1] for r in cur.execute("PRAGMA table_info(bold_records)")]
         with open(archivo_tsv, "r", encoding="utf-8", errors="replace", newline="") as f:
             headers = next(csv.reader(f, delimiter="\t"), [])
@@ -2891,6 +3045,7 @@ def run_update(log, progress, cfg):
             "updated_at":      datetime.now().isoformat(timespec="seconds"),
             "last_update":     "+{0} ~{1} -{2}".format(n_new, n_chg, n_gone),
             "creator_version": __version__,
+            "schema_version":  db_contract.SCHEMA_VERSION,
         })
         applied = True
         watch_done.set()
@@ -3734,7 +3889,9 @@ def _get_project_status(max_age=0.5):
             # Built by a version that stores the record fingerprints (see run_update)
             cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",
                         (ROW_HASH_TABLE,))
-            updatable = bool(cur.fetchone())
+            # ...and in the layout this version writes (see run_update)
+            updatable = (bool(cur.fetchone()) and
+                         db_contract.schema_version(conn) == db_contract.SCHEMA_VERSION)
             conn.close()
         except Exception:
             pass
@@ -4334,6 +4491,8 @@ class StepPanel(QWidget):
         if self.app._is_any_running():
             QMessageBox.warning(self, t('step_running_title'), t('pipeline_blocked_body'))
             return
+        if not self.app._ensure_no_pending_build(self):
+            return
         self._refresh_input_status()
         self._active = True
         self.app.refresh_sidebar_status()   # disables the Home pipeline buttons
@@ -4347,6 +4506,8 @@ class StepPanel(QWidget):
         self._worker.log_signal.connect(self.app.log)
         self._worker.progress_signal.connect(self._on_progress)
         self._worker.finished_signal.connect(self.set_done_ui)
+        # After set_done_ui (slots run in connection order): the run is over
+        self._worker.finished_signal.connect(lambda _ok: self.app._settle_db_build())
         self._worker.start()
 
     def _set_progbar_color(self, color):
@@ -5660,6 +5821,8 @@ class App(QMainWindow):
         )
         if resp != QMessageBox.StandardButton.Yes:
             return
+        if not self._ensure_no_pending_build(self):
+            return
         self._seq_running      = True
         self._seq_step_indices = list(step_indices)
         self._seq_step_pos     = 0
@@ -5674,6 +5837,7 @@ class App(QMainWindow):
             self._seq_running = False
             self._set_shortcuts_state(True)
             self.stop_timer()
+            self._settle_db_build()
             self.log(t('log_process_finished'))
             self._refresh_all_panels_input()
             self.refresh_sidebar_status()
@@ -5720,6 +5884,7 @@ class App(QMainWindow):
             self._seq_running = False
             self._set_shortcuts_state(True)
             self.stop_timer()
+            self._settle_db_build()
             self._refresh_all_panels_input()
             self.refresh_sidebar_status()
             return
@@ -5728,6 +5893,7 @@ class App(QMainWindow):
             self._seq_running = False
             self._set_shortcuts_state(True)
             self.stop_timer()
+            self._settle_db_build()
             self._refresh_all_panels_input()
             self.refresh_sidebar_status()
             return
@@ -5885,6 +6051,26 @@ class App(QMainWindow):
             return True
         return any(p.is_running() for p in self._panels)
 
+    def _settle_db_build(self):
+        """Puts a finished build in place of the current database, if there is
+        one (see _promote_pending_build). Called only while nothing runs.
+        False if a finished build is waiting and couldn't replace it."""
+        pending = os.path.exists(_build_path(_proj_dir("app", db_contract.DB_FILENAME)))
+        ok = _promote_pending_build(self.log)
+        if pending:
+            self._refresh_all_panels_input()
+            self.refresh_sidebar_status()
+        return ok
+
+    def _ensure_no_pending_build(self, parent):
+        """Before a run: a finished build that couldn't replace the database
+        yet must do so first. Updating the current database in the meantime
+        would be lost when it does, and Step 2 would delete it."""
+        if self._settle_db_build():
+            return True
+        QMessageBox.warning(parent, t('db_build_pending_title'), t('db_build_pending_body'))
+        return False
+
     def _init_log_file(self):
         logs_dir = os.path.normpath(os.path.join(PROJECT_ROOT, "..", "app", "logs"))
         try:
@@ -5909,10 +6095,13 @@ class App(QMainWindow):
             self._log_file = None
 
     def _show_initial_status(self):
-        st  = _get_project_status()
-        r   = PROJECT_ROOT
         if self._init_msg:
             self.log(self._init_msg)
+        # A rebuild that finished but couldn't replace the database last
+        # time, or one cut short by a crash: dealt with before reading the status
+        self._settle_db_build()
+        st  = _get_project_status()
+        r   = PROJECT_ROOT
         self.log("─" * 46)
 
         def ok(cond): return "✅" if cond else "⚠️"

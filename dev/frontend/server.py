@@ -81,8 +81,11 @@ from contextlib import contextmanager
 from datetime import datetime
 
 import genbank_batch
+# What bold_db_creator.py writes and this viewer reads: file and table names,
+# the version and the database layout version
+import db_contract
 
-__version__ = "1.2.0"
+__version__ = db_contract.APP_VERSION
 
 app = Flask(__name__)
 
@@ -188,7 +191,7 @@ def _prune_export_status(status_dict, keep=EXPORT_STATUS_KEEP):
         for eid, _ in finished[:len(finished) - keep]:
             status_dict.pop(eid, None)
 
-DATABASE_PATH = os.path.join(_PROJECT_ROOT, "app", "bold_db.db")
+DATABASE_PATH = os.path.join(_PROJECT_ROOT, "app", db_contract.DB_FILENAME)
 
 # Field name mapping: technical name -> friendly name.
 #
@@ -448,8 +451,7 @@ METRIC_OVERFLOW_LIST = 1000
 # than 1,048,576 rows, and the information is still in the not_found.txt files.
 SUMMARY_ZERO_ROWS_MAX = 1_000_000
 
-# Name of the FTS table
-FTS_TABLE_NAME = 'bold_records_fts'  # Adjust to match your actual FTS table name
+FTS_TABLE_NAME = db_contract.FTS_TABLE
 
 def _connect_readonly(timeout):
     """Read-only connection to the database.
@@ -478,8 +480,7 @@ def get_db_connection():
 
     return conn
 
-# Table built by bold_db_creator.py (TABLE_NAME there)
-MAIN_TABLE_NAME = 'bold_records'
+MAIN_TABLE_NAME = db_contract.MAIN_TABLE
 
 @lru_cache(maxsize=1)
 def get_column_names():
@@ -531,8 +532,7 @@ def fts_table_available():
 
     The FTS index is optional: `bold_db_creator.py` can build the database
     without it, in which case the full-text search tab has nothing to work
-    with. Resolved only once (lru_cache) because a table doesn't appear or
-    disappear while the server is running.
+    with. Cached (lru_cache) until the database file changes: see db_problem().
     """
     try:
         conn = get_db_connection()
@@ -731,6 +731,11 @@ def build_single_condition(column, operator, value, parameters, value2=None, num
 STRINGS = {
     'es': {
         'no_table_found': 'No se encontró ninguna tabla en la base de datos',
+        'db_problem_title': 'La base de datos no está disponible',
+        'db_missing': 'Todavía no hay base de datos. Créala con el Creador (acceso directo 1_Create_DB) y recarga esta página.',
+        'db_unreadable': 'No se pudo abrir la base de datos: puede estar a medio crear o dañada. Vuelve a crearla con el Creador (acceso directo 1_Create_DB).',
+        'db_schema_too_old': 'Esta base de datos tiene un formato que esta versión del visor ya no lee. Reconstrúyela con el Creador (acceso directo 1_Create_DB).',
+        'db_schema_too_new': 'Esta base de datos se creó con una versión más reciente del programa. Actualiza el proyecto para poder abrirla.',
         'invalid_search_conditions': 'Condiciones de búsqueda inválidas',
         'no_search_conditions': 'No se proporcionaron condiciones de búsqueda',
         'no_search_query': 'No se proporcionó ninguna consulta de búsqueda',
@@ -802,6 +807,11 @@ STRINGS = {
     },
     'en': {
         'no_table_found': 'No table found in the database',
+        'db_problem_title': 'The database is not available',
+        'db_missing': 'There is no database yet. Create it with the Creator (the 1_Create_DB shortcut) and reload this page.',
+        'db_unreadable': 'The database could not be opened: it may be half-built or damaged. Build it again with the Creator (the 1_Create_DB shortcut).',
+        'db_schema_too_old': 'This database has a layout this version of the viewer no longer reads. Rebuild it with the Creator (the 1_Create_DB shortcut).',
+        'db_schema_too_new': 'This database was built by a newer version of the program. Update the project to open it.',
         'invalid_search_conditions': 'Invalid search conditions',
         'no_search_conditions': 'No search conditions provided',
         'no_search_query': 'No search query provided',
@@ -915,6 +925,94 @@ def start_background(target, *args, **kwargs):
     thread = threading.Thread(target=runner, daemon=True)
     thread.start()
     return thread
+
+
+# ── Database state ────────────────────────────────────────────────────────────
+#
+# The viewer can stay open while the Creator rebuilds or updates the database.
+# Whatever is cached about it (columns, FTS index) is dropped as soon as the
+# file changes, and its layout version is checked against the range this
+# viewer reads (db_contract). Before, an incompatible or missing database only
+# showed up as an SQL error in the middle of a search.
+
+_db_state = {"checked": False, "sig": None, "problem": None}
+_db_state_lock = threading.Lock()
+
+# Routes that query the database. Status, download and GenBank routes don't.
+_DB_ROUTES = ('/api/search', '/api/autocomplete', '/api/export_fasta',
+              '/api/export_csv', '/api/explain', '/api/batch_search',
+              '/total_records')
+
+
+def _db_signature():
+    """Changes whenever the Creator writes to the database or replaces it."""
+    try:
+        st = os.stat(DATABASE_PATH)
+    except OSError:
+        return None
+    return (st.st_mtime_ns, st.st_size, st.st_ino)
+
+
+def _check_db():
+    """STRINGS key describing why the database can't be used, or None."""
+    if not os.path.exists(DATABASE_PATH):
+        return 'db_missing'
+    try:
+        conn = _connect_readonly(5.0)
+        try:
+            version = db_contract.schema_version(conn)
+            conn.execute(f"SELECT 1 FROM {MAIN_TABLE_NAME} LIMIT 0")
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return 'db_unreadable'
+    return {'too_old': 'db_schema_too_old',
+            'too_new': 'db_schema_too_new'}.get(db_contract.schema_status(version))
+
+
+def db_problem():
+    """Why the database can't be used right now (a STRINGS key), or None.
+
+    Re-checked only when the file changes, which also clears the caches
+    built from the previous one.
+    """
+    sig = _db_signature()
+    with _db_state_lock:
+        if _db_state["checked"] and _db_state["sig"] == sig:
+            return _db_state["problem"]
+        for cached in (get_column_names, get_numeric_columns,
+                       fts_table_available, get_fts_columns):
+            cached.cache_clear()
+        problem = _check_db()
+        _db_state.update(checked=True, sig=sig, problem=problem)
+        return problem
+
+
+_DB_PROBLEM_PAGE = """<!doctype html>
+<html lang="{lang}"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOLD Database v{version}</title>
+<style>
+body{{font-family:system-ui,sans-serif;background:#f5f7fa;color:#1b2235;margin:0;padding:64px 16px}}
+main{{max-width:560px;margin:0 auto;background:#fff;border:1px solid #dde2ec;border-radius:10px;padding:28px 32px}}
+h1{{font-size:1.25rem;margin:0 0 12px;color:#2c4685}}
+p{{line-height:1.5;margin:0}}
+</style></head>
+<body><main><h1>{title}</h1><p>{message}</p></main></body></html>"""
+
+
+@app.before_request
+def _guard_database():
+    if request.path != '/' and not request.path.startswith(_DB_ROUTES):
+        return None
+    problem = db_problem()
+    if problem is None:
+        return None
+    if request.path == '/':
+        return _DB_PROBLEM_PAGE.format(
+            lang=get_lang(), version=__version__,
+            title=t('db_problem_title'), message=t(problem)), 503
+    return jsonify({'error': t(problem)}), 503
 
 
 @app.route('/')
@@ -1980,13 +2078,10 @@ def _count_total_records():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT value FROM bold_meta WHERE key = 'record_count'")
-            row = cursor.fetchone()
-            if row and str(row[0]).isdigit():
-                return int(row[0])
-        except sqlite3.Error:
-            pass   # no bold_meta: database built by an older version
+        # Missing in databases built before bold_meta existed
+        value = db_contract.read_meta(conn).get('record_count')
+        if value is not None and str(value).isdigit():
+            return int(value)
         cursor.execute(f"SELECT COUNT(*) FROM {MAIN_TABLE_NAME}")
         return cursor.fetchone()[0]
     finally:
@@ -2020,6 +2115,11 @@ def _report_fts_availability():
     disabled. A failure opening the database doesn't stop startup — the rest
     of the app reports that problem on its own.
     """
+    problem = db_problem()
+    if problem:
+        # Startup has no request, hence no language cookie
+        print(f"❌ {STRINGS['en'][problem]}")
+        return
     try:
         if fts_table_available():
             print(f"✅ Full-text index available ({FTS_TABLE_NAME}).")

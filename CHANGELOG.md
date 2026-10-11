@@ -37,6 +37,23 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   Subspecies when the database has that field indexed.
 - Batch search messages no longer say "1 terms" or "1 records found"; with a
   single term or value and no results, they name it.
+- Rebuilding the database no longer touches the current one until the new
+  one is finished. Steps 2-4 build it in `app/bold_db.db.building` and it
+  replaces `app/bold_db.db` when the run ends, so the viewer keeps serving
+  the previous version (with its indexes) the whole time. A rebuild that fails
+  or is stopped leaves the current database as it was; before, stopping
+  Step 2 deleted it. The new copy needs as much free disk space as the
+  current database; Step 2 warns when the disk looks too small.
+- The Creator and the viewer share one definition of the database (file and
+  table names, version), in `dev/frontend/db_contract.py`. The database now
+  records its layout version (`schema_version` in `bold_meta`): the viewer
+  shows a clear message instead of SQL errors when the database is missing,
+  unreadable or in a layout it doesn't read, and the update refuses a
+  database in another layout. Existing databases count as layout 1 and need
+  no rebuild.
+- The viewer notices when the database file is replaced or updated while it
+  runs, and re-reads its columns and full-text index availability instead of
+  keeping the ones from startup.
 
 ### Fixed
 - Two batch searches started in the same second wrote to the same ZIP, and

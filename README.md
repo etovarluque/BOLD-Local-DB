@@ -40,7 +40,9 @@ Two programs, used in order:
 - Windows, macOS or Linux
 - Python 3 (dependencies auto-install on first run: PySide6, Flask, etc.)
 - A [BOLD Systems](https://bench.boldsystems.org/) account, to download data packages
-- ~80 GB of free disk space, for the downloaded package and the resulting database
+- ~80 GB of free disk space, for the downloaded package and the resulting database.
+  Rebuilding over an existing database needs room for a second copy: the new
+  one is built next to the current one and replaces it when it's finished.
 
 ## Quick start
 

@@ -502,6 +502,7 @@
           <li><a href="#busqueda-campos">Búsqueda avanzada por campos</a></li>
           <li><a href="#busqueda-fts">Búsqueda de texto completo</a></li>
           <li><a href="#busqueda-batch">Búsqueda en Batch</a></li>
+          <li><a href="#busqueda-genbank">Búsqueda en Batch en GenBank</a></li>
           <li><a href="#tabla">Trabajar con la tabla</a></li>
           <li><a href="#exportar">Exportar resultados</a></li>
         </ol>
@@ -914,6 +915,10 @@
         <h3>📦 Búsqueda en Batch</h3>
         <p>Busca una lista entera de valores cargando un archivo de texto. Ideal para muchas especies o IDs a la vez.</p>
       </div>
+      <div class="mode-card">
+        <h3>🧬 GenBank Batch</h3>
+        <p>Busca una lista de términos en NCBI GenBank, en línea. Conteos, metadatos y secuencias por término.</p>
+      </div>
     </div>
 
     <!-- Búsqueda por campos -->
@@ -1206,6 +1211,95 @@
       <code>Panthera leo / COI-5P</code> mostrará los países de esa especie <em>en ese marcador</em>, y la fila
       <code>Panthera leo / ND2</code> los suyos por separado.
     </p>
+
+    <!-- GenBank batch -->
+    <h2 class="sub-title" id="busqueda-genbank">Búsqueda en Batch en GenBank</h2>
+    <p>
+      A diferencia de las otras tres pestañas, esta <strong>no</strong> consulta tu base de datos local: busca en
+      <strong>NCBI GenBank</strong> (base de datos nucleotide) <strong>en línea</strong>, así que necesita
+      conexión a internet. Sirve para comparar lo que hay en BOLD con lo depositado en GenBank para la misma lista
+      de especies, o para descargar en bloque secuencias y metadatos de GenBank.
+    </p>
+
+    <ol class="steps">
+      <li>Opcionalmente, pega tu <strong>API key de NCBI</strong>. Sin ella NCBI permite ~3 peticiones por
+          segundo; con ella, ~10, así que los lotes grandes terminan unas tres veces antes. Se recuerda en el
+          navegador. Puedes obtenerla gratis en los ajustes de tu cuenta de NCBI.</li>
+      <li>En el <strong>Criterio 1</strong>, elige el <strong>campo</strong> de NCBI (<em>Organism</em>,
+          <em>Country</em>, <em>Gene</em>, <em>Title</em>, <em>All Fields</em>, <em>Accession</em>,
+          <em>Author</em>, <em>Journal</em>) y escribe o pega <strong>un término por línea</strong>, o arrastra un
+          archivo <code>.txt</code>/<code>.csv</code> sobre el cuadro (de un <code>.csv</code> se usa la primera columna).</li>
+      <li>Opcionalmente, activa <strong>"Agregar segundo criterio"</strong> y rellénalo igual
+          (ver <a href="#genbank-cruce">Cómo se combinan los dos criterios</a>).</li>
+      <li>Ajusta los <strong>registros por consulta (límite)</strong> y elige las salidas: el CSV de conteos se
+          genera siempre; <strong>Metadatos (TSV)</strong> y <strong>Secuencias (FASTA)</strong> son opcionales.</li>
+      <li>Opcionalmente, abre <strong>"⚙ Personalizar reporte resumen"</strong> para añadir columnas a
+          <code>genbank_counts.csv</code>.</li>
+      <li>Pulsa <strong>"Buscar en GenBank"</strong>. En el panel se ven el progreso, la consulta en curso, el
+          tiempo restante estimado y un registro con el resultado de cada consulta. Al terminar, pulsa
+          <strong>"Descargar ZIP"</strong>.</li>
+    </ol>
+
+    <p>
+      El contador junto a cada lista muestra el número de términos <strong>distintos</strong> (los guiones bajos
+      cuentan como espacios y se eliminan duplicados sin distinguir mayúsculas), y junto al botón verás cuántas
+      consultas a NCBI hará la búsqueda.
+    </p>
+
+    <h3 class="step-title" id="genbank-cruce">Cómo se combinan los dos criterios</h3>
+    <ul class="bullet">
+      <li>Solo criterio 1: una consulta por término — <code>Panthera onca[Organism]</code>.</li>
+      <li>Criterio 2 con <strong>un solo valor</strong>: actúa como filtro fijo aplicado a todos los términos —
+          <code>Panthera onca[Organism] AND Colombia[Country]</code>.</li>
+      <li>Criterio 2 con <strong>varios valores</strong>: cada término se cruza con cada valor. 50 especies
+          × 3 genes = 150 consultas.</li>
+    </ul>
+
+    <h3 class="step-title">Contenido del ZIP</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Archivo en el ZIP</th><th>Contenido</th></tr></thead>
+        <tbody>
+          <tr><td><code>genbank_counts.csv</code></td><td>Una fila por consulta: términos, campos, la consulta exacta enviada a NCBI y su número de registros. Una consulta que NCBI no respondió tras varios reintentos muestra <code>ERROR</code> en lugar de un número. Puede llevar columnas del reporte</td></tr>
+          <tr><td><code>genbank_metadata.tsv</code></td><td>Solo con <em>Metadatos</em>: una fila por registro descargado (accession, organismo, marcador/gen, definición, longitud, país, aislado, voucher, fecha de colecta, coordenadas, taxon ID, fechas, taxonomía)</td></tr>
+          <tr><td><code>genbank_sequences.fasta</code></td><td>Solo con <em>Secuencias</em>: todas las secuencias descargadas. Cabecera: <code>&gt;Accession|Organismo|Marcador|Término1|Término2</code></td></tr>
+          <tr><td><code>individual_results/Término/</code></td><td>Una carpeta por consulta con registros, con sus propios metadatos y/o FASTA</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Reporte resumen</h3>
+    <p>
+      Funciona como el de la Búsqueda en Batch, para cuatro categorías: <em>Marker/Gene</em>, <em>Moltype</em>,
+      <em>Division</em> y <em>Country</em>. Para cada una puedes añadir <strong>cuántos</strong> valores distintos
+      encontró cada consulta, <strong>cuáles</strong> y, en la lista, <strong>con conteo</strong>
+      (<code>Colombia (12); Peru (3)</code>). Las listas pueden acortarse a los N valores más frecuentes.
+      Calcularlo requiere descargar cada registro (hasta el límite), aunque no se guarden metadatos ni FASTA.
+    </p>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Respeta la política de uso de NCBI.</strong> NCBI vigila y penaliza el uso excesivo de sus
+        servidores. La búsqueda ya se mantiene por debajo de sus límites y solo puede haber una búsqueda en GenBank
+        a la vez, pero un límite alto con listas largas sigue suponiendo muchas peticiones: mantén los lotes
+        razonables.
+        <br><br>
+        El <strong>límite</strong> acota cuántos registros se <em>descargan</em> por consulta, no cuántos se
+        cuentan: <code>genbank_counts.csv</code> muestra siempre el total real, y el registro marca las consultas
+        que se recortaron.
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        <strong>Detener</strong> para la búsqueda tras la petición en curso y aun así ofrece un ZIP con las
+        consultas completadas. La búsqueda corre en el servidor: puedes cambiar de pestaña, o recargar la página, y
+        el panel la retoma. El valor <em>Marker/Gene</em> se toma del primer gen o producto anotado en el
+        registro, así que el nombre varía según quien lo depositó (<code>COI</code>, <code>COX1</code>, <code>cox1</code>…).
+      </div>
+    </div>
 
     <!-- Tabla de resultados -->
     <h2 class="sub-title" id="tabla">Trabajar con la tabla de resultados</h2>

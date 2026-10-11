@@ -21,6 +21,12 @@ Two programs, used in order:
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.
 
+   It also has a **GenBank Batch** tab (ported from BarcodeSuite) that
+   searches NCBI GenBank online — the only feature that needs internet — for
+   a list of terms, optionally crossed with a second criterion, and downloads
+   a ZIP with record counts per query and, optionally, metadata (TSV) and
+   sequences (FASTA).
+
 ### Screenshots
 
 | Full-text search | Advanced field search | Batch search |
@@ -125,6 +131,7 @@ BOLD_DB/
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/
 │   │   ├── server.py          # Local web server (search / filter / export)
+│   │   ├── genbank_batch.py   # GenBank Batch search (NCBI E-utilities), used by server.py
 │   │   ├── static/
 │   │   └── templates/
 │   └── screenshots/

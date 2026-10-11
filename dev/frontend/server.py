@@ -80,6 +80,8 @@ from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
+import genbank_batch
+
 __version__ = "1.2.0"
 
 app = Flask(__name__)
@@ -97,10 +99,12 @@ _EXPORTS_ROOT     = os.path.join(_PROJECT_ROOT, "data", "exports")
 CSV_EXPORTS_DIR   = os.path.join(_EXPORTS_ROOT, 'csv_exports')
 FASTA_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'fasta_exports')
 BATCH_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'batch_exports')
+GENBANK_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'genbank_exports')
 
 os.makedirs(CSV_EXPORTS_DIR,   exist_ok=True)
 os.makedirs(FASTA_EXPORTS_DIR, exist_ok=True)
 os.makedirs(BATCH_EXPORTS_DIR, exist_ok=True)
+os.makedirs(GENBANK_EXPORTS_DIR, exist_ok=True)
 
 # File retention in export folders:
 # after generating a new file, only the EXPORT_KEEP most recent files per
@@ -157,6 +161,7 @@ def _export_progress(status):
 fasta_exports  = {}
 csv_exports    = {}
 batch_exports  = {}
+genbank_jobs   = {}
 exports_lock   = threading.Lock()
 
 # Active searches: {search_id: connection} so they can be interrupted
@@ -782,6 +787,18 @@ STRINGS = {
         'col_found': '{field} Encontrados',
         'col_not_found': '{field} No Encontrados',
         'and_n_more': '… y {n} más',
+        'genbank_terms_required': 'Introduce al menos un término para el criterio 1',
+        'genbank_field2_no_terms': 'El criterio 2 está activado pero no tiene términos',
+        'genbank_invalid_field': 'Campo de NCBI no válido: {field}',
+        'genbank_already_running': 'Ya hay una búsqueda en GenBank en curso. Espera a que termine o detenla.',
+        'genbank_log_count': '{query}: {n} registro(s)',
+        'genbank_log_capped': ' — descargados solo {n} (límite por consulta)',
+        'genbank_log_chunks_failed': ' — ⚠ {n} bloque(s) no se pudieron descargar',
+        'genbank_log_failed': '{query}: ⚠ ERROR — NCBI no respondió tras varios intentos',
+        'genbank_packing': 'Empaquetando resultados...',
+        'genbank_done': 'Listo: {done} consulta(s), {records} registro(s) descargados.',
+        'genbank_done_failed': ' {n} consulta(s) fallaron (marcadas como ERROR en genbank_counts.csv).',
+        'genbank_stopped': 'Detenida tras {done} de {total} consultas. El ZIP contiene los resultados parciales.',
     },
     'en': {
         'no_table_found': 'No table found in the database',
@@ -841,6 +858,18 @@ STRINGS = {
         'col_found': '{field} Found',
         'col_not_found': '{field} Not Found',
         'and_n_more': '… and {n} more',
+        'genbank_terms_required': 'Enter at least one term for Criterion 1',
+        'genbank_field2_no_terms': 'Criterion 2 is enabled but has no terms',
+        'genbank_invalid_field': 'Invalid NCBI field: {field}',
+        'genbank_already_running': 'A GenBank search is already running. Wait for it to finish or stop it.',
+        'genbank_log_count': '{query}: {n} record(s)',
+        'genbank_log_capped': ' — only {n} downloaded (per-query cap)',
+        'genbank_log_chunks_failed': ' — ⚠ {n} batch(es) could not be downloaded',
+        'genbank_log_failed': '{query}: ⚠ ERROR — NCBI did not respond after several attempts',
+        'genbank_packing': 'Packaging results...',
+        'genbank_done': 'Done: {done} query(ies), {records} record(s) downloaded.',
+        'genbank_done_failed': ' {n} query(ies) failed (marked as ERROR in genbank_counts.csv).',
+        'genbank_stopped': 'Stopped after {done} of {total} queries. The ZIP contains the partial results.',
     },
 }
 
@@ -932,6 +961,8 @@ def index():
         columns=columns,
         batch_columns=batch_columns,
         metric_columns=metric_columns,
+        genbank_fields=genbank_batch.FIELD_OPTIONS,
+        genbank_report_columns=genbank_batch.REPORT_COLUMNS,
         fts_available=fts_table_available(),
         fts_table_name=FTS_TABLE_NAME,
         initial_lang=get_lang(),
@@ -1969,9 +2000,13 @@ def total_records():
 def clear_export_folders():
     """On server startup, keeps only the EXPORT_KEEP most recent files per
     export folder (rolling retention), instead of deleting them entirely."""
-    folders = [CSV_EXPORTS_DIR, FASTA_EXPORTS_DIR, BATCH_EXPORTS_DIR]
+    folders = [CSV_EXPORTS_DIR, FASTA_EXPORTS_DIR, BATCH_EXPORTS_DIR, GENBANK_EXPORTS_DIR]
     for folder in folders:
         _prune_export_dir(folder)
+    # Scratch folders of GenBank searches cut short by a server stop
+    for name in os.listdir(GENBANK_EXPORTS_DIR):
+        if name.startswith('_work_'):
+            shutil.rmtree(os.path.join(GENBANK_EXPORTS_DIR, name), ignore_errors=True)
 
 # Run on server startup
 clear_export_folders()
@@ -3096,6 +3131,211 @@ def download_batch(export_id):
         mimetype='application/zip',
         as_attachment=True,
         download_name=f'batch_results_{ts}.zip',
+    )
+
+
+# ── GenBank batch search ──────────────────────────────────────────────────────
+#
+# Queries NCBI GenBank online (not the local database); the logic lives in
+# genbank_batch.py, ported from BarcodeSuite. One search at a time: NCBI
+# penalizes clients that hammer it, and the rate limit is per job.
+
+def _genbank_running():
+    return any(st.get('status') == 'processing' for st in genbank_jobs.values())
+
+
+def _parse_genbank_request(data):
+    """Validates the request body into the job's cfg, or raises ValueError."""
+    def term_list(key):
+        raw = data.get(key) or []
+        if isinstance(raw, str):
+            raw = raw.splitlines()
+        if not isinstance(raw, list):
+            raw = []
+        return genbank_batch.normalize_terms(raw)
+
+    field1 = data.get('field1_tag')
+    terms1 = term_list('field1_terms')
+    if not terms1:
+        raise ValueError(t('genbank_terms_required'))
+    if field1 not in genbank_batch.FIELD_OPTIONS:
+        raise ValueError(t('genbank_invalid_field', field=field1))
+
+    field2_enabled = bool(data.get('field2_enabled'))
+    field2, terms2 = None, []
+    if field2_enabled:
+        field2 = data.get('field2_tag')
+        terms2 = term_list('field2_terms')
+        if not terms2:
+            raise ValueError(t('genbank_field2_no_terms'))
+        if field2 not in genbank_batch.FIELD_OPTIONS:
+            raise ValueError(t('genbank_invalid_field', field=field2))
+
+    try:
+        retmax = int(data.get('retmax', genbank_batch.RETMAX_DEFAULT))
+    except (TypeError, ValueError):
+        retmax = genbank_batch.RETMAX_DEFAULT
+    retmax = max(genbank_batch.RETMAX_MIN, min(genbank_batch.RETMAX_MAX, retmax))
+
+    # Report metrics: only whitelisted columns, in the whitelist's order
+    allowed = [c for c, _ in genbank_batch.REPORT_COLUMNS]
+    requested = {}
+    for m in data.get('report_metrics') or []:
+        if isinstance(m, dict) and m.get('column') in allowed:
+            requested[m['column']] = m
+    metrics = []
+    for col in allowed:
+        m = requested.get(col)
+        if m and (m.get('count') or m.get('list')):
+            metrics.append({
+                'column':      col,
+                'count':       bool(m.get('count')),
+                'list':        bool(m.get('list')),
+                'with_counts': bool(m.get('list') and m.get('with_counts')),
+            })
+    try:
+        max_list = max(0, int(data.get('report_max_list') or 0))
+    except (TypeError, ValueError):
+        max_list = 0
+
+    api_key = str(data.get('api_key') or '').strip()
+    # An NCBI API key is alphanumeric; anything else would only make every
+    # request fail (and must not be injected into the URL)
+    if api_key and not re.fullmatch(r'[A-Za-z0-9]{1,64}', api_key):
+        api_key = ''
+
+    return {
+        'api_key':         api_key,
+        'field1_tag':      field1,
+        'field1_terms':    terms1,
+        'field2_enabled':  field2_enabled,
+        'field2_tag':      field2,
+        'field2_terms':    terms2,
+        'retmax':          retmax,
+        'want_metadata':   bool(data.get('want_metadata')),
+        'want_fasta':      bool(data.get('want_fasta')),
+        'report_metrics':  metrics,
+        'report_max_list': max_list,
+    }
+
+
+def process_genbank_batch(job_id, cfg):
+    st = genbank_jobs[job_id]
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    zip_name  = f'genbank_{timestamp}_{job_id[:8]}.zip'
+    zip_path  = os.path.join(GENBANK_EXPORTS_DIR, zip_name)
+    job = genbank_batch.GenbankBatchJob(
+        cfg,
+        workdir=os.path.join(GENBANK_EXPORTS_DIR, f'_work_{job_id}'),
+        zip_path=zip_path, status=st, tr=t,
+    )
+    try:
+        summary = job.run()
+        if st.get('cancel'):
+            message = t('genbank_stopped', done=f"{summary['queries_done']:,}",
+                        total=f"{summary['queries_total']:,}")
+            final = 'cancelled'
+        else:
+            message = t('genbank_done', done=f"{summary['queries_done']:,}",
+                        records=f"{summary['records']:,}")
+            final = 'completed'
+        if summary['failed']:
+            message += t('genbank_done_failed', n=f"{summary['failed']:,}")
+        st.update({'status': final, 'progress': 100, 'message': message,
+                   'filename': zip_name})
+        _prune_export_dir(GENBANK_EXPORTS_DIR)
+    except genbank_batch.GenbankCancelled:
+        st.update({'status': 'cancelled', 'message': t('search_cancelled')})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        st.update({'status': 'error', 'message': t('generic_error', error=str(e))})
+        if os.path.exists(zip_path):
+            try:
+                os.remove(zip_path)
+            except Exception:
+                pass
+    finally:
+        job.cleanup()
+
+
+@app.route('/api/genbank_batch', methods=['POST'])
+def start_genbank_batch():
+    try:
+        data = request.get_json(silent=True) or {}
+        try:
+            cfg = _parse_genbank_request(data)
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
+        with exports_lock:
+            if _genbank_running():
+                return jsonify({'error': t('genbank_already_running')}), 409
+            job_id = str(uuid.uuid4())
+            genbank_jobs[job_id] = {
+                'status':     'processing',
+                'progress':   0,
+                'message':    t('starting_search'),
+                'filename':   None,
+                'log':        [],
+                'log_offset': 0,
+                'start_time': datetime.now(),
+            }
+        _prune_export_status(genbank_jobs)
+        start_background(process_genbank_batch, job_id, cfg)
+        n_queries = len(genbank_batch.build_pairs(cfg['field1_terms'], cfg['field2_terms']))
+        return jsonify({'job_id': job_id, 'queries': n_queries})
+    except Exception as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+
+@app.route('/api/genbank_batch_status/<job_id>')
+def genbank_batch_status(job_id):
+    st = genbank_jobs.get(job_id)
+    if not st:
+        return jsonify({'error': t('invalid_id')}), 404
+    # `since` = log lines the page already has (absolute index), so each
+    # poll only carries the new ones.
+    try:
+        since = max(0, int(request.args.get('since', 0)))
+    except ValueError:
+        since = 0
+    offset = st.get('log_offset', 0)
+    log = list(st.get('log', []))
+    return jsonify({
+        'status':       st['status'],
+        'progress':     st.get('progress', 0),
+        'message':      st.get('message', ''),
+        'log':          log[max(0, since - offset):],
+        'log_total':    offset + len(log),
+        'download_url': f'/api/download_genbank/{job_id}'
+                        if st.get('filename') and st['status'] in ('completed', 'cancelled') else None,
+    })
+
+
+@app.route('/api/cancel_genbank_batch/<job_id>', methods=['POST'])
+def cancel_genbank_batch(job_id):
+    st = genbank_jobs.get(job_id)
+    if not st:
+        return jsonify({'ok': False, 'error': t('invalid_id')}), 404
+    st['cancel'] = True
+    return jsonify({'ok': True})
+
+
+@app.route('/api/download_genbank/<job_id>')
+def download_genbank(job_id):
+    st = genbank_jobs.get(job_id)
+    if not st:
+        return jsonify({'error': t('invalid_id')}), 404
+    if not st.get('filename'):
+        return jsonify({'error': t('not_available')}), 400
+    filepath = os.path.join(GENBANK_EXPORTS_DIR, st['filename'])
+    if not os.path.exists(filepath):
+        return jsonify({'error': t('file_not_found')}), 404
+    return send_file(
+        filepath,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=st['filename'],
     )
 
 

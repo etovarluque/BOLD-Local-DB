@@ -813,6 +813,55 @@
 		@media (max-width: 768px) {
 			.report-breakdown-grid { grid-template-columns: repeat(2, 1fr); }
 		}
+
+		/* ── GenBank batch search ────────────────────────────────── */
+		.gb-field-select { width: 200px; }
+		.gb-terms {
+			border: 1.5px dashed #ced4da;
+			background: #fafbfc;
+			font-family: Consolas, 'Courier New', monospace;
+			font-size: 0.86rem;
+			resize: vertical;
+		}
+		.gb-terms:focus { border-color: var(--color-secondary); background: #fff; }
+		.gb-terms.dragover {
+			border: 2px solid var(--color-secondary);
+			background: #e8f3ff;
+		}
+		.gb-term-count {
+			font-size: 0.82rem;
+			font-weight: 600;
+			color: var(--color-primary);
+		}
+		.gb-warn {
+			color: #b45309;
+			font-size: 1.1rem;
+			cursor: help;
+		}
+		.gb-report-grid { grid-template-columns: 1fr 96px 96px 118px; overflow-x: hidden; }
+		.gb-report-grid .report-metric-head { white-space: normal; }
+		.gb-status-box {
+			border: 1px solid #dee2e6;
+			border-radius: 6px;
+			background: #f8f9fa;
+			padding: 10px 14px;
+		}
+		.gb-status-text { font-size: 0.88rem; color: #495057; word-break: break-word; }
+		.gb-status-text.is-done  { color: #198754; font-weight: 500; }
+		.gb-status-text.is-error { color: #dc3545; font-weight: 500; }
+		#gbProgressBar { background-color: var(--color-primary); font-size: 0.75rem; transition: width .4s; }
+		.gb-log {
+			max-height: 180px;
+			overflow-y: auto;
+			background: #fff;
+			border: 1px solid #e9ecef;
+			border-radius: 4px;
+			padding: 6px 8px;
+			margin: 0;
+			font-size: 0.8rem;
+			white-space: pre-wrap;
+		}
+		.gb-log:empty { display: none; }
     </style>
 </head>
 <body>
@@ -867,7 +916,8 @@
                         data-i18n="fts_panel_title">
                     Búsqueda de texto completo
                 </button>
-                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_panel_title">Búsqueda en Batch</button>
+                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_tab_btn">Lote en BOLD local</button>
+                <button type="button" class="btn btn-outline-primary" id="genbankSearchTab" data-i18n="genbank_tab_btn">Lote en GenBank</button>
             </div>
         </div>
 
@@ -897,7 +947,7 @@
         <!-- Batch search panel -->
         <div id="batchSearchPanel" class="card mb-4" style="display:none;">
             <div class="card-header">
-                <h5 data-i18n="batch_panel_title">Búsqueda en Batch</h5>
+                <h5 data-i18n="batch_panel_title">Búsqueda por lote en la base BOLD local</h5>
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-4" data-i18n-html="batch_intro_text">
@@ -1123,6 +1173,134 @@
             </div>
         </div>
 
+        <!-- GenBank batch search panel (queries NCBI online; ported from BarcodeSuite) -->
+        <div id="genbankSearchPanel" class="card mb-4" style="display:none;">
+            <div class="card-header">
+                <h5 data-i18n="genbank_panel_title">Búsqueda por lote en NCBI GenBank (en línea)</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-4" data-i18n-html="genbank_intro_text"></p>
+
+                <!-- NCBI settings -->
+                <label class="form-label fw-semibold text-secondary small text-uppercase" style="letter-spacing:.5px;" data-i18n="genbank_ncbi_settings">Ajustes de NCBI</label>
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <span class="text-secondary small text-nowrap" data-i18n="genbank_api_key_label">API key (opcional):</span>
+                    <input type="text" id="gbApiKey" class="form-control form-control-sm" autocomplete="off" spellcheck="false"
+                           data-i18n-placeholder="genbank_api_key_placeholder">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="gbClearApiKey()"
+                            title="Borrar API key" data-i18n-title="genbank_api_key_clear">✕</button>
+                </div>
+
+                <!-- Criterion 1 -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-secondary small text-uppercase" style="letter-spacing:.5px;" data-i18n="genbank_crit1_label">Criterio 1 · requerido</label>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="text-secondary small" data-i18n="genbank_field_label">Campo:</span>
+                        <select id="gbField1" class="form-select form-select-sm gb-field-select">{% for f in genbank_fields %}<option value="{{ f }}">{{ f }}</option>{% endfor %}</select>
+                        <span class="gb-term-count ms-auto" id="gbCount1"></span>
+                        <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="gbClearTerms(1)" data-i18n="genbank_clear_list">✕ Vaciar lista</button>
+                    </div>
+                    <textarea id="gbTerms1" class="form-control gb-terms" rows="4" spellcheck="false"
+                              data-i18n-placeholder="genbank_terms1_placeholder"></textarea>
+                </div>
+
+                <!-- Criterion 2 toggle -->
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="gbEnableField2" role="switch">
+                    <label class="form-check-label text-secondary" for="gbEnableField2" data-i18n="genbank_add_crit2">Agregar segundo criterio (cruzado con el criterio 1)</label>
+                </div>
+
+                <!-- Criterion 2 -->
+                <div id="gbField2Section" class="mb-4" style="display:none;">
+                    <label class="form-label fw-semibold text-secondary small text-uppercase" style="letter-spacing:.5px;" data-i18n="genbank_crit2_label">Criterio 2 · opcional</label>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="text-secondary small" data-i18n="genbank_field_label">Campo:</span>
+                        <select id="gbField2" class="form-select form-select-sm gb-field-select">{% for f in genbank_fields %}<option value="{{ f }}">{{ f }}</option>{% endfor %}</select>
+                        <span class="gb-term-count ms-auto" id="gbCount2"></span>
+                        <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="gbClearTerms(2)" data-i18n="genbank_clear_list">✕ Vaciar lista</button>
+                    </div>
+                    <textarea id="gbTerms2" class="form-control gb-terms" rows="3" spellcheck="false"
+                              data-i18n-placeholder="genbank_terms2_placeholder"></textarea>
+                </div>
+
+                <!-- Options -->
+                <label class="form-label fw-semibold text-secondary small text-uppercase" style="letter-spacing:.5px;" data-i18n="genbank_options_label">Opciones</label>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="text-secondary small" data-i18n="genbank_retmax_label">Registros por consulta (límite):</span>
+                    <input type="number" id="gbRetmax" class="form-control form-control-sm" value="500" min="1" max="10000" style="width:100px;">
+                    <span class="gb-warn" data-i18n-title="genbank_retmax_warning">⚠</span>
+                </div>
+                <div class="d-flex flex-wrap gap-4 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="gbWantCounts" checked disabled>
+                        <label class="form-check-label text-secondary" for="gbWantCounts" data-i18n="genbank_out_counts">Conteo de registros (CSV)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="gbWantMetadata">
+                        <label class="form-check-label text-secondary" for="gbWantMetadata" data-i18n="genbank_out_metadata">Metadatos (TSV)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="gbWantFasta">
+                        <label class="form-check-label text-secondary" for="gbWantFasta" data-i18n="genbank_out_fasta">Secuencias (FASTA)</label>
+                    </div>
+                </div>
+
+                <!-- Summary report customization (optional) -->
+                <div class="mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="gbReportToggleBtn" class="btn btn-sm btn-outline-secondary" type="button"
+                                onclick="gbToggleReportPanel()"></button>
+                        <span id="gbReportHint" class="text-muted" style="font-size:.82rem;"></span>
+                        <button id="gbReportResetBtn" class="btn btn-sm btn-link text-muted p-0 ms-auto"
+                                onclick="gbResetReportSpec()" data-i18n-title="report_reset_title"
+                                style="display:none;" data-i18n="reset_btn">↺ Restablecer</button>
+                    </div>
+                    <div id="gbReportPanel" style="display:none;" class="mt-2">
+                        <div class="report-panel">
+                            <small class="text-muted d-block mb-2" data-i18n-html="genbank_report_text"></small>
+                            <div class="report-metric-grid gb-report-grid">
+                                <div class="report-metric-head" data-i18n="report_category">Categoría</div>
+                                <div class="report-metric-head text-center" data-i18n="report_how_many">Cuántos</div>
+                                <div class="report-metric-head text-center" data-i18n="report_which_ones">Cuáles</div>
+                                <div class="report-metric-head text-center" data-i18n="genbank_report_with_counts">Con conteo</div>
+                                {% for col, label in genbank_report_columns %}
+                                <div>{{ label }}</div>
+                                <div><label><input type="checkbox" class="gb-metric-count" data-col="{{ col }}"></label></div>
+                                <div><label><input type="checkbox" class="gb-metric-list" data-col="{{ col }}"></label></div>
+                                <div><label data-i18n-title="genbank_report_with_counts_title"><input type="checkbox" class="gb-metric-with-counts" data-col="{{ col }}"></label></div>
+                                {% endfor %}
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-3">
+                                <input class="form-check-input mt-0" type="checkbox" id="gbReportLimitList">
+                                <label class="form-check-label text-secondary" for="gbReportLimitList"
+                                       style="font-size:.86rem;" data-i18n="report_limit_list_label">Acortar las listas a los</label>
+                                <input type="number" id="gbReportMaxList" class="form-control form-control-sm"
+                                       value="10" min="1" max="1000" style="width:80px;padding:.2rem .5rem;" disabled>
+                                <span class="text-secondary" style="font-size:.86rem;" data-i18n="report_most_frequent">valores más frecuentes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status (shown while running and after) -->
+                <div id="gbStatusBox" class="gb-status-box" style="display:none;">
+                    <div id="gbStatusText" class="gb-status-text"></div>
+                    <div class="progress mt-2" id="gbProgressWrap" style="height:20px;">
+                        <div class="progress-bar" id="gbProgressBar" role="progressbar" style="width:0%;">0%</div>
+                    </div>
+                    <pre id="gbLog" class="gb-log mt-2"></pre>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <button id="gbClearBtn" type="button" class="btn btn-outline-danger" onclick="gbClearAll()" data-i18n="genbank_clear_btn">Limpiar</button>
+                    <a id="gbDownloadBtn" class="btn btn-emerald" style="display:none;" data-i18n="download_zip_btn">Descargar ZIP</a>
+                    <span id="gbQueryHint" class="text-muted ms-auto" style="font-size:.85rem;"></span>
+                    <button id="gbStopBtn" type="button" class="btn btn-danger px-4" style="display:none;" onclick="gbStop()" data-i18n="genbank_stop_btn">Detener</button>
+                    <button id="gbRunBtn" type="button" class="btn btn-primary px-5" onclick="gbRun()" data-i18n="genbank_search_btn">Buscar en GenBank</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Field search panel (original) -->
         <div class="card mb-4" id="fieldSearchPanel">
             <div class="card-header">
@@ -1252,7 +1430,8 @@
                 fts_panel_title: 'Búsqueda de texto completo',
                 fts_help_text: 'Busca en toda la base de datos con una consulta de texto completo. Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.',
                 fts_query_placeholder: 'Introduce tu consulta...',
-                batch_panel_title: 'Búsqueda en Batch',
+                batch_tab_btn: 'Lote en BOLD local',
+                batch_panel_title: 'Búsqueda por lote en la base BOLD local',
                 batch_intro_text: 'Búsqueda por campos automatizada: repite la misma consulta una vez por cada término de tu archivo de texto plano (un valor por línea). Todos los términos deben pertenecer al <strong>mismo campo</strong>, el que selecciones abajo. Los resultados se descargan como un ZIP con archivos TSV individuales por término, <code>all_results.tsv</code> y <code>summary.csv</code>.',
                 batch_field1_label: 'Campo 1 · requerido',
                 batch_field2_label: 'Campo 2 · filtro adicional',
@@ -1362,6 +1541,40 @@
                 exporting_csv_title: 'Exportando CSV',
                 exporting_generic_title: 'Exportando',
                 fts_case_sensitive_label: 'Sensible a mayúsculas/minúsculas',
+                genbank_tab_btn: 'Lote en GenBank',
+                genbank_panel_title: 'Búsqueda por lote en NCBI GenBank (en línea)',
+                genbank_intro_text: 'Busca en <strong>NCBI GenBank</strong> (nucleotide) <strong>en línea</strong>, no en la base local, así que requiere conexión a internet. Escribe o pega una lista de términos para el criterio 1 (uno por línea, o arrastra un archivo .txt/.csv), opcionalmente cruzada con el criterio 2: <strong>un solo valor</strong> filtra todos los términos de arriba; <strong>una lista</strong> se cruza con cada uno. Los resultados se descargan como un ZIP con <code>genbank_counts.csv</code> (registros por consulta) y, opcionalmente, metadatos y FASTA compilados, más una carpeta por término con los suyos.',
+                genbank_ncbi_settings: 'Ajustes de NCBI',
+                genbank_api_key_label: 'API key (opcional):',
+                genbank_api_key_placeholder: 'Acelera la búsqueda (10 peticiones/s en vez de 3)…',
+                genbank_api_key_clear: 'Borrar API key',
+                genbank_crit1_label: 'Criterio 1 · requerido',
+                genbank_crit2_label: 'Criterio 2 · opcional',
+                genbank_field_label: 'Campo:',
+                genbank_clear_list: '✕ Vaciar lista',
+                genbank_terms1_placeholder: 'Escribe o pega un término por línea (p. ej. nombres de especies)…\nTambién puedes arrastrar aquí un archivo .txt o .csv.',
+                genbank_terms2_placeholder: 'Un solo valor se aplica a todos los términos de arriba; varios se cruzan con cada uno…\nTambién puedes arrastrar aquí un archivo .txt o .csv.',
+                genbank_add_crit2: 'Agregar segundo criterio (cruzado con el criterio 1)',
+                genbank_options_label: 'Opciones',
+                genbank_retmax_label: 'Registros por consulta (límite):',
+                genbank_retmax_warning: 'Política de uso de NCBI\n\nNCBI vigila y penaliza el uso excesivo de sus servidores. Un límite alto combinado con listas de términos largas genera muchas peticiones: mantén los lotes razonables y no ejecutes varias búsquedas en paralelo.',
+                genbank_out_counts: 'Conteo de registros (CSV)',
+                genbank_out_metadata: 'Metadatos (TSV)',
+                genbank_out_fasta: 'Secuencias (FASTA)',
+                genbank_report_text: 'Añade columnas a <code>genbank_counts.csv</code>: para cada categoría, <em>cuántos</em> valores distintos se encontraron por término y/o <em>cuáles</em>. Requiere descargar cada registro de NCBI (sujeto al límite por consulta), aunque no se guarden metadatos ni FASTA.',
+                genbank_report_with_counts: 'Con conteo',
+                genbank_report_with_counts_title: 'En la lista, indica cuántas veces aparece cada valor, p. ej. «Colombia (12)»',
+                genbank_clear_btn: 'Limpiar',
+                genbank_stop_btn: 'Detener',
+                genbank_search_btn: 'Buscar en GenBank',
+                genbank_term_count: '{n} términos', genbank_term_count_one: '{n} término',
+                genbank_query_hint: '{n} consultas a NCBI', genbank_query_hint_one: '{n} consulta a NCBI',
+                genbank_starting: 'Iniciando búsqueda: {n} consulta(s)…',
+                genbank_stopping: 'Deteniendo… (terminando la petición en curso)',
+                genbank_need_terms1: 'Introduce al menos un término para el criterio 1.',
+                genbank_need_terms2: 'El criterio 2 está activado pero vacío: añade términos o desactívalo.',
+                genbank_load_failed: 'No se pudo leer el archivo: ',
+                genbank_lost: 'El servidor ya no tiene esta búsqueda (¿se reinició?).',
             },
             en: {
                 title_line1: 'DATA', title_line2: 'BASE', title_local: 'Local',
@@ -1370,7 +1583,8 @@
                 fts_panel_title: 'Full-text search',
                 fts_help_text: 'Search the whole database with a full-text query. You can use operators like AND, OR, NOT and quotes for exact phrases.',
                 fts_query_placeholder: 'Enter your query...',
-                batch_panel_title: 'Batch Search',
+                batch_tab_btn: 'Local BOLD batch',
+                batch_panel_title: 'Batch search in the local BOLD database',
                 batch_intro_text: 'Automated field search: it repeats the same query once for each term in your plain text file (one value per line). All terms must belong to the <strong>same field</strong>, the one you select below. Results are downloaded as a ZIP with individual TSV files per term, <code>all_results.tsv</code> and <code>summary.csv</code>.',
                 batch_field1_label: 'Field 1 · required',
                 batch_field2_label: 'Field 2 · additional filter',
@@ -1480,6 +1694,40 @@
                 exporting_csv_title: 'Exporting CSV',
                 exporting_generic_title: 'Exporting',
                 fts_case_sensitive_label: 'Case-sensitive search',
+                genbank_tab_btn: 'GenBank batch',
+                genbank_panel_title: 'Batch search in NCBI GenBank (online)',
+                genbank_intro_text: 'Searches <strong>NCBI GenBank</strong> (nucleotide) <strong>online</strong>, not the local database, so it needs an internet connection. Type or paste a list of terms for Criterion 1 (one per line, or drop a .txt/.csv file), optionally crossed with Criterion 2: <strong>a single value</strong> filters every term above; <strong>a list</strong> is crossed with every term above. Results are downloaded as a ZIP with <code>genbank_counts.csv</code> (records per query) and, optionally, a compiled metadata table and FASTA file, plus one folder per term with its own.',
+                genbank_ncbi_settings: 'NCBI settings',
+                genbank_api_key_label: 'API key (optional):',
+                genbank_api_key_placeholder: 'Speeds up searches (10 requests/s instead of 3)…',
+                genbank_api_key_clear: 'Clear API key',
+                genbank_crit1_label: 'Criterion 1 · required',
+                genbank_crit2_label: 'Criterion 2 · optional',
+                genbank_field_label: 'Field:',
+                genbank_clear_list: '✕ Clear list',
+                genbank_terms1_placeholder: 'Type or paste one term per line (e.g. species names)…\nYou can also drag & drop a .txt or .csv file here.',
+                genbank_terms2_placeholder: 'One value applies to all terms above; several values are crossed with each…\nYou can also drag & drop a .txt or .csv file here.',
+                genbank_add_crit2: 'Add a second criterion (crossed with Criterion 1)',
+                genbank_options_label: 'Options',
+                genbank_retmax_label: 'Records per query (cap):',
+                genbank_retmax_warning: 'NCBI usage policy\n\nNCBI monitors and penalizes excessive use of its servers. A high cap combined with long term lists can generate many requests: keep batches reasonable and avoid running several searches in parallel.',
+                genbank_out_counts: 'Record counts (CSV)',
+                genbank_out_metadata: 'Metadata (TSV)',
+                genbank_out_fasta: 'Sequences (FASTA)',
+                genbank_report_text: 'Adds extra columns to <code>genbank_counts.csv</code>: for each category, <em>how many</em> distinct values were found per term, and/or <em>which ones</em>. Requires fetching each record from NCBI (subject to the cap above), even if metadata/FASTA output isn\'t saved.',
+                genbank_report_with_counts: 'With counts',
+                genbank_report_with_counts_title: 'In the list, show how many times each value appears, e.g. “Colombia (12)”',
+                genbank_clear_btn: 'Clear',
+                genbank_stop_btn: 'Stop',
+                genbank_search_btn: 'Search GenBank',
+                genbank_term_count: '{n} terms', genbank_term_count_one: '{n} term',
+                genbank_query_hint: '{n} NCBI queries', genbank_query_hint_one: '{n} NCBI query',
+                genbank_starting: 'Starting search: {n} quer(ies)…',
+                genbank_stopping: 'Stopping… (finishing the current request)',
+                genbank_need_terms1: 'Enter at least one term for Criterion 1.',
+                genbank_need_terms2: 'Criterion 2 is enabled but empty: add terms or turn it off.',
+                genbank_load_failed: 'Could not read the file: ',
+                genbank_lost: 'The server no longer has this search (was it restarted?).',
             },
         };
 
@@ -1511,6 +1759,12 @@
                 const isOpen = document.getElementById('reportPanel') && document.getElementById('reportPanel').style.display !== 'none';
                 toggleBtn.textContent = `${t('report_toggle_btn')} ${isOpen ? '▲' : '▼'}`;
             }
+            const gbToggleBtn = document.getElementById('gbReportToggleBtn');
+            if (gbToggleBtn) {
+                const isOpen = document.getElementById('gbReportPanel').style.display !== 'none';
+                gbToggleBtn.textContent = `${t('report_toggle_btn')} ${isOpen ? '▲' : '▼'}`;
+            }
+            if (typeof gbUpdateCounts === 'function') gbUpdateCounts();
             const colBtn = document.getElementById('colOrderToggleBtn');
             if (colBtn) {
                 const isOpen = document.getElementById('colOrderPanel') && document.getElementById('colOrderPanel').style.display !== 'none';
@@ -2177,6 +2431,7 @@
                 { tab: 'fieldSearchTab', panel: 'fieldSearchPanel', type: 'field' },
                 { tab: 'ftsSearchTab',   panel: 'ftsSearchPanel',   type: 'fts'   },
                 { tab: 'batchSearchTab', panel: 'batchSearchPanel', type: 'batch' },
+                { tab: 'genbankSearchTab', panel: 'genbankSearchPanel', type: 'genbank' },
             ].filter(({ tab, panel }) =>
                 document.getElementById(tab) && document.getElementById(panel));
 
@@ -3785,6 +4040,7 @@
 			setupBatchDragDrop();
 			setupBatchFieldNotes();
 			setupReportPanel();
+			setupGenbankPanel();
 		});
 
 
@@ -4209,6 +4465,390 @@
 			d.showModal();
 		}
 
+
+		// ── GenBank batch search ──────────────────────────────────────────────────
+		// Ported from BarcodeSuite's GenBank Batch panel. Unlike the other tabs it
+		// queries NCBI online (server.py → genbank_batch.py), not the local
+		// database. The job runs on the server; this page only starts it, polls
+		// its status and offers the ZIP. Its id is kept in sessionStorage so a
+		// reload (e.g. the language switch, which reloads the page) picks the
+		// running search back up instead of losing track of it.
+
+		const GB_FORM_KEY   = 'boldGenbankForm';
+		const GB_APIKEY_KEY = 'boldGenbankApiKey';
+		const GB_JOB_KEY    = 'boldGenbankJob';
+
+		const GbState = { jobId: null, poll: null, logCount: 0 };
+
+		function gbStorageGet(storage, key) {
+			try { return storage.getItem(key); } catch (e) { return null; }
+		}
+		function gbStorageSet(storage, key, value) {
+			try {
+				if (value === null) storage.removeItem(key);
+				else storage.setItem(key, value);
+			} catch (e) { /* private mode / blocked storage: nothing to persist */ }
+		}
+
+		// Same normalization as the server's normalize_terms(): '_' → space,
+		// collapsed whitespace, deduplicated case-insensitively. Keeps the
+		// counts shown here equal to the queries actually run.
+		function gbNormalizeTerms(text) {
+			const seen = new Set();
+			const out  = [];
+			for (const line of text.split(/\r?\n/)) {
+				const term = line.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+				if (!term) continue;
+				const key = term.toLowerCase();
+				if (seen.has(key)) continue;
+				seen.add(key);
+				out.push(term);
+			}
+			return out;
+		}
+
+		function gbPlural(key, n) {
+			return t(n === 1 ? `${key}_one` : key, { n: numFmt.format(n) });
+		}
+
+		function gbUpdateCounts() {
+			const n1 = gbNormalizeTerms(document.getElementById('gbTerms1').value).length;
+			const n2 = gbNormalizeTerms(document.getElementById('gbTerms2').value).length;
+			const f2 = document.getElementById('gbEnableField2').checked;
+			document.getElementById('gbCount1').textContent = gbPlural('genbank_term_count', n1);
+			document.getElementById('gbCount2').textContent = gbPlural('genbank_term_count', n2);
+			// A single Criterion-2 value is a constant filter; several are crossed
+			const queries = (f2 && n2 > 1) ? n1 * n2 : n1;
+			document.getElementById('gbQueryHint').textContent = queries ? gbPlural('genbank_query_hint', queries) : '';
+		}
+
+		function gbClearTerms(n) {
+			document.getElementById(`gbTerms${n}`).value = '';
+			gbUpdateCounts();
+		}
+
+		// A dropped .txt gives one term per line; a .csv, its first column.
+		function gbLoadFileInto(n, file) {
+			const reader = new FileReader();
+			reader.onload = e => {
+				let lines = e.target.result.split(/\r?\n/);
+				if (file.name.toLowerCase().endsWith('.csv')) {
+					lines = lines.map(line => {
+						const m = line.match(/^\s*"((?:[^"]|"")*)"|^([^,]*)/);
+						return m ? (m[1] !== undefined ? m[1].replace(/""/g, '"') : m[2]) : '';
+					});
+				}
+				document.getElementById(`gbTerms${n}`).value =
+					lines.map(l => l.trim()).filter(Boolean).join('\n');
+				gbUpdateCounts();
+			};
+			reader.onerror = () => showBatchDialog(t('genbank_load_failed') + escapeHtml(file.name));
+			reader.readAsText(file);
+		}
+
+		function gbToggleReportPanel() {
+			const panel = document.getElementById('gbReportPanel');
+			const open  = panel.style.display === 'none';
+			panel.style.display = open ? 'block' : 'none';
+			document.getElementById('gbReportToggleBtn').textContent =
+				`${t('report_toggle_btn')} ${open ? '▲' : '▼'}`;
+		}
+
+		function gbCollectReportMetrics() {
+			const metrics = [];
+			document.querySelectorAll('#gbReportPanel .gb-metric-count').forEach(cb => {
+				const col  = cb.dataset.col;
+				const list = document.querySelector(`#gbReportPanel .gb-metric-list[data-col="${col}"]`).checked;
+				const withCounts = document.querySelector(`#gbReportPanel .gb-metric-with-counts[data-col="${col}"]`).checked;
+				if (cb.checked || list)
+					metrics.push({ column: col, count: cb.checked, list, with_counts: list && withCounts });
+			});
+			return metrics;
+		}
+
+		function gbUpdateReportHint() {
+			const metrics = gbCollectReportMetrics();
+			const cols = metrics.reduce((n, m) => n + (m.count ? 1 : 0) + (m.list ? 1 : 0), 0);
+			document.getElementById('gbReportHint').textContent =
+				cols ? t('report_hint_extra_cols', { n: cols, s: cols > 1 ? 's' : '' }) : '';
+			const anyChecked = [...document.querySelectorAll('#gbReportPanel input[type=checkbox]')].some(cb => cb.checked);
+			document.getElementById('gbReportResetBtn').style.display = anyChecked ? 'inline-block' : 'none';
+		}
+
+		function gbResetReportSpec() {
+			document.querySelectorAll('#gbReportPanel input[type=checkbox]').forEach(cb => { cb.checked = false; });
+			document.getElementById('gbReportMaxList').value    = 10;
+			document.getElementById('gbReportMaxList').disabled = true;
+			gbSaveForm();
+		}
+
+		// Options (not the term lists) are remembered between visits
+		function gbSaveForm() {
+			const picked = sel => [...document.querySelectorAll(`#gbReportPanel ${sel}`)]
+				.filter(cb => cb.checked).map(cb => cb.dataset.col);
+			gbStorageSet(localStorage, GB_FORM_KEY, JSON.stringify({
+				field1:     document.getElementById('gbField1').value,
+				field2:     document.getElementById('gbField2').value,
+				retmax:     document.getElementById('gbRetmax').value,
+				metadata:   document.getElementById('gbWantMetadata').checked,
+				fasta:      document.getElementById('gbWantFasta').checked,
+				count:      picked('.gb-metric-count'),
+				list:       picked('.gb-metric-list'),
+				withCounts: picked('.gb-metric-with-counts'),
+				limitOn:    document.getElementById('gbReportLimitList').checked,
+				maxList:    document.getElementById('gbReportMaxList').value,
+			}));
+			gbUpdateReportHint();
+		}
+
+		function gbRestoreForm() {
+			let st = null;
+			try { st = JSON.parse(gbStorageGet(localStorage, GB_FORM_KEY) || 'null'); } catch (e) { st = null; }
+			if (st) {
+				const setSelect = (id, v) => {
+					const sel = document.getElementById(id);
+					if (v && [...sel.options].some(o => o.value === v)) sel.value = v;
+				};
+				setSelect('gbField1', st.field1);
+				setSelect('gbField2', st.field2);
+				if (st.retmax) document.getElementById('gbRetmax').value = st.retmax;
+				document.getElementById('gbWantMetadata').checked = !!st.metadata;
+				document.getElementById('gbWantFasta').checked    = !!st.fasta;
+				const apply = (sel, cols) => {
+					const set = new Set(cols || []);
+					document.querySelectorAll(`#gbReportPanel ${sel}`).forEach(cb => { cb.checked = set.has(cb.dataset.col); });
+				};
+				apply('.gb-metric-count', st.count);
+				apply('.gb-metric-list', st.list);
+				apply('.gb-metric-with-counts', st.withCounts);
+				document.getElementById('gbReportLimitList').checked = !!st.limitOn;
+				if (st.maxList) document.getElementById('gbReportMaxList').value = st.maxList;
+				document.getElementById('gbReportMaxList').disabled = !st.limitOn;
+			}
+			document.getElementById('gbApiKey').value = gbStorageGet(localStorage, GB_APIKEY_KEY) || '';
+			gbUpdateReportHint();
+		}
+
+		function gbClearApiKey() {
+			document.getElementById('gbApiKey').value = '';
+			gbStorageSet(localStorage, GB_APIKEY_KEY, null);
+		}
+
+		function gbSetRunning(running) {
+			document.getElementById('gbRunBtn').style.display  = running ? 'none' : '';
+			document.getElementById('gbStopBtn').style.display = running ? '' : 'none';
+			document.getElementById('gbStopBtn').disabled      = false;
+			document.getElementById('gbClearBtn').disabled     = running;
+			if (running) document.getElementById('gbDownloadBtn').style.display = 'none';
+		}
+
+		function gbSetStatus(text, kind) {
+			const el = document.getElementById('gbStatusText');
+			el.textContent = text;
+			el.classList.toggle('is-done',  kind === 'done');
+			el.classList.toggle('is-error', kind === 'error');
+			document.getElementById('gbStatusBox').style.display = 'block';
+		}
+
+		function gbSetProgress(pct) {
+			const wrap = document.getElementById('gbProgressWrap');
+			const bar  = document.getElementById('gbProgressBar');
+			if (pct === null) { wrap.style.display = 'none'; return; }
+			wrap.style.display = '';
+			const v = Math.max(0, Math.min(100, Number(pct) || 0));
+			bar.style.width  = `${v}%`;
+			bar.textContent  = `${Math.floor(v)}%`;
+		}
+
+		function gbAppendLog(lines) {
+			if (!lines || !lines.length) return;
+			const log = document.getElementById('gbLog');
+			const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 20;
+			log.textContent += (log.textContent ? '\n' : '') + lines.join('\n');
+			if (atBottom) log.scrollTop = log.scrollHeight;
+		}
+
+		function gbStopPolling() {
+			if (GbState.poll) clearInterval(GbState.poll);
+			GbState.poll = null;
+		}
+
+		function gbFinish(kind, message, downloadUrl) {
+			gbStopPolling();
+			gbSetRunning(false);
+			gbSetProgress(null);
+			gbSetStatus(message, kind);
+			const dl = document.getElementById('gbDownloadBtn');
+			if (downloadUrl) {
+				dl.href = downloadUrl;
+				dl.style.display = '';
+			} else {
+				dl.style.display = 'none';
+			}
+		}
+
+		function gbStartPolling(jobId) {
+			GbState.jobId = jobId;
+			gbStopPolling();
+			let busy = false;
+			const tick = async () => {
+				if (busy) return;
+				busy = true;
+				try {
+					const r = await fetch(`/api/genbank_batch_status/${jobId}?since=${GbState.logCount}`);
+					if (r.status === 404) {
+						gbStorageSet(sessionStorage, GB_JOB_KEY, null);
+						gbFinish('error', t('genbank_lost'), null);
+						return;
+					}
+					const d = await r.json();
+					gbAppendLog(d.log);
+					GbState.logCount = d.log_total || GbState.logCount;
+					if (d.status === 'processing') {
+						if (!GbState.stopping) gbSetStatus(d.message || t('processing_ellipsis'));
+						gbSetProgress(d.progress);
+					} else if (d.status === 'completed') {
+						gbFinish('done', d.message, d.download_url);
+					} else if (d.status === 'cancelled') {
+						gbFinish(null, d.message || t('batch_search_cancelled'), d.download_url);
+					} else {
+						gbFinish('error', d.message || t('error_prefix'), null);
+					}
+					if (d.status !== 'processing') GbState.stopping = false;
+				} catch (e) {
+					// Transient (server busy, network hiccup): try again next tick
+				} finally {
+					busy = false;
+				}
+			};
+			GbState.poll = setInterval(tick, 1500);
+			tick();
+		}
+
+		async function gbRun() {
+			const terms1 = gbNormalizeTerms(document.getElementById('gbTerms1').value);
+			const f2On   = document.getElementById('gbEnableField2').checked;
+			const terms2 = f2On ? gbNormalizeTerms(document.getElementById('gbTerms2').value) : [];
+			if (!terms1.length)         { showBatchDialog(t('genbank_need_terms1')); return; }
+			if (f2On && !terms2.length) { showBatchDialog(t('genbank_need_terms2')); return; }
+
+			const apiKey = document.getElementById('gbApiKey').value.trim();
+			gbStorageSet(localStorage, GB_APIKEY_KEY, apiKey || null);
+			const limitOn = document.getElementById('gbReportLimitList').checked;
+			const body = {
+				api_key:         apiKey,
+				field1_tag:      document.getElementById('gbField1').value,
+				field1_terms:    terms1,
+				field2_enabled:  f2On,
+				field2_tag:      document.getElementById('gbField2').value,
+				field2_terms:    terms2,
+				retmax:          parseInt(document.getElementById('gbRetmax').value, 10) || 500,
+				want_metadata:   document.getElementById('gbWantMetadata').checked,
+				want_fasta:      document.getElementById('gbWantFasta').checked,
+				report_metrics:  gbCollectReportMetrics(),
+				report_max_list: limitOn ? (parseInt(document.getElementById('gbReportMaxList').value, 10) || 0) : 0,
+			};
+
+			document.getElementById('gbLog').textContent = '';
+			GbState.logCount = 0;
+			GbState.stopping = false;
+			gbSetRunning(true);
+			gbSetProgress(0);
+			try {
+				const r = await fetch('/api/genbank_batch', {
+					method:  'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body:    JSON.stringify(body),
+				});
+				const d = await r.json();
+				if (!r.ok || d.error) throw new Error(d.error || `Error ${r.status}`);
+				gbSetStatus(t('genbank_starting', { n: numFmt.format(d.queries) }));
+				gbStorageSet(sessionStorage, GB_JOB_KEY, d.job_id);
+				gbStartPolling(d.job_id);
+			} catch (e) {
+				gbFinish('error', `${t('error_prefix')}${e.message}`, null);
+			}
+		}
+
+		async function gbStop() {
+			if (!GbState.jobId) return;
+			GbState.stopping = true;
+			document.getElementById('gbStopBtn').disabled = true;
+			gbSetStatus(t('genbank_stopping'));
+			try {
+				await fetch(`/api/cancel_genbank_batch/${GbState.jobId}`, { method: 'POST' });
+			} catch (e) { /* polling will reflect the final status */ }
+		}
+
+		function gbClearAll() {
+			gbClearTerms(1);
+			gbClearTerms(2);
+			document.getElementById('gbEnableField2').checked = false;
+			document.getElementById('gbField2Section').style.display = 'none';
+			document.getElementById('gbWantMetadata').checked = false;
+			document.getElementById('gbWantFasta').checked    = false;
+			document.getElementById('gbRetmax').value = 500;
+			gbResetReportSpec();
+			document.getElementById('gbLog').textContent = '';
+			document.getElementById('gbStatusBox').style.display   = 'none';
+			document.getElementById('gbDownloadBtn').style.display = 'none';
+			gbStorageSet(sessionStorage, GB_JOB_KEY, null);
+			GbState.jobId = null;
+			gbUpdateCounts();
+		}
+
+		function setupGenbankPanel() {
+			if (!document.getElementById('genbankSearchPanel')) return;
+
+			[1, 2].forEach(n => {
+				const area = document.getElementById(`gbTerms${n}`);
+				area.addEventListener('input', gbUpdateCounts);
+				area.addEventListener('dragover', e => {
+					if ([...(e.dataTransfer.types || [])].includes('Files')) {
+						e.preventDefault();
+						area.classList.add('dragover');
+					}
+				});
+				area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+				area.addEventListener('drop', e => {
+					const file = e.dataTransfer.files && e.dataTransfer.files[0];
+					area.classList.remove('dragover');
+					if (!file) return;   // dropped text: let the textarea insert it
+					e.preventDefault();
+					if (/\.(txt|csv)$/i.test(file.name)) gbLoadFileInto(n, file);
+				});
+			});
+
+			document.getElementById('gbEnableField2').addEventListener('change', e => {
+				document.getElementById('gbField2Section').style.display = e.target.checked ? 'block' : 'none';
+				gbUpdateCounts();
+			});
+
+			document.getElementById('gbApiKey').addEventListener('change', e =>
+				gbStorageSet(localStorage, GB_APIKEY_KEY, e.target.value.trim() || null));
+
+			const panel = document.getElementById('genbankSearchPanel');
+			panel.addEventListener('change', e => {
+				if (e.target.id === 'gbReportLimitList')
+					document.getElementById('gbReportMaxList').disabled = !e.target.checked;
+				if (e.target.closest('#gbReportPanel, #gbField1, #gbField2, #gbRetmax, #gbWantMetadata, #gbWantFasta'))
+					gbSaveForm();
+			});
+
+			gbRestoreForm();
+			gbUpdateCounts();
+
+			// A search started before a reload is still running (or finished) on the server
+			const jobId = gbStorageGet(sessionStorage, GB_JOB_KEY);
+			if (jobId) {
+				gbSetRunning(true);
+				gbSetStatus(t('processing_ellipsis'));
+				gbSetProgress(0);
+				gbStartPolling(jobId);
+				// After the other DOMContentLoaded handlers have wired the tabs
+				setTimeout(() => document.getElementById('genbankSearchTab').click(), 0);
+			}
+		}
 
 	</script>
 

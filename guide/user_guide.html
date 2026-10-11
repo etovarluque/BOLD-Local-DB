@@ -501,7 +501,8 @@
           <li><a href="#modos">Search modes</a></li>
           <li><a href="#busqueda-campos">Advanced field search</a></li>
           <li><a href="#busqueda-fts">Full-text search</a></li>
-          <li><a href="#busqueda-batch">Batch search</a></li>
+          <li><a href="#busqueda-batch">Local BOLD batch</a></li>
+          <li><a href="#busqueda-genbank">GenBank batch</a></li>
           <li><a href="#tabla">Working with the results table</a></li>
           <li><a href="#exportar">Exporting results</a></li>
         </ol>
@@ -910,8 +911,12 @@
         <p>Searches one or more words across all text fields at once. Requires Step 4 to have been completed.</p>
       </div>
       <div class="mode-card">
-        <h3>📦 Batch search</h3>
+        <h3>📦 Local BOLD batch</h3>
         <p>Searches a whole list of values by uploading a text file. Ideal for many species or IDs at once.</p>
+      </div>
+      <div class="mode-card">
+        <h3>🧬 GenBank batch</h3>
+        <p>Searches a list of terms in NCBI GenBank, online. Record counts, metadata and sequences per term.</p>
       </div>
     </div>
 
@@ -1049,11 +1054,11 @@
     </div>
 
     <!-- Batch -->
-    <h2 class="sub-title" id="busqueda-batch">Batch search</h2>
+    <h2 class="sub-title" id="busqueda-batch">Local BOLD batch</h2>
     <p>Ideal when you have a list of species, BINs, or IDs and want to get all their records at once.</p>
 
     <p>
-      Batch search is, in essence, an <strong>automated field search</strong>: it repeats the same query once for
+      A local BOLD batch search is, in essence, an <strong>automated field search</strong>: it repeats the same query once for
       each term in your file. That means <strong>all the terms in the file must belong to the same field</strong>,
       the one you pick in <em>Field 1</em>. The program doesn't infer which category each line belongs to: it
       applies the chosen field to all of them alike.
@@ -1205,6 +1210,94 @@
       the row <code>Panthera leo / ND2</code> will show its own separately.
     </p>
 
+    <!-- GenBank batch -->
+    <h2 class="sub-title" id="busqueda-genbank">GenBank batch</h2>
+    <p>
+      Unlike the other three tabs, this one does <strong>not</strong> query your local database: it searches
+      <strong>NCBI GenBank</strong> (nucleotide database) <strong>online</strong>, so it needs an internet
+      connection. It's useful to compare what's in BOLD with what's deposited in GenBank for the same list of
+      species, or to download GenBank sequences and metadata in bulk.
+    </p>
+
+    <ol class="steps">
+      <li>Optionally, paste your <strong>NCBI API key</strong>. Without it NCBI allows ~3 requests per second;
+          with it, ~10, so large batches finish about three times faster. It's remembered in the browser.
+          You can get one for free from your NCBI account settings.</li>
+      <li>In <strong>Criterion 1</strong>, choose the NCBI <strong>field</strong> (<em>Organism</em>,
+          <em>Country</em>, <em>Gene</em>, <em>Title</em>, <em>All Fields</em>, <em>Accession</em>,
+          <em>Author</em>, <em>Journal</em>) and type or paste <strong>one term per line</strong>, or drag a
+          <code>.txt</code>/<code>.csv</code> file onto the box (for a <code>.csv</code>, its first column is used).</li>
+      <li>Optionally, enable <strong>"Add a second criterion"</strong> and fill it in the same way
+          (see <a href="#genbank-cruce">How the two criteria are combined</a>).</li>
+      <li>Set the <strong>records per query (cap)</strong> and choose the outputs: the record counts CSV is
+          always produced; <strong>Metadata (TSV)</strong> and <strong>Sequences (FASTA)</strong> are optional.</li>
+      <li>Optionally, open <strong>"⚙ Customize summary report"</strong> to add columns to
+          <code>genbank_counts.csv</code>.</li>
+      <li>Click <strong>"Search GenBank"</strong>. Progress, the current query, an estimated time remaining and a
+          log with the result of each query are shown in the panel. When it finishes, click
+          <strong>"Download ZIP"</strong>.</li>
+    </ol>
+
+    <p>
+      The counter next to each list shows the number of <strong>distinct</strong> terms (underscores count as
+      spaces and duplicates are dropped, case-insensitively), and next to the button you'll see how many NCBI
+      queries the search will run.
+    </p>
+
+    <h3 class="step-title" id="genbank-cruce">How the two criteria are combined</h3>
+    <ul class="bullet">
+      <li>Criterion 1 only: one query per term — <code>Panthera onca[Organism]</code>.</li>
+      <li>Criterion 2 with <strong>a single value</strong>: it acts as a fixed filter applied to every term —
+          <code>Panthera onca[Organism] AND Colombia[Country]</code>.</li>
+      <li>Criterion 2 with <strong>several values</strong>: every term is crossed with every value. 50 species
+          × 3 genes = 150 queries.</li>
+    </ul>
+
+    <h3 class="step-title">ZIP contents</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File in the ZIP</th><th>Content</th></tr></thead>
+        <tbody>
+          <tr><td><code>genbank_counts.csv</code></td><td>One row per query: terms, fields, the exact query sent to NCBI and its record count. A query that NCBI didn't answer after several retries shows <code>ERROR</code> instead of a number. May carry report columns</td></tr>
+          <tr><td><code>genbank_metadata.tsv</code></td><td>Only with <em>Metadata</em>: one row per downloaded record (accession, organism, marker/gene, definition, length, country, isolate, voucher, collection date, coordinates, taxon ID, dates, taxonomy)</td></tr>
+          <tr><td><code>genbank_sequences.fasta</code></td><td>Only with <em>Sequences</em>: all downloaded sequences. Header: <code>&gt;Accession|Organism|Marker|Term1|Term2</code></td></tr>
+          <tr><td><code>individual_results/Term/</code></td><td>One folder per query with records, holding that query's own metadata and/or FASTA</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Summary report</h3>
+    <p>
+      Works like the one in <em>Local BOLD batch</em>, for four categories: <em>Marker/Gene</em>, <em>Moltype</em>,
+      <em>Division</em> and <em>Country</em>. For each one you can add <strong>how many</strong> distinct values
+      each query found, <strong>which ones</strong>, and, in the list, <strong>with counts</strong>
+      (<code>Colombia (12); Peru (3)</code>). The lists can be shortened to the N most frequent values.
+      Computing it requires downloading each record (up to the cap), even if metadata/FASTA aren't saved.
+    </p>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Respect NCBI's usage policy.</strong> NCBI monitors and penalizes excessive use of its servers.
+        The search already paces itself under NCBI's limits and only one GenBank search can run at a time, but a
+        high cap combined with long lists still means many requests: keep batches reasonable.
+        <br><br>
+        The <strong>cap</strong> limits how many records are <em>downloaded</em> per query, not how many are
+        counted: <code>genbank_counts.csv</code> always shows the real total, and the log marks the queries that
+        were capped.
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>
+        <strong>Stop</strong> halts the search after the current request and still offers a ZIP with the queries
+        completed so far. The search runs on the server: you can switch tabs, or reload the page, and the panel
+        picks it back up. The <em>Marker/Gene</em> value is taken from the record's first annotated gene or
+        product, so naming varies between depositors (<code>COI</code>, <code>COX1</code>, <code>cox1</code>…).
+      </div>
+    </div>
+
     <!-- Results table -->
     <h2 class="sub-title" id="tabla">Working with the results table</h2>
     <p>Results are shown in pages of <strong>50 records</strong> (<em>"50 per page"</em>). Below the table you can move page by page or type the page number you want to jump to directly.</p>
@@ -1253,7 +1346,7 @@
 
     <h3 class="step-title">FASTA file format</h3>
     <p>Each header combines the record's available data, separated by <code>|</code>. It's the same for the
-       results-table export and for Batch search:</p>
+       results-table export and for <em>Local BOLD batch</em>:</p>
 <pre>&gt;BOLD_ID|Sample_ID|BIN|Most_specific_taxon|Marker</pre>
     <ul class="bullet">
       <li>The <em>most specific taxon</em> is the first one available in this order: species, genus, family, order, class, phylum, kingdom.</li>

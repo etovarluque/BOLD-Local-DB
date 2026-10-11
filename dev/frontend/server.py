@@ -1407,6 +1407,58 @@ AUTOCOMPLETE_COLUMNS = [
     'col_province_state', 'col_region', 'col_identification'
 ]
 
+# Searching column by column finds the rarer values a common one hides (a
+# genus "Mexi..." behind thousands of "Mexico"), but a column where the term
+# is rare costs a walk over every row that has it elsewhere: "Costa Ri" in
+# col_genus reads all the Costa Rica records. So each column gets a time
+# slice, and whatever didn't fit is left out of the suggestions.
+AUTOCOMPLETE_COLUMN_BUDGET_S = 0.05
+AUTOCOMPLETE_TOTAL_BUDGET_S = 0.4
+AUTOCOMPLETE_ENOUGH_VALUES = 40
+
+
+def _autocomplete_fts(conn, columns, query):
+    """Rows (tuples aligned with `columns`) whose values contain `query`.
+
+    It used to be one `col LIKE '%q%' OR ...` over all the columns: SQLite
+    runs that as a full trigram scan per column before LIMIT applies, which
+    took seconds for common terms ("Costa Ri" ~10 s). A MATCH stops at LIMIT.
+    """
+    phrase = '"' + query.replace('"', '""') + '"'
+    # One pass over all the columns at once: milliseconds, and it brings the
+    # most common values
+    rows = conn.execute(
+        f"SELECT {', '.join(columns)} FROM {FTS_TABLE_NAME} "
+        f"WHERE {FTS_TABLE_NAME} MATCH ? LIMIT 50",
+        ['{' + ' '.join(columns) + '} : ' + phrase]).fetchall()
+
+    found = {v for row in rows for v in row if v}
+    deadline = time.monotonic() + AUTOCOMPLETE_TOTAL_BUDGET_S
+    try:
+        for i, col in enumerate(columns):
+            now = time.monotonic()
+            if now >= deadline or len(found) >= AUTOCOMPLETE_ENOUGH_VALUES:
+                break
+            stop = min(deadline, now + AUTOCOMPLETE_COLUMN_BUDGET_S)
+            conn.set_progress_handler(lambda: time.monotonic() > stop, 1000)
+            try:
+                values = conn.execute(
+                    f"SELECT {col} FROM {FTS_TABLE_NAME} "
+                    f"WHERE {FTS_TABLE_NAME} MATCH ? LIMIT 20",
+                    [f'{col} : {phrase}']).fetchall()
+            except sqlite3.OperationalError:
+                continue  # out of time for this column
+            for (v,) in values:
+                if v and v not in found:
+                    found.add(v)
+                    row = [None] * len(columns)
+                    row[i] = v
+                    rows.append(tuple(row))
+    finally:
+        conn.set_progress_handler(None, 0)
+    return rows
+
+
 @app.route('/api/autocomplete')
 def autocomplete():
     query = request.args.get("query", "").strip()
@@ -1428,15 +1480,7 @@ def autocomplete():
             if not columns:
                 return jsonify({"results": []})
 
-            sql_query = f"""
-                SELECT {', '.join(columns)}
-                FROM {FTS_TABLE_NAME}
-                WHERE {' OR '.join([f'{col} LIKE ?' for col in columns])}
-                LIMIT 50
-            """
-            params = [f"%{query}%"] * len(columns)
-            cursor.execute(sql_query, params)
-            results = cursor.fetchall()
+            results = _autocomplete_fts(conn, columns, query)
 
         else:
             technical_columns, main_table = get_column_names()

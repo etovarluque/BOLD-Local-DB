@@ -4778,11 +4778,19 @@
 		function setupAutocomplete() {
 			let currentFocus = -1;
 			let hasSelection = false; // Flag to track whether a suggestion was selected
+			// Bumped by every keystroke and by whatever closes the suggestions
+			// (Enter, search, Esc, a click elsewhere): a reply that arrives after
+			// that belongs to a query nobody is typing any more and is dropped,
+			// instead of popping up under the form once the search is done.
+			let requestSeq = 0;
+			const isCurrent = (seq, input) => seq === requestSeq && document.activeElement === input;
 
-			const debouncedFetch = debounce(function(query, input, resultsDiv) {
+			const debouncedFetch = debounce(function(query, input, resultsDiv, seq) {
+				if (!isCurrent(seq, input)) return;
 				fetch(`/api/autocomplete?query=${encodeURIComponent(query)}`)
 					.then(response => response.json())
 					.then(data => {
+						if (!isCurrent(seq, input)) return;
 						resultsDiv.innerHTML = "";
 
 						if (!data.results?.length) {
@@ -4811,6 +4819,7 @@
 					})
 					.catch(error => {
 						console.error("Error en autocompletar:", error);
+						if (!isCurrent(seq, input)) return;
 						resultsDiv.innerHTML = `<div class='autocomplete-item'>${t('autocomplete_error')}</div>`;
 					});
 			}, 300);
@@ -4825,6 +4834,7 @@
 
 				currentFocus = -1;
 				hasSelection = false; // Reset while typing
+				const seq = ++requestSeq;
 
 				let query = input.value.trim();
 				// Same minimum as AUTOCOMPLETE_MIN_CHARS in server.py: under 3
@@ -4834,7 +4844,7 @@
 					return;
 				}
 
-				debouncedFetch(query, input, resultsDiv);
+				debouncedFetch(query, input, resultsDiv, seq);
 			});
 			
 			document.addEventListener('keydown', function(event) {
@@ -4879,6 +4889,7 @@
 					// A second Enter (hasSelection=true) will let the form submit normally
 				}
 				else if (event.key === 'Escape') {
+					requestSeq++;
 					clearAutocomplete(resultsDiv);
 					input.blur();
 				}
@@ -4895,6 +4906,7 @@
 			// Clear autocomplete on Enter
 			document.addEventListener('keydown', function(event) {
 				if (event.key === 'Enter' && event.target.matches('.value-input, .value2-input, #ftsQueryInput')) {
+					requestSeq++;
 					clearAutocomplete(event.target.nextElementSibling);
 				}
 			});
@@ -4939,6 +4951,7 @@
 			
 			// Function to clear all dropdowns
 			function clearAllAutocompleteDropdowns() {
+				requestSeq++;
 				document.querySelectorAll('.autocomplete-dropdown').forEach(dropdown => {
 					dropdown.innerHTML = '';
 				});

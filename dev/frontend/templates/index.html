@@ -881,6 +881,7 @@
 			--page: #f4f6fa;
 			--tint: #eef2fb;
 			--tab-idle: #e2e8f3;
+			--sky: #4fa9e3;
 			--selected: #e3ebfb;
 			/* Nucleotides, as in the sequence viewers people already know */
 			--base-a: #2f9e6a;
@@ -968,8 +969,8 @@
 		.lang-switch .lang-btn.active { background: var(--navy) !important; color: #fff !important; }
 		.lang-switch .lang-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
 
-		/* Tabs: folder tabs standing on a navy rule, which the active one joins */
-		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--navy); }
+		/* Tabs: folder tabs standing on a sky-blue rule */
+		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--sky); }
 		.search-tabs .btn-group { margin-bottom: 0 !important; gap: 4px; }
 		.search-tabs .btn-group > .btn {
 			border: 0 !important;
@@ -1061,12 +1062,9 @@
 		}
 		.results-card #exportButton,
 		.results-card #exportFastaButton { font-weight: 500; border-radius: 7px; }
-		.results-card #exportButton {
-			background: transparent;
-			border: 1px solid rgba(255, 255, 255, .6);
-			color: #fff;
-		}
-		.results-card #exportButton:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+		/* Pastel green, so it stands out from the navy band */
+		.results-card #exportButton { background: #6ee7b7; border-color: #6ee7b7; color: #064e3b; font-weight: 600; }
+		.results-card #exportButton:hover { background: #34d399; border-color: #34d399; color: #064e3b; }
 		.results-card #exportFastaButton { background: var(--orange); border-color: var(--orange); color: #fff; }
 		.results-card #exportFastaButton:hover { background: #cf7212; border-color: #cf7212; color: #fff; }
 
@@ -1085,11 +1083,9 @@
 		/* Results next to the record panel */
 		.results-layout { display: flex; align-items: flex-start; gap: 16px; }
 		.results-main { flex: 1 1 auto; min-width: 0; }
+		/* Top and height follow the table frame (see syncRecordPanelSize) */
 		.record-panel {
 			flex: 0 0 360px;
-			position: sticky;
-			top: 12px;
-			max-height: calc(100vh - 24px);
 			overflow-y: auto;
 			background: #fbfcfe;
 			border: 1px solid var(--line);
@@ -1167,11 +1163,40 @@
 			padding: 8px 10px;
 		}
 		.rp-seq .fa-head { color: var(--mute); }
-		.rp-seq .b-A { color: var(--base-a); }
-		.rp-seq .b-C { color: var(--base-c); }
-		.rp-seq .b-G { color: #b07d10; }
-		.rp-seq .b-T { color: var(--base-t); }
-		.rp-seq .b-N { color: #98a0b3; }
+		/* Colored bases: record panel and expanded sequence cells */
+		.b-A { color: var(--base-a); }
+		.b-C { color: var(--base-c); }
+		.b-G { color: #b07d10; }
+		.b-T { color: var(--base-t); }
+		.b-N { color: #98a0b3; }
+		.table td.seq-cell .seq-text {
+			font-family: var(--f-mono);
+			font-size: .74rem;
+			line-height: 1.5;
+			white-space: normal;
+			word-break: break-all;
+			padding: 6px 0;
+		}
+
+		/* Record selection for export */
+		.table th.sel-col, .table td.sel-cell { width: 44px !important; max-width: 44px !important; text-align: center; padding-left: 6px; padding-right: 6px; }
+		.table td.sel-cell { cursor: default; }
+		.sel-col input, .sel-cell input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); vertical-align: middle; }
+		.table tbody tr.row-checked td { background-color: #f3f6fc !important; }
+		.table tbody tr.row-checked.row-selected td { background-color: var(--selected) !important; }
+		.sel-bar {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-right: auto;
+			padding: 3px 4px 3px 12px;
+			border: 1px solid #c9d4ea;
+			border-radius: 8px;
+			background: var(--tint);
+			font-size: .85rem;
+		}
+		.sel-bar[hidden] { display: none; }
+		.sel-bar strong { color: var(--navy); font-variant-numeric: tabular-nums; }
 		.rp-legend { display: flex; gap: 10px; font-family: var(--f-mono); font-size: .72rem; color: var(--mute); }
 		.rp-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
 		.rp-actions { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1847,6 +1872,10 @@
                 record_copy_sequence: 'Copiar secuencia', record_open_bold: 'Ver en BOLD ↗',
                 record_copy_hint: 'Doble clic en un valor para copiarlo.',
                 seq_cell_title: '{n} pb · doble clic para copiar la secuencia completa',
+                selected_count: 'seleccionados', sel_export_csv: 'CSV', sel_export_fasta: 'FASTA',
+                sel_clear: 'Quitar selección', sel_export_title: 'Exportar solo los registros seleccionados',
+                select_page_title: 'Seleccionar todos los registros de esta página',
+                sel_no_fasta: 'Ninguno de los registros seleccionados tiene una secuencia de al menos 50 pb.',
                 expand_rows: 'Expandir filas', collapse_rows: 'Contraer filas',
                 columns_btn: 'Mostrar/ocultar columnas', show_all_btn: 'Mostrar todas', hide_all_btn: 'Ocultar todas',
                 fasta_export_error_alert: '⛔ Error al exportar FASTA: ', csv_export_error_alert: '⛔ Error al exportar CSV: ',
@@ -2009,6 +2038,10 @@
                 record_copy_sequence: 'Copy sequence', record_open_bold: 'Open in BOLD ↗',
                 record_copy_hint: 'Double-click a value to copy it.',
                 seq_cell_title: '{n} bp · double-click to copy the full sequence',
+                selected_count: 'selected', sel_export_csv: 'CSV', sel_export_fasta: 'FASTA',
+                sel_clear: 'Clear selection', sel_export_title: 'Export only the selected records',
+                select_page_title: 'Select every record on this page',
+                sel_no_fasta: 'None of the selected records has a sequence of at least 50 bp.',
                 expand_rows: 'Expand rows', collapse_rows: 'Collapse rows',
                 columns_btn: 'Show/hide columns', show_all_btn: 'Show all', hide_all_btn: 'Hide all',
                 fasta_export_error_alert: '⛔ Error exporting FASTA: ', csv_export_error_alert: '⛔ Error exporting CSV: ',
@@ -2242,6 +2275,33 @@
             }
         }
 
+        // A sequence as text with each base colored, one span per run of the same base
+        function coloredSequence(seq) {
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < seq.length;) {
+                let j = i + 1;
+                while (j < seq.length && seq[j] === seq[i]) j++;
+                const span = document.createElement('span');
+                span.className = 'b-' + ('ACGT'.includes(seq[i]) ? seq[i] : 'N');
+                span.textContent = seq.slice(i, j);
+                frag.appendChild(span);
+                i = j;
+            }
+            return frag;
+        }
+
+        // Saves text as a file (the selection exports are built in the browser)
+        function downloadText(text, filename, type) {
+            const url = URL.createObjectURL(new Blob([text], { type }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
         function copyText(text) {
             if (!navigator.clipboard) return;
             navigator.clipboard.writeText(text).then(showCopyToast).catch(() => {});
@@ -2379,7 +2439,7 @@
             // ORDERED_COLUMNS would hide whatever column now sits at that
             // position instead of the one actually intended.
             const showOrHide = (col, idx) => {
-                const colNum = idx + 1;
+                const colNum = idx + 1 + SEL_COLS;
                 const display = hiddenColumns.has(col) ? 'none' : '';
                 document.querySelectorAll(
                     `.table thead th:nth-child(${colNum}), .table tbody td:nth-child(${colNum})`
@@ -3770,12 +3830,20 @@
 		function handleResultsTableClick(event) {
 			const row = event.target.closest('tbody tr');
 			if (!row || row.dataset.idx === undefined) return;
+			const selCell = event.target.closest('td.sel-cell');
+			if (selCell) {
+				const box = selCell.querySelector('input');
+				if (event.target !== box) box.checked = !box.checked;
+				setRowChecked(Number(row.dataset.idx), box.checked);
+				updateSelectionUi();
+				return;
+			}
 			selectRecord(Number(row.dataset.idx));
 		}
 
 		function handleResultsTableDblClick(event) {
 			const cell = event.target.closest('td');
-			if (!cell) return;
+			if (!cell || cell.classList.contains('sel-cell')) return;
 			event.stopPropagation();
 			event.preventDefault();
 			const sel = window.getSelection();
@@ -3785,6 +3853,159 @@
 			sel.addRange(range);
 			// The sequence cell shows a bar, not the text: its value is kept apart
 			copyText(cell.dataset.copy !== undefined ? cell.dataset.copy : cell.textContent.trim());
+		}
+
+		// ── Sequence cells ────────────────────────────────────────────────────
+
+		// Collapsed: the colored bar. Expanded ("Expand rows"): the whole
+		// sequence as text, colored the same way.
+		function fillSequenceCell(td, expanded) {
+			const seq = td.dataset.copy.replace(/-/g, '').toUpperCase();
+			td.innerHTML = '';
+			td.title = expanded ? '' : t('seq_cell_title', { n: seq.length });
+			if (expanded) {
+				const text = document.createElement('div');
+				text.className = 'seq-text';
+				text.appendChild(coloredSequence(seq));
+				td.appendChild(text);
+			} else {
+				const bar = document.createElement('canvas');
+				bar.className = 'seq-bar';
+				drawSequenceBar(bar, seq, 130, 14);
+				td.appendChild(bar);
+			}
+		}
+
+		function setSequenceExpanded(expanded) {
+			const idx = customColOrder.indexOf(SEQ_COL);
+			if (idx === -1) return;
+			if (expanded) {
+				// Wide enough for ~70 bases a line; collapsing restores the
+				// widths through adjustColumnWidths()
+				const n = idx + 1 + SEL_COLS;
+				document.querySelectorAll(`.table thead th:nth-child(${n}), .table tbody td:nth-child(${n})`)
+					.forEach(el => { el.style.width = '560px'; el.style.maxWidth = '560px'; });
+			}
+			document.querySelectorAll('.table td.seq-cell').forEach(td => fillSequenceCell(td, expanded));
+		}
+
+		// ── Record selection for export ───────────────────────────────────────
+		//
+		// Checking rows is separate from the highlighted row: the record panel
+		// shows the highlighted one, whatever is checked. Checked records are
+		// kept by page and position, so they survive page changes within the
+		// same search (rows have no unique key: a specimen repeats per marker).
+
+		// Columns before the data columns in the table (the checkbox column)
+		const SEL_COLS = 1;
+
+		function checkKey(idx) { return `${AppState.currentPage}:${idx}`; }
+
+		function setRowChecked(idx, checked) {
+			const key = checkKey(idx);
+			if (checked) AppState.checked.set(key, AppState.pageResults[idx]);
+			else AppState.checked.delete(key);
+			const tr = document.querySelector(`#resultsTable tbody tr[data-idx="${idx}"]`);
+			if (tr) {
+				tr.classList.toggle('row-checked', checked);
+				tr.querySelector('td.sel-cell input').checked = checked;
+			}
+		}
+
+		function setPageChecked(checked) {
+			(AppState.pageResults || []).forEach((_, idx) => setRowChecked(idx, checked));
+			updateSelectionUi();
+		}
+
+		function clearChecked() {
+			AppState.checked = new Map();
+			document.querySelectorAll('#resultsTable tbody tr').forEach(tr => {
+				tr.classList.remove('row-checked');
+				const box = tr.querySelector('td.sel-cell input');
+				if (box) box.checked = false;
+			});
+			updateSelectionUi();
+		}
+
+		function buildSelectionBar() {
+			const bar = document.createElement('div');
+			bar.id = 'selectionBar';
+			bar.className = 'sel-bar';
+			bar.hidden = true;
+			bar.title = t('sel_export_title');
+			const label = document.createElement('span');
+			const count = document.createElement('strong');
+			count.id = 'selectionCount';
+			count.textContent = '0';
+			label.append(count, ' ' + t('selected_count'));
+			const mk = (text, cls, fn) => {
+				const b = document.createElement('button');
+				b.type = 'button';
+				b.className = 'btn btn-sm ' + cls;
+				b.textContent = text;
+				b.addEventListener('click', fn);
+				return b;
+			};
+			bar.append(label,
+			           mk('⤓ ' + t('sel_export_csv'), 'btn-primary', exportCheckedCsv),
+			           mk('⤓ ' + t('sel_export_fasta'), 'btn-primary', exportCheckedFasta),
+			           mk(t('sel_clear'), 'btn-link text-muted', clearChecked));
+			return bar;
+		}
+
+		function updateSelectionUi() {
+			const n = AppState.checked ? AppState.checked.size : 0;
+			const bar = document.getElementById('selectionBar');
+			if (bar) {
+				bar.hidden = n === 0;
+				document.getElementById('selectionCount').textContent = numFmt.format(n);
+			}
+			const all = document.getElementById('selectPageBox');
+			if (all) {
+				const rows = AppState.pageResults || [];
+				const onPage = rows.filter((_, idx) => AppState.checked.has(checkKey(idx))).length;
+				all.checked = rows.length > 0 && onPage === rows.length;
+				all.indeterminate = onPage > 0 && onPage < rows.length;
+			}
+		}
+
+		// Checked records in the order they appear: by page, then by position
+		function checkedRows() {
+			return [...AppState.checked.entries()]
+				.map(([k, row]) => [k.split(':').map(Number), row])
+				.sort((a, b) => a[0][0] - b[0][0] || a[0][1] - b[0][1])
+				.map(([, row]) => row);
+		}
+
+		function exportStamp() {
+			const d = new Date(), p = n => String(n).padStart(2, '0');
+			return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+		}
+
+		// CSV of the checked records, every column in the table's order.
+		// With a BOM so Excel reads the accents.
+		function exportCheckedCsv() {
+			const cols = customColOrder;
+			const q = v => {
+				const s = (v === null || v === undefined) ? '' : String(v);
+				return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+			};
+			const lines = [cols.map(q).join(',')];
+			checkedRows().forEach(row => lines.push(cols.map(c => q(row[c])).join(',')));
+			downloadText('﻿' + lines.join('\r\n') + '\r\n',
+			             `bold_selection_${exportStamp()}.csv`, 'text/csv;charset=utf-8');
+		}
+
+		// FASTA of the checked records, with the same rules as the FASTA
+		// export: gaps and end Ns removed, sequences under 50 bp left out.
+		function exportCheckedFasta() {
+			const entries = checkedRows().map(row => {
+				const seq = (row[SEQ_COL] || '').replace(/-/g, '').replace(/^[Nn]+|[Nn]+$/g, '');
+				if (seq.length < 50) return '';
+				return fastaOf(Object.assign({}, row, { [SEQ_COL]: seq }));
+			}).filter(Boolean);
+			if (!entries.length) { showBatchDialog(t('sel_no_fasta')); return; }
+			downloadText(entries.join(''), `bold_selection_${exportStamp()}.fasta`, 'text/plain');
 		}
 
 		// ── Record panel ──────────────────────────────────────────────────────
@@ -3904,16 +4125,7 @@
 			if (seq) {
 				const box = el('div', 'rp-seq');
 				box.appendChild(el('div', 'fa-head', fastaOf(row).split('\n')[0]));
-				// One span per run of the same base, not per base
-				const frag = document.createDocumentFragment();
-				for (let i = 0; i < seq.length;) {
-					let j = i + 1;
-					while (j < seq.length && seq[j] === seq[i]) j++;
-					const b = 'ACGT'.includes(seq[i]) ? seq[i] : 'N';
-					frag.appendChild(el('span', 'b-' + b, seq.slice(i, j)));
-					i = j;
-				}
-				box.appendChild(frag);
+				box.appendChild(coloredSequence(seq));
 				const legend = el('div', 'rp-legend');
 				Object.entries(BASE_COLORS).forEach(([b, c]) => {
 					const s = el('span');
@@ -3949,6 +4161,24 @@
 			panel.hidden = false;
 			panel.scrollTop = 0;
 			if (wasHidden) setTimeout(adjustTableFrame, 0);
+			else syncRecordPanelSize();
+		}
+
+		// Beside the table, the panel starts where the table frame starts and
+		// is exactly as tall, scrolling inside; in drawer mode CSS places it.
+		function syncRecordPanelSize() {
+			const panel = document.getElementById('recordPanel');
+			const frame = document.querySelector('#resultsTable .table-frame');
+			if (!panel || panel.hidden) return;
+			if (window.innerWidth < 1200 || !frame) {
+				panel.style.marginTop = '';
+				panel.style.height = '';
+				return;
+			}
+			const main = document.querySelector('.results-main');
+			const top = frame.getBoundingClientRect().top - main.getBoundingClientRect().top;
+			panel.style.marginTop = Math.max(0, Math.round(top)) + 'px';
+			panel.style.height = frame.offsetHeight + 'px';
 		}
 
 		// Arrow keys move through the records while the panel is open; Esc closes it
@@ -3993,6 +4223,12 @@
 			// Another page or search: the open record no longer belongs to it
 			AppState.pageResults = results || [];
 			if (AppState.selectedIdx !== null && AppState.selectedIdx !== undefined) closeRecordPanel();
+			// Checked records survive page changes, not a new search
+			const searchKey = JSON.stringify(AppState.resultsSearch);
+			if (AppState.checkedFor !== searchKey) {
+				AppState.checked = new Map();
+				AppState.checkedFor = searchKey;
+			}
 
 			AppState.currentPage = page;
 
@@ -4024,6 +4260,18 @@
 				const thead = document.createElement("thead");
 				const headerRow = document.createElement("tr");
 
+				// Selection column (before the data columns: SEL_COLS)
+				const selTh = document.createElement('th');
+				selTh.className = 'sel-col';
+				const selAll = document.createElement('input');
+				selAll.type = 'checkbox';
+				selAll.id = 'selectPageBox';
+				selAll.title = t('select_page_title');
+				selAll.setAttribute('aria-label', t('select_page_title'));
+				selAll.addEventListener('change', () => setPageChecked(selAll.checked));
+				selTh.appendChild(selAll);
+				headerRow.appendChild(selTh);
+
 				orderedColumns.forEach((col, colIdx) => {
 					const th = document.createElement("th");
 					th.textContent = col;
@@ -4032,7 +4280,7 @@
 					resizeHandle.className = 'col-resize-handle';
 					resizeHandle.addEventListener('dblclick', function(e) {
 						e.stopPropagation();
-						const cells = table.querySelectorAll(`tbody tr td:nth-child(${colIdx + 1})`);
+						const cells = table.querySelectorAll(`tbody tr td:nth-child(${colIdx + 1 + SEL_COLS})`);
 						// canvas.measureText() never touches layout, unlike the
 						// previous approach (write cell.textContent into a hidden
 						// span, then immediately read its offsetWidth): that forced
@@ -4065,21 +4313,26 @@
 					tr.classList.add(rowIndex % 2 === 0 ? 'even-row' : 'odd-row');
 					tr.dataset.idx = rowIndex;
 
+					const selTd = document.createElement('td');
+					selTd.className = 'sel-cell';
+					const box = document.createElement('input');
+					box.type = 'checkbox';
+					box.checked = AppState.checked.has(checkKey(rowIndex));
+					box.setAttribute('aria-label', String(row[colLabel('col_processid')] || rowIndex + 1));
+					tr.classList.toggle('row-checked', box.checked);
+					selTd.appendChild(box);
+					tr.appendChild(selTd);
+
 					orderedColumns.forEach(col => {
 						const td = document.createElement("td");
 						const value = (row[col] === null || row[col] === undefined) ? "" : row[col];
 						if (col === SEQ_COL && value) {
 							// A compact colored bar instead of hundreds of letters;
-							// the full sequence is in the record panel, and a
-							// double-click still copies it
-							const seq = String(value).replace(/-/g, '').toUpperCase();
+							// the full sequence is in the record panel and in
+							// "Expand rows", and a double-click still copies it
 							td.className = 'seq-cell';
 							td.dataset.copy = String(value);
-							td.title = t('seq_cell_title', { n: seq.length });
-							const bar = document.createElement('canvas');
-							bar.className = 'seq-bar';
-							drawSequenceBar(bar, seq, 130, 14);
-							td.appendChild(bar);
+							fillSequenceCell(td, false);
 						} else {
 							td.textContent = value;
 						}
@@ -4115,6 +4368,8 @@
 					document.querySelectorAll('.table td').forEach(cell => {
 						cell.classList.toggle('expanded', !isExpanded);
 					});
+					// Expanded, the sequence shows in full with its colors
+					setSequenceExpanded(!isExpanded);
 
 					this.dataset.state = isExpanded ? 'collapsed' : 'expanded';
 					this.textContent = isExpanded ? t('expand_rows') : t('collapse_rows');
@@ -4122,11 +4377,13 @@
 					if (isExpanded) {
 						setTimeout(adjustColumnWidths, 0);
 					}
+					setTimeout(syncRecordPanelSize, 0);
 				};
 				
 				// Controls container
 				const controlsDiv = document.createElement('div');
 				controlsDiv.className = 'table-controls mt-2 mb-2 d-flex justify-content-end align-items-center gap-2';
+				controlsDiv.appendChild(buildSelectionBar());
 				// Column order button (moved here from its hidden holder: the
 				// toolbar is rebuilt on every render, the nodes are kept)
 				const colOrder = colOrderNodes();
@@ -4148,6 +4405,7 @@
 				resultsTable.appendChild(tableFrame);
 
 				// Make sure the scrollbars are visible
+				updateSelectionUi();
 				setTimeout(() => {
 					adjustTableFrame();
 					adjustColumnWidths();
@@ -4214,6 +4472,7 @@
 				const stats = colStats[index];
 				const columnCells = colCells[index];
 				const headerCell = headerCellEls[index];
+				if (headerCell && headerCell.classList.contains('sel-col')) return;
 
 				let widthClass = '';
 				let maxWidth = '';
@@ -4448,6 +4707,7 @@
 			if (frame) {
 				frame.style.maxHeight = `calc(${windowHeight}px - ${headerHeight + paginationHeight + 250}px)`;
 			}
+			syncRecordPanelSize();
 		}
 
 		// Run on load and on resize

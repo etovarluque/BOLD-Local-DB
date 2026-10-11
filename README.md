@@ -29,9 +29,11 @@ Two programs, used in order:
 
 ### Screenshots
 
-| Full-text search | Advanced field search | Local BOLD batch |
-|---|---|---|
-| ![Full-text search](dev/screenshots/full_text_search.png) | ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Local BOLD batch](dev/screenshots/batch_search.png) |
+| Advanced field search | Full-text search |
+|---|---|
+| ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Full-text search](dev/screenshots/full_text_search.png) |
+| **Local BOLD batch** | **GenBank batch** |
+| ![Local BOLD batch](dev/screenshots/batch_search.png) | ![GenBank batch](dev/screenshots/genbank_batch.png) |
 
 ## Requirements
 

@@ -185,14 +185,10 @@
 		}
 
 
-		/* Style for truncated columns */
+		/* Truncated cells: the ellipsis plus a native tooltip with the full
+		   text (set in detectTruncatedCells); same cursor and hover as the rest */
 		.table .truncated {
 			position: relative;
-			cursor: zoom-in !important;
-		}
-
-		.table td.truncated:hover {
-			background-color: #f0f0f0;
 		}
 
 		/* Header-specific styles */
@@ -1089,7 +1085,7 @@
 		   background; switched off so the row colors below are the only ones */
 		.table { --bs-table-hover-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-accent-bg: transparent; }
 		.table tbody tr { cursor: pointer; }
-		.table tbody tr:hover td { background-color: #eef3fc !important; }
+		.table tbody tr:hover td { background-color: var(--tint) !important; }
 		.table tbody tr.row-selected td { background-color: var(--selected) !important; }
 		.table tbody tr.row-selected td:first-child { box-shadow: inset 3px 0 0 var(--slate); }
 		.table td.seq-cell { padding-top: 0; padding-bottom: 0; }

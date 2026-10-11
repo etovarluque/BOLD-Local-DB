@@ -3252,6 +3252,17 @@
 		
 	
 
+		// What the field-search form holds, to tell whether it changed
+		function fieldFormSnapshot() {
+			return JSON.stringify([...document.querySelectorAll('.search-condition')].map(c => [
+				c.querySelector('.condition-type').value,
+				c.querySelector('.column-select').value,
+				c.querySelector('.operator-select').value,
+				c.querySelector('.value-input').value,
+				c.querySelector('.value2-input')?.value ?? '',
+			]));
+		}
+
 		async function performSearch(newSearch = true) {
 			let conditions;
 			const prev = AppState.resultsSearch;
@@ -3266,13 +3277,11 @@
 					return;
 				}
 				conditions = parsed.conditions;
-				// The form goes back to blank for the next search, and the
-				// conditions of this one stay visible under it (with Edit to
-				// bring them back)
-				showLastSearch(conditions);
-				resetFieldSearchForm();
 				document.querySelectorAll('.autocomplete-dropdown').forEach(d => { d.innerHTML = ''; });
 			}
+			// The form is cleared only once the search has worked: after an
+			// error (or a cancel) it keeps the conditions to correct them
+			const submittedForm = newSearch ? fieldFormSnapshot() : null;
 			AppState.resultsSearch = { type: 'field', conditions: JSON.parse(JSON.stringify(conditions)) };
 
 			// Cancel previous search if any
@@ -3325,6 +3334,13 @@
                     data.total_pages = AppState.cachedTotalPages;
                 }
 
+				if (submittedForm !== null) {
+					// The form goes back to blank for the next search, and the
+					// conditions of this one stay visible under it (with Edit to
+					// bring them back). Left alone if it was edited meanwhile.
+					showLastSearch(conditions);
+					if (fieldFormSnapshot() === submittedForm) resetFieldSearchForm();
+				}
                 displayResults(data);
             } catch (error) {
                 if (error.name === 'AbortError') {

@@ -991,7 +991,8 @@ def db_problem():
         if _db_state["checked"] and _db_state["sig"] == sig:
             return _db_state["problem"]
         for cached in (get_column_names, get_numeric_columns,
-                       fts_table_available, get_fts_columns):
+                       fts_table_available, get_fts_columns,
+                       get_indexed_columns):
             cached.cache_clear()
         problem = _check_db()
         _db_state.update(checked=True, sig=sig, problem=problem)
@@ -1415,6 +1416,70 @@ AUTOCOMPLETE_COLUMNS = [
 AUTOCOMPLETE_COLUMN_BUDGET_S = 0.05
 AUTOCOMPLETE_TOTAL_BUDGET_S = 0.4
 AUTOCOMPLETE_ENOUGH_VALUES = 40
+# Distinct values read per column (and per capitalization) from its index
+AUTOCOMPLETE_PREFIX_PER_COLUMN = 8
+AUTOCOMPLETE_LIMIT = 10
+
+
+@lru_cache(maxsize=1)
+def get_indexed_columns():
+    """Columns of the main table that lead a B-tree index (Step 3)."""
+    conn = get_db_connection()
+    try:
+        cols = set()
+        for idx in conn.execute(f"PRAGMA index_list({MAIN_TABLE_NAME})").fetchall():
+            info = conn.execute(f'PRAGMA index_info("{idx[1]}")').fetchall()
+            if info:
+                cols.add(info[0][2])
+        return frozenset(cols)
+    finally:
+        conn.close()
+
+
+def _autocomplete_prefix(conn, columns, query):
+    """Rows (aligned with `columns`) with the values that start with `query`.
+
+    Read from each column's index by seeking value to value, so it costs a
+    few lookups however many records share a value: "Colom" finds Colombia
+    right away, where a substring search sees Scolomys and Discolomatidae
+    first. The index compares case-sensitively, hence the capitalizations.
+    """
+    indexed = get_indexed_columns()
+    variants = dict.fromkeys([query, query[:1].upper() + query[1:],
+                              query.lower(), query.upper()])
+    rows = []
+    for i, col in enumerate(columns):
+        if col not in indexed:
+            continue  # without its index, a range here would scan the table
+        first = (f"SELECT {col} FROM {MAIN_TABLE_NAME} WHERE {col} >= ? AND {col} < ? "
+                 f"ORDER BY {col} LIMIT 1")
+        after = (f"SELECT {col} FROM {MAIN_TABLE_NAME} WHERE {col} > ? AND {col} < ? "
+                 f"ORDER BY {col} LIMIT 1")
+        for low in variants:
+            high = low[:-1] + chr(ord(low[-1]) + 1)
+            hit = conn.execute(first, (low, high)).fetchone()
+            for _ in range(AUTOCOMPLETE_PREFIX_PER_COLUMN):
+                if hit is None:
+                    break
+                row = [None] * len(columns)
+                row[i] = hit[0]
+                rows.append(tuple(row))
+                hit = conn.execute(after, (hit[0], high)).fetchone()
+    return rows
+
+
+def _suggestion_rank(value, query):
+    """Sort key: values that start with the query, then those with a word
+    that does ("Costa Rica" for "rica"), then the rest; shortest first."""
+    text = str(value).lower()
+    q = query.lower()
+    if text.startswith(q):
+        tier = 0
+    elif re.search(r'[\s,;/()\-_.]' + re.escape(q), text):
+        tier = 1
+    else:
+        tier = 2
+    return (tier, len(text), text)
 
 
 def _autocomplete_fts(conn, columns, query):
@@ -1480,7 +1545,8 @@ def autocomplete():
             if not columns:
                 return jsonify({"results": []})
 
-            results = _autocomplete_fts(conn, columns, query)
+            results = (_autocomplete_prefix(conn, columns, query)
+                       + _autocomplete_fts(conn, columns, query))
 
         else:
             technical_columns, main_table = get_column_names()
@@ -1495,7 +1561,7 @@ def autocomplete():
             """
             params = [f"%{query}%"] * len(columns)
             cursor.execute(sql_query, params)
-            results = cursor.fetchall()
+            results = _autocomplete_prefix(conn, columns, query) + cursor.fetchall()
 
         seen_values = set()
         formatted_results = []
@@ -1509,8 +1575,8 @@ def autocomplete():
                             "value": value
                         })
 
-        formatted_results.sort(key=lambda x: len(x['value']))
-        return jsonify({"results": formatted_results[:10]})
+        formatted_results.sort(key=lambda x: _suggestion_rank(x['value'], query))
+        return jsonify({"results": formatted_results[:AUTOCOMPLETE_LIMIT]})
 
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500

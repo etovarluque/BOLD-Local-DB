@@ -881,7 +881,7 @@
 			--page: #f4f6fa;
 			--tint: #eef2fb;
 			--tab-idle: #e2e8f3;
-			--sky: #4fa9e3;
+			--sky: #92e8f1;
 			--selected: #e3ebfb;
 			/* Nucleotides, as in the sequence viewers people already know */
 			--base-a: #2f9e6a;
@@ -969,8 +969,9 @@
 		.lang-switch .lang-btn.active { background: var(--navy) !important; color: #fff !important; }
 		.lang-switch .lang-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
 
-		/* Tabs: folder tabs standing on a sky-blue rule */
-		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--sky); }
+		/* Tabs: folder tabs standing on a navy rule; the active one is filled
+		   and underlined in sky blue */
+		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--navy); }
 		.search-tabs .btn-group { margin-bottom: 0 !important; gap: 4px; }
 		.search-tabs .btn-group > .btn {
 			border: 0 !important;
@@ -982,7 +983,7 @@
 			padding: .65rem 1rem;
 		}
 		.search-tabs .btn-group > .btn:hover { background: #d3dbeb; color: var(--navy-2); }
-		.search-tabs .btn-group > .btn.active-tab { background: var(--navy) !important; color: #fff !important; }
+		.search-tabs .btn-group > .btn.active-tab { background: var(--navy) !important; color: #fff !important; box-shadow: inset 0 -3px 0 var(--sky); }
 		.search-tabs .btn-group > .btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; z-index: 2; }
 		.search-tabs .btn-group > .btn.tab-unavailable:hover { background: var(--tab-idle); color: var(--navy); }
 

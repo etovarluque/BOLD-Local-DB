@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
-## [Unreleased]
+## [2.0.0]
 
 ### Upgrade notes
 - **Rebuild the database** (Option 1 or 2 on Home). Databases built until
@@ -13,8 +13,45 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   its other markers (see *Fixed*). The viewer still opens them, but the
   Creator marks them as outdated and the update refuses them. The current
   `.filt.tsv` can be reused: Step 1 doesn't need repeating.
+- **New folder layout and launcher.** Copy the contents of the new release
+  into your current folder and open *Start BOLD-Local-DB*: on its first start
+  the program moves the database, logs and settings from `app/` into
+  `data/database/` and `data/state/`, keeps your field selection, and removes
+  `app/`, the old `dev/` launch scripts and the old shortcuts. Make the
+  shortcuts again from Home. If the database is open at that moment (a
+  viewer of the old version still running), it stays in `app/` and is moved
+  on a later start; it works the same meanwhile.
 
 ### Added
+- **One launcher, no Python to install.** *Start BOLD-Local-DB* (`.bat`,
+  `.command`, `.sh`) replaces the "step 0" shortcut generators and the four
+  launch scripts. The first time, it downloads uv (pinned version, from
+  GitHub, SHA-256 checked), which installs its own Python and the packages
+  (`dev/pyproject.toml`, locked in `dev/uv.lock`) into `.runtime/`, about
+  150 MB, once. Without internet the first time, it falls back to a Python
+  already installed. `--viewer` opens the viewer instead.
+- **Desktop and menu shortcuts** made from Home (and offered once on the
+  first start): *BOLD-Local-DB* and *BOLD-Local-DB Viewer*, with icons, on
+  the desktop and/or in the Start menu (Windows), Applications/Launchpad
+  (macOS, as a small `.app`, which Gatekeeper doesn't stop) or the
+  applications menu (Linux, marked as trusted). *Remove* deletes exactly
+  what was made; if the folder moves they're remade on the next start.
+- **Program updates from GitHub Releases.** Home says when a newer version
+  is out; *Update* downloads the zip for this system, and the next start
+  swaps the program folder, keeping the previous one until the new version
+  has run. If it fails to start, the launcher restores the previous one.
+  `data/` is never touched. Clones of the repository keep using `git pull`.
+- **Releases**: `dev/tools/build_release.py` builds one zip per system and
+  `.github/workflows/release.yml` publishes them when a `v*` tag is pushed,
+  with the version's CHANGELOG section as notes. A second workflow checks
+  the zips, the uv bootstrap, the packages and the shortcuts on Windows,
+  macOS and Linux on every push.
+- Viewer: a **help icon** next to each panel title (field search, full-text
+  search, both batch searches, sequence analysis, results) opens the user
+  guide, in the page's language, at that section in a new tab. The viewer
+  serves the guide at `/guide/`.
+- Home: **Exports folder** button, and **Uninstall…** (removes the shortcuts
+  and opens the folder to delete; nothing else is installed outside it).
 - **GenBank batch** tab, ported from BarcodeSuite: batch-searches NCBI
   GenBank (nucleotide) online with one list of terms, optionally crossed with
   a second criterion (a single value filters every term; a list is crossed
@@ -25,8 +62,74 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   record cap, stop with partial results, and the search survives a page
   reload. Requests that fail after retries are logged and marked `ERROR`
   instead of counting as 0 records. One GenBank search runs at a time.
+- **Sequence analysis** tab (phase 1, no alignment): composition and quality
+  (length histogram, GC, GC3, Ns, ambiguities, BOLD barcode standard),
+  translation check for stop codons with the genetic code taken from the
+  marker and the taxonomy (or chosen by hand; mitochondrial, plastid,
+  Wolbachia and intron-free nuclear genes such as H3 or RAG1 are translated;
+  non-coding markers, pseudogenes, multi-gene regions and genes with introns
+  are not), sequences submitted reversed detected and read on the reverse
+  strand, haplotypes and haplotype
+  diversity per species, and species–BIN concordance (BINs with several
+  species, species split over several BINs). Runs on the checked records (new
+  *Analyse* button on the selection bar), the search on screen or a FASTA
+  file, up to 20,000 sequences. Each run covers a single marker: when the
+  input holds several, or a FASTA doesn't name it, the tab asks which one.
+  Results download as CSV.
+- **Sequence analysis, phase 2** (*Distances* and *NJ tree* views, computed
+  on demand from the same input): sequences aligned to a reference picked
+  from them (placed by shared k-mers; a banded gapped alignment only where an
+  indel shows), K2P, Jukes-Cantor (JC69) or p-distances, BOLD-style distance summary (within
+  species, genus and family), distribution of intra- vs interspecific
+  distances, barcode gap per species (largest intraspecific distance against
+  the nearest neighbour, with a scatter plot), and a midpoint-rooted
+  neighbour-joining tree. The tree viewer collapses clades by species or BIN
+  (automatically above 300 tips) or by clicking a node, colours tips by
+  species, BIN, genus, country or species–BIN discordance (eight colours,
+  the rest as "Other"; optionally the labels too, darkened where needed to
+  stay readable), shows a phylogram or a cladogram, has adjustable row
+  height and font size (labels hidden below 5 px rows), chooses which labels
+  to show (species, ID, BIN, country), highlights matches of a search, and
+  exports the figure as shown as SVG, PNG (2× or 4×, scaled down when the
+  image would be too large for the browser) or PDF (through the print
+  dialog). Up to 5,000 sequences (1,000 for
+  non-coding markers) and 2,000 for the tree, with an optional cap of
+  sequences per species applied first; sequences with stop codons are left
+  out. Sequences that don't align to a common reference (one marker name can
+  hold different genes, e.g. BOLD's "16S" covers bacterial and animal
+  mitochondrial 16S) are split into alignment groups, each with its own
+  reference, distances and tree, chosen in the tree view; the page lists the
+  groups and their taxa. A ZIP holds the alignment (FASTA), the distance matrix, the tree
+  (Newick) and the tables. Adds numpy as a dependency (installed
+  automatically).
 
 ### Changed
+- **Folder layout**: the program lives in `.program/` (hidden; `dev/` in the
+  repository) and everything the user has in `data/`: `database/` (the
+  database, was `app/`), `state/` (settings, logs, field selection, the
+  package name the viewer shows, the shortcuts made), plus `raw/`,
+  `processed/` and `exports/` as before. The viewer runs straight from the
+  program folder: the copy of it in `app/` is gone. The field selection is
+  saved in `data/state/`, so an update can't overwrite it.
+- The Creator installs `PySide6-Essentials` (the Qt modules it uses) instead
+  of the full PySide6, and the viewer no longer installs pip when its
+  packages are already there.
+- **Sequence analysis** tab, easier to scan: the input (sequences, marker,
+  genetic code) folds into a one-line summary after each run, with *Change*
+  to reopen it; the summary figures come in three labelled groups
+  (composition, quality and translation, taxonomy); the views use the same
+  tabs as the search methods, with counts on them (flagged sequences,
+  haplotypes, species–BIN cases to review, in orange when they need a look);
+  firmer borders on the source choices and selects; download buttons (CSV,
+  ZIP, tree figures) in the export green.
+- **User guide** (Spanish and English) brought up to date: the Start screen
+  and per-step controls, Step 2 storing one row per sequence, the record
+  card, record selection, and a new *Sequence analysis* section explaining
+  every option and view, how to interpret them, with worked examples. It also
+  corrects how field-search conditions combine: AND and NOT bind before OR,
+  as in SQL, rather than being evaluated top to bottom.
+- The header marks the database's BOLD package date with a yellow badge
+  ("50 days old") once it is over a month old.
 - The *Batch search* tab is now called **Local BOLD batch** (*Lote en BOLD
   local*), to tell it apart from the new GenBank one, which searches online.
 - Batch search with two fields: `summary.csv` also lists, at the end and at

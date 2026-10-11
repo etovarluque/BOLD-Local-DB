@@ -14,27 +14,27 @@ ui_state.ini
 *.sqlite
 *.sqlite3
 
-# Viewer copy synced from dev/frontend by the Creator, plus its runtime files
+# 1.2.0 and earlier: the viewer's copy, the database and the state, which the
+# program now moves into data/ by itself
 /app/
+
+# Made by the launcher: uv, its Python and the packages; an update in progress
+/.runtime/
+/.program.old/
+/Start BOLD-Local-DB.bat.new
 
 # Generated data (not versioned)
 data/raw/*
 data/processed/*
 data/exports/**/*
+data/database/*
+data/state/*
+data/identify_index/
 !data/**/.gitkeep
 
 # OS cruft
 Thumbs.db
 .DS_Store
 
-# Generated shortcuts (machine-specific; created by dev/generate_shortcuts.py)
-/1_Create_DB.lnk
-/1_Create_DB.desktop
-/1_Create_DB.command
-/2_Open_web_viewer_BOLD_DB.lnk
-/2_Open_web_viewer_BOLD_DB.desktop
-/2_Open_web_viewer_BOLD_DB.command
-
-# Root tidy-up (created by dev/generate_shortcuts.py on a downloaded copy;
-# should never exist inside an actual dev clone)
-/project_files/
+# Release zips (dev/tools/build_release.py)
+/dist/

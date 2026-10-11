@@ -22,14 +22,13 @@ from datetime import datetime
 # ---- Auto-install dependencies -----------------------------------------------
 
 def _ensure_deps():
-    import importlib.metadata as _meta
-    pip_pkgs = ["PySide6"]
-    missing = []
-    for pkg in pip_pkgs:
-        try:
-            _meta.version(pkg)
-        except _meta.PackageNotFoundError:
-            missing.append(pkg)
+    # Started by the launcher, the packages are already in place (uv). This
+    # covers running it with a Python of one's own. The module is checked,
+    # not the distribution: the launcher installs PySide6-Essentials, which
+    # provides the same PySide6 module as the full PySide6.
+    import importlib.util
+    pip_pkgs = {"PySide6": "PySide6-Essentials"}
+    missing = [dist for mod, dist in pip_pkgs.items() if importlib.util.find_spec(mod) is None]
     if not missing:
         return
 
@@ -90,10 +89,22 @@ ICON_HOME    = os.path.join(SCRIPT_DIR, "icons", "home.png")
 # version and the database layout version (see dev/frontend/db_contract.py)
 sys.path.insert(0, os.path.join(SCRIPT_DIR, "frontend"))
 import db_contract
+import layout
+import shortcuts
+import updater
 __version__ = db_contract.APP_VERSION
 
+# Projects from 1.2.0 and earlier kept the database, the logs and the
+# settings in app/: moved into data/ before any path below is worked out.
+# The App logs the outcome once it has a log.
+_MIGRATION = layout.migrate_legacy_layout()
+
 # ---- Configuration constants ----------------------------------------------------
-DB_FILE    = "../app/" + db_contract.DB_FILENAME
+# Absolute: data/database/bold_db.db, or data/database/bold_db.db while a database
+# that was open couldn't be moved yet
+DB_FILE    = layout.database_path()
+# The name of the BOLD package the data comes from, for the viewer's header
+_PKG_DIR   = layout.PACKAGE_DIR
 TABLE_NAME = db_contract.MAIN_TABLE
 CHUNKSIZE  = 50_000
 
@@ -140,7 +151,6 @@ COL_DEFS = {
 # "valid" and the filtering silently pulls in data from the wrong field without
 # any error. By name, a field that disappears is detected and reported.
 
-FIELDS_CONFIG_FILE = os.path.join(SCRIPT_DIR, "fields_config.json")
 
 # The 76 columns of BOLD's public package, in their download order. Only used
 # to populate the UI panel when there's no TSV yet to read the real header
@@ -204,14 +214,14 @@ DEFAULT_INDEXED = [
 
 # ---- Internationalization --------------------------------------------------------
 #
-# The language is resolved ONCE at startup (read from app/ui_state.ini, the
+# The language is resolved ONCE at startup (read from data/state/ui_state.ini, the
 # same QSettings that stores the window geometry) and doesn't change live:
 # the language selector in the sidebar only saves the preference and asks for
 # a restart. This avoids having to re-translate hundreds of already-built
 # widgets on the fly, in exchange for a restart to see the change.
 
 def _load_language():
-    """Reads 'language' from app/ui_state.ini by hand, as plain text instead of via QSettings.
+    """Reads 'language' from data/state/ui_state.ini by hand, as plain text instead of via QSettings.
 
     Avoids building a separate QSettings instance here: the App creates its own
     (self._settings) for the window geometry, and two QSettings instances over the
@@ -222,8 +232,7 @@ def _load_language():
     owner writing it.
     """
     try:
-        path = os.path.normpath(os.path.join(PROJECT_ROOT, "..", "app", "ui_state.ini"))
-        with open(path, "r", encoding="utf-8") as f:
+        with open(layout.UI_STATE_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line.startswith("language"):
@@ -260,7 +269,7 @@ STRINGS_ES = {
     'err_action_pip_install': 'Ejecuta en la terminal:  pip install {mod}',
     'err_action_check_error_log': 'Revisa el detalle técnico en error.log',
     'err_step_line': '   Paso: {context}',
-    'err_detail_saved': 'Detalle técnico guardado en app/logs/error.log',
+    'err_detail_saved': 'Detalle técnico guardado en data/state/logs/error.log',
     'unfiltered_tsv': 'TSV sin filtrar',
     'deleted_processed': '🗑 {label} eliminado (ya procesado): {name}',
     'could_not_delete_named': '⚠️ No se pudo eliminar {name}: {error}',
@@ -382,15 +391,15 @@ STRINGS_ES = {
                   'Entrada: data/raw/*.tar.gz   Salida: data/processed/*.filt.tsv',
     'step2_desc': 'Carga los datos preparados en la base de datos que consulta el visor. Al terminar ya '
                   'puedes buscar registros.\n'
-                  'Entrada: data/processed/*.filt.tsv   Salida: app/bold_db.db',
+                  'Entrada: data/processed/*.filt.tsv   Salida: data/database/bold_db.db',
     'step3_desc': 'Crea índices sobre los campos de búsqueda. Sin ellos cada consulta recorre la tabla '
                   'entera y el visor va muy lento.\n'
-                  'Entrada: app/bold_db.db   Salida: índices en bold_records',
+                  'Entrada: data/database/bold_db.db   Salida: índices en bold_records',
     'step4_desc': 'Añade búsqueda de texto completo (escribir cualquier palabra sin elegir campo, '
                   'incluso coincidencias parciales dentro de otra palabra). '
                   'Aumenta el tamaño de la base de datos y puede tardar bastante: '
                   'actívalo solo si vas a usar esa función.\n'
-                  'Entrada: app/bold_db.db   Salida: tabla bold_records_fts',
+                  'Entrada: data/database/bold_db.db   Salida: tabla bold_records_fts',
     'step1_tech': 'Descomprimir .tar.gz → filtrar TSV',
     'step2_tech': 'TSV → SQLite (bold_records)',
     'step3_tech': 'CREATE INDEX sobre 20 columnas',
@@ -564,14 +573,14 @@ STRINGS_ES = {
     'nav_fields_selection': 'Selección de Campos (.tsv)',
     'tip_fields_nav': 'Selección de columnas del archivo .tsv de BOLD que se incluyen en la base de datos.',
     'tip_project_folder': 'Carpeta del proyecto:\n{path}',
-    'output_label': 'Salida',
+    'output_label': 'Log',
     'btn_view_status': 'Ver estado',
     'tip_view_status': 'Vuelve a mostrar en qué punto está el proyecto.',
     'btn_clear': 'Limpiar',
     'tip_clear_log': 'Vacía este registro. No afecta a los archivos ni a los pasos.',
-    'tip_log_widget': 'Registro de lo que va ocurriendo. Se guarda también en app/logs/',
+    'tip_log_widget': 'Registro de lo que va ocurriendo. Se guarda también en data/state/logs/',
     'viewer_not_found_title': 'Visor no encontrado',
-    'viewer_not_found_body': 'No se encontró app/server.py.',
+    'viewer_not_found_body': 'No se encontró el visor (frontend/server.py) en la carpeta del programa.',
     'no_db_yet_title': 'Todavía no hay base de datos',
     'no_db_yet_body': 'Primero ejecuta los pasos 1 y 2 para crear la base de datos.',
     'log_viewer_started': '🚀 Visor iniciado — abriendo http://127.0.0.1:{port} en el navegador',
@@ -588,7 +597,7 @@ STRINGS_ES = {
     'free_space_confirm_info': 'Se eliminarán de data/:\n\n{listado}\n\n'
                                '⚠️  ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n'
                                'Qué NO se ve afectado:\n'
-                               '    • La base de datos (app/bold_db.db) queda intacta.\n'
+                               '    • La base de datos (data/database/bold_db.db) queda intacta.\n'
                                '    • El visor sigue funcionando exactamente igual.\n'
                                '    • Los pasos 3 y 4 se pueden ejecutar sin problema.\n\n'
                                'Qué pierdes:\n'
@@ -658,9 +667,65 @@ STRINGS_ES = {
                                   'perderá; puede quedar una base de datos a medias que habrá que rehacer.\n\n'
                                   'Es preferible pulsar «Detener» y esperar a que termine de cerrar.\n\n'
                                   '¿Cerrar de todos modos?',
-    'app_init_skipped': '⚠️ dev/frontend no encontrada — inicialización de app/ omitida',
-    'app_init_done': '✅ app/ inicializada desde dev/frontend',
-    'app_init_error': '❌ Error al inicializar app/: {error}',
+    'migr_database': '📦 Base de datos movida a {detail}',
+    'migr_old_viewer_removed': '🧹 Eliminada la copia antigua del visor ({detail})',
+    'migr_old_shortcut_removed': '🧹 Eliminado un acceso directo antiguo: {detail}',
+    'migr_old_program_removed': '🧹 Eliminada la versión anterior del programa ({detail})',
+    'migr_fields_kept': '📦 Tu selección de campos se conserva en {detail}',
+    'migr_database_in_use': '⚠️ La base de datos sigue en app/ porque estaba abierta (¿un visor de la versión anterior?). '
+                            'Ciérralo y vuelve a abrir el programa para moverla. Mientras tanto funciona igual. ({detail})',
+    'migr_state_not_moved': '⚠️ No se pudo mover {detail}',
+    'migr_old_viewer_not_removed': '⚠️ No se pudo borrar la copia antigua del visor: {detail}',
+    'migr_old_program_not_removed': '⚠️ No se pudo borrar la versión anterior del programa: {detail}',
+    'migr_app_not_empty': '⚠️ {detail} contiene archivos que no son del programa: no se ha borrado. Revísala y bórrala a mano.',
+    'btn_open_exports': '📁 Carpeta de exportaciones',
+    'tip_open_exports': 'Los CSV, FASTA y ZIP que exporta el visor (data/exports).',
+    'sc_section': 'Accesos directos',
+    'sc_intro': 'Para abrir BOLD-Local-DB o el visor sin entrar en esta carpeta.',
+    'sc_desktop': 'Escritorio',
+    'sc_menu_win32': 'Menú Inicio',
+    'sc_menu_darwin': 'Aplicaciones (Launchpad)',
+    'sc_menu_linux': 'Menú de aplicaciones',
+    'sc_create': 'Crear accesos directos',
+    'sc_recreate': 'Volver a crear',
+    'sc_remove': 'Quitar',
+    'sc_none': 'Todavía no hay accesos directos.',
+    'sc_made': 'Creados: «BOLD-Local-DB» y «Visor BOLD-Local-DB» en {where}.',
+    'sc_and': ' y ',
+    'sc_pick_one': 'Marca al menos un sitio (escritorio o menú).',
+    'sc_created_log': '✅ Accesos directos creados ({n})',
+    'sc_removed_log': '🧹 Accesos directos quitados ({n})',
+    'sc_error': '❌ No se pudieron crear los accesos directos: {error}',
+    'sc_ask_title': 'Accesos directos',
+    'sc_ask_body': '¿Crear accesos directos en el escritorio y en el menú?\n\n'
+                   '• BOLD-Local-DB: esta ventana, para crear o actualizar la base.\n'
+                   '• Visor BOLD-Local-DB: el visor, directamente en el navegador.\n\n'
+                   'Puedes quitarlos o crearlos más tarde desde Inicio.',
+    'sc_ask_yes': 'Crear',
+    'sc_ask_no': 'Ahora no',
+    'upd_available': 'Hay una versión nueva de BOLD-Local-DB: <b>{new}</b> (tienes la {cur}).',
+    'upd_staged': 'La versión <b>{new}</b> está descargada y se instalará al reiniciar.',
+    'upd_see': 'Ver cambios',
+    'upd_install': 'Actualizar',
+    'upd_restart': 'Reiniciar ahora',
+    'upd_downloading': 'Descargando… {pct}',
+    'upd_git_tip': 'Copia de desarrollo (git): actualízala con «git pull».',
+    'upd_no_asset_tip': 'No hay descarga para tu sistema en esta versión: ábrela en la página.',
+    'upd_busy': 'Espera a que termine el paso en marcha antes de actualizar.',
+    'upd_ready_title': 'Actualización lista',
+    'upd_ready_body': 'La versión {v} está descargada. BOLD-Local-DB se cerrará y se abrirá de nuevo con ella.\n\n'
+                      'Tu base de datos, tus exportaciones y tu selección de campos no se tocan.',
+    'upd_restart_later': 'Más tarde',
+    'upd_failed': '❌ No se pudo descargar la actualización: {error}',
+    'upd_downloaded_log': '✅ Versión {v} descargada: se instala al reiniciar el programa',
+    'btn_uninstall': 'Desinstalar…',
+    'uninstall_title': 'Desinstalar BOLD-Local-DB',
+    'uninstall_body': 'Se quitarán los accesos directos y se abrirá la carpeta que contiene el programa, '
+                      'para que la borres.\n\n'
+                      'Tu base de datos y tus exportaciones están en:\n{data}  ({size})\n'
+                      'Si quieres conservarlas, muévelas a otro sitio antes de borrar la carpeta.\n\n'
+                      'Aparte de los accesos directos, todo lo que usa el programa está dentro de esa carpeta.',
+    'uninstall_go': 'Quitar accesos y abrir la carpeta',
     'log_session_header': '# BOLD DB Creator — sesión {ts}',
     'language_label': 'Idioma',
     'restart_required_title': 'Reiniciar para aplicar',
@@ -671,7 +736,6 @@ STRINGS_ES = {
     'restart_blocked_body': 'Hay un proceso en marcha. El idioma se ha guardado y '
                             'se aplicará la próxima vez que abras la aplicación.',
     'copy_cancelled': 'copia cancelada',
-    'app_updated': '✅ app/ actualizada desde dev/frontend ({n} archivo(s))',
     'log_closing_after_stop': '⏳ Deteniendo el proceso de forma segura… '
                               'La ventana se cerrará sola al terminar.',
     'closing_wait_title': 'Cerrando',
@@ -700,7 +764,7 @@ STRINGS_ES = {
                         'eliminados del paquete nuevo de BOLD, en lugar de reconstruirla. Necesita '
                         'antes el Paso 1 con el .tar.gz nuevo (la opción «Actualizar» de Inicio hace '
                         'los dos seguidos).\n'
-                        'Entrada: data/processed/*.filt.tsv + app/bold_db.db   Salida: app/bold_db.db actualizada',
+                        'Entrada: data/processed/*.filt.tsv + data/database/bold_db.db   Salida: data/database/bold_db.db actualizada',
     'missing_update_input': '● Faltan los datos preparados del paquete nuevo — ejecuta antes el Paso 1 '
                             '(la Opción 3 de Inicio hace los dos seguidos)',
     'missing_update_no_db': '● Todavía no hay base de datos que actualizar — créala primero con la '
@@ -803,7 +867,7 @@ STRINGS_EN = {
     'err_action_pip_install': 'Run in the terminal:  pip install {mod}',
     'err_action_check_error_log': 'Check the technical detail in error.log',
     'err_step_line': '   Step: {context}',
-    'err_detail_saved': 'Technical detail saved in app/logs/error.log',
+    'err_detail_saved': 'Technical detail saved in data/state/logs/error.log',
     'unfiltered_tsv': 'Unfiltered TSV',
     'deleted_processed': '🗑 {label} deleted (already processed): {name}',
     'could_not_delete_named': '⚠️ Could not delete {name}: {error}',
@@ -926,15 +990,15 @@ STRINGS_EN = {
                   'Input: data/raw/*.tar.gz   Output: data/processed/*.filt.tsv',
     'step2_desc': 'Loads the prepared data into the database the viewer queries. Once finished '
                   'you can already search records.\n'
-                  'Input: data/processed/*.filt.tsv   Output: app/bold_db.db',
+                  'Input: data/processed/*.filt.tsv   Output: data/database/bold_db.db',
     'step3_desc': 'Creates indexes on the search fields. Without them every query scans the '
                   'whole table and the viewer is very slow.\n'
-                  'Input: app/bold_db.db   Output: indexes on bold_records',
+                  'Input: data/database/bold_db.db   Output: indexes on bold_records',
     'step4_desc': 'Adds full-text search (type any word without choosing a field, '
                   'including partial matches inside another word). '
                   'It makes the database larger and can take a while: '
                   'enable it only if you are going to use that feature.\n'
-                  'Input: app/bold_db.db   Output: bold_records_fts table',
+                  'Input: data/database/bold_db.db   Output: bold_records_fts table',
     'step1_tech': 'Extract .tar.gz → filter TSV',
     'step2_tech': 'TSV → SQLite (bold_records)',
     'step3_tech': 'CREATE INDEX on 20 columns',
@@ -1107,14 +1171,14 @@ STRINGS_EN = {
     'nav_fields_selection': 'Field Selection (.tsv)',
     'tip_fields_nav': "Selection of columns from BOLD's .tsv file included in the database.",
     'tip_project_folder': 'Project folder:\n{path}',
-    'output_label': 'Output',
+    'output_label': 'Log',
     'btn_view_status': 'View status',
     'tip_view_status': 'Shows again where the project stands.',
     'btn_clear': 'Clear',
     'tip_clear_log': "Clears this log. Doesn't affect the files or the steps.",
-    'tip_log_widget': 'Log of what is happening. Also saved to app/logs/',
+    'tip_log_widget': 'Log of what is happening. Also saved to data/state/logs/',
     'viewer_not_found_title': 'Viewer not found',
-    'viewer_not_found_body': 'app/server.py was not found.',
+    'viewer_not_found_body': 'The viewer (frontend/server.py) was not found in the program folder.',
     'no_db_yet_title': 'No database yet',
     'no_db_yet_body': 'Run steps 1 and 2 first to create the database.',
     'log_viewer_started': '🚀 Viewer started — opening http://127.0.0.1:{port} in the browser',
@@ -1131,7 +1195,7 @@ STRINGS_EN = {
     'free_space_confirm_info': 'These will be removed from data/:\n\n{listado}\n\n'
                                '⚠️  THIS ACTION CANNOT BE UNDONE.\n\n'
                                'What is NOT affected:\n'
-                               '    • The database (app/bold_db.db) stays intact.\n'
+                               '    • The database (data/database/bold_db.db) stays intact.\n'
                                '    • The viewer keeps working exactly the same.\n'
                                '    • Steps 3 and 4 can still be run without issue.\n\n'
                                'What you lose:\n'
@@ -1201,9 +1265,65 @@ STRINGS_EN = {
                                   'be lost; the database may be left half-built and need to be redone.\n\n'
                                   'It is better to click «Stop» and wait for it to finish closing.\n\n'
                                   'Close anyway?',
-    'app_init_skipped': '⚠️ dev/frontend not found — app/ initialization skipped',
-    'app_init_done': '✅ app/ initialized from dev/frontend',
-    'app_init_error': '❌ Error initializing app/: {error}',
+    'migr_database': '📦 Database moved to {detail}',
+    'migr_old_viewer_removed': '🧹 Removed the old copy of the viewer ({detail})',
+    'migr_old_shortcut_removed': '🧹 Removed an old shortcut: {detail}',
+    'migr_old_program_removed': '🧹 Removed the previous version of the program ({detail})',
+    'migr_fields_kept': '📦 Your field selection is kept in {detail}',
+    'migr_database_in_use': '⚠️ The database is still in app/ because it was open (a viewer of the previous version?). '
+                            'Close it and open the program again to move it. It works the same meanwhile. ({detail})',
+    'migr_state_not_moved': '⚠️ Could not move {detail}',
+    'migr_old_viewer_not_removed': '⚠️ Could not delete the old copy of the viewer: {detail}',
+    'migr_old_program_not_removed': '⚠️ Could not delete the previous version of the program: {detail}',
+    'migr_app_not_empty': '⚠️ {detail} holds files that aren\'t the program\'s: not deleted. Check it and delete it by hand.',
+    'btn_open_exports': '📁 Exports folder',
+    'tip_open_exports': 'The CSV, FASTA and ZIP files the viewer exports (data/exports).',
+    'sc_section': 'Shortcuts',
+    'sc_intro': 'To open BOLD-Local-DB or the viewer without going into this folder.',
+    'sc_desktop': 'Desktop',
+    'sc_menu_win32': 'Start menu',
+    'sc_menu_darwin': 'Applications (Launchpad)',
+    'sc_menu_linux': 'Applications menu',
+    'sc_create': 'Create shortcuts',
+    'sc_recreate': 'Create again',
+    'sc_remove': 'Remove',
+    'sc_none': 'There are no shortcuts yet.',
+    'sc_made': 'Made: "BOLD-Local-DB" and "BOLD-Local-DB Viewer" on {where}.',
+    'sc_and': ' and ',
+    'sc_pick_one': 'Tick at least one place (desktop or menu).',
+    'sc_created_log': '✅ Shortcuts created ({n})',
+    'sc_removed_log': '🧹 Shortcuts removed ({n})',
+    'sc_error': '❌ The shortcuts could not be created: {error}',
+    'sc_ask_title': 'Shortcuts',
+    'sc_ask_body': 'Create shortcuts on the desktop and in the menu?\n\n'
+                   '• BOLD-Local-DB: this window, to build or update the database.\n'
+                   '• BOLD-Local-DB Viewer: the viewer, straight in the browser.\n\n'
+                   'You can remove them or create them later from Start.',
+    'sc_ask_yes': 'Create',
+    'sc_ask_no': 'Not now',
+    'upd_available': 'A new version of BOLD-Local-DB is out: <b>{new}</b> (you have {cur}).',
+    'upd_staged': 'Version <b>{new}</b> is downloaded and will be installed on restart.',
+    'upd_see': 'See changes',
+    'upd_install': 'Update',
+    'upd_restart': 'Restart now',
+    'upd_downloading': 'Downloading… {pct}',
+    'upd_git_tip': 'Development copy (git): update it with "git pull".',
+    'upd_no_asset_tip': 'This version has no download for your system: open it on the page.',
+    'upd_busy': 'Wait for the running step to finish before updating.',
+    'upd_ready_title': 'Update ready',
+    'upd_ready_body': 'Version {v} is downloaded. BOLD-Local-DB will close and open again with it.\n\n'
+                      'Your database, your exports and your field selection are not touched.',
+    'upd_restart_later': 'Later',
+    'upd_failed': '❌ The update could not be downloaded: {error}',
+    'upd_downloaded_log': '✅ Version {v} downloaded: it is installed when the program restarts',
+    'btn_uninstall': 'Uninstall…',
+    'uninstall_title': 'Uninstall BOLD-Local-DB',
+    'uninstall_body': 'The shortcuts will be removed and the folder holding the program will open, '
+                      'for you to delete it.\n\n'
+                      'Your database and your exports are in:\n{data}  ({size})\n'
+                      'To keep them, move them elsewhere before deleting the folder.\n\n'
+                      'Apart from the shortcuts, everything the program uses is inside that folder.',
+    'uninstall_go': 'Remove shortcuts and open the folder',
     'log_session_header': '# BOLD DB Creator — session {ts}',
     'language_label': 'Language',
     'restart_required_title': 'Restart to apply',
@@ -1214,7 +1334,6 @@ STRINGS_EN = {
     'restart_blocked_body': 'A process is running. The language has been saved and '
                             'will apply the next time you open the application.',
     'copy_cancelled': 'copy cancelled',
-    'app_updated': '✅ app/ updated from dev/frontend ({n} file(s))',
     'log_closing_after_stop': '⏳ Stopping the process safely… '
                               'The window will close by itself when it finishes.',
     'closing_wait_title': 'Closing',
@@ -1243,7 +1362,7 @@ STRINGS_EN = {
                         'or removed in the new BOLD package, instead of rebuilding it. Needs Step 1 '
                         'run first with the new .tar.gz (the "Update" option on Home runs both in '
                         'sequence).\n'
-                        'Input: data/processed/*.filt.tsv + app/bold_db.db   Output: updated app/bold_db.db',
+                        'Input: data/processed/*.filt.tsv + data/database/bold_db.db   Output: updated data/database/bold_db.db',
     'missing_update_input': '● The new package\'s prepared data is missing — run Step 1 first '
                             '(Option 3 on Home runs both in sequence)',
     'missing_update_no_db': '● There is no database to update yet — create it first with Option 1 '
@@ -1339,7 +1458,7 @@ def _norm_name(name):
 
 
 def load_fields_cfg():
-    """Reads dev/fields_config.json. Returns the factory selection if it doesn't exist.
+    """Reads the field selection (data/state/, else the program's default).
 
     Never raises: a corrupt or half-written file shouldn't prevent the
     application from starting, so it falls back to the defaults.
@@ -1347,7 +1466,7 @@ def load_fields_cfg():
     fields  = list(DEFAULT_FIELDS)
     indexed = list(DEFAULT_INDEXED)
     try:
-        with open(FIELDS_CONFIG_FILE, encoding="utf-8") as f:
+        with open(layout.fields_config_path(), encoding="utf-8") as f:
             raw = json.load(f)
         got = [str(x) for x in (raw.get("fields") or []) if str(x).strip()]
         if got:
@@ -1380,10 +1499,13 @@ def save_fields_cfg(fields, indexed):
         "fields":  list(fields),
         "indexed": [c for c in indexed],
     }
-    tmp = FIELDS_CONFIG_FILE + ".tmp"
+    # Into data/state/: the program's own fields_config.json is the default,
+    # and an update replaces the program folder
+    os.makedirs(os.path.dirname(layout.USER_FIELDS_FILE), exist_ok=True)
+    tmp = layout.USER_FIELDS_FILE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
-    os.replace(tmp, FIELDS_CONFIG_FILE)
+    os.replace(tmp, layout.USER_FIELDS_FILE)
 
 
 def index_cols(cfg=None):
@@ -1744,7 +1866,7 @@ def _promote_pending_build(log):
     program has it open, which the viewer does for the length of a search
     or an export.
     """
-    live  = _proj_dir("app", db_contract.DB_FILENAME)
+    live  = layout.database_path()
     build = _build_path(live)
     if not os.path.exists(build):
         return True
@@ -1899,7 +2021,7 @@ def _fmt_error(e, context=""):
         action = next((t(a) for et, _, a in _ERROR_MAP if isinstance(e, et) and a),
                       t('err_action_check_error_log'))
     try:
-        _logs_dir = os.path.normpath(os.path.join(PROJECT_ROOT, "..", "app", "logs"))
+        _logs_dir = layout.LOGS_DIR
         os.makedirs(_logs_dir, exist_ok=True)
         with open(os.path.join(_logs_dir, "error.log"), "a", encoding="utf-8") as _f:
             from datetime import datetime as _dt
@@ -2053,8 +2175,8 @@ def run_step1(log, progress, cfg):
                       others=", ".join(os.path.basename(f) for f in gz_files[1:])))
             name = os.path.basename(gz_path)
             gz_version = name[:-len(".tar.gz")] if name.endswith(".tar.gz") else os.path.splitext(name)[0]
-            os.makedirs("../app/static", exist_ok=True)
-            for f in glob.glob("../app/static/*.tsv"):
+            os.makedirs(_PKG_DIR, exist_ok=True)
+            for f in glob.glob(os.path.join(_PKG_DIR, "*.tsv")):
                 if os.path.splitext(os.path.basename(f))[0] != gz_version:
                     try: os.remove(f)
                     except OSError: pass
@@ -2098,11 +2220,11 @@ def run_step1(log, progress, cfg):
         if existing_filt:
             filt_best  = max(existing_filt, key=os.path.getsize)
             tsv_marker = os.path.basename(filt_best).replace(".filt.tsv", ".tsv")
-            os.makedirs("../app/static", exist_ok=True)
-            for f in glob.glob("../app/static/*.tsv"):
+            os.makedirs(_PKG_DIR, exist_ok=True)
+            for f in glob.glob(os.path.join(_PKG_DIR, "*.tsv")):
                 try: os.remove(f)
                 except OSError: pass
-            open("../app/static/" + tsv_marker, "w").close()
+            open(os.path.join(_PKG_DIR, tsv_marker), "w").close()
             log(t('filtered_tsv_exists', name=os.path.basename(filt_best)))
             _cleanup_raw_files(log, gz_path, max(raw_tsv, key=os.path.getsize) if raw_tsv else None,
                                keep_gz=cfg.get("keep_targz", False))
@@ -2214,10 +2336,10 @@ def run_step1(log, progress, cfg):
         tsv_filename = os.path.basename(archivo_tsv)
         log(t('tsv_file_label', name=tsv_filename))
 
-        os.makedirs("../app/static", exist_ok=True)
-        for f in glob.glob("../app/static/*.tsv"):
+        os.makedirs(_PKG_DIR, exist_ok=True)
+        for f in glob.glob(os.path.join(_PKG_DIR, "*.tsv")):
             os.remove(f)
-        open("../app/static/" + tsv_filename, "w").close()
+        open(os.path.join(_PKG_DIR, tsv_filename), "w").close()
 
         # ---- Sub-step B: Filter .tsv -> .filt.tsv ------------------------------
         # Only the extension is replaced: str.replace() changed every ".tsv"
@@ -3588,6 +3710,7 @@ QFrame#dropCard {
     border-radius: 6px;
 }
 QFrame#dropCard[loaded="true"]   { border: 1px solid %(accent)s; }
+QFrame#updateBanner { background-color: %(sidebar)s; border: 1px solid %(rec)s; border-radius: 8px; }
 QFrame#dropCard[dragging="true"] { border: 2px dashed %(btn)s; background-color: %(surface)s; }
 
 /* ---- Label roles (see _styled) ------------------------------------------ */
@@ -3619,9 +3742,10 @@ QLabel[tone="warn"]    { color: %(yellow)s; }
 QLabel[tone="rec"]     { color: %(rec)s; }
 QLabel[tone="error"]   { color: %(red)s; }
 QLabel[tone="running"] { color: %(running)s; }
+/* Sized like runBtn/stopBtn so it sits in the same row as a peer. */
 QLabel[tone="donePill"] {
-    color: %(bg)s; font-size: %(fs10)s; font-weight: bold;
-    border-radius: 4px; padding: 2px 10px;
+    color: %(bg)s; font-size: %(fs12)s; font-weight: bold;
+    border-radius: 6px; padding: 7px 18px;
 }
 /* Fills. Prefixed with #panel too: "#panel QLabel { background: transparent }"
    has an ID in it, so it outranks any selector without one. */
@@ -3714,7 +3838,7 @@ _PIPELINES = [
     },
 ]
 
-# Web viewer port (app/server.py -> app.run(port=5001))
+# Web viewer port (frontend/server.py -> app.run(port=5001))
 VIEWER_PORT = 5001
 
 # Portal from which Step 1's input .tar.gz is downloaded
@@ -3734,7 +3858,7 @@ FIELDS_IDX = len(STEPS) + 1
 # data/ is entirely generated content (see .gitignore) and git never tracks
 # empty folders, so a fresh clone from GitHub has no data/ tree at all — not
 # even data/raw/, where Step 1 expects the downloaded .tar.gz to be dropped.
-# Recreated here on every startup, the same way app/ is, so a first-time user
+# Recreated here on every startup, so a first-time user
 # always has somewhere to put the file instead of hitting a missing-folder error.
 
 def _ensure_data_dirs():
@@ -3751,6 +3875,8 @@ def _ensure_data_dirs():
         ("data", "exports", "csv_exports"),
         ("data", "exports", "fasta_exports"),
         ("data", "exports", "batch_exports"),
+        ("data", "database"),
+        ("data", "state", "logs"),
     ):
         try:
             os.makedirs(_proj_dir(*parts), exist_ok=True)
@@ -3765,7 +3891,7 @@ def _ensure_data_dirs():
             pass
 
 
-# ---- app/ initialization -------------------------------------------------------
+# ---- From the old layout ---------------------------------------------------------
 
 def _remove_empty_tree(path):
     """Deletes a folder tree that holds no files; leaves it alone otherwise."""
@@ -3780,51 +3906,11 @@ def _remove_empty_tree(path):
         pass
 
 
-def _ensure_app_initialized():
-    """Brings app/ in line with dev/frontend. Returns a message or None.
-
-    Every file of dev/frontend that's missing in app/ or differs from it is
-    copied over. It used to copy only when app/server.py didn't exist yet,
-    so after updating the project (git pull, a new download over the old
-    folder) the viewer kept running the old code indefinitely.
-    Only dev/frontend's own files are touched: what the application
-    generates in app/ (the database, logs, ui_state.ini, the version marker
-    in app/static/) has no counterpart there and is left alone.
-    """
-    import filecmp
-    src = os.path.join(PROJECT_ROOT, "frontend")
-    dst = os.path.normpath(os.path.join(PROJECT_ROOT, "..", "app"))
-    if not os.path.exists(src):
-        return t('app_init_skipped')
-    first_time = not os.path.exists(os.path.join(dst, "server.py"))
-    try:
-        updated = 0
-        for dirpath, dirnames, filenames in os.walk(src):
-            # data/ is what a viewer run from dev/frontend/ generates (exports),
-            # never part of its code. Folders are created only to hold a copied
-            # file: copying every folder brought empty ones over, which is how
-            # an unused app/data/exports/ appeared.
-            dirnames[:] = [d for d in dirnames if d not in ("__pycache__", "data")]
-            rel = os.path.relpath(dirpath, src)
-            out_dir = os.path.normpath(os.path.join(dst, rel))
-            for name in filenames:
-                if name.endswith((".pyc", ".pyo")):
-                    continue
-                s = os.path.join(dirpath, name)
-                d = os.path.join(out_dir, name)
-                if os.path.exists(d) and filecmp.cmp(s, d, shallow=False):
-                    continue
-                os.makedirs(out_dir, exist_ok=True)
-                shutil.copy2(s, d)
-                updated += 1
-    except Exception as e:
-        return t('app_init_error', error=e)
-    # Leftovers of the above in existing copies, removed only while empty
-    for stray in (os.path.join(dst, "data"), os.path.join(src, "data")):
-        _remove_empty_tree(stray)
-    if first_time:
-        return t('app_init_done')
-    return t('app_updated', n=updated) if updated else None
+def _migration_message():
+    """What the move from the old layout (app/) did, for the log. None if nothing."""
+    done, problems = _MIGRATION
+    lines = [t('migr_' + key, detail=detail) for key, detail in done + problems]
+    return "\n".join(lines) or None
 
 
 # ---- Per-step input verification --------------------------------------------
@@ -3880,7 +3966,7 @@ def _intermediate_files():
 
 
 def _check_input(step_label):
-    db = _proj_dir("app", "bold_db.db")
+    db = layout.database_path()
     checks = {
         STEPS[0][0]: lambda: (
             len(glob.glob(_proj_dir("data", "raw", "*.tar.gz"))) > 0 or
@@ -3976,10 +4062,10 @@ def _get_project_status(max_age=0.5):
     if _STATUS_BUSY[0] and _STATUS_CACHE["v"] is not None:
         return _STATUS_CACHE["v"]
     root = PROJECT_ROOT
-    db   = os.path.join(root, "..", "app", "bold_db.db")
+    db   = layout.database_path()
 
     version = None
-    static_tsvs = glob.glob(os.path.join(root, "..", "app", "static", "*.tsv"))
+    static_tsvs = glob.glob(os.path.join(_PKG_DIR, "*.tsv"))
     if static_tsvs:
         version = os.path.splitext(os.path.basename(static_tsvs[0]))[0]
     if not version:
@@ -4454,7 +4540,7 @@ class StepPanel(QWidget):
             self._drop_card.file_changed.connect(lambda *_: self.app._refresh_all_panels_input())
             lay.addWidget(self._drop_card)
 
-            # Remembered in app/ui_state.ini. self.cfg is the same dict the
+            # Remembered in data/state/ui_state.ini. self.cfg is the same dict the
             # Home pipelines pass to this step, so they honour it too.
             settings = getattr(app, "_settings", None)
             keep = False
@@ -4530,8 +4616,8 @@ class StepPanel(QWidget):
         folders = {
             STEPS[0][0]: _proj_dir("data", "raw"),
             STEPS[1][0]: _proj_dir("data", "processed"),
-            STEPS[2][0]: _proj_dir("app"),
-            STEPS[3][0]: _proj_dir("app"),
+            STEPS[2][0]: os.path.dirname(layout.database_path()),
+            STEPS[3][0]: os.path.dirname(layout.database_path()),
             STEPS[4][0]: _proj_dir("data", "processed"),
         }
         _open_folder(folders.get(self._label, _proj_dir("data")))
@@ -4770,6 +4856,34 @@ class StepPanel(QWidget):
         self.app.stop_current(self)
 
 
+# ---- Update workers ---------------------------------------------------------
+
+class _UpdateCheck(QThread):
+    """Asks GitHub for the newest release, off the GUI thread."""
+    done = Signal(object)
+
+    def run(self):
+        self.done.emit(updater.latest_release())
+
+
+class _UpdateDownload(QThread):
+    """Downloads and unpacks a release, ready for the next start."""
+    progress = Signal(int, int)
+    finished_with = Signal(object)        # None, or the error as text
+
+    def __init__(self, release, parent=None):
+        super().__init__(parent)
+        self._release = release
+
+    def run(self):
+        try:
+            updater.download_and_stage(self._release,
+                                       progress=lambda d, tot: self.progress.emit(d, tot))
+            self.finished_with.emit(None)
+        except Exception as e:
+            self.finished_with.emit(_cause_str(e))
+
+
 # ---- Home panel -------------------------------------------------------------
 
 class PrepPanel(QWidget):
@@ -4807,6 +4921,28 @@ class PrepPanel(QWidget):
         title = QLabel(t('home_title'))
         _styled(title, "pageTitle")
         lay.addWidget(title)
+
+        # A newer version on GitHub (App._check_updates fills it in)
+        self.update_banner = QFrame()
+        self.update_banner.setObjectName("updateBanner")
+        ub = QHBoxLayout(self.update_banner)
+        ub.setContentsMargins(12, 8, 8, 8)
+        ub.setSpacing(8)
+        self.upd_lbl = QLabel("")
+        self.upd_lbl.setTextFormat(Qt.TextFormat.RichText)
+        self.upd_lbl.setWordWrap(True)
+        _styled(self.upd_lbl, "body")
+        ub.addWidget(self.upd_lbl, 1)
+        self.upd_see_btn = QPushButton(t('upd_see'))
+        self.upd_see_btn.setObjectName("cardBtn")
+        self.upd_see_btn.clicked.connect(self.app.open_release_page)
+        ub.addWidget(self.upd_see_btn)
+        self.upd_btn = QPushButton(t('upd_install'))
+        self.upd_btn.setObjectName("primaryBtn")
+        self.upd_btn.clicked.connect(self.app.update_button_clicked)
+        ub.addWidget(self.upd_btn)
+        self.update_banner.hide()
+        lay.addWidget(self.update_banner)
 
         intro = QLabel(t('home_intro'))
         intro.setWordWrap(True)
@@ -4934,13 +5070,79 @@ class PrepPanel(QWidget):
         raw_btn.clicked.connect(lambda: _open_folder(_proj_dir("data", "raw")))
         _add(raw_btn)
 
+        exports_btn = QPushButton(t('btn_open_exports'))
+        exports_btn.setObjectName("cardBtn")
+        exports_btn.setToolTip(t('tip_open_exports'))
+        exports_btn.clicked.connect(lambda: _open_folder(layout.EXPORTS_DIR))
+        _add(exports_btn)
+
         self.free_btn = QPushButton(t('btn_free_space'))
         self.free_btn.setObjectName("dangerBtn")
         self.free_btn.clicked.connect(self.app.free_disk_space)
         _add(self.free_btn)
         lay.addLayout(row2)
 
+        # ---- Shortcuts --------------------------------------------------------
+        lay.addSpacing(_px(10))
+        lay.addWidget(_hsep_line())
+        sc_title = QLabel(t('sc_section'))
+        _styled(sc_title, "optionTitle")
+        lay.addWidget(sc_title)
+        sc_intro = QLabel(t('sc_intro'))
+        sc_intro.setWordWrap(True)
+        _styled(sc_intro, "small")
+        lay.addWidget(sc_intro)
+        sc_row = QHBoxLayout()
+        sc_row.setSpacing(12)
+        self.sc_desktop = QCheckBox(t('sc_desktop'))
+        self.sc_menu = QCheckBox(t('sc_menu_' + (sys.platform if sys.platform in ("win32", "darwin") else "linux")))
+        self.sc_desktop.setChecked(True)
+        self.sc_menu.setChecked(True)
+        sc_row.addWidget(self.sc_desktop)
+        sc_row.addWidget(self.sc_menu)
+        sc_row.addStretch()
+        lay.addLayout(sc_row)
+        sc_btns = QHBoxLayout()
+        sc_btns.setSpacing(8)
+        self.sc_create_btn = QPushButton(t('sc_create'))
+        self.sc_create_btn.setObjectName("cardBtn")
+        self.sc_create_btn.clicked.connect(self.app.create_shortcuts)
+        sc_btns.addWidget(self.sc_create_btn)
+        self.sc_remove_btn = QPushButton(t('sc_remove'))
+        self.sc_remove_btn.setObjectName("dangerBtn")
+        self.sc_remove_btn.clicked.connect(self.app.remove_shortcuts)
+        sc_btns.addWidget(self.sc_remove_btn)
+        sc_btns.addStretch()
+        lay.addLayout(sc_btns)
+        self.sc_status = QLabel("")
+        self.sc_status.setWordWrap(True)
+        _styled(self.sc_status, "small")
+        lay.addWidget(self.sc_status)
+
+        lay.addSpacing(_px(10))
+        un_row = QHBoxLayout()
+        un_row.addStretch()
+        uninstall_btn = QPushButton(t('btn_uninstall'))
+        uninstall_btn.setObjectName("dangerBtn")
+        uninstall_btn.clicked.connect(self.app.uninstall)
+        un_row.addWidget(uninstall_btn)
+        lay.addLayout(un_row)
+
         self.refresh()
+        self.refresh_shortcuts()
+
+    def refresh_shortcuts(self):
+        made = shortcuts.current()
+        if made:
+            self.sc_desktop.setChecked(made["desktop"])
+            self.sc_menu.setChecked(made["menu"])
+            where = [w for w, on in ((self.sc_desktop.text(), made["desktop"]),
+                                     (self.sc_menu.text(), made["menu"])) if on]
+            self.sc_status.setText(t('sc_made', where=t('sc_and').join(where)))
+        else:
+            self.sc_status.setText(t('sc_none'))
+        self.sc_create_btn.setText(t('sc_recreate') if made else t('sc_create'))
+        self.sc_remove_btn.setEnabled(bool(made))
 
     def refresh(self, st=None):
         st = st or _get_project_status()
@@ -4983,7 +5185,7 @@ class PrepPanel(QWidget):
         # what decides how much faster updating is than rebuilding.
         upd = next((pl for pl in _PIPELINES if pl.get("needs_updatable_db")), None)
         if upd is not None and getattr(self, "_update_hint", None) is not None:
-            db_file = _proj_dir("app", "bold_db.db")
+            db_file = layout.database_path()
             try:
                 db_part = (t('db_size_part', size=_fmt_size(os.path.getsize(db_file)))
                            if st["step2"] else "")
@@ -5467,7 +5669,7 @@ class App(QMainWindow):
         self._log_file    = None
         self._log_flush_t = 0.0
         _ensure_data_dirs()
-        self._init_msg = _ensure_app_initialized()
+        self._init_msg = _migration_message()
         self._init_log_file()
         # Before _build(): resize events start arriving as soon as the
         # widgets are built, and the timer must already exist by then.
@@ -5475,11 +5677,13 @@ class App(QMainWindow):
         self._build()
         self._restore_geometry()
         QTimer.singleShot(0, self._show_initial_status)
+        # After the window is up: the shortcut question and the update check
+        QTimer.singleShot(900, self._after_startup)
 
     # ---- Window size and position across sessions -----------------------------
 
     def _init_settings(self):
-        """UI state in app/ui_state.ini, alongside the rest of what's generated.
+        """UI state in data/state/ui_state.ini, alongside the rest of what's generated.
 
         An .ini in the project instead of the Windows registry: the tool lives
         in a folder that gets copied between machines, so the state travels
@@ -5491,7 +5695,7 @@ class App(QMainWindow):
         self._geo_timer.setInterval(500)   # saves on release, not on every pixel
         self._geo_timer.timeout.connect(self._save_geometry)
         try:
-            path = _proj_dir("app", "ui_state.ini")
+            path = layout.UI_STATE_FILE
             os.makedirs(os.path.dirname(path), exist_ok=True)
             self._settings = QSettings(path, QSettings.Format.IniFormat)
         except Exception:
@@ -5757,7 +5961,7 @@ class App(QMainWindow):
         self._log.setReadOnly(True)
         # Multi-hour sessions: without a cap, the document grows without limit
         # and each insertion gets progressively slower. The full log is kept
-        # in app/logs/ regardless.
+        # in data/state/logs/ regardless.
         self._log.document().setMaximumBlockCount(4000)
         self._log.setToolTip(t('tip_log_widget'))
         log_lay.addWidget(self._log)
@@ -5832,15 +6036,168 @@ class App(QMainWindow):
         if getattr(self, "_fields", None) and self._current == FIELDS_IDX:
             self._fields.refresh(st)
 
+    # ---- Shortcuts, updates, uninstall ------------------------------------------
+
+    def _after_startup(self):
+        self._maybe_ask_shortcuts()
+        self._check_updates()
+
+    def _maybe_ask_shortcuts(self):
+        """Once, on a downloaded copy with no shortcuts yet."""
+        if layout.is_repository_clone() or shortcuts.current() or not self._settings:
+            return
+        if self._settings.value("shortcuts/asked") == "true":
+            return
+        self._settings.setValue("shortcuts/asked", "true")
+        self._settings.sync()
+        box = QMessageBox(self)
+        box.setWindowTitle(t('sc_ask_title'))
+        box.setText(t('sc_ask_body'))
+        yes = box.addButton(t('sc_ask_yes'), QMessageBox.ButtonRole.AcceptRole)
+        box.addButton(t('sc_ask_no'), QMessageBox.ButtonRole.RejectRole)
+        box.setDefaultButton(yes)
+        box.exec()
+        if box.clickedButton() is yes:
+            self.create_shortcuts()
+
+    def create_shortcuts(self):
+        desktop, menu = self._prep.sc_desktop.isChecked(), self._prep.sc_menu.isChecked()
+        if not (desktop or menu):
+            QMessageBox.information(self, t('sc_section'), t('sc_pick_one'))
+            return
+        try:
+            made = shortcuts.create(desktop, menu, LANG)
+            self.log(t('sc_created_log', n=len(made)))
+            for path in made:
+                self.log("   " + path)
+        except Exception as e:
+            self.log(t('sc_error', error=_cause_str(e)))
+        self._prep.refresh_shortcuts()
+
+    def remove_shortcuts(self):
+        removed = shortcuts.remove()
+        self.log(t('sc_removed_log', n=len(removed)))
+        self._prep.refresh_shortcuts()
+
+    def _check_updates(self):
+        staged = updater.staged_version()
+        if staged and updater.self_update_supported():
+            self._show_update_banner({"version": staged}, staged=True)
+            return
+        self._upd_check = _UpdateCheck(self)
+        self._upd_check.done.connect(self._on_update_info)
+        self._upd_check.start()
+
+    def _on_update_info(self, release):
+        if release and release.get("version") and updater.is_newer(release["version"], __version__):
+            self._show_update_banner(release)
+
+    def _show_update_banner(self, release, staged=False):
+        prep = self._prep
+        self._release = release
+        self._update_staged = staged
+        prep.upd_lbl.setText(t('upd_staged' if staged else 'upd_available',
+                               new=release["version"], cur=__version__))
+        prep.upd_see_btn.setVisible(not staged)
+        prep.upd_btn.setEnabled(True)
+        prep.upd_btn.setToolTip("")
+        if staged:
+            prep.upd_btn.setText(t('upd_restart'))
+        else:
+            prep.upd_btn.setText(t('upd_install'))
+            if not updater.self_update_supported():
+                prep.upd_btn.setEnabled(False)
+                prep.upd_btn.setToolTip(t('upd_git_tip'))
+            elif not release.get("asset_url"):
+                prep.upd_btn.setEnabled(False)
+                prep.upd_btn.setToolTip(t('upd_no_asset_tip'))
+        prep.update_banner.show()
+
+    def open_release_page(self):
+        webbrowser.open((getattr(self, "_release", None) or {}).get("page") or updater.RELEASES_PAGE)
+
+    def update_button_clicked(self):
+        if getattr(self, "_update_staged", False):
+            self._restart_for_update()
+        else:
+            self.install_update()
+
+    def install_update(self):
+        if self._is_any_running() or self._threads_alive():
+            QMessageBox.information(self, t('upd_install'), t('upd_busy'))
+            return
+        btn = self._prep.upd_btn
+        btn.setEnabled(False)
+        btn.setText(t('upd_downloading', pct="…"))
+        self._upd_dl = _UpdateDownload(self._release, self)
+        self._upd_dl.progress.connect(
+            lambda done, total: btn.setText(t('upd_downloading', pct=f"{100 * done // total} %" if total
+                                              else _fmt_size(done))))
+        self._upd_dl.finished_with.connect(self._on_update_downloaded)
+        self._upd_dl.start()
+
+    def _on_update_downloaded(self, error):
+        btn = self._prep.upd_btn
+        if error:
+            self.log(t('upd_failed', error=error))
+            btn.setEnabled(True)
+            btn.setText(t('upd_install'))
+            return
+        version = self._release["version"]
+        self.log(t('upd_downloaded_log', v=version))
+        self._show_update_banner({"version": version}, staged=True)
+        box = QMessageBox(self)
+        box.setWindowTitle(t('upd_ready_title'))
+        box.setText(t('upd_ready_body', v=version))
+        now = box.addButton(t('upd_restart'), QMessageBox.ButtonRole.AcceptRole)
+        box.addButton(t('upd_restart_later'), QMessageBox.ButtonRole.RejectRole)
+        box.setDefaultButton(now)
+        box.exec()
+        if box.clickedButton() is now:
+            self._restart_for_update()
+
+    def _restart_for_update(self):
+        """Closes with exit code 4: the launcher starts again, and start.py
+        puts the downloaded version in place first."""
+        app = QApplication.instance()
+        # Otherwise closing the last window quits with code 0 first
+        app.setQuitOnLastWindowClosed(False)
+        if self.close():
+            app.exit(4)
+        else:
+            app.setQuitOnLastWindowClosed(True)
+
+    def uninstall(self):
+        size = 0
+        for dirpath, _dirs, files in os.walk(layout.DATA_DIR):
+            for name in files:
+                try:
+                    size += os.path.getsize(os.path.join(dirpath, name))
+                except OSError:
+                    pass
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(t('uninstall_title'))
+        box.setText(t('uninstall_body', data=layout.DATA_DIR, size=_fmt_size(size)))
+        go = box.addButton(t('uninstall_go'), QMessageBox.ButtonRole.DestructiveRole)
+        box.addButton(t('btn_cancel'), QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        if box.clickedButton() is not go:
+            return
+        removed = shortcuts.remove()
+        self.log(t('sc_removed_log', n=len(removed)))
+        _os_open(os.path.dirname(layout.ROOT))
+        self.close()
+
     # ---- Home actions -----------------------------------------------------------
 
     def open_viewer(self):
-        app_dir = _proj_dir("app")
+        app_dir = layout.FRONTEND_DIR
         server  = os.path.join(app_dir, "server.py")
         if not os.path.exists(server):
             QMessageBox.warning(self, t('viewer_not_found_title'), t('viewer_not_found_body'))
             return
-        if not os.path.exists(os.path.join(app_dir, "bold_db.db")):
+        if not os.path.exists(layout.database_path()):
             QMessageBox.information(
                 self, t('no_db_yet_title'), t('no_db_yet_body'))
             return
@@ -6219,7 +6576,7 @@ class App(QMainWindow):
         """Puts a finished build in place of the current database, if there is
         one (see _promote_pending_build). Called only while nothing runs.
         False if a finished build is waiting and couldn't replace it."""
-        pending = os.path.exists(_build_path(_proj_dir("app", db_contract.DB_FILENAME)))
+        pending = os.path.exists(_build_path(layout.database_path()))
         ok = _promote_pending_build(self.log)
         if pending:
             self._refresh_all_panels_input()
@@ -6236,7 +6593,7 @@ class App(QMainWindow):
         return False
 
     def _init_log_file(self):
-        logs_dir = os.path.normpath(os.path.join(PROJECT_ROOT, "..", "app", "logs"))
+        logs_dir = layout.LOGS_DIR
         try:
             os.makedirs(logs_dir, exist_ok=True)
             ts   = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

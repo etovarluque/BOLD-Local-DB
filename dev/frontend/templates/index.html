@@ -960,6 +960,22 @@
 			margin-right: 6px;
 			vertical-align: 1px;
 		}
+		/* The BOLD package the database was built from is over a month old */
+		.db-stat-src.stale::before { background: #e0a800; }
+		.db-stale-badge {
+			display: inline-block;
+			margin-left: 8px;
+			padding: 1px 8px;
+			border: 1px solid #f0c64a;
+			border-radius: 10px;
+			background: #fff3c4;
+			color: #6b4a00;
+			font-family: var(--f-ui);
+			font-size: .72rem;
+			font-weight: 600;
+			white-space: nowrap;
+			cursor: help;
+		}
 		.lang-switch {
 			display: flex;
 			border: 1px solid #d3d8e0;
@@ -1002,6 +1018,21 @@
 		.card { border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 1px 2px rgba(24, 33, 58, .05); }
 		.card-header { background: var(--slate); border-bottom: 0; padding: .85rem 1.25rem; }
 		.card-header h5 { font-weight: 600; font-size: 1.05rem; }
+
+		/* Help icon next to a panel title: opens the guide at its section.
+		   Muted white on the slate band; on hover, a circle in the orange
+		   accent with the icon in ink. */
+		.card-header.has-help { display: flex; align-items: center; gap: .35rem; }
+		.help-link {
+			display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+			width: 28px; height: 28px; border-radius: 50%;
+			color: rgba(255, 255, 255, .72);
+			text-decoration: none;
+			transition: background-color .15s, color .15s;
+		}
+		.help-link svg { width: 18px; height: 18px; }
+		.help-link:hover, .help-link:focus-visible { background: var(--tab-accent); color: var(--ink); }
+		.help-link:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 		#fieldSearchPanel, #ftsSearchPanel, #batchSearchPanel, #genbankSearchPanel { border-top: 0; border-radius: 0 0 10px 10px; }
 		#fieldSearchPanel > .card-header, #ftsSearchPanel > .card-header,
 		#batchSearchPanel > .card-header, #genbankSearchPanel > .card-header { border-radius: 0; }
@@ -1254,9 +1285,145 @@
 			--bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%237a8494'/%3e%3c/svg%3e");
 		}
 		.form-switch .form-check-input:checked { background-color: var(--slate); border-color: var(--slate); }
+
+		/* ── Sequence analysis ──────────────────────────────────────────────
+		   Its tables don't use .table: that class carries the results table's
+		   fixed layout, and several scripts restyle every `.table td`. */
+		#analysisPanel { border-top: 0; border-radius: 0 0 10px 10px; }
+		#analysisPanel > .card-header { border-radius: 0; }
+		.an-label { display: block; margin-bottom: .45rem; font-weight: 600; font-size: .78rem; letter-spacing: .5px; text-transform: uppercase; color: var(--mute); }
+		/* Input box: a summary line (after a run) over the form, which folds */
+		.an-input { border: 1px solid var(--line); border-radius: 10px; background: var(--tint); }
+		.an-input-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px; }
+		.an-input-lbl { font-size: .74rem; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--slate); }
+		.an-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+		.an-chip { display: inline-flex; gap: 6px; padding: 2px 10px; border: 1px solid #c3c9d4; border-radius: 14px; background: #fff; font-size: .82rem; color: var(--ink); }
+		.an-chip em { font-style: normal; color: var(--mute); }
+		.an-input-toggle { margin-left: auto; background: #fff; }
+		.an-input-form { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px 24px; padding: 14px; border-top: 1px solid #d8dde5; }
+		.an-input-form[hidden] { display: none; }
+		.an-input-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+		.an-input-form legend { float: none; }
+		.an-input-form .an-note { grid-column: 1 / -1; margin-top: 0; }
+		@media (max-width: 767px) { .an-input-form { grid-template-columns: 1fr; } }
+		.an-sources { display: flex; flex-direction: column; border: 1.5px solid #9aa3b2; border-radius: 8px; background: #fff; overflow: hidden; }
+		.an-source { display: flex; align-items: center; gap: 10px; margin: 0; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+		.an-source:last-child { border-bottom: 0; }
+		.an-source:hover { background: #f7f8fa; }
+		.an-source:has(input:checked) { background: var(--selected); box-shadow: inset 3px 0 0 var(--slate); }
+		.an-count { margin-left: auto; padding: 0 8px; border-radius: 10px; background: var(--tint); color: var(--slate); font-size: .78rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+		.an-source:has(input:checked) .an-count { background: var(--slate); color: #fff; }
+		.an-fields { display: grid; gap: 10px; }
+		.an-field { display: grid; gap: 4px; margin: 0; font-size: .78rem; font-weight: 500; color: var(--mute); }
+		.an-field .form-select { border: 1.5px solid #9aa3b2; }
+		.an-field .form-select:hover:not(:disabled) { border-color: var(--slate); }
+		.an-run { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 2px; }
+		.an-fasta-text { font-family: var(--f-mono); font-size: .8rem; }
+		.an-options { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
+		.an-options select { width: auto; min-width: 200px; flex: none; padding-right: 2.25rem; }
+		.an-note { margin-top: .9rem; padding: 8px 12px; border-left: 3px solid var(--orange); background: #fff7ee; font-size: .88rem; }
+		.an-note[hidden] { display: none; }
+		.an-results { margin-top: 1.4rem; }
+		.an-results[hidden] { display: none; }
+		.an-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: .5rem; }
+		.an-head .an-title { font-weight: 600; font-size: 1.02rem; }
+		.an-head .an-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+		.an-warn { margin: .25rem 0; font-size: .85rem; color: #8a4b08; }
+		.an-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 1rem 0 1.25rem; }
+		.an-tile { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+		.an-tile-v { font-size: 1.35rem; font-weight: 600; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+		.an-tile-k { font-size: .78rem; color: var(--mute); }
+		.an-tile-s { font-size: .75rem; color: var(--mute); font-variant-numeric: tabular-nums; }
+		/* Summary figures in three labelled groups */
+		.an-kgroups { display: flex; flex-wrap: wrap; gap: 10px; margin: .9rem 0 1.25rem; }
+		.an-kgroup { flex: 1 1 auto; padding: 8px 14px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+		.an-kgroup-t { margin-bottom: 4px; font-size: .7rem; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--mute); }
+		.an-kgroup-row { display: flex; flex-wrap: wrap; gap: 6px 24px; }
+		.an-kv-v { font-size: 1.2rem; font-weight: 600; line-height: 1.25; color: var(--ink); font-variant-numeric: tabular-nums; }
+		.an-kv-k { font-size: .74rem; color: var(--mute); }
+		.an-kv-s { font-size: .72rem; color: var(--mute); font-variant-numeric: tabular-nums; }
+		.an-kv.warn .an-kv-v { color: #b4570b; }
+		/* Views: the same tabs as the search methods, over a framed body */
+		.an-views { display: flex; overflow-x: auto; border-radius: 8px 8px 0 0; }
+		.an-views button { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: .6rem 1rem; border: 0; border-right: 1px solid #d2d7df; background: var(--tab-idle); color: var(--slate); font-weight: 500; font-size: .9rem; white-space: nowrap; }
+		.an-views button:last-child { border-right: 0; }
+		.an-views button:hover { background: #d2d7df; color: var(--slate-2); }
+		.an-views button.active { background: var(--slate); color: #fff; box-shadow: inset 0 -3px 0 var(--tab-accent); }
+		.an-views button:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
+		.an-badge { padding: 0 7px; border-radius: 9px; background: #fff; color: var(--slate); font-size: .72rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+		.an-badge.warn { background: var(--orange); color: #fff; }
+		.an-view-body { padding: 18px 16px; border: 1px solid #d2d7df; border-top: 0; border-radius: 0 0 10px 10px; }
+		.an-h { margin: 1.25rem 0 .5rem; font-weight: 600; font-size: .95rem; }
+		.an-h:first-child { margin-top: 0; }
+		.an-muted { color: var(--mute); font-size: .85rem; }
+		.an-table-wrap { max-height: 440px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+		.an-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+		.an-table th, .an-table td { padding: 5px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+		.an-table th { position: sticky; top: 0; z-index: 1; background: var(--tint); color: var(--mute); font-weight: 600; font-size: .75rem; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; }
+		.an-table tbody tr:last-child td { border-bottom: 0; }
+		.an-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+		.an-table .mono { font-family: var(--f-mono); font-size: .8rem; white-space: nowrap; }
+		.an-table td.sp { font-style: italic; }
+		.an-table td.list { font-family: var(--f-mono); font-size: .8rem; }
+		.an-flag { display: inline-block; margin: 1px 3px 1px 0; padding: 0 6px; border-radius: 4px; background: var(--tint); font-size: .75rem; white-space: nowrap; }
+		.an-hist { position: relative; max-width: 760px; }
+		.an-hist svg { display: block; width: 100%; height: auto; }
+		.an-hist .bar { fill: var(--slate); }
+		.an-hist .bar.hover { fill: var(--orange); }
+		.an-hist .hit { fill: transparent; }
+		.an-hist .grid { stroke: var(--line); stroke-width: 1; }
+		.an-hist .axis { stroke: #c9cfd9; stroke-width: 1; }
+		.an-hist text { font-family: var(--f-ui); font-size: 11px; fill: var(--mute); font-variant-numeric: tabular-nums; }
+		.an-tip { position: absolute; z-index: 2; padding: 4px 8px; border-radius: 4px; background: var(--slate-2); color: #fff; font-size: .78rem; white-space: nowrap; pointer-events: none; transform: translate(-50%, calc(-100% - 6px)); }
+		.an-tip[hidden] { display: none; }
+		.an-dist-controls { margin-bottom: 1rem; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--tint); }
+		.an-dist-controls select { min-width: 0; }
+		.an-nogap { color: #b4570b; font-weight: 600; }
+		.an-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 6px; font-size: .8rem; color: var(--mute); }
+		.an-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+		.an-legend-item i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+		.an-scatter { max-width: 560px; }
+		.an-hist .pt { stroke: #fff; stroke-width: 1.5; }
+		.an-hist .pt.hover { stroke: var(--ink); stroke-width: 2; }
+		.an-hist .diag { stroke: #9aa3b2; stroke-width: 1.5; stroke-dasharray: 5 4; }
+		/* The tree's SVG carries its own colours and sizes (so an exported file
+		   looks like the screen): no CSS styles its marks, except hover */
+		.an-tree { max-height: 760px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+		.an-tree svg { display: block; }
+		.an-tree .node-hit { cursor: pointer; }
+		.an-tree .node-hit:hover { fill: rgba(232, 131, 26, .55); }
+		.an-tree .group { cursor: pointer; }
+		.an-tree .group:hover { stroke: #e8831a; stroke-width: 2; }
+		.an-tree-tools { margin-bottom: .75rem; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+		.an-tree-tools .form-range { width: 110px; }
+		.an-tree-tools select { min-width: 0; }
+		.an-range-v { min-width: 1.5em; font-variant-numeric: tabular-nums; }
+		.an-tree-find { width: 230px; }
+		#identifyPanel { border-top: 0; border-radius: 0 0 10px 10px; }
+		#identifyPanel > .card-header { border-radius: 0; }
+		#identifyPanel .an-label.mt-3 { margin-top: 1rem; }
+		.id-th { width: 76px; }
+		.id-row { cursor: pointer; }
+		.id-row:hover td, .id-row.open td { background: var(--tint); }
+		.id-detail > td { padding: 6px 10px 12px 28px; background: #fafbfc; }
+		.id-detail .an-table-wrap { max-height: 320px; }
+		.id-table-wrap { max-height: 640px; }
+		.id-note { font-size: .78rem; }
+		.id-level { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+		.id-level-species { background: #dff3e6; color: #1d6b3a; }
+		.id-level-genus { background: #e1ecfb; color: #1f4f8f; }
+		.id-level-family { background: #fbefd9; color: #85540a; }
+		.id-level-none { background: #eceef2; color: #5b6475; }
+		.an-groups { margin: .25rem 0 .5rem; padding-left: 1.4rem; font-size: .85rem; color: var(--mute); }
+		.an-group-select { width: auto; max-width: 100%; }
     </style>
 </head>
 <body>
+{# Help icon for a panel title; the guide file (by language) is set by applyTranslations() #}
+{% macro help_link(anchor) -%}
+<a class="help-link" data-help="{{ anchor }}" href="/guide/guia_de_uso.html#{{ anchor }}" target="_blank" rel="noopener"
+   data-i18n-title="help_link_title" data-i18n-aria-label="help_link_title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></a>
+{%- endmacro %}
     <div class="container mt-4">
 	
 		<header class="app-header">
@@ -1307,14 +1474,20 @@
                 </button>
                 <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_tab_btn">Lote en BOLD local</button>
                 <button type="button" class="btn btn-outline-primary" id="genbankSearchTab" data-i18n="genbank_tab_btn">Lote en GenBank</button>
+                <button type="button" class="btn btn-outline-primary" id="analysisTab" data-i18n="an_tab_btn">Análisis de secuencias</button>
+                {# Off for now (IDENTIFY_ENABLED in server.py) #}
+                {% if identify_enabled %}
+                <button type="button" class="btn btn-outline-primary" id="identifyTab" data-i18n="id_tab_btn">Identificar secuencias</button>
+                {% endif %}
             </div>
         </div>
 
         {% if fts_available %}
         <!-- FTS search panel -->
         <div id="ftsSearchPanel" class="card mb-4">
-            <div class="card-header">
+            <div class="card-header has-help">
                 <h5 data-i18n="fts_panel_title">Búsqueda de texto completo</h5>
+                {{ help_link('busqueda-fts') }}
             </div>
             <div class="card-body">
                 <div class="input-group mb-3">
@@ -1335,8 +1508,9 @@
 
         <!-- Batch search panel -->
         <div id="batchSearchPanel" class="card mb-4" style="display:none;">
-            <div class="card-header">
+            <div class="card-header has-help">
                 <h5 data-i18n="batch_panel_title">Búsqueda por lote en la base BOLD local</h5>
+                {{ help_link('busqueda-batch') }}
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-4" data-i18n-html="batch_intro_text">
@@ -1564,8 +1738,9 @@
 
         <!-- GenBank batch search panel (queries NCBI online; ported from BarcodeSuite) -->
         <div id="genbankSearchPanel" class="card mb-4" style="display:none;">
-            <div class="card-header">
+            <div class="card-header has-help">
                 <h5 data-i18n="genbank_panel_title">Búsqueda por lote en NCBI GenBank (en línea)</h5>
+                {{ help_link('busqueda-genbank') }}
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-4" data-i18n-html="genbank_intro_text"></p>
@@ -1690,10 +1865,152 @@
             </div>
         </div>
 
+        <!-- Sequence analysis panel: composition, translation, haplotypes and
+             species/BIN concordance of one marker's sequences (see seq_analysis.py) -->
+        <div id="analysisPanel" class="card mb-4" style="display:none;">
+            <div class="card-header has-help">
+                <h5 data-i18n="an_panel_title">Análisis de secuencias</h5>
+                {{ help_link('analisis') }}
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3" id="anIntro"></p>
+
+                <!-- Input: folds into a one-line summary once there are results -->
+                <div class="an-input" id="anInput">
+                    <div class="an-input-sum">
+                        <span class="an-input-lbl" data-i18n="an_input_label">Entrada</span>
+                        <span class="an-chips" id="anInputChips"></span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary an-input-toggle" id="anInputToggle"
+                                aria-controls="anInputForm" aria-expanded="true" hidden></button>
+                    </div>
+                    <div class="an-input-form" id="anInputForm">
+                        <fieldset>
+                            <legend class="an-label" data-i18n="an_source_label">Secuencias</legend>
+                            <div class="an-sources" role="radiogroup">
+                                <label class="an-source">
+                                    <input type="radio" name="anSource" value="records" class="form-check-input mt-0" checked>
+                                    <span data-i18n="an_src_records">Registros seleccionados</span>
+                                    <span class="an-count" id="anSelCount">0</span>
+                                </label>
+                                <label class="an-source">
+                                    <input type="radio" name="anSource" value="search" class="form-check-input mt-0">
+                                    <span data-i18n="an_src_search">Resultados de la búsqueda mostrada</span>
+                                    <span class="an-count" id="anSearchCount">—</span>
+                                </label>
+                                <label class="an-source">
+                                    <input type="radio" name="anSource" value="fasta" class="form-check-input mt-0">
+                                    <span data-i18n="an_src_fasta">Archivo FASTA</span>
+                                </label>
+                            </div>
+                            <div id="anFastaBox" class="mt-2" style="display:none;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <input type="file" id="anFastaFile" class="form-control form-control-sm" accept=".fasta,.fas,.fa,.fna,.ffn,.txt">
+                                    <button type="button" class="btn btn-sm btn-link text-muted p-0 text-nowrap" id="anFastaClear" data-i18n="an_fasta_clear">✕ Quitar</button>
+                                </div>
+                                <textarea id="anFastaText" class="form-control an-fasta-text" rows="5" spellcheck="false"
+                                          data-i18n-placeholder="an_fasta_placeholder"></textarea>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend class="an-label" data-i18n="an_options_label">Opciones</legend>
+                            <div class="an-fields">
+                                <label class="an-field">
+                                    <span data-i18n="an_marker_field">Marcador</span>
+                                    <select id="anMarker" class="form-select form-select-sm"></select>
+                                </label>
+                                <label class="an-field">
+                                    <span data-i18n="an_code_field">Código genético</span>
+                                    <select id="anCode" class="form-select form-select-sm">
+                                        <option value="auto" data-i18n="an_code_auto">Automático (según marcador y taxonomía)</option>
+                                        <option value="1" data-i18n="an_code_1">1 · Estándar</option>
+                                        <option value="2" data-i18n="an_code_2">2 · Mitocondrial de vertebrados</option>
+                                        <option value="4" data-i18n="an_code_4">4 · Mitocondrial de mohos, protozoos y celentéreos</option>
+                                        <option value="5" data-i18n="an_code_5">5 · Mitocondrial de invertebrados</option>
+                                        <option value="9" data-i18n="an_code_9">9 · Mitocondrial de equinodermos y platelmintos</option>
+                                        <option value="11" data-i18n="an_code_11">11 · Bacteriano, arqueas y plastos</option>
+                                        <option value="13" data-i18n="an_code_13">13 · Mitocondrial de ascidias</option>
+                                    </select>
+                                </label>
+                                <span id="anCodeHint" class="an-muted"></span>
+                                <div class="an-run">
+                                    <span id="anStatus" class="text-muted" style="font-size:.85rem;"></span>
+                                    <button id="anRunBtn" type="button" class="btn btn-primary px-5" data-i18n="an_run_btn">Analizar</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <div id="anNote" class="an-note" hidden></div>
+                    </div>
+                </div>
+
+                <div id="anResults" class="an-results" hidden></div>
+            </div>
+        </div>
+
+        {% if identify_enabled %}
+        <!-- Identification panel: query sequences searched against the
+             database through an index per marker (see seq_identify.py).
+             Off for now (IDENTIFY_ENABLED in server.py). -->
+        <div id="identifyPanel" class="card mb-4" style="display:none;">
+            <div class="card-header">
+                <h5 data-i18n="id_panel_title">Identificar secuencias</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-4" id="idIntro"></p>
+
+                <span class="an-label" data-i18n="id_reference_label">Referencia</span>
+                <div class="an-options mb-2">
+                    <label class="d-flex align-items-center gap-2">
+                        <span class="text-secondary small text-nowrap" data-i18n="an_marker_label">Marcador:</span>
+                        <select id="idMarker" class="form-select form-select-sm"></select>
+                    </label>
+                    <span id="idIndexStatus" class="an-muted"></span>
+                    <button type="button" id="idIndexBuild" class="btn btn-sm btn-outline-secondary" hidden></button>
+                    <button type="button" id="idIndexCancel" class="btn btn-sm btn-link text-muted p-0" hidden data-i18n="cancel_btn_short">Cancelar</button>
+                </div>
+                <div class="progress mb-3" id="idIndexProgress" style="height:8px;" hidden><div class="progress-bar" style="width:0%"></div></div>
+
+                <span class="an-label mt-3" data-i18n="id_queries_label">Secuencias a identificar (FASTA)</span>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <input type="file" id="idFastaFile" class="form-control form-control-sm" accept=".fasta,.fas,.fa,.fna,.ffn,.txt" style="max-width:420px;">
+                    <button type="button" class="btn btn-sm btn-link text-muted p-0" id="idFastaClear" data-i18n="an_fasta_clear">✕ Quitar archivo</button>
+                </div>
+                <textarea id="idFastaText" class="form-control an-fasta-text mb-3" rows="5" spellcheck="false"
+                          data-i18n-placeholder="id_fasta_placeholder"></textarea>
+
+                <span class="an-label" data-i18n="an_options_label">Opciones</span>
+                <div class="an-options">
+                    <span class="text-secondary small" data-i18n="id_thresholds_label">Similitud mínima:</span>
+                    <label class="d-flex align-items-center gap-1"><span class="small" data-i18n="id_level_species">Especie</span>
+                        <input type="number" id="idThSpecies" class="form-control form-control-sm id-th" value="98" min="50" max="100" step="0.5"><span class="small">%</span></label>
+                    <label class="d-flex align-items-center gap-1"><span class="small" data-i18n="id_level_genus">Género</span>
+                        <input type="number" id="idThGenus" class="form-control form-control-sm id-th" value="95" min="50" max="100" step="0.5"><span class="small">%</span></label>
+                    <label class="d-flex align-items-center gap-1"><span class="small" data-i18n="id_level_family">Familia</span>
+                        <input type="number" id="idThFamily" class="form-control form-control-sm id-th" value="90" min="50" max="100" step="0.5"><span class="small">%</span></label>
+                    <label class="d-flex align-items-center gap-2">
+                        <span class="text-secondary small text-nowrap" data-i18n="id_max_hits_label">Coincidencias por secuencia:</span>
+                        <select id="idMaxHits" class="form-select form-select-sm" style="min-width:0;">
+                            <option value="5">5</option><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <span id="idStatus" class="text-muted ms-auto" style="font-size:.85rem;"></span>
+                    <button id="idCancelBtn" type="button" class="btn btn-outline-danger" hidden data-i18n="cancel_btn_short">Cancelar</button>
+                    <button id="idRunBtn" type="button" class="btn btn-primary px-5" disabled data-i18n="id_run_btn">Identificar</button>
+                </div>
+                <div class="progress mt-2" id="idProgress" style="height:8px;" hidden><div class="progress-bar" style="width:0%"></div></div>
+
+                <div id="idResults" class="an-results" hidden></div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Field search panel (original) -->
         <div class="card mb-4" id="fieldSearchPanel">
-            <div class="card-header">
+            <div class="card-header has-help">
                 <h5 data-i18n="field_panel_title">Criterios de búsqueda por campos</h5>
+                {{ help_link('busqueda-campos') }}
             </div>
             <div class="card-body">
                 <div id="searchConditions">
@@ -1766,10 +2083,11 @@
 
 		<div class="card results-card">
 			<div id="resultsCardHeader" class="card-header d-flex justify-content-between align-items-center">
-				<div>
+				<div class="d-flex align-items-center gap-1">
 					<h5><span data-i18n="results_label">Resultados:</span> <span id="resultsCount"></span>
 						<span class="execution-time" id="executionTime"></span>
 					</h5>
+					{{ help_link('tabla') }}
 				</div>
 				<div class="ms-auto d-flex gap-2 align-items-center">
 					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
@@ -1916,7 +2234,10 @@
                 searching_sequences: 'Buscando secuencias...',
                 searching_database: 'Buscando en la base de datos...',
                 copied_toast: 'Copiado',
+                help_link_title: 'Ayuda: abre la guía en esta sección',
                 local_database: 'Base de datos local', records_label: 'registros',
+                db_stale_badge: 'hace {n} días',
+                db_stale_tip: 'El paquete de BOLD con el que se construyó esta base tiene {n} días. BOLD publica uno nuevo cada semana: abre BOLD-Local-DB y usa «Actualizar la base de datos».',
                 last_search_label: 'Búsqueda mostrada', edit_search_btn: '✎ Editar',
                 record_label: 'Registro', record_close: 'Cerrar',
                 record_taxonomy: 'Taxonomía', record_fields: 'Datos del registro',
@@ -1989,6 +2310,242 @@
                 genbank_need_terms2: 'El criterio 2 está activado pero vacío: añade términos o desactívalo.',
                 genbank_load_failed: 'No se pudo leer el archivo: ',
                 genbank_lost: 'El servidor ya no tiene esta búsqueda (¿se reinició?).',
+                // Sequence analysis tab
+                an_tab_btn: 'Análisis de secuencias',
+                an_panel_title: 'Análisis de secuencias',
+                an_intro_text: 'Composición y calidad, revisión de la traducción, haplotipos y concordancia especie–BIN, sin alineamiento. Cada análisis usa <strong>un solo marcador</strong> y hasta {limit} secuencias.',
+                an_source_label: 'Secuencias',
+                an_src_records: 'Registros seleccionados',
+                an_src_search: 'Resultados de la búsqueda mostrada',
+                an_src_fasta: 'Archivo FASTA',
+                an_fasta_clear: '✕ Quitar archivo',
+                an_fasta_placeholder: 'O pega aquí las secuencias en formato FASTA. Se reconocen las cabeceras que exporta este visor (processid|sampleid|BIN|taxón|marcador) y las de BOLD (processid|taxón|marcador|accesión).',
+                an_options_label: 'Opciones',
+                an_input_label: 'Entrada',
+                an_input_change: '▾ Cambiar',
+                an_input_hide: '▴ Ocultar',
+                an_marker_field: 'Marcador',
+                an_code_field: 'Código genético',
+                an_g_composition: 'Composición',
+                an_g_quality: 'Calidad y traducción',
+                an_g_taxonomy: 'Taxonomía',
+                an_badge_flagged: '{n} secuencias con alertas',
+                an_badge_haps: '{n} haplotipos',
+                an_badge_conc: '{n} casos para revisar: BINs con varias especies o especies en varios BINs',
+                an_marker_label: 'Marcador:',
+                an_marker_auto: 'Detectar en los datos',
+                an_marker_found: 'En los datos',
+                an_marker_common: 'Marcadores habituales',
+                an_code_label: 'Código genético:',
+                an_code_auto: 'Automático (según marcador y taxonomía)',
+                an_code_1: '1 · Estándar',
+                an_code_2: '2 · Mitocondrial de vertebrados',
+                an_code_4: '4 · Mitocondrial de mohos, protozoos y celentéreos',
+                an_code_5: '5 · Mitocondrial de invertebrados',
+                an_code_9: '9 · Mitocondrial de equinodermos y platelmintos',
+                an_code_11: '11 · Bacteriano, arqueas y plastos',
+                an_code_13: '13 · Mitocondrial de ascidias',
+                an_run_btn: 'Analizar',
+                an_running: 'Analizando…',
+                an_need_selection: 'No hay registros seleccionados. Marca registros en la tabla de resultados de una búsqueda.',
+                an_need_search: 'No hay ninguna búsqueda en pantalla. Haz una búsqueda por campos o de texto completo.',
+                an_need_fasta: 'Elige un archivo FASTA o pega las secuencias.',
+                an_fasta_too_large: 'El archivo supera el máximo de {mb} MB.',
+                an_choose_marker: 'Las secuencias son de {n} marcadores distintos y cada análisis usa uno solo. Elige el marcador y pulsa «Analizar» de nuevo; las de otros marcadores quedarán fuera.',
+                an_choose_marker_approx: ' Recuentos sobre los primeros {n} registros de la búsqueda.',
+                an_choose_marker_unlabelled: 'Las cabeceras no indican el marcador. Elige de qué marcador son las secuencias (decide si se traducen y con qué código) y pulsa «Analizar» de nuevo.',
+                sel_analyse: 'Analizar',
+                an_no_marker: 'Marcador sin indicar',
+                an_result_title: '{marker} · {n} secuencias',
+                an_result_time: 'analizadas en {s} s',
+                an_truncated: 'Se analizaron las primeras {limit} secuencias; la entrada tenía más. Acota la búsqueda para analizarla completa.',
+                an_skipped_short: '{n} secuencia(s) de menos de 50 pb quedaron fuera.',
+                an_dl_sequences: '⤓ Secuencias (CSV)',
+                an_dl_haplotypes: '⤓ Haplotipos (CSV)',
+                an_dl_concordance: '⤓ Especies y BINs (CSV)',
+                an_t_sequences: 'Secuencias',
+                an_t_length: 'Longitud mediana (pb)',
+                an_t_range: 'rango {min}–{max}',
+                an_t_gc: 'GC medio',
+                an_t_gc3: 'GC en 3.ª posición',
+                an_t_barcode: 'Cumplen el estándar barcode',
+                an_t_of: 'de {n}',
+                an_t_stops: 'Con codones de parada',
+                an_t_species: 'Especies',
+                an_t_bins: 'BINs',
+                an_v_quality: 'Composición y calidad',
+                an_v_haplotypes: 'Haplotipos',
+                an_v_concordance: 'Especies y BINs',
+                an_h_length: 'Distribución de longitudes',
+                an_hist_x: 'Longitud (pb)',
+                an_hist_tip: '{from}–{to} pb: {n} secuencia(s)',
+                an_h_flags: 'Alertas de calidad',
+                an_no_flags: 'Ninguna secuencia tiene alertas.',
+                an_c_alert: 'Alerta', an_c_meaning: 'Qué indica',
+                an_f_short: 'Corta (< 500 pb)',
+                an_f_many_n: 'Más de 1 % de N',
+                an_f_ambiguous: 'Bases ambiguas',
+                an_f_invalid: 'Caracteres no válidos',
+                an_f_stops: 'Codones de parada',
+                an_f_reversed: 'Posible hebra invertida',
+                an_fd_short: 'Por debajo de los 500 pb del estándar barcode de COI-5P.',
+                an_fd_many_n: 'Más del 1 % de bases indeterminadas.',
+                an_fd_ambiguous: 'Contiene códigos IUPAC (R, Y, K, M, S, W…).',
+                an_fd_invalid: 'Contiene caracteres que no son nucleótidos.',
+                an_fd_stops: 'Ningún marco de lectura está libre de codones de parada: posible pseudogén (NUMT), error de secuenciación, código genético equivocado o secuencia que no es del marcador.',
+                an_fd_reversed: 'Tiene paradas en los 3 marcos directos pero no en la hebra complementaria: probablemente está en sentido inverso. Su marco (negativo), su GC3 y sus haplotipos se calculan sobre la hebra complementaria.',
+                an_code_hint_noncoding: 'No se traduce: marcador no codificante, pseudogén o con intrones.',
+                an_code_hint_mito: 'Gen mitocondrial: código según la taxonomía de cada registro.',
+                an_code_hint_plastid: 'Gen de plastos o bacteriano: código 11.',
+                an_code_hint_nuclear: 'Gen nuclear: código estándar (1).',
+                an_translation_note: 'Traducción con el código genético {codes}. Se prueban los 3 marcos de lectura y se usa el de menos codones de parada.',
+                an_not_translated: 'Este marcador no se traduce: no codifica proteínas, abarca varios genes, es un pseudogén o suele incluir intrones.',
+                an_h_flagged: 'Secuencias con alertas',
+                an_more_rows: 'Se muestran {shown} de {n}; el CSV las incluye todas.',
+                an_c_id: 'ID', an_c_species: 'Especie', an_c_bin: 'BIN', an_c_length: 'Long.',
+                an_c_gc: 'GC %', an_c_gc3: 'GC3 %', an_c_n: 'N', an_c_amb: 'Ambig.',
+                an_c_frame: 'Marco', an_c_stops: 'Paradas', an_c_flags: 'Alertas',
+                an_hap_note: 'Secuencias idénticas agrupadas por especie, sin alinear. Una secuencia contenida en otra más larga cuenta como el mismo haplotipo; las que tienen N o bases ambiguas se excluyen. Hd: diversidad haplotípica de Nei.',
+                an_c_seqs: 'Secuencias', an_c_haps: 'Haplotipos', an_c_singletons: 'Únicos',
+                an_c_hd: 'Hd', an_c_excluded: 'Excluidas',
+                an_no_species: '(sin especie)',
+                an_conc_none: 'Ninguna secuencia tiene a la vez especie y BIN (por ejemplo, un FASTA sin cabeceras de BOLD).',
+                an_conc_note: 'Solo cuentan los {n} registros con especie y BIN. Un BIN con varias especies, o una especie repartida en varios BINs, señala una identificación o un BIN que conviene revisar.',
+                an_t_concordant: 'Especies con un BIN exclusivo',
+                an_t_shared: 'BINs con varias especies',
+                an_t_split: 'Especies en varios BINs',
+                an_c_records: 'Registros', an_c_species_list: 'Especies', an_c_bins_list: 'BINs',
+                an_conc_ok: 'Sin discordancias.',
+                // Identification tab
+                id_tab_btn: 'Identificar secuencias',
+                id_panel_title: 'Identificar secuencias',
+                id_intro: 'Compara secuencias desconocidas con las de esta base, como el motor de identificación de BOLD, y asigna a cada una la especie, el género o la familia de sus coincidencias más parecidas. Cada marcador necesita un índice que se crea una sola vez. Hasta {n} secuencias por análisis.',
+                id_reference_label: 'Referencia',
+                id_queries_label: 'Secuencias a identificar (FASTA)',
+                id_fasta_placeholder: 'O pega aquí las secuencias en formato FASTA.',
+                id_thresholds_label: 'Similitud mínima:',
+                id_max_hits_label: 'Coincidencias por secuencia:',
+                id_run_btn: 'Identificar',
+                cancel_btn_short: 'Cancelar',
+                id_index_ready: 'Índice listo · {n} referencias ({bins} BINs) · creado {date}',
+                id_index_ready_nobins: 'Índice listo · {n} secuencias · creado {date}',
+                id_index_missing: 'Este marcador aún no tiene índice. Crearlo lleva desde segundos hasta unos minutos (COI-5P: ~6 min) y se hace una sola vez.',
+                id_index_stale: 'La base de datos cambió desde que se creó el índice: hay que volver a crearlo.',
+                id_index_build: 'Crear índice',
+                id_index_rebuild: 'Volver a crear',
+                id_index_phase_read: 'Creando índice: leyendo secuencias {done} / {total}',
+                id_index_phase_kmers: 'Creando índice: indexando {done} / {total}',
+                id_index_phase_sort: 'Creando índice: ordenando…',
+                id_index_phase_done: 'Creando índice: guardando…',
+                id_running: 'Identificando {done} / {total}…',
+                id_result_title: '{n} secuencias · {marker}',
+                id_dl_zip: '⤓ Resultados (CSV)',
+                id_thresholds_note: 'Asignación por consenso de las coincidencias a menos de 1 punto de la mejor: especie desde {s} %, género desde {g} %, familia desde {f} %. Si esas coincidencias no coinciden en un nivel, se asigna el nivel superior en que sí lo hacen.',
+                id_level_species: 'Especie',
+                id_level_genus: 'Género',
+                id_level_family: 'Familia',
+                id_level_none: 'Sin identificar',
+                id_filter: 'Mostrar:',
+                id_filter_all: 'Todas',
+                id_click_hint: 'Clic en una fila para ver sus coincidencias.',
+                id_c_query: 'Secuencia', id_c_best: 'Mejor %', id_c_level: 'Nivel', id_c_taxon: 'Asignación',
+                id_c_best_match: 'Mejor coincidencia', id_c_identity: 'Identidad', id_c_overlap: 'Pb comparadas',
+                id_c_genus: 'Género', id_c_family: 'Familia', id_c_order: 'Orden',
+                id_low_similarity: '(similitud baja: solo orientativo)',
+                id_ambiguous: 'Empate entre: {list}',
+                id_too_short: 'Secuencia demasiado corta',
+                id_no_hits: 'Sin coincidencias',
+                id_no_rows: 'Ninguna secuencia en esta categoría.',
+
+                an_v_distance: 'Distancias',
+                an_v_tree: 'Árbol NJ',
+                an_model_label: 'Modelo:',
+                an_model_k2p: 'K2P (Kimura 2 parámetros)',
+                an_model_jc: 'Jukes-Cantor (JC69)',
+                an_model_p: 'Distancia p (proporción de sitios distintos)',
+                an_per_label: 'Máx. por especie:',
+                an_per_all: 'Todas',
+                an_tree_option: 'Construir árbol NJ (hasta {n} secuencias)',
+                an_dist_run: 'Calcular',
+                an_dist_running: 'Alineando y calculando…',
+                an_dist_intro: 'Alinea las secuencias de este análisis contra una de ellas (la referencia) y calcula las distancias por pares; hasta {n} secuencias. Las secuencias con codones de parada se excluyen.',
+                an_dist_title: '{n} secuencias · {model}',
+                an_dl_zip: '⤓ Resultados (ZIP)',
+                an_dist_reference: 'Referencia: {id} ({n} pb).',
+                an_dist_groups: 'Las secuencias forman {n} grupos que no se pueden alinear entre sí: con un mismo nombre de marcador hay genes distintos (el «16S» de BOLD incluye el 16S bacteriano y el mitocondrial de animales) o taxones demasiado lejanos. Las distancias y los árboles se calculan dentro de cada grupo; para analizar uno solo, acota la búsqueda por reino, filo o clase.',
+                an_group_line: 'Grupo {k} · {n} secuencias · {taxa} · referencia {id} ({len} pb)',
+                an_tree_group_label: 'Árbol del grupo:',
+                an_dist_gapped: '{n} secuencia(s) necesitaron huecos; {ins} base(s) insertadas respecto a la referencia quedaron fuera.',
+                an_dist_reversed: '{n} leída(s) en la hebra complementaria.',
+                an_dist_noncoding: 'Marcador no codificante: el alineamiento contra una referencia es aproximado y las distancias deben tomarse con cautela.',
+                an_dist_subsampled: 'Submuestreo: como máximo {k} secuencias por especie, de {n} recibidas.',
+                an_dist_ex_stops: '{n} secuencia(s) con codones de parada excluidas (posibles pseudogenes).',
+                an_dist_ex_short: '{n} secuencia(s) de menos de 100 pb excluidas.',
+                an_dist_ex_unplaced: '{n} secuencia(s) que no se pudieron alinear con ninguna referencia, excluidas.',
+                an_dist_no_overlap: '{n} par(es) sin distancia: comparten menos de 100 posiciones o están saturados.',
+                an_dist_no_matrix: 'Con tantas secuencias, el ZIP no incluye la matriz completa de distancias.',
+                an_h_summary: 'Resumen de distancias',
+                an_c_level: 'Nivel', an_c_taxa: 'Taxones', an_c_comparisons: 'Comparaciones',
+                an_c_min: 'Mín.', an_c_mean: 'Media', an_c_max: 'Máx.',
+                an_level_species: 'Dentro de especie',
+                an_level_genus: 'Dentro de género (entre especies)',
+                an_level_family: 'Dentro de familia (entre géneros)',
+                an_h_dist_hist: 'Distribución de distancias',
+                an_series_intra: 'Dentro de especie',
+                an_series_congeneric: 'Entre especies del mismo género',
+                an_series_inter: 'Entre especies',
+                an_axis_distance: 'Distancia (%)',
+                an_hist2_tip: '{from}–{to} %: {a} {na} · {b} {nb}',
+                an_h_gap: 'Barcode gap',
+                an_gap_note: 'Para cada especie, la distancia máxima entre sus secuencias frente a la distancia a la secuencia más cercana de otra especie (su vecino más cercano). Las especies sobre la diagonal o por debajo no tienen gap: el barcode no las separa de su vecina.',
+                an_t_gap_species: 'Especies evaluadas',
+                an_t_no_gap: 'Sin barcode gap',
+                an_series_gap: 'Con gap',
+                an_series_nogap: 'Sin gap',
+                an_axis_max_intra: 'Distancia intraespecífica máxima (%)',
+                an_axis_nn: 'Distancia al vecino más cercano (%)',
+                an_gap_tip: '{sp} · intra máx. {intra} · vecino {nn} ({nnsp})',
+                an_c_max_intra: 'Intra máx.', an_c_mean_intra: 'Intra media', an_c_nn: 'Vecino',
+                an_c_nn_species: 'Especie vecina', an_c_gap: 'Gap',
+                an_tree_off: 'Marca «Construir árbol NJ» y pulsa «Calcular».',
+                an_tree_title: 'Árbol NJ · {n} secuencias',
+                an_tree_dropped: '{n} excluida(s) por no tener distancia con todas las demás',
+                an_tree_find: 'Resaltar especie o ID…',
+                an_tree_found: '{n} coincidencia(s)',
+                an_tree_note: 'Neighbour-joining sobre las distancias calculadas, enraizado en el punto medio. Clic en un nodo para colapsar o expandir su clado. El ZIP incluye el árbol en formato Newick para abrirlo en FigTree, iTOL o MEGA.',
+                an_tree_collapse: 'Colapsar:',
+                an_tree_collapse_none: 'Nada',
+                an_tree_by_species: 'Por especie',
+                an_tree_by_bin: 'Por BIN',
+                an_tree_by_genus: 'Por género',
+                an_tree_by_country: 'Por país',
+                an_tree_by_discordance: 'Discordancias especie–BIN',
+                an_tree_color: 'Color:',
+                an_tree_color_none: 'Sin color',
+                an_tree_mode: 'Ramas:',
+                an_tree_phylo: 'Filograma (longitud = distancia)',
+                an_tree_clado: 'Cladograma (puntas alineadas)',
+                an_tree_row: 'Fila',
+                an_tree_font: 'Letra',
+                an_tree_labels: 'Etiquetas:',
+                an_tree_country: 'País',
+                an_tree_color_labels: 'Etiquetas en color',
+                an_tree_expand_all: 'Expandir todo',
+                an_tree_export: 'Exportar figura:',
+                an_tree_export_hint: 'tal como se ve (colapsos, colores y etiquetas). PDF: se abre el diálogo de impresión; elige «Guardar como PDF».',
+                an_tree_rows: '{n} filas',
+                an_tree_other: 'Otros ({n} grupos)',
+                an_tree_group_species: '{n} especies',
+                an_tree_group_bins: '{n} BINs',
+                an_tree_group_countries: '{n} países',
+                an_tree_disc_shared: 'BIN con varias especies',
+                an_tree_disc_split: 'Especie en varios BINs',
+                an_tree_disc_both: 'Ambas',
+                an_tree_click_expand: 'Clado colapsado ({n} secuencias): clic para expandir',
+                an_tree_click_collapse: 'Clado de {n} secuencias: clic para colapsar',
+                an_tree_popup_blocked: 'El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes para esta página.',
+                an_tree_png_failed: 'No se pudo generar el PNG. Prueba con SVG o con una escala menor.',
+                an_tree_png_reduced: 'El árbol es demasiado grande para esa escala: el PNG se generó a {s}×. Para más resolución, exporta en SVG o colapsa clados.',
             },
             en: {
                 title_line1: 'DATA', title_line2: 'BASE', title_local: 'Local',
@@ -2082,7 +2639,10 @@
                 searching_sequences: 'Searching sequences...',
                 searching_database: 'Searching the database...',
                 copied_toast: 'Copied',
+                help_link_title: 'Help: opens the guide at this section',
                 local_database: 'Local Database', records_label: 'records',
+                db_stale_badge: '{n} days old',
+                db_stale_tip: 'The BOLD package this database was built from is {n} days old. BOLD publishes a new one every week: open BOLD-Local-DB and use "Update the database".',
                 last_search_label: 'Showing results for', edit_search_btn: '✎ Edit',
                 record_label: 'Record', record_close: 'Close',
                 record_taxonomy: 'Taxonomy', record_fields: 'Record data',
@@ -2154,6 +2714,242 @@
                 genbank_need_terms2: 'Criterion 2 is enabled but empty: add terms or turn it off.',
                 genbank_load_failed: 'Could not read the file: ',
                 genbank_lost: 'The server no longer has this search (was it restarted?).',
+                // Sequence analysis tab
+                an_tab_btn: 'Sequence analysis',
+                an_panel_title: 'Sequence analysis',
+                an_intro_text: 'Composition and quality, translation check, haplotypes and species–BIN concordance, without alignment. Each run covers <strong>a single marker</strong> and up to {limit} sequences.',
+                an_source_label: 'Sequences',
+                an_src_records: 'Selected records',
+                an_src_search: 'Results of the search on screen',
+                an_src_fasta: 'FASTA file',
+                an_fasta_clear: '✕ Remove file',
+                an_fasta_placeholder: 'Or paste sequences in FASTA format here. Headers exported by this viewer (processid|sampleid|BIN|taxon|marker) and by BOLD (processid|taxon|marker|accession) are recognised.',
+                an_options_label: 'Options',
+                an_input_label: 'Input',
+                an_input_change: '▾ Change',
+                an_input_hide: '▴ Hide',
+                an_marker_field: 'Marker',
+                an_code_field: 'Genetic code',
+                an_g_composition: 'Composition',
+                an_g_quality: 'Quality and translation',
+                an_g_taxonomy: 'Taxonomy',
+                an_badge_flagged: '{n} flagged sequences',
+                an_badge_haps: '{n} haplotypes',
+                an_badge_conc: '{n} cases to review: BINs with several species or species in several BINs',
+                an_marker_label: 'Marker:',
+                an_marker_auto: 'Detect from the data',
+                an_marker_found: 'In the data',
+                an_marker_common: 'Common markers',
+                an_code_label: 'Genetic code:',
+                an_code_auto: 'Automatic (by marker and taxonomy)',
+                an_code_1: '1 · Standard',
+                an_code_2: '2 · Vertebrate mitochondrial',
+                an_code_4: '4 · Mold, protozoan and coelenterate mitochondrial',
+                an_code_5: '5 · Invertebrate mitochondrial',
+                an_code_9: '9 · Echinoderm and flatworm mitochondrial',
+                an_code_11: '11 · Bacterial, archaeal and plastid',
+                an_code_13: '13 · Ascidian mitochondrial',
+                an_run_btn: 'Analyse',
+                an_running: 'Analysing…',
+                an_need_selection: 'No records are selected. Check records in the results table of a search.',
+                an_need_search: 'There is no search on screen. Run a field or full-text search.',
+                an_need_fasta: 'Choose a FASTA file or paste the sequences.',
+                an_fasta_too_large: 'The file exceeds the {mb} MB maximum.',
+                an_choose_marker: 'The sequences belong to {n} different markers and each run covers one. Choose the marker and press "Analyse" again; sequences of other markers will be left out.',
+                an_choose_marker_approx: ' Counts over the first {n} records of the search.',
+                an_choose_marker_unlabelled: 'The headers don\'t say which marker this is. Choose the marker of the sequences (it decides whether and how they are translated) and press "Analyse" again.',
+                sel_analyse: 'Analyse',
+                an_no_marker: 'Marker not stated',
+                an_result_title: '{marker} · {n} sequences',
+                an_result_time: 'analysed in {s} s',
+                an_truncated: 'The first {limit} sequences were analysed; the input had more. Narrow the search to analyse all of it.',
+                an_skipped_short: '{n} sequence(s) under 50 bp were left out.',
+                an_dl_sequences: '⤓ Sequences (CSV)',
+                an_dl_haplotypes: '⤓ Haplotypes (CSV)',
+                an_dl_concordance: '⤓ Species and BINs (CSV)',
+                an_t_sequences: 'Sequences',
+                an_t_length: 'Median length (bp)',
+                an_t_range: 'range {min}–{max}',
+                an_t_gc: 'Mean GC',
+                an_t_gc3: 'GC at 3rd position',
+                an_t_barcode: 'Meet the barcode standard',
+                an_t_of: 'of {n}',
+                an_t_stops: 'With stop codons',
+                an_t_species: 'Species',
+                an_t_bins: 'BINs',
+                an_v_quality: 'Composition and quality',
+                an_v_haplotypes: 'Haplotypes',
+                an_v_concordance: 'Species and BINs',
+                an_h_length: 'Length distribution',
+                an_hist_x: 'Length (bp)',
+                an_hist_tip: '{from}–{to} bp: {n} sequence(s)',
+                an_h_flags: 'Quality flags',
+                an_no_flags: 'No sequence has any flag.',
+                an_c_alert: 'Flag', an_c_meaning: 'What it means',
+                an_f_short: 'Short (< 500 bp)',
+                an_f_many_n: 'Over 1% Ns',
+                an_f_ambiguous: 'Ambiguous bases',
+                an_f_invalid: 'Invalid characters',
+                an_f_stops: 'Stop codons',
+                an_f_reversed: 'Possibly reversed',
+                an_fd_short: 'Below the 500 bp of the COI-5P barcode standard.',
+                an_fd_many_n: 'Over 1% undetermined bases.',
+                an_fd_ambiguous: 'Contains IUPAC codes (R, Y, K, M, S, W…).',
+                an_fd_invalid: 'Contains characters that are not nucleotides.',
+                an_fd_stops: 'No reading frame is free of stop codons: a possible pseudogene (NUMT), sequencing error, wrong genetic code, or a sequence that isn\'t of this marker.',
+                an_fd_reversed: 'Has stops in all 3 forward frames but none on the reverse strand: probably submitted reversed. Its frame (negative), GC3 and haplotypes are computed on the reverse strand.',
+                an_code_hint_noncoding: 'Not translated: non-coding marker, pseudogene or one with introns.',
+                an_code_hint_mito: 'Mitochondrial gene: code from each record\'s taxonomy.',
+                an_code_hint_plastid: 'Plastid or bacterial gene: code 11.',
+                an_code_hint_nuclear: 'Nuclear gene: standard code (1).',
+                an_translation_note: 'Translated with genetic code {codes}. The 3 reading frames are tried and the one with fewest stop codons is used.',
+                an_not_translated: 'This marker is not translated: it doesn\'t code for a protein, spans several genes, is a pseudogene or often includes introns.',
+                an_h_flagged: 'Flagged sequences',
+                an_more_rows: 'Showing {shown} of {n}; the CSV has them all.',
+                an_c_id: 'ID', an_c_species: 'Species', an_c_bin: 'BIN', an_c_length: 'Length',
+                an_c_gc: 'GC %', an_c_gc3: 'GC3 %', an_c_n: 'N', an_c_amb: 'Ambig.',
+                an_c_frame: 'Frame', an_c_stops: 'Stops', an_c_flags: 'Flags',
+                an_hap_note: 'Identical sequences grouped by species, without alignment. A sequence contained in a longer one counts as the same haplotype; those with Ns or ambiguous bases are left out. Hd: Nei\'s haplotype diversity.',
+                an_c_seqs: 'Sequences', an_c_haps: 'Haplotypes', an_c_singletons: 'Singletons',
+                an_c_hd: 'Hd', an_c_excluded: 'Left out',
+                an_no_species: '(no species)',
+                an_conc_none: 'No sequence has both a species and a BIN (a FASTA without BOLD headers, for example).',
+                an_conc_note: 'Only the {n} records with both a species and a BIN count. A BIN holding several species, or a species spread over several BINs, points to an identification or a BIN worth a look.',
+                an_t_concordant: 'Species with a BIN of their own',
+                an_t_shared: 'BINs with several species',
+                an_t_split: 'Species in several BINs',
+                an_c_records: 'Records', an_c_species_list: 'Species', an_c_bins_list: 'BINs',
+                an_conc_ok: 'No discordances.',
+                // Identification tab
+                id_tab_btn: 'Identify sequences',
+                id_panel_title: 'Identify sequences',
+                id_intro: 'Compares unknown sequences with those in this database, like BOLD\'s Identification Engine, and assigns each one the species, genus or family of its closest matches. Each marker needs an index, built once. Up to {n} sequences per run.',
+                id_reference_label: 'Reference',
+                id_queries_label: 'Sequences to identify (FASTA)',
+                id_fasta_placeholder: 'Or paste sequences in FASTA format here.',
+                id_thresholds_label: 'Minimum similarity:',
+                id_max_hits_label: 'Matches per sequence:',
+                id_run_btn: 'Identify',
+                cancel_btn_short: 'Cancel',
+                id_index_ready: 'Index ready · {n} references ({bins} BINs) · built {date}',
+                id_index_ready_nobins: 'Index ready · {n} sequences · built {date}',
+                id_index_missing: 'This marker has no index yet. Building it takes from seconds to a few minutes (COI-5P: ~6 min) and is done once.',
+                id_index_stale: 'The database changed since the index was built: it has to be built again.',
+                id_index_build: 'Build index',
+                id_index_rebuild: 'Build again',
+                id_index_phase_read: 'Building index: reading sequences {done} / {total}',
+                id_index_phase_kmers: 'Building index: indexing {done} / {total}',
+                id_index_phase_sort: 'Building index: sorting…',
+                id_index_phase_done: 'Building index: saving…',
+                id_running: 'Identifying {done} / {total}…',
+                id_result_title: '{n} sequences · {marker}',
+                id_dl_zip: '⤓ Results (CSV)',
+                id_thresholds_note: 'Assigned by consensus of the matches within 1 point of the best: species from {s} %, genus from {g} %, family from {f} %. When those matches disagree at a rank, the next rank up where they agree is assigned.',
+                id_level_species: 'Species',
+                id_level_genus: 'Genus',
+                id_level_family: 'Family',
+                id_level_none: 'Unidentified',
+                id_filter: 'Show:',
+                id_filter_all: 'All',
+                id_click_hint: 'Click a row to see its matches.',
+                id_c_query: 'Sequence', id_c_best: 'Best %', id_c_level: 'Rank', id_c_taxon: 'Assignment',
+                id_c_best_match: 'Best match', id_c_identity: 'Identity', id_c_overlap: 'Bp compared',
+                id_c_genus: 'Genus', id_c_family: 'Family', id_c_order: 'Order',
+                id_low_similarity: '(low similarity: a hint only)',
+                id_ambiguous: 'Tied between: {list}',
+                id_too_short: 'Sequence too short',
+                id_no_hits: 'No matches',
+                id_no_rows: 'No sequence in this category.',
+
+                an_v_distance: 'Distances',
+                an_v_tree: 'NJ tree',
+                an_model_label: 'Model:',
+                an_model_k2p: 'K2P (Kimura 2-parameter)',
+                an_model_jc: 'Jukes-Cantor (JC69)',
+                an_model_p: 'p-distance (proportion of differing sites)',
+                an_per_label: 'Max. per species:',
+                an_per_all: 'All',
+                an_tree_option: 'Build NJ tree (up to {n} sequences)',
+                an_dist_run: 'Compute',
+                an_dist_running: 'Aligning and computing…',
+                an_dist_intro: 'Aligns this analysis\'s sequences to one of them (the reference) and computes pairwise distances; up to {n} sequences. Sequences with stop codons are left out.',
+                an_dist_title: '{n} sequences · {model}',
+                an_dl_zip: '⤓ Results (ZIP)',
+                an_dist_reference: 'Reference: {id} ({n} bp).',
+                an_dist_groups: 'The sequences form {n} groups that can\'t be aligned with each other: one marker name holds different genes (BOLD\'s "16S" includes bacterial 16S and the mitochondrial 16S of animals) or taxa too far apart. Distances and trees are computed within each group; to analyse just one, narrow the search by kingdom, phylum or class.',
+                an_group_line: 'Group {k} · {n} sequences · {taxa} · reference {id} ({len} bp)',
+                an_tree_group_label: 'Tree of group:',
+                an_dist_gapped: '{n} sequence(s) needed gaps; {ins} base(s) inserted relative to the reference were left out.',
+                an_dist_reversed: '{n} read on the reverse strand.',
+                an_dist_noncoding: 'Non-coding marker: aligning to a reference is approximate, and distances should be taken with care.',
+                an_dist_subsampled: 'Subsample: at most {k} sequences per species, out of {n} received.',
+                an_dist_ex_stops: '{n} sequence(s) with stop codons left out (possible pseudogenes).',
+                an_dist_ex_short: '{n} sequence(s) under 100 bp left out.',
+                an_dist_ex_unplaced: '{n} sequence(s) that could not be aligned to any reference, left out.',
+                an_dist_no_overlap: '{n} pair(s) with no distance: they share fewer than 100 sites or are saturated.',
+                an_dist_no_matrix: 'With this many sequences, the ZIP doesn\'t include the full distance matrix.',
+                an_h_summary: 'Distance summary',
+                an_c_level: 'Level', an_c_taxa: 'Taxa', an_c_comparisons: 'Comparisons',
+                an_c_min: 'Min', an_c_mean: 'Mean', an_c_max: 'Max',
+                an_level_species: 'Within species',
+                an_level_genus: 'Within genus (between species)',
+                an_level_family: 'Within family (between genera)',
+                an_h_dist_hist: 'Distance distribution',
+                an_series_intra: 'Within species',
+                an_series_congeneric: 'Between species of a genus',
+                an_series_inter: 'Between species',
+                an_axis_distance: 'Distance (%)',
+                an_hist2_tip: '{from}–{to} %: {a} {na} · {b} {nb}',
+                an_h_gap: 'Barcode gap',
+                an_gap_note: 'For each species, the largest distance between its sequences against the distance to the closest sequence of another species (its nearest neighbour). Species on or under the diagonal have no gap: the barcode doesn\'t tell them from their neighbour.',
+                an_t_gap_species: 'Species assessed',
+                an_t_no_gap: 'No barcode gap',
+                an_series_gap: 'Gap',
+                an_series_nogap: 'No gap',
+                an_axis_max_intra: 'Largest intraspecific distance (%)',
+                an_axis_nn: 'Distance to nearest neighbour (%)',
+                an_gap_tip: '{sp} · max intra {intra} · neighbour {nn} ({nnsp})',
+                an_c_max_intra: 'Max intra', an_c_mean_intra: 'Mean intra', an_c_nn: 'Neighbour',
+                an_c_nn_species: 'Neighbour species', an_c_gap: 'Gap',
+                an_tree_off: 'Tick "Build NJ tree" and press "Compute".',
+                an_tree_title: 'NJ tree · {n} sequences',
+                an_tree_dropped: '{n} left out for lacking a distance to some other sequence',
+                an_tree_find: 'Highlight species or ID…',
+                an_tree_found: '{n} match(es)',
+                an_tree_note: 'Neighbour-joining on the computed distances, midpoint-rooted. Click a node to collapse or expand its clade. The ZIP has the tree in Newick format, for FigTree, iTOL or MEGA.',
+                an_tree_collapse: 'Collapse:',
+                an_tree_collapse_none: 'Nothing',
+                an_tree_by_species: 'By species',
+                an_tree_by_bin: 'By BIN',
+                an_tree_by_genus: 'By genus',
+                an_tree_by_country: 'By country',
+                an_tree_by_discordance: 'Species–BIN discordances',
+                an_tree_color: 'Colour:',
+                an_tree_color_none: 'No colour',
+                an_tree_mode: 'Branches:',
+                an_tree_phylo: 'Phylogram (length = distance)',
+                an_tree_clado: 'Cladogram (aligned tips)',
+                an_tree_row: 'Row',
+                an_tree_font: 'Font',
+                an_tree_labels: 'Labels:',
+                an_tree_country: 'Country',
+                an_tree_color_labels: 'Coloured labels',
+                an_tree_expand_all: 'Expand all',
+                an_tree_export: 'Export figure:',
+                an_tree_export_hint: 'as shown (collapses, colours and labels). PDF: the print dialog opens; choose "Save as PDF".',
+                an_tree_rows: '{n} rows',
+                an_tree_other: 'Other ({n} groups)',
+                an_tree_group_species: '{n} species',
+                an_tree_group_bins: '{n} BINs',
+                an_tree_group_countries: '{n} countries',
+                an_tree_disc_shared: 'BIN with several species',
+                an_tree_disc_split: 'Species in several BINs',
+                an_tree_disc_both: 'Both',
+                an_tree_click_expand: 'Collapsed clade ({n} sequences): click to expand',
+                an_tree_click_collapse: 'Clade of {n} sequences: click to collapse',
+                an_tree_popup_blocked: 'The browser blocked the print window. Allow pop-ups for this page.',
+                an_tree_png_failed: 'The PNG could not be created. Try SVG or a smaller scale.',
+                an_tree_png_reduced: 'The tree is too big for that scale: the PNG was made at {s}×. For more resolution, export SVG or collapse clades.',
             },
         };
 
@@ -2175,6 +2971,9 @@
             document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
             document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.getAttribute('data-i18n-alt')); });
             document.querySelectorAll('[data-i18n-aria-label]').forEach(el => { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label'))); });
+            // Help icons: the guide in the page's language, at the panel's section
+            const guideFile = currentLang === 'es' ? 'guia_de_uso.html' : 'user_guide.html';
+            document.querySelectorAll('a.help-link[data-help]').forEach(a => { a.href = `/guide/${guideFile}#${a.dataset.help}`; });
             const esBtn = document.getElementById('langBtnEs'), enBtn = document.getElementById('langBtnEn');
             if (esBtn && enBtn) {
                 esBtn.classList.toggle('active', currentLang === 'es');
@@ -2586,6 +3385,26 @@
         }
 
 
+		// BOLD packages are named after their release date
+		// (BOLD_Public.09-Oct-2026). Past DB_STALE_DAYS the date gets a
+		// yellow badge: BOLD publishes a new package every week.
+		const DB_STALE_DAYS = 30;
+		function markStaleDatabase(el, name) {
+			const m = /(\d{1,2})-([A-Za-z]{3})-(\d{4})/.exec(name);
+			if (!m) return;
+			const month = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[2].toLowerCase());
+			if (month < 0) return;
+			const built = new Date(Number(m[3]), month, Number(m[1]));
+			const days = Math.floor((Date.now() - built.getTime()) / 86400000);
+			if (days <= DB_STALE_DAYS) return;
+			el.classList.add('stale');
+			const badge = document.createElement('span');
+			badge.className = 'db-stale-badge';
+			badge.textContent = t('db_stale_badge', { n: numFmt.format(days) });
+			badge.title = t('db_stale_tip', { n: numFmt.format(days) });
+			el.appendChild(badge);
+		}
+
 		document.addEventListener("DOMContentLoaded", function () {
 			// Look up the .tsv file name
 			fetch('/list-static-files') // Make sure this route returns a list of files
@@ -2596,6 +3415,7 @@
 					const fileNameEl = document.getElementById("file-name");
 					fileNameEl.textContent = fileName;
 					fileNameEl.style.display = 'inline-block';
+					markStaleDatabase(fileNameEl, fileName);
 				})
 				.catch(error => console.error('Error obteniendo la lista de archivos:', error));
 		});
@@ -2927,6 +3747,8 @@
                 { tab: 'ftsSearchTab',   panel: 'ftsSearchPanel',   type: 'fts'   },
                 { tab: 'batchSearchTab', panel: 'batchSearchPanel', type: 'batch' },
                 { tab: 'genbankSearchTab', panel: 'genbankSearchPanel', type: 'genbank' },
+                { tab: 'analysisTab',    panel: 'analysisPanel',    type: 'analysis' },
+                { tab: 'identifyTab',    panel: 'identifyPanel',    type: 'identify' },
             ].filter(({ tab, panel }) =>
                 document.getElementById(tab) && document.getElementById(panel));
 
@@ -2940,6 +3762,8 @@
                     document.getElementById(panel).style.display = 'block';
                     AppState.activeSearchType = type;
                     syncResultsCardToTab();
+                    if (type === 'analysis') anUpdateSourceCounts();
+                    if (type === 'identify') { idLoadMarkers(); idRefreshIndex(); }
                 });
             });
         }
@@ -4025,6 +4849,7 @@
 			bar.append(label,
 			           mk('⤓ ' + t('sel_export_csv'), 'btn-primary', exportCheckedCsv),
 			           mk('⤓ ' + t('sel_export_fasta'), 'btn-primary', exportCheckedFasta),
+			           mk(t('sel_analyse'), 'btn-outline-secondary', anAnalyseChecked),
 			           mk(t('sel_clear'), 'btn-link text-muted', clearChecked));
 			return bar;
 		}
@@ -4036,6 +4861,7 @@
 				bar.hidden = n === 0;
 				document.getElementById('selectionCount').textContent = numFmt.format(n);
 			}
+			anUpdateSourceCounts();
 			const all = document.getElementById('selectPageBox');
 			if (all) {
 				const rows = AppState.pageResults || [];
@@ -5452,6 +6278,1777 @@
 			d.showModal();
 		}
 
+
+		// ── Sequence analysis ─────────────────────────────────────────────────
+		// The "Sequence analysis" tab (server.py → seq_analysis.py). A run covers
+		// one marker: when the input holds several, or a FASTA doesn't say which,
+		// the server answers with the markers it found instead of results, and
+		// the page asks the user to pick one.
+
+		const AN_LIMIT = {{ analysis_limit | tojson }};
+		const AN_FASTA_MAX_MB = {{ analysis_fasta_max_mb | tojson }};
+		const AN_COMMON_MARKERS = ['COI-5P', 'COI-3P', 'COII', 'CYTB', '12S', '16S', 'rbcL', 'rbcLa',
+		                           'matK', 'trnH-psbA', 'ITS', 'ITS1', 'ITS2', '18S', '28S',
+		                           'H3', 'RAG1', 'EF1-alpha'];
+		// Translated markers and how (seq_analysis.MARKER_KINDS); any other
+		// marker is not translated
+		const AN_MARKER_KINDS = {{ analysis_marker_kinds | tojson }};
+		// Flags in the order the quality table lists them
+		const AN_FLAGS = ['stops', 'reversed', 'short', 'many_n', 'ambiguous', 'invalid'];
+		// Rows drawn in a table; the CSVs carry all of them
+		const AN_TABLE_ROWS = 500;
+
+		const AnState = {
+			result: null,      // last results, as the server sent them
+			detected: null,    // markers found in the input when it held several
+			inputKey: null,    // what `detected` was computed from
+			view: 'quality',
+			running: false,
+			lastBody: null,    // request of the results on screen, reused by phase 2
+			dist: null,        // last distance analysis of those results
+			distOpts: { model: 'k2p', per_species: null, tree: true },
+			distRunning: false,
+			showView: null,
+		};
+
+		function anSource() {
+			return document.querySelector('input[name="anSource"]:checked').value;
+		}
+
+		// What the current input is, to tell when the markers found in it no
+		// longer apply
+		function anInputKey() {
+			const src = anSource();
+			if (src === 'records') return 'records:' + (AppState.checked ? AppState.checked.size : 0);
+			if (src === 'search') return 'search:' + JSON.stringify(AppState.resultsSearch);
+			const file = document.getElementById('anFastaFile').files[0];
+			return 'fasta:' + (file ? `${file.name}:${file.size}:${file.lastModified}` : '')
+			     + ':' + document.getElementById('anFastaText').value.length;
+		}
+
+		function anUpdateSourceCounts() {
+			const selCount = document.getElementById('anSelCount');
+			if (!selCount) return;
+			selCount.textContent = numFmt.format(AppState.checked ? AppState.checked.size : 0);
+			document.getElementById('anSearchCount').textContent =
+				(AppState.resultsSearch && AppState.totalCount != null) ? numFmt.format(AppState.totalCount) : '—';
+			anInputChanged();
+		}
+
+		// The markers found belong to one input: forget them once it changes
+		function anInputChanged() {
+			if (AnState.detected && AnState.inputKey !== anInputKey()) {
+				AnState.detected = null;
+				anBuildMarkerSelect();
+				anSetNote('');
+			}
+		}
+
+		function anBuildMarkerSelect() {
+			const sel = document.getElementById('anMarker');
+			const prev = sel.value;
+			const opt = (value, text) => {
+				const o = document.createElement('option');
+				o.value = value;
+				o.textContent = text;
+				return o;
+			};
+			sel.innerHTML = '';
+			sel.append(opt('', t('an_marker_auto')));
+			const found = (AnState.detected || []).filter(d => d.marker);
+			if (found.length) {
+				const g = document.createElement('optgroup');
+				g.label = t('an_marker_found');
+				found.forEach(d => g.append(opt(d.marker, `${d.marker} (${numFmt.format(d.n)})`)));
+				sel.append(g);
+			}
+			const seen = new Set(found.map(d => d.marker.toUpperCase()));
+			const g = document.createElement('optgroup');
+			g.label = t('an_marker_common');
+			AN_COMMON_MARKERS.filter(m => !seen.has(m.toUpperCase())).forEach(m => g.append(opt(m, m)));
+			sel.append(g);
+			if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+			anSyncCodeSelect();
+		}
+
+		// 'mito' | 'plastid' | 'nuclear' | 'noncoding', or null while the marker
+		// is still to be detected
+		function anMarkerKind(marker) {
+			return marker ? (AN_MARKER_KINDS[marker.trim().toUpperCase()] || 'noncoding') : null;
+		}
+
+		// A non-coding marker is never translated, so the code doesn't apply
+		function anSyncCodeSelect() {
+			const kind = anMarkerKind(document.getElementById('anMarker').value);
+			const code = document.getElementById('anCode');
+			code.disabled = kind === 'noncoding';
+			const hint = kind === 'noncoding' ? 'an_code_hint_noncoding'
+			           : code.value !== 'auto' || !kind ? ''
+			           : 'an_code_hint_' + kind;
+			document.getElementById('anCodeHint').textContent = hint ? t(hint) : '';
+		}
+
+		function anSetNote(text) {
+			const note = document.getElementById('anNote');
+			note.textContent = text;
+			note.hidden = !text;
+		}
+
+		function anSetRunning(running) {
+			AnState.running = running;
+			document.getElementById('anRunBtn').disabled = running;
+			document.getElementById('anStatus').textContent = running ? t('an_running') : '';
+		}
+
+		// The fields seq_analysis.py reads, from a results-table row
+		function anRecordOf(row) {
+			const v = tech => { const c = colLabel(tech); return c ? row[c] : undefined; };
+			return {
+				processid: v('col_processid'), sampleid: v('col_sampleid'), bin: v('col_bin_uri'),
+				species: v('col_species'), genus: v('col_genus'), family: v('col_family'),
+				order: v('col_order'), class: v('col_class'), phylum: v('col_phylum'),
+				kingdom: v('col_kingdom'), country: v('col_country_ocean'),
+				marker: v('col_marker_code'), seq: row[SEQ_COL],
+			};
+		}
+
+		async function anFastaInput() {
+			const text = document.getElementById('anFastaText').value;
+			if (text.trim()) return text;
+			const file = document.getElementById('anFastaFile').files[0];
+			if (!file) return '';
+			if (file.size > AN_FASTA_MAX_MB * 1e6) throw new Error(t('an_fasta_too_large', { mb: AN_FASTA_MAX_MB }));
+			return await file.text();
+		}
+
+		// "Analyse" on the selection bar
+		function anAnalyseChecked() {
+			document.getElementById('analysisTab').click();
+			document.querySelector('input[name="anSource"][value="records"]').checked = true;
+			anSourceChanged();
+			anRun();
+		}
+
+		function anSourceChanged() {
+			document.getElementById('anFastaBox').style.display = anSource() === 'fasta' ? '' : 'none';
+			anInputChanged();
+		}
+
+		async function anRun() {
+			if (AnState.running) return;
+			const src = anSource();
+			const codeSel = document.getElementById('anCode');
+			const body = { source: src, genetic_code: codeSel.disabled ? 'auto' : codeSel.value };
+			const marker = document.getElementById('anMarker').value;
+			if (marker) body.marker = marker;
+			try {
+				if (src === 'records') {
+					const rows = checkedRows();
+					if (!rows.length) { showBatchDialog(escapeHtml(t('an_need_selection'))); return; }
+					body.records = rows.map(anRecordOf);
+				} else if (src === 'search') {
+					if (!AppState.resultsSearch) { showBatchDialog(escapeHtml(t('an_need_search'))); return; }
+					body.search = resultsSearchRequest();
+				} else {
+					body.fasta = await anFastaInput();
+					if (!body.fasta.trim()) { showBatchDialog(escapeHtml(t('an_need_fasta'))); return; }
+				}
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+				return;
+			}
+
+			const key = anInputKey();
+			anSetRunning(true);
+			try {
+				const response = await fetch('/api/analysis/basic', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(body),
+				});
+				const data = await response.json().catch(() => ({}));
+				if (!response.ok || data.error) {
+					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				}
+				if (data.needs_marker) {
+					anAskMarker(data, key);
+					return;
+				}
+				anSetNote('');
+				AnState.result = data;
+				AnState.lastBody = Object.assign({}, body, { marker: data.marker });
+				AnState.dist = null;
+				anRender();
+				anSummariseInput(data);
+				anSetInputOpen(false);
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+			} finally {
+				anSetRunning(false);
+			}
+		}
+
+		// Several markers in the input (or none stated): list the ones found,
+		// preselect the most common, and let the user confirm
+		function anAskMarker(data, key) {
+			// The results on screen are of another input or marker
+			document.getElementById('anResults').hidden = true;
+			AnState.detected = data.markers;
+			AnState.inputKey = key;
+			anBuildMarkerSelect();
+			const found = data.markers.filter(d => d.marker);
+			const sel = document.getElementById('anMarker');
+			if (found.length) {
+				sel.value = found[0].marker;
+				let note = t('an_choose_marker', { n: data.markers.length });
+				if (data.approximate) note += t('an_choose_marker_approx', { n: numFmt.format(data.markers.reduce((a, d) => a + d.n, 0)) });
+				anSetNote(note);
+			} else {
+				sel.value = 'COI-5P';
+				anSetNote(t('an_choose_marker_unlabelled'));
+			}
+			anSyncCodeSelect();
+			anSetInputOpen(true);
+			sel.focus();
+		}
+
+		// Input box: open to edit it, folded to its summary line once there
+		// are results
+		function anSetInputOpen(open) {
+			const form = document.getElementById('anInputForm');
+			const toggle = document.getElementById('anInputToggle');
+			form.hidden = !open;
+			toggle.setAttribute('aria-expanded', open);
+			toggle.textContent = open ? t('an_input_hide') : t('an_input_change');
+		}
+
+		function anSummariseInput(data) {
+			const srcLabel = { records: 'an_src_records', search: 'an_src_search', fasta: 'an_src_fasta' }[anSource()];
+			const code = document.getElementById('anCode');
+			const chip = (key, value) => {
+				const c = anEl('span', 'an-chip');
+				c.append(anEl('em', '', t(key)), document.createTextNode(value));
+				return c;
+			};
+			document.getElementById('anInputChips').replaceChildren(
+				chip('an_source_label', `${t(srcLabel)} · ${numFmt.format(data.summary.analysed)}`),
+				chip('an_marker_field', data.marker || t('an_no_marker')),
+				chip('an_code_field', code.disabled ? '—' : code.options[code.selectedIndex].textContent));
+			document.getElementById('anInputToggle').hidden = false;
+		}
+
+		// ── Results ──
+
+		function anEl(tag, cls, text) {
+			const e = document.createElement(tag);
+			if (cls) e.className = cls;
+			if (text !== undefined && text !== null) e.textContent = text;
+			return e;
+		}
+
+		const anNum = (v, digits = 0) => (v === null || v === undefined) ? '—'
+			: Number(v).toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+		const anPct = (n, total) => total ? `${(100 * n / total).toFixed(1)} %` : '—';
+
+		function anTile(value, label, sub) {
+			const tile = anEl('div', 'an-tile');
+			tile.append(anEl('div', 'an-tile-v', value), anEl('div', 'an-tile-k', label));
+			if (sub) tile.append(anEl('div', 'an-tile-s', sub));
+			return tile;
+		}
+
+		// cols: [{ label, cls, get(row) → text or Node }]
+		function anTable(cols, rows) {
+			const wrap = anEl('div', 'an-table-wrap');
+			const table = anEl('table', 'an-table');
+			const thead = anEl('thead'), hr = anEl('tr');
+			cols.forEach(c => hr.append(anEl('th', c.cls || '', c.label)));
+			thead.append(hr);
+			const tbody = anEl('tbody');
+			rows.forEach(row => {
+				const tr = anEl('tr');
+				cols.forEach(c => {
+					const td = anEl('td', c.cls || '');
+					const v = c.get(row);
+					if (v instanceof Node) td.append(v); else td.textContent = (v === null || v === undefined) ? '' : v;
+					tr.append(td);
+				});
+				tbody.append(tr);
+			});
+			table.append(thead, tbody);
+			wrap.append(table);
+			return wrap;
+		}
+
+		function anCsv(header, rows) {
+			const q = v => {
+				const s = (v === null || v === undefined) ? '' : String(v);
+				return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+			};
+			return '﻿' + [header, ...rows].map(r => r.map(q).join(',')).join('\r\n') + '\r\n';
+		}
+
+		function anFileStem() {
+			const m = (AnState.result.marker || 'seq').replace(/[^\w.-]+/g, '_');
+			return `bold_analysis_${m}_${exportStamp()}`;
+		}
+
+		function anDownloadSequences() {
+			const rows = AnState.result.sequences.map(r => [
+				r.id, r.species, r.bin, r.marker, r.length, r.A, r.C, r.G, r.T, r.N, r.ambiguous, r.invalid,
+				r.gc, r.gc3, r.code, r.frame, r.stops,
+				r.barcode === null ? '' : (r.barcode ? 'yes' : 'no'), r.flags.join(';')]);
+			downloadText(anCsv(['id', 'species', 'bin', 'marker', 'length', 'A', 'C', 'G', 'T', 'N',
+			                    'ambiguous', 'invalid', 'gc_pct', 'gc3_pct', 'genetic_code', 'frame',
+			                    'stop_codons', 'barcode_compliant', 'flags'], rows),
+			             `${anFileStem()}_sequences.csv`, 'text/csv;charset=utf-8');
+		}
+
+		function anDownloadHaplotypes() {
+			const rows = AnState.result.haplotypes.map(h => [
+				h.species, h.n, h.haplotypes, h.singletons, h.hd, h.excluded, h.counts.join(';')]);
+			downloadText(anCsv(['species', 'sequences', 'haplotypes', 'singletons', 'hd',
+			                    'left_out_ambiguous', 'haplotype_counts'], rows),
+			             `${anFileStem()}_haplotypes.csv`, 'text/csv;charset=utf-8');
+		}
+
+		function anDownloadConcordance() {
+			const c = AnState.result.concordance;
+			const list = items => items.map(i => `${i.name} (${i.n})`).join('; ');
+			const rows = [
+				...c.shared_bins.map(b => ['bin_with_several_species', b.bin, b.n, list(b.species)]),
+				...c.split_species.map(s => ['species_in_several_bins', s.species, s.n, list(s.bins)]),
+			];
+			downloadText(anCsv(['type', 'name', 'records', 'detail'], rows),
+			             `${anFileStem()}_species_bins.csv`, 'text/csv;charset=utf-8');
+		}
+
+		function anRender() {
+			const r = AnState.result;
+			const s = r.summary;
+			const box = document.getElementById('anResults');
+			box.innerHTML = '';
+			box.hidden = false;
+
+			const head = anEl('div', 'an-head');
+			head.append(anEl('span', 'an-title', t('an_result_title', {
+				marker: r.marker || t('an_no_marker'), n: numFmt.format(s.analysed) })));
+			head.append(anEl('span', 'an-muted', t('an_result_time', { s: r.seconds })));
+			const actions = anEl('div', 'an-actions');
+			const dl = (label, fn) => {
+				const b = anEl('button', 'btn btn-sm btn-emerald', label);
+				b.type = 'button';
+				b.addEventListener('click', fn);
+				return b;
+			};
+			actions.append(dl(t('an_dl_sequences'), anDownloadSequences),
+			               dl(t('an_dl_haplotypes'), anDownloadHaplotypes),
+			               dl(t('an_dl_concordance'), anDownloadConcordance));
+			head.append(actions);
+			box.append(head);
+			if (r.truncated) box.append(anEl('div', 'an-warn', '⚠ ' + t('an_truncated', { limit: numFmt.format(r.limit) })));
+			if (s.skipped_short) box.append(anEl('div', 'an-warn', '⚠ ' + t('an_skipped_short', { n: numFmt.format(s.skipped_short) })));
+
+			// Summary figures, by what they describe. The number of sequences
+			// is in the title.
+			const kv = (value, label, sub, warn) => {
+				const e = anEl('div', 'an-kv' + (warn ? ' warn' : ''));
+				e.append(anEl('div', 'an-kv-v', value), anEl('div', 'an-kv-k', label));
+				if (sub) e.append(anEl('div', 'an-kv-s', sub));
+				return e;
+			};
+			const group = (titleKey, items) => {
+				items = items.filter(Boolean);
+				if (!items.length) return null;
+				const g = anEl('div', 'an-kgroup');
+				const row = anEl('div', 'an-kgroup-row');
+				row.append(...items);
+				g.append(anEl('div', 'an-kgroup-t', t(titleKey)), row);
+				return g;
+			};
+			const groups = anEl('div', 'an-kgroups');
+			groups.append(...[
+				group('an_g_composition', [
+					s.length && kv(anNum(s.length.median), t('an_t_length'),
+						t('an_t_range', { min: anNum(s.length.min), max: anNum(s.length.max) })),
+					s.gc && kv(`${anNum(s.gc.mean, 1)} %`, t('an_t_gc'))]),
+				group('an_g_quality', [
+					s.barcode_applicable && kv(anPct(s.barcode_compliant, s.barcode_applicable), t('an_t_barcode'),
+						`${numFmt.format(s.barcode_compliant)} ${t('an_t_of', { n: numFmt.format(s.barcode_applicable) })}`),
+					s.gc3 && kv(`${anNum(s.gc3.mean, 1)} %`, t('an_t_gc3')),
+					s.translated && kv(numFmt.format(s.with_stops), t('an_t_stops'),
+						t('an_t_of', { n: numFmt.format(s.translated) }), s.with_stops > 0)]),
+				group('an_g_taxonomy', [
+					r.taxonomy.species && kv(numFmt.format(r.taxonomy.species), t('an_t_species')),
+					r.taxonomy.bin && kv(numFmt.format(r.taxonomy.bin), t('an_t_bins'))]),
+			].filter(Boolean));
+			box.append(groups);
+
+			// What each view holds, on its tab; what needs a look, in orange
+			const flagged = r.sequences.filter(row => row.flags.length).length;
+			const haps = r.haplotypes.reduce((a, h) => a + h.haplotypes, 0);
+			const c = r.concordance;
+			const issues = c.paired_records ? c.shared_bins.length + c.split_species.length : 0;
+			const badges = {
+				quality: [flagged, flagged > 0, 'an_badge_flagged'],
+				haplotypes: [haps, false, 'an_badge_haps'],
+				concordance: [issues, issues > 0, 'an_badge_conc'],
+			};
+
+			const views = anEl('div', 'an-views');
+			views.setAttribute('role', 'tablist');
+			const body = anEl('div', 'an-view-body');
+			const renderers = { quality: anRenderQuality, haplotypes: anRenderHaplotypes,
+			                    concordance: anRenderConcordance, distance: anRenderDistance, tree: anRenderTree };
+			const labels = { quality: 'an_v_quality', haplotypes: 'an_v_haplotypes',
+			                 concordance: 'an_v_concordance', distance: 'an_v_distance', tree: 'an_v_tree' };
+			const show = view => {
+				AnState.view = view;
+				views.querySelectorAll('button').forEach(b => {
+					b.classList.toggle('active', b.dataset.view === view);
+					b.setAttribute('aria-selected', b.dataset.view === view);
+				});
+				body.innerHTML = '';
+				renderers[view](body, r);
+			};
+			AnState.showView = show;
+			Object.keys(renderers).forEach(view => {
+				const b = anEl('button', '', t(labels[view]));
+				b.type = 'button';
+				b.dataset.view = view;
+				b.setAttribute('role', 'tab');
+				const badge = badges[view];
+				if (badge && badge[0]) {
+					b.append(anEl('span', 'an-badge' + (badge[1] ? ' warn' : ''), numFmt.format(badge[0])));
+					b.title = t(badge[2], { n: numFmt.format(badge[0]) });
+				}
+				b.addEventListener('click', () => show(view));
+				views.append(b);
+			});
+			box.append(views, body);
+			show(AnState.view);
+		}
+
+		function anRenderQuality(body, r) {
+			const s = r.summary;
+			body.append(anEl('div', 'an-h', t('an_h_length')));
+			body.append(anHistogram(s.histogram));
+
+			body.append(anEl('div', 'an-h', t('an_h_flags')));
+			body.append(anEl('p', 'an-muted', s.translated
+				? t('an_translation_note', { codes: s.codes.map(([c, n]) => s.codes.length > 1 ? `${c} (${numFmt.format(n)})` : c).join(', ') })
+				: t('an_not_translated')));
+			const flags = AN_FLAGS.filter(f => s.flags[f]);
+			if (!flags.length) {
+				body.append(anEl('p', 'an-muted', t('an_no_flags')));
+				return;
+			}
+			body.append(anTable([
+				{ label: t('an_c_alert'), get: f => t('an_f_' + f) },
+				{ label: t('an_c_seqs'), cls: 'num', get: f => numFmt.format(s.flags[f]) },
+				{ label: '%', cls: 'num', get: f => anPct(s.flags[f], s.analysed) },
+				{ label: t('an_c_meaning'), get: f => t('an_fd_' + f) },
+			], flags));
+
+			// Worst first: stop codons, then the other flags
+			const weight = row => (row.flags.includes('stops') || row.flags.includes('reversed') ? 100 : 0) + row.flags.length;
+			const flagged = r.sequences.filter(row => row.flags.length).sort((a, b) => weight(b) - weight(a));
+			body.append(anEl('div', 'an-h', t('an_h_flagged')));
+			if (flagged.length > AN_TABLE_ROWS) body.append(anEl('p', 'an-muted',
+				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(flagged.length) })));
+			const flagList = row => {
+				const span = anEl('span');
+				row.flags.forEach(f => {
+					const b = anEl('span', 'an-flag', t('an_f_' + f));
+					b.title = t('an_fd_' + f);
+					span.append(b);
+				});
+				return span;
+			};
+			body.append(anTable([
+				{ label: t('an_c_id'), cls: 'mono', get: row => row.id },
+				{ label: t('an_c_species'), cls: 'sp', get: row => row.species },
+				{ label: t('an_c_bin'), cls: 'mono', get: row => row.bin },
+				{ label: t('an_c_length'), cls: 'num', get: row => numFmt.format(row.length) },
+				{ label: t('an_c_gc'), cls: 'num', get: row => anNum(row.gc, 1) },
+				{ label: t('an_c_n'), cls: 'num', get: row => numFmt.format(row.N) },
+				{ label: t('an_c_amb'), cls: 'num', get: row => numFmt.format(row.ambiguous) },
+				{ label: t('an_c_frame'), cls: 'num', get: row => row.frame ?? '—' },
+				{ label: t('an_c_stops'), cls: 'num', get: row => row.stops ?? '—' },
+				{ label: t('an_c_flags'), get: flagList },
+			], flagged.slice(0, AN_TABLE_ROWS)));
+		}
+
+		function anRenderHaplotypes(body, r) {
+			body.append(anEl('p', 'an-muted', t('an_hap_note')));
+			const haps = [...r.haplotypes].sort((a, b) => b.n - a.n || a.species.localeCompare(b.species));
+			if (haps.length > AN_TABLE_ROWS) body.append(anEl('p', 'an-muted',
+				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(haps.length) })));
+			body.append(anTable([
+				{ label: t('an_c_species'), cls: 'sp', get: h => h.species || t('an_no_species') },
+				{ label: t('an_c_seqs'), cls: 'num', get: h => numFmt.format(h.n) },
+				{ label: t('an_c_haps'), cls: 'num', get: h => numFmt.format(h.haplotypes) },
+				{ label: t('an_c_singletons'), cls: 'num', get: h => numFmt.format(h.singletons) },
+				{ label: t('an_c_hd'), cls: 'num', get: h => h.hd === null ? '—' : h.hd.toFixed(3) },
+				{ label: t('an_c_excluded'), cls: 'num', get: h => h.excluded ? numFmt.format(h.excluded) : '' },
+			], haps.slice(0, AN_TABLE_ROWS)));
+		}
+
+		function anRenderConcordance(body, r) {
+			const c = r.concordance;
+			if (!c.paired_records) {
+				body.append(anEl('p', 'an-muted', t('an_conc_none')));
+				return;
+			}
+			body.append(anEl('p', 'an-muted', t('an_conc_note', { n: numFmt.format(c.paired_records) })));
+			const tiles = anEl('div', 'an-tiles');
+			tiles.append(
+				anTile(numFmt.format(c.concordant_species), t('an_t_concordant'), t('an_t_of', { n: numFmt.format(c.species) })),
+				anTile(numFmt.format(c.shared_bins.length), t('an_t_shared'), t('an_t_of', { n: numFmt.format(c.bins) })),
+				anTile(numFmt.format(c.split_species.length), t('an_t_split'), t('an_t_of', { n: numFmt.format(c.species) })));
+			body.append(tiles);
+			if (!c.shared_bins.length && !c.split_species.length) {
+				body.append(anEl('p', 'an-muted', t('an_conc_ok')));
+				return;
+			}
+			const list = items => items.map(i => `${i.name} (${numFmt.format(i.n)})`).join(', ');
+			if (c.shared_bins.length) {
+				body.append(anEl('div', 'an-h', t('an_t_shared')));
+				body.append(anTable([
+					{ label: t('an_c_bin'), cls: 'mono', get: b => b.bin },
+					{ label: t('an_c_records'), cls: 'num', get: b => numFmt.format(b.n) },
+					{ label: t('an_c_species_list'), cls: 'sp', get: b => list(b.species) },
+				], c.shared_bins.slice(0, AN_TABLE_ROWS)));
+			}
+			if (c.split_species.length) {
+				body.append(anEl('div', 'an-h', t('an_t_split')));
+				body.append(anTable([
+					{ label: t('an_c_species'), cls: 'sp', get: s => s.species },
+					{ label: t('an_c_records'), cls: 'num', get: s => numFmt.format(s.n) },
+					{ label: t('an_c_bins_list'), cls: 'list', get: s => list(s.bins) },
+				], c.split_species.slice(0, AN_TABLE_ROWS)));
+			}
+		}
+
+		function anRefreshView() {
+			if (AnState.showView) AnState.showView(AnState.view);
+		}
+
+		// ── Distances, barcode gap and tree (phase 2) ──
+		// Computed on demand from the same input as the results on screen
+		// (AnState.lastBody), by /api/analysis/distance.
+
+		const AN_DIST_LIMIT = {{ analysis_distance_limit | tojson }};
+		const AN_TREE_LIMIT = {{ analysis_tree_limit | tojson }};
+		const AN_PER_SPECIES = {{ analysis_per_species | tojson }};
+		// Two series: intra in the structural slate, inter in BOLD's orange
+		const AN_SERIES = { intra: '#2e3846', inter: '#e8831a' };
+
+		const anPctOf = (x, digits = 2) => (x === null || x === undefined) ? '—' : `${(100 * x).toFixed(digits)} %`;
+
+		function anDistanceControls(body) {
+			const box = anEl('div', 'an-dist-controls');
+			const opts = AnState.distOpts;
+			const mkSelect = (id, options, value) => {
+				const sel = anEl('select', 'form-select form-select-sm');
+				sel.id = id;
+				options.forEach(([v, label]) => {
+					const o = anEl('option', '', label);
+					o.value = v;
+					sel.append(o);
+				});
+				sel.value = value;
+				return sel;
+			};
+			const field = (labelKey, control) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), control);
+				return l;
+			};
+			const model = mkSelect('anDistModel', [['k2p', t('an_model_k2p')], ['jc', t('an_model_jc')], ['p', t('an_model_p')]], opts.model);
+			const per = mkSelect('anDistPer', [['', t('an_per_all')], ...AN_PER_SPECIES.map(n => [String(n), String(n)])],
+			                     opts.per_species ? String(opts.per_species) : '');
+			const treeWrap = anEl('label', 'form-check d-flex align-items-center gap-2 mb-0');
+			const tree = anEl('input', 'form-check-input mt-0');
+			tree.type = 'checkbox';
+			tree.id = 'anDistTree';
+			tree.checked = opts.tree;
+			treeWrap.append(tree, anEl('span', 'text-secondary small', t('an_tree_option', { n: numFmt.format(AN_TREE_LIMIT) })));
+			const run = anEl('button', 'btn btn-primary btn-sm px-4', t('an_dist_run'));
+			run.type = 'button';
+			run.disabled = AnState.distRunning;
+			run.addEventListener('click', () => {
+				AnState.distOpts = {
+					model: model.value,
+					per_species: per.value ? Number(per.value) : null,
+					tree: tree.checked,
+				};
+				anRunDistance();
+			});
+			const status = anEl('span', 'an-muted ms-auto', AnState.distRunning ? t('an_dist_running') : '');
+			const row = anEl('div', 'an-options');
+			row.append(field('an_model_label', model), field('an_per_label', per), treeWrap, status, run);
+			box.append(row, anEl('p', 'an-muted mt-2 mb-0', t('an_dist_intro', { n: numFmt.format(AN_DIST_LIMIT) })));
+			body.append(box);
+		}
+
+		async function anRunDistance() {
+			if (AnState.distRunning || !AnState.lastBody) return;
+			AnState.distRunning = true;
+			anRefreshView();
+			const body = Object.assign({}, AnState.lastBody, AnState.distOpts);
+			try {
+				const response = await fetch('/api/analysis/distance', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(body),
+				});
+				const data = await response.json().catch(() => ({}));
+				if (!response.ok || data.error) {
+					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				}
+				AnState.dist = data;
+				AnState.tree = null;
+				AnState.treeCache = {};
+				AnState.treeGroup = data.trees.length ? data.trees[0].group : 0;
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+			} finally {
+				AnState.distRunning = false;
+				anRefreshView();
+			}
+		}
+
+		function anDistanceHeader(body, d) {
+			const head = anEl('div', 'an-head');
+			head.append(anEl('span', 'an-title', t('an_dist_title', {
+				n: numFmt.format(d.analysed), model: t('an_model_' + d.model) })));
+			head.append(anEl('span', 'an-muted', t('an_result_time', { s: d.seconds })));
+			const actions = anEl('div', 'an-actions');
+			const zip = anEl('a', 'btn btn-sm btn-emerald', t('an_dl_zip'));
+			zip.href = `/api/analysis/download/${d.download_id}`;
+			zip.title = d.files.join(', ');
+			actions.append(zip);
+			head.append(actions);
+			body.append(head);
+
+			const g0 = d.groups[0];
+			const notes = d.groups.length === 1
+				? [t('an_dist_reference', { id: g0.reference.id, n: numFmt.format(g0.reference.length) })] : [];
+			if (d.gapped) notes.push(t('an_dist_gapped', { n: numFmt.format(d.gapped), ins: numFmt.format(d.inserted) }));
+			if (d.reversed) notes.push(t('an_dist_reversed', { n: numFmt.format(d.reversed) }));
+			body.append(anEl('p', 'an-muted mb-1', notes.join(' ')));
+			const warn = text => body.append(anEl('div', 'an-warn', '⚠ ' + text));
+			if (d.groups.length > 1) {
+				warn(t('an_dist_groups', { n: d.groups.length }));
+				const list = anEl('ul', 'an-groups');
+				d.groups.forEach((g, i) => list.append(anEl('li', '', anGroupText(g, i))));
+				body.append(list);
+			}
+			if (!d.coding) warn(t('an_dist_noncoding'));
+			if (d.subsampled) warn(t('an_dist_subsampled', { k: d.subsampled, n: numFmt.format(d.received) }));
+			const ex = d.excluded || {};
+			if (ex.stops) warn(t('an_dist_ex_stops', { n: numFmt.format(ex.stops) }));
+			if (ex.short) warn(t('an_dist_ex_short', { n: numFmt.format(ex.short) }));
+			if (ex.unplaced) warn(t('an_dist_ex_unplaced', { n: numFmt.format(ex.unplaced) }));
+			if (d.no_overlap_pairs) warn(t('an_dist_no_overlap', { n: numFmt.format(d.no_overlap_pairs) }));
+			if (!d.matrix_exported) warn(t('an_dist_no_matrix'));
+		}
+
+		// "Group 2 · 172 sequences · Amphibia 102, Insecta 35 · reference X (570 bp)"
+		function anGroupText(g, i) {
+			const taxa = g.taxa.map(([name, n]) => `${name} ${numFmt.format(n)}`).join(', ');
+			return t('an_group_line', { k: i + 1, n: numFmt.format(g.n), taxa: taxa || '—',
+			                           id: g.reference.id, len: numFmt.format(g.reference.length) });
+		}
+
+		function anRenderDistance(body) {
+			anDistanceControls(body);
+			const d = AnState.dist;
+			if (!d) return;
+			const res = anEl('div', 'an-dist-results');
+			body.append(res);
+			anDistanceHeader(res, d);
+
+			res.append(anEl('div', 'an-h', t('an_h_summary')));
+			res.append(anTable([
+				{ label: t('an_c_level'), get: s => t('an_level_' + s.level) },
+				{ label: t('an_c_taxa'), cls: 'num', get: s => numFmt.format(s.taxa) },
+				{ label: t('an_c_comparisons'), cls: 'num', get: s => numFmt.format(s.comparisons) },
+				{ label: t('an_c_min'), cls: 'num', get: s => anPctOf(s.min) },
+				{ label: t('an_c_mean'), cls: 'num', get: s => anPctOf(s.mean) },
+				{ label: t('an_c_max'), cls: 'num', get: s => anPctOf(s.max) },
+			], d.summary));
+
+			if (d.histogram.bins.length) {
+				res.append(anEl('div', 'an-h', t('an_h_dist_hist')));
+				res.append(anHistogram2(d.histogram.bins, t('an_series_intra'),
+					t(d.histogram_other === 'congeneric' ? 'an_series_congeneric' : 'an_series_inter')));
+			}
+
+			const gaps = d.gap.filter(g => g.max_intra !== null && g.nn !== null);
+			res.append(anEl('div', 'an-h', t('an_h_gap')));
+			res.append(anEl('p', 'an-muted', t('an_gap_note')));
+			if (gaps.length) {
+				const noGap = gaps.filter(g => g.nn <= g.max_intra).length;
+				const tiles = anEl('div', 'an-tiles');
+				tiles.append(anTile(numFmt.format(gaps.length), t('an_t_gap_species')),
+				             anTile(numFmt.format(noGap), t('an_t_no_gap'), anPct(noGap, gaps.length)));
+				res.append(tiles);
+				res.append(anGapScatter(gaps));
+			}
+			// No gap first, then the narrowest gaps
+			const order = g => (g.nn === null || g.max_intra === null) ? Infinity : g.nn - g.max_intra;
+			const rows = [...d.gap].sort((a, b) => order(a) - order(b) || a.species.localeCompare(b.species));
+			if (rows.length > AN_TABLE_ROWS) res.append(anEl('p', 'an-muted',
+				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(rows.length) })));
+			res.append(anTable([
+				{ label: t('an_c_species'), cls: 'sp', get: g => g.species },
+				{ label: t('an_c_seqs'), cls: 'num', get: g => numFmt.format(g.n) },
+				{ label: t('an_c_max_intra'), cls: 'num', get: g => anPctOf(g.max_intra) },
+				{ label: t('an_c_mean_intra'), cls: 'num', get: g => anPctOf(g.mean_intra) },
+				{ label: t('an_c_nn'), cls: 'num', get: g => anPctOf(g.nn) },
+				{ label: t('an_c_nn_species'), cls: 'sp', get: g => g.nn_species || '' },
+				{ label: t('an_c_gap'), cls: 'num', get: g => {
+					if (g.nn === null || g.max_intra === null) return '—';
+					const v = g.nn - g.max_intra;
+					const span = anEl('span', v <= 0 ? 'an-nogap' : '', anPctOf(v));
+					return span;
+				} },
+			], rows.slice(0, AN_TABLE_ROWS)));
+		}
+
+		// A round step that splits 0..max into about `parts` steps
+		function anStep(max, parts = 4) {
+			const raw = (max || 1) / parts;
+			const p = Math.pow(10, Math.floor(Math.log10(raw)));
+			for (const m of [1, 2, 5, 10]) if (m * p >= raw) return m * p;
+			return 10 * p;
+		}
+
+		function anLegend(items) {
+			const legend = anEl('div', 'an-legend');
+			items.forEach(([color, label]) => {
+				const item = anEl('span', 'an-legend-item');
+				const sw = anEl('i');
+				sw.style.background = color;
+				item.append(sw, label);
+				legend.append(item);
+			});
+			return legend;
+		}
+
+		// Shared hover tooltip for a chart: `wrap` holds the svg and the tip
+		function anAttachTip(wrap, svg, describe) {
+			const tip = anEl('div', 'an-tip');
+			tip.hidden = true;
+			wrap.append(tip);
+			let current = null;
+			const clear = () => {
+				if (current) current.classList.remove('hover');
+				current = null;
+				tip.hidden = true;
+			};
+			svg.addEventListener('mouseover', e => {
+				const hit = e.target.closest('[data-i]');
+				if (!hit) return;
+				clear();
+				const info = describe(+hit.dataset.i, hit);
+				if (!info) return;
+				current = info.mark || null;
+				if (current) current.classList.add('hover');
+				tip.textContent = info.text;
+				const box = (info.anchor || hit).getBoundingClientRect(), outer = wrap.getBoundingClientRect();
+				tip.style.left = `${box.left - outer.left + box.width / 2}px`;
+				tip.style.top = `${box.top - outer.top}px`;
+				tip.hidden = false;
+			});
+			svg.addEventListener('mouseleave', clear);
+		}
+
+		// Distances within vs between species, side by side per bar
+		function anHistogram2(bins, intraLabel, interLabel) {
+			const W = 720, H = 230, L = 60, R = 10, T = 12, B = 42;
+			const pw = W - L - R, ph = H - T - B;
+			const max = Math.max(1, ...bins.map(b => Math.max(b.intra, b.inter)));
+			const step = Math.max(1, anStep(max));
+			const top = Math.ceil(max / step) * step;
+			const y = v => T + ph - v / top * ph;
+			const bw = pw / bins.length;
+			const gap = bw > 8 ? 2 : 1;
+			const half = Math.max((bw - gap) / 2, 0.5);
+			const parts = [];
+			for (let v = 0; v <= top; v += step) {
+				parts.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`,
+				           `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${numFmt.format(v)}</text>`);
+			}
+			const bar = (x, w, v, color, cls) => {
+				if (!v) return '';
+				const y1 = y(v), y0 = T + ph, r = Math.min(3, w / 2, y0 - y1);
+				return `<path class="${cls}" fill="${color}" d="M${x},${y0} V${y1 + r} Q${x},${y1} ${x + r},${y1} H${x + w - r} Q${x + w},${y1} ${x + w},${y1 + r} V${y0} Z"/>`;
+			};
+			const every = Math.ceil(bins.length / 8);
+			bins.forEach((b, i) => {
+				const x0 = L + i * bw + gap / 2;
+				parts.push(bar(x0, half, b.intra, AN_SERIES.intra, 'bar2'),
+				           bar(x0 + half, half, b.inter, AN_SERIES.inter, 'bar2'),
+				           `<rect class="hit" data-i="${i}" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}"/>`);
+				if (i % every === 0) parts.push(`<text x="${L + i * bw}" y="${T + ph + 16}" text-anchor="middle">${(100 * b.from).toLocaleString('en-US', { maximumFractionDigits: 1 })}</text>`);
+			});
+			parts.push(`<line class="axis" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>`,
+			           `<text x="${L + pw / 2}" y="${H - 4}" text-anchor="middle">${escapeHtml(t('an_axis_distance'))}</text>`);
+			const wrap = anEl('div', 'an-hist');
+			wrap.append(anLegend([[AN_SERIES.intra, intraLabel], [AN_SERIES.inter, interLabel]]));
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(t('an_h_dist_hist'))}">${parts.join('')}</svg>`);
+			const svg = wrap.querySelector('svg');
+			anAttachTip(wrap, svg, i => {
+				const b = bins[i];
+				return { text: t('an_hist2_tip', {
+					from: (100 * b.from).toFixed(1), to: (100 * b.to).toFixed(1),
+					a: intraLabel, na: numFmt.format(b.intra), b: interLabel, nb: numFmt.format(b.inter) }) };
+			});
+			return wrap;
+		}
+
+		// Barcode gap: farthest conspecific (x) against the nearest other
+		// species (y). Points on or under the diagonal have no gap.
+		function anGapScatter(gaps) {
+			const W = 560, H = 420, L = 56, R = 16, T = 12, B = 46;
+			const pw = W - L - R, ph = H - T - B;
+			const max = Math.max(0.01, ...gaps.map(g => Math.max(g.max_intra, g.nn)));
+			const step = anStep(max);
+			const top = Math.ceil(max / step) * step;
+			const x = v => L + v / top * pw;
+			const y = v => T + ph - v / top * ph;
+			const fmt = v => (100 * v).toLocaleString('en-US', { maximumFractionDigits: 2 });
+			const parts = [];
+			for (let v = 0; v <= top + 1e-12; v += step) {
+				parts.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`,
+				           `<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${T + ph}"/>`,
+				           `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`,
+				           `<text x="${x(v)}" y="${T + ph + 16}" text-anchor="middle">${fmt(v)}</text>`);
+			}
+			parts.push(`<line class="diag" x1="${x(0)}" y1="${y(0)}" x2="${x(top)}" y2="${y(top)}"/>`);
+			// No-gap points last, on top
+			const order = gaps.map((g, i) => i).sort((a, b) => (gaps[a].nn <= gaps[a].max_intra) - (gaps[b].nn <= gaps[b].max_intra));
+			order.forEach(i => {
+				const g = gaps[i];
+				const color = g.nn <= g.max_intra ? AN_SERIES.inter : AN_SERIES.intra;
+				parts.push(`<circle class="pt" data-i="${i}" cx="${x(g.max_intra)}" cy="${y(g.nn)}" r="4.5" fill="${color}"/>`);
+			});
+			parts.push(`<line class="axis" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>`,
+			           `<line class="axis" x1="${L}" x2="${L}" y1="${T}" y2="${T + ph}"/>`,
+			           `<text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">${escapeHtml(t('an_axis_max_intra'))}</text>`,
+			           `<text transform="translate(14 ${T + ph / 2}) rotate(-90)" text-anchor="middle">${escapeHtml(t('an_axis_nn'))}</text>`);
+			const wrap = anEl('div', 'an-hist an-scatter');
+			wrap.append(anLegend([[AN_SERIES.intra, t('an_series_gap')], [AN_SERIES.inter, t('an_series_nogap')]]));
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(t('an_h_gap'))}">${parts.join('')}</svg>`);
+			const svg = wrap.querySelector('svg');
+			anAttachTip(wrap, svg, (i, hit) => {
+				const g = gaps[i];
+				return { mark: hit, text: t('an_gap_tip', {
+					sp: g.species, intra: anPctOf(g.max_intra), nn: anPctOf(g.nn), nnsp: g.nn_species }) };
+			});
+			return wrap;
+		}
+
+		// ── Tree ──
+
+		function anParseNewick(s) {
+			let i = 0;
+			const node = () => {
+				const n = { children: [], name: '', len: 0 };
+				if (s[i] === '(') {
+					i++;
+					n.children.push(node());
+					while (s[i] === ',') {
+						i++;
+						n.children.push(node());
+					}
+					i++;       // ')'
+				}
+				const startName = i;
+				while (i < s.length && !',():;'.includes(s[i])) i++;
+				n.name = s.slice(startName, i);
+				if (s[i] === ':') {
+					const startLen = ++i;
+					while (i < s.length && !',();'.includes(s[i])) i++;
+					n.len = parseFloat(s.slice(startLen, i)) || 0;
+				}
+				return n;
+			};
+			return node();
+		}
+
+		// The tree view: collapsible clades (by species, BIN or by hand),
+		// configurable labels, colours by group or by species/BIN discordance,
+		// phylogram or cladogram, row and font size, and export as SVG, PNG or
+		// PDF. The SVG is drawn with presentation attributes only (no CSS), so
+		// the exported file looks exactly like the screen.
+
+		// Categorical palette (validated for colour-blind readers, fixed
+		// order); groups past the eighth fold into "Other"
+		const AN_PALETTE = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'];
+		const AN_OTHER = '#b8bec9';
+		const AN_INK = '#18213a';
+		const AN_MUTE = '#67718a';
+		const AN_HL = '#c2610c';
+		const AN_FONT = "'IBM Plex Sans', Arial, sans-serif";
+		// Above this many tips the tree opens with clades collapsed by species
+		const AN_TREE_AUTO_COLLAPSE = 300;
+
+		function anTreeOpts() {
+			if (!AnState.treeOpts) {
+				AnState.treeOpts = {
+					collapse: 'none', color: 'none', mode: 'phylo', row: 15, font: 11, query: '',
+					labels: { species: true, id: true, bin: true, country: false },
+					colorLabels: false,
+					touched: false,
+				};
+			}
+			return AnState.treeOpts;
+		}
+
+		// Parsed tree with what the drawing needs per node, built once per run
+		function anPrepareTree(tree) {
+			const root = anParseNewick(tree.newick);
+			const nodes = [];
+			const walk = (n, parent, depth) => {
+				n.id = nodes.length;
+				nodes.push(n);
+				n.parent = parent;
+				n.depth = depth;
+				if (n.children.length) {
+					n.tips = [];
+					n.height = 0;
+					n.maxDepth = depth;
+					n.children.forEach(c => {
+						walk(c, n, depth + c.len);
+						for (const x of c.tips) n.tips.push(x);
+						n.height = Math.max(n.height, c.height + 1);
+						n.maxDepth = Math.max(n.maxDepth, c.maxDepth);
+					});
+				} else {
+					n.tip = +n.name;
+					n.tips = [n.tip];
+					n.height = 0;
+					n.maxDepth = depth;
+				}
+			};
+			walk(root, null, 0);
+
+			// Species ↔ BIN discordance of the tips
+			const meta = tree.tips;
+			const binsOf = new Map(), speciesOf = new Map();
+			meta.forEach(m => {
+				if (m.species && m.bin) {
+					if (!binsOf.has(m.species)) binsOf.set(m.species, new Set());
+					if (!speciesOf.has(m.bin)) speciesOf.set(m.bin, new Set());
+					binsOf.get(m.species).add(m.bin);
+					speciesOf.get(m.bin).add(m.species);
+				}
+			});
+			const discordance = meta.map(m => {
+				const split = m.species && binsOf.has(m.species) && binsOf.get(m.species).size > 1;
+				const shared = m.bin && speciesOf.has(m.bin) && speciesOf.get(m.bin).size > 1;
+				return split && shared ? 'both' : split ? 'split' : shared ? 'shared' : '';
+			});
+			return { root, nodes, meta, discordance, keys: {}, manual: new Map() };
+		}
+
+		// Per node, the value of `attr` its tips all share (null if they differ)
+		function anTreeKeys(T, attr) {
+			if (T.keys[attr]) return T.keys[attr];
+			const keys = new Array(T.nodes.length).fill(null);
+			for (let i = T.nodes.length - 1; i >= 0; i--) {      // children come after parents
+				const n = T.nodes[i];
+				if (!n.children.length) {
+					keys[i] = T.meta[n.tip][attr] || null;
+				} else {
+					const first = keys[n.children[0].id];
+					keys[i] = first !== null && n.children.every(c => keys[c.id] === first) ? first : null;
+				}
+			}
+			return (T.keys[attr] = keys);
+		}
+
+		function anIsCollapsed(T, n, opts) {
+			if (!n.children.length) return false;
+			if (T.manual.has(n.id)) return T.manual.get(n.id);
+			if (opts.collapse === 'none') return false;
+			// The topmost clade whose tips all share the species (or BIN)
+			const keys = anTreeKeys(T, opts.collapse);
+			return keys[n.id] !== null && (!n.parent || keys[n.parent.id] === null);
+		}
+
+		// Colour of each tip, and the legend
+		function anTreeColors(T, opts) {
+			if (opts.color === 'none') return { tip: () => null, legend: [] };
+			if (opts.color === 'discordance') {
+				const colors = { shared: AN_PALETTE[0], split: AN_PALETTE[1], both: AN_PALETTE[2] };
+				const present = new Set(T.discordance);
+				return {
+					tip: i => colors[T.discordance[i]] || null,
+					legend: ['shared', 'split', 'both'].filter(k => present.has(k))
+						.map(k => [colors[k], t('an_tree_disc_' + k)]),
+				};
+			}
+			const attr = opts.color;
+			const counts = new Map();
+			T.meta.forEach(m => { const k = m[attr]; if (k) counts.set(k, (counts.get(k) || 0) + 1); });
+			const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+			const slots = ranked.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
+			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, AN_PALETTE[i]]));
+			const legend = ranked.slice(0, slots).map(([k, n]) => [colorOf.get(k), `${k} (${numFmt.format(n)})`]);
+			if (ranked.length > slots) legend.push([AN_OTHER, t('an_tree_other', { n: numFmt.format(ranked.length - slots) })]);
+			return {
+				tip: i => { const k = T.meta[i][attr]; return k ? (colorOf.get(k) || AN_OTHER) : null; },
+				legend,
+				italic: attr === 'species' || attr === 'genus',
+			};
+		}
+
+		// A group colour usable as text on white: darkened (same hue) until it
+		// reaches 4.5:1 contrast. Yellow, pink and aqua need it; the rest
+		// pass as they are.
+		const anTextColorCache = {};
+		function anTextColor(hex) {
+			if (anTextColorCache[hex]) return anTextColorCache[hex];
+			const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+			const lum = c => {
+				const [r, g, b] = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+				return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+			};
+			let c = rgb;
+			for (let k = 0; k < 20 && 1.05 / (lum(c) + 0.05) < 4.5; k++) c = c.map(v => Math.round(v * 0.9));
+			return (anTextColorCache[hex] = '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''));
+		}
+
+		const anSvgEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+		// Label parts of one tip: [[text, italic], ...]
+		function anTipLabel(m, labels) {
+			const parts = [];
+			if (labels.species && m.species) parts.push([m.species, true]);
+			const rest = [labels.id && m.id, labels.bin && m.bin, labels.country && m.country].filter(Boolean);
+			if (rest.length) parts.push([rest.join(' · '), false]);
+			return parts;
+		}
+
+		// Label of a collapsed clade, with the same fields as the tips: for
+		// each one ticked, the value its sequences share, or how many
+		// different ones they have; then how many sequences. IDs are per
+		// sequence, so a clade has none.
+		function anGroupLabel(T, n, labels) {
+			const tips = n.tips.map(i => T.meta[i]);
+			const values = attr => [...new Set(tips.map(m => m[attr]).filter(Boolean))];
+			const field = (attr, key) => {
+				const v = values(attr);
+				return v.length === 1 ? v[0] : v.length > 1 ? t(key, { n: numFmt.format(v.length) }) : null;
+			};
+			const parts = [];
+			if (labels.species) {
+				const v = values('species');
+				if (v.length === 1) parts.push([v[0], true]);
+				else if (v.length > 1) parts.push([t('an_tree_group_species', { n: numFmt.format(v.length) }), false]);
+			}
+			const rest = [labels.bin && field('bin', 'an_tree_group_bins'),
+			              labels.country && field('country', 'an_tree_group_countries')].filter(Boolean);
+			rest.push(`(${numFmt.format(tips.length)})`);
+			parts.push([rest.join(' · '), false]);
+			return parts;
+		}
+
+		// The whole figure as SVG text. `forExport` leaves out the click targets.
+		function anTreeSvg(T, opts, forExport) {
+			// Text never taller than its row: below 5 px the rows are too
+			// tight for labels, and the tree is drawn without them (compact)
+			const row = opts.row, font = Math.min(opts.font, row - 1);
+			const showLabels = font >= 5 && Object.values(opts.labels).some(Boolean);
+			const colors = anTreeColors(T, opts);
+			const query = (opts.query || '').trim().toLowerCase();
+			const phylo = opts.mode === 'phylo';
+
+			// Rows: visible tips and collapsed clades, top to bottom
+			const items = [];
+			const visit = n => {
+				if (!n.children.length) items.push({ n, kind: 'tip' });
+				else if (anIsCollapsed(T, n, opts)) items.push({ n, kind: 'group' });
+				else n.children.forEach(visit);
+			};
+			visit(T.root);
+			items.forEach(it => {
+				it.parts = !showLabels ? [] : it.kind === 'tip'
+					? anTipLabel(T.meta[it.n.tip], opts.labels) : anGroupLabel(T, it.n, opts.labels);
+				it.text = it.parts.map(p => p[0]).join(' ');
+			});
+
+			const charW = font * 0.56;
+			const dot = colors.legend.length ? Math.max(1, Math.min(5, row * 0.38)) : 0;
+			const labelW = showLabels ? Math.max(...items.map(it => it.text.length), 4) * charW + dot * 2 + 16 : dot * 2 + 8;
+			const L = 12, BW = 760;
+			const W = Math.ceil(L + BW + labelW + 12);
+
+			// Legend on top, wrapped to the width
+			const legendParts = [];
+			let top = 10;
+			if (colors.legend.length) {
+				let lx = L, ly = top + 6;
+				colors.legend.forEach(([c, label]) => {
+					const w = 18 + label.length * 6.4 + 18;
+					if (lx + w > W - 12 && lx > L) { lx = L; ly += 18; }
+					legendParts.push(`<rect x="${lx}" y="${ly - 5}" width="10" height="10" rx="2" fill="${c}"/>`,
+					                 `<text x="${lx + 15}" y="${ly + 4}" font-size="11" fill="${AN_MUTE}"${colors.italic && c !== AN_OTHER ? ' font-style="italic"' : ''}>${anSvgEsc(label)}</text>`);
+					lx += w;
+				});
+				top = ly + 18;
+			}
+
+			// Positions
+			const maxDepth = T.root.maxDepth || 1, maxHeight = T.root.height || 1;
+			const X = n => L + (phylo ? n.depth / maxDepth : (maxHeight - n.height) / maxHeight) * BW;
+			const XEnd = n => L + (phylo ? n.maxDepth / maxDepth : 1) * BW;      // a clade's far edge
+			const Y = new Map();
+			items.forEach((it, i) => Y.set(it.n.id, top + i * row + row / 2));
+			const yOf = n => {
+				if (Y.has(n.id)) return Y.get(n.id);
+				const ys = n.children.map(yOf);
+				const y = (ys[0] + ys[ys.length - 1]) / 2;
+				Y.set(n.id, y);
+				return y;
+			};
+			yOf(T.root);
+			const H = Math.ceil(top + items.length * row + (phylo ? 40 : 12));
+
+			// Branches: everything above the visible rows
+			const path = [], hits = [];
+			const drawn = n => {
+				if (!n.children.length || anIsCollapsed(T, n, opts)) return;
+				const ys = n.children.map(c => Y.get(c.id));
+				path.push(`M${X(n).toFixed(1)},${ys[0].toFixed(1)}V${ys[ys.length - 1].toFixed(1)}`);
+				n.children.forEach(c => {
+					path.push(`M${X(n).toFixed(1)},${Y.get(c.id).toFixed(1)}H${X(c).toFixed(1)}`);
+					drawn(c);
+				});
+				if (!forExport) hits.push(`<circle class="node-hit" data-node="${n.id}" cx="${X(n).toFixed(1)}" cy="${Y.get(n.id).toFixed(1)}" r="5" fill="transparent"/>`);
+			};
+			drawn(T.root);
+
+			// Rows: tip dots, collapsed triangles, labels
+			const marks = [], texts = [];
+			let firstHit = null;
+			items.forEach(it => {
+				const n = it.n, y = Y.get(n.id);
+				let x, labelColor = null;
+				if (it.kind === 'tip') {
+					x = X(n);
+					const c = colors.tip(n.tip);
+					labelColor = c;
+					if (c) marks.push(`<circle cx="${(x + dot + 2).toFixed(1)}" cy="${y.toFixed(1)}" r="${dot.toFixed(1)}" fill="${c}"/>`);
+					x += dot ? dot * 2 + 6 : 4;
+				} else {
+					const x0 = X(n), x1 = XEnd(n), h = Math.max(row * 0.8, 3);
+					const tipColors = new Set(n.tips.map(i => colors.tip(i)));
+					const fill = tipColors.size === 1 && [...tipColors][0] ? [...tipColors][0] : '#dfe3ea';
+					labelColor = tipColors.size === 1 ? [...tipColors][0] : null;
+					marks.push(`<polygon${forExport ? '' : ` class="group" data-node="${n.id}"`} points="${x0.toFixed(1)},${y.toFixed(1)} ${x1.toFixed(1)},${(y - h / 2).toFixed(1)} ${x1.toFixed(1)},${(y + h / 2).toFixed(1)}" fill="${fill}" fill-opacity="0.55" stroke="${AN_INK}" stroke-width="0.8"/>`);
+					x = x1 + 5;
+				}
+				if (!it.parts.length) return;
+				const hit = query && it.text.toLowerCase().includes(query);
+				if (hit && firstHit === null) firstHit = y;
+				const spans = it.parts.map(([text, italic], i) =>
+					`<tspan${italic ? ' font-style="italic"' : ''}>${i ? ' ' : ''}${anSvgEsc(text)}</tspan>`).join('');
+				// A search match wins over the group colour
+				const style = hit ? ` fill="${AN_HL}" font-weight="700"`
+				            : opts.colorLabels && labelColor ? ` fill="${anTextColor(labelColor)}"` : '';
+				texts.push(`<text x="${x.toFixed(1)}" y="${(y + font * 0.35).toFixed(1)}"${style}>${spans}</text>`);
+			});
+
+			let scale = '';
+			if (phylo) {
+				const s = anStep(T.root.maxDepth, 6);
+				const sy = H - 20, x1 = L + s / maxDepth * BW;
+				scale = `<path d="M${L},${sy}H${x1.toFixed(1)}" stroke="${AN_INK}" stroke-width="1.2" fill="none"/>` +
+				        `<text x="${((L + x1) / 2).toFixed(1)}" y="${sy + 14}" text-anchor="middle" font-size="11" fill="${AN_MUTE}">${(100 * s).toLocaleString('en-US', { maximumFractionDigits: 2 })} %</text>`;
+			}
+
+			const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${AN_FONT}">` +
+				`<rect width="${W}" height="${H}" fill="#ffffff"/>` + legendParts.join('') +
+				`<path d="${path.join('')}" stroke="${AN_INK}" stroke-width="1" fill="none"/>` +
+				marks.join('') +
+				`<g font-size="${font}" fill="${AN_INK}">${texts.join('')}</g>` + scale + hits.join('') + `</svg>`;
+			return { svg, W, H, firstHit, matches: query ? items.filter(it => it.text.toLowerCase().includes(query)).length : 0,
+			         rows: items.length };
+		}
+
+		function anDownloadBlob(blob, filename) {
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			setTimeout(() => URL.revokeObjectURL(url), 1000);
+		}
+
+		function anTreeFileStem() {
+			const m = (AnState.dist.marker || 'seq').replace(/[^\w.-]+/g, '_');
+			const group = AnState.dist.groups.length > 1 ? `_group${AnState.treeGroup + 1}` : '';
+			return `bold_tree_${m}${group}_${exportStamp()}`;
+		}
+
+		function anExportTree(format, scale) {
+			const T = AnState.tree, opts = anTreeOpts();
+			const fig = anTreeSvg(T, opts, true);
+			if (format === 'svg') {
+				anDownloadBlob(new Blob([fig.svg], { type: 'image/svg+xml' }), anTreeFileStem() + '.svg');
+				return;
+			}
+			if (format === 'pdf') {
+				// The browser's print dialog saves it as PDF (vector)
+				const w = window.open('', '_blank');
+				if (!w) { showBatchDialog(escapeHtml(t('an_tree_popup_blocked'))); return; }
+				w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${anSvgEsc(anTreeFileStem())}</title>` +
+					`<style>@page{margin:10mm}html,body{margin:0;background:#fff}svg{display:block;width:100%;height:auto}</style>` +
+					`</head><body>${fig.svg}</body></html>`);
+				w.document.close();
+				w.focus();
+				setTimeout(() => w.print(), 400);
+				return;
+			}
+			// PNG: canvases have a size limit; past it the scale is lowered
+			const s = Math.min(scale, 32000 / fig.W, 32000 / fig.H, Math.sqrt(2.4e8 / (fig.W * fig.H)));
+			const img = new Image();
+			const url = URL.createObjectURL(new Blob([fig.svg], { type: 'image/svg+xml' }));
+			img.onload = () => {
+				const canvas = document.createElement('canvas');
+				canvas.width = Math.max(1, Math.round(fig.W * s));
+				canvas.height = Math.max(1, Math.round(fig.H * s));
+				const g = canvas.getContext('2d');
+				g.drawImage(img, 0, 0, canvas.width, canvas.height);
+				URL.revokeObjectURL(url);
+				canvas.toBlob(blob => {
+					if (!blob) { showBatchDialog(escapeHtml(t('an_tree_png_failed'))); return; }
+					anDownloadBlob(blob, `${anTreeFileStem()}_${scale}x.png`);
+				}, 'image/png');
+				if (s < scale - 0.01) showBatchDialog(escapeHtml(t('an_tree_png_reduced', { s: s.toFixed(2) })));
+			};
+			img.onerror = () => { URL.revokeObjectURL(url); showBatchDialog(escapeHtml(t('an_tree_png_failed'))); };
+			img.src = url;
+		}
+
+		function anTreeToolbar(redraw) {
+			const opts = anTreeOpts();
+			const box = anEl('div', 'an-tree-tools');
+			const sel = (labelKey, value, options, onChange) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				const s = anEl('select', 'form-select form-select-sm');
+				options.forEach(([v, k]) => { const o = anEl('option', '', t(k)); o.value = v; s.append(o); });
+				s.value = value;
+				s.addEventListener('change', () => onChange(s.value));
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), s);
+				return l;
+			};
+			const range = (labelKey, value, min, max, onChange) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				const r = anEl('input', 'form-range');
+				r.type = 'range'; r.min = min; r.max = max; r.value = value;
+				const out = anEl('span', 'an-muted an-range-v', String(value));
+				r.addEventListener('input', () => { out.textContent = r.value; onChange(+r.value); });
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), r, out);
+				return l;
+			};
+			const check = (labelKey, checked, onChange) => {
+				const l = anEl('label', 'form-check d-inline-flex align-items-center gap-1 mb-0');
+				const c = anEl('input', 'form-check-input mt-0');
+				c.type = 'checkbox';
+				c.checked = checked;
+				c.addEventListener('change', () => onChange(c.checked));
+				l.append(c, anEl('span', 'small', t(labelKey)));
+				return l;
+			};
+			const button = (label, fn, cls = 'btn-outline-secondary') => {
+				const b = anEl('button', 'btn btn-sm ' + cls, label);
+				b.type = 'button';
+				b.addEventListener('click', fn);
+				return b;
+			};
+
+			const row1 = anEl('div', 'an-options');
+			row1.append(
+				sel('an_tree_collapse', opts.collapse,
+				    [['none', 'an_tree_collapse_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin']],
+				    v => { opts.collapse = v; opts.touched = true; AnState.tree.manual.clear(); redraw(); }),
+				sel('an_tree_color', opts.color,
+				    [['none', 'an_tree_color_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'],
+				     ['genus', 'an_tree_by_genus'], ['country', 'an_tree_by_country'], ['discordance', 'an_tree_by_discordance']],
+				    v => { opts.color = v; redraw(); }),
+				sel('an_tree_mode', opts.mode, [['phylo', 'an_tree_phylo'], ['clado', 'an_tree_clado']],
+				    v => { opts.mode = v; redraw(); }),
+				range('an_tree_row', opts.row, 3, 28, v => { opts.row = v; redraw(); }),
+				range('an_tree_font', opts.font, 4, 18, v => { opts.font = v; redraw(); }));
+
+			const row2 = anEl('div', 'an-options mt-2');
+			const labels = anEl('div', 'd-flex flex-wrap align-items-center gap-3');
+			labels.append(anEl('span', 'text-secondary small', t('an_tree_labels')));
+			[['species', 'an_c_species'], ['id', 'an_c_id'], ['bin', 'an_c_bin'], ['country', 'an_tree_country']]
+				.forEach(([k, key]) => labels.append(check(key, opts.labels[k], v => { opts.labels[k] = v; redraw(); })));
+			labels.append(check('an_tree_color_labels', opts.colorLabels, v => { opts.colorLabels = v; redraw(); }));
+			const find = anEl('input', 'form-control form-control-sm an-tree-find');
+			find.type = 'search';
+			find.placeholder = t('an_tree_find');
+			find.value = opts.query;
+			find.addEventListener('input', () => { opts.query = find.value; redraw(true); });
+			const found = anEl('span', 'an-muted an-tree-found');
+			row2.append(labels, find, found,
+			            button(t('an_tree_expand_all'), () => {
+			                opts.collapse = 'none'; opts.touched = true;
+			                AnState.tree.manual.clear(); AnState.treeRebuild();
+			            }, 'btn-link text-muted p-0'));
+
+			const row3 = anEl('div', 'an-options mt-2');
+			row3.append(anEl('span', 'text-secondary small', t('an_tree_export')),
+			            button('SVG', () => anExportTree('svg'), 'btn-emerald'),
+			            button('PNG 2×', () => anExportTree('png', 2), 'btn-emerald'),
+			            button('PNG 4×', () => anExportTree('png', 4), 'btn-emerald'),
+			            button('PDF', () => anExportTree('pdf'), 'btn-emerald'),
+			            anEl('span', 'an-muted', t('an_tree_export_hint')));
+			box.append(row1, row2, row3);
+			return { box, found };
+		}
+
+		function anRenderTree(body) {
+			anDistanceControls(body);
+			const d = AnState.dist;
+			if (!d) return;
+			(d.tree_notes || []).forEach(note => body.append(anEl('div', 'an-warn mt-2', '⚠ ' + note)));
+			if (!d.trees.length) {
+				if (!(d.tree_notes || []).length) body.append(anEl('p', 'an-muted mt-3', t('an_tree_off')));
+				return;
+			}
+			// Sequences that can't be aligned together get separate trees
+			const tree = d.trees.find(x => x.group === AnState.treeGroup) || d.trees[0];
+			AnState.treeGroup = tree.group;
+			AnState.treeCache = AnState.treeCache || {};
+			if (!AnState.treeCache[tree.group]) AnState.treeCache[tree.group] = anPrepareTree(tree);
+			const T = AnState.tree = AnState.treeCache[tree.group];
+			const opts = anTreeOpts();
+			if (!opts.touched) opts.collapse = tree.tips.length > AN_TREE_AUTO_COLLAPSE ? 'species' : 'none';
+
+			if (d.groups.length > 1) {
+				const pick = anEl('label', 'd-flex align-items-center gap-2 mt-3');
+				const sel = anEl('select', 'form-select form-select-sm an-group-select');
+				d.trees.forEach(x => {
+					const o = anEl('option', '', anGroupText(d.groups[x.group], x.group));
+					o.value = x.group;
+					sel.append(o);
+				});
+				sel.value = String(tree.group);
+				sel.addEventListener('change', () => { AnState.treeGroup = +sel.value; anRefreshView(); });
+				pick.append(anEl('span', 'text-secondary small text-nowrap', t('an_tree_group_label')), sel);
+				body.append(pick);
+			}
+
+			const head = anEl('div', 'an-head mt-3');
+			head.append(anEl('span', 'an-title', t('an_tree_title', { n: numFmt.format(tree.tips.length) })));
+			if (tree.dropped) head.append(anEl('span', 'an-muted', t('an_tree_dropped', { n: numFmt.format(tree.dropped) })));
+			const rowsInfo = anEl('span', 'an-muted');
+			head.append(rowsInfo);
+			body.append(head, anEl('p', 'an-muted', t('an_tree_note')));
+
+			const wrap = anEl('div', 'an-tree');
+			let tools;
+			const redraw = (scrollToMatch) => {
+				const fig = anTreeSvg(T, opts, false);
+				wrap.innerHTML = fig.svg;
+				rowsInfo.textContent = t('an_tree_rows', { n: numFmt.format(fig.rows) });
+				tools.found.textContent = opts.query.trim() ? t('an_tree_found', { n: numFmt.format(fig.matches) }) : '';
+				if (scrollToMatch && fig.firstHit !== null) wrap.scrollTop = fig.firstHit - wrap.clientHeight / 2;
+			};
+			tools = anTreeToolbar(redraw);
+			// Rebuilding the toolbar too (its selects change with "expand all")
+			AnState.treeRebuild = () => anRefreshView();
+			body.append(tools.box, wrap);
+
+			wrap.addEventListener('click', e => {
+				const target = e.target.closest('[data-node]');
+				if (!target) return;
+				const n = T.nodes[+target.dataset.node];
+				T.manual.set(n.id, !anIsCollapsed(T, n, opts));
+				redraw();
+			});
+			wrap.addEventListener('mouseover', e => {
+				const target = e.target.closest('[data-node]');
+				if (!target) return;
+				const n = T.nodes[+target.dataset.node];
+				target.setAttribute('title', '');
+				const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+				title.textContent = t(anIsCollapsed(T, n, opts) ? 'an_tree_click_expand' : 'an_tree_click_collapse',
+				                      { n: numFmt.format(n.tips.length) });
+				target.replaceChildren(title);
+			});
+			redraw();
+		}
+
+		// A round step for an axis that has to reach `max` in about 4 lines
+		function anNiceStep(max) {
+			const raw = max / 4;
+			const p = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+			for (const m of [1, 2, 5, 10]) if (m * p >= raw) return Math.max(1, m * p);
+			return Math.max(1, 10 * p);
+		}
+
+		// Length histogram: one series, so no legend; a tooltip per bar
+		function anHistogram(bins) {
+			const W = 720, H = 220, L = 52, R = 10, T = 12, B = 42;
+			const pw = W - L - R, ph = H - T - B;
+			const max = Math.max(1, ...bins.map(b => b.n));
+			const step = anNiceStep(max);
+			const top = Math.ceil(max / step) * step;
+			const y = v => T + ph - v / top * ph;
+			const bw = pw / Math.max(1, bins.length);
+			const gap = bw > 6 ? 2 : (bw > 3 ? 1 : 0);
+			const parts = [];
+			for (let v = 0; v <= top; v += step) {
+				parts.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`,
+				           `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${numFmt.format(v)}</text>`);
+			}
+			const every = Math.ceil(bins.length / 8);
+			bins.forEach((b, i) => {
+				const x = L + i * bw + gap / 2, w = Math.max(bw - gap, 1);
+				const y1 = y(b.n), y0 = T + ph;
+				if (b.n > 0) {
+					const r = Math.min(4, w / 2, y0 - y1);
+					parts.push(`<path class="bar" data-i="${i}" d="M${x},${y0} V${y1 + r} Q${x},${y1} ${x + r},${y1} H${x + w - r} Q${x + w},${y1} ${x + w},${y1 + r} V${y0} Z"/>`);
+				}
+				parts.push(`<rect class="hit" data-i="${i}" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}"/>`);
+				if (i % every === 0) {
+					parts.push(`<text x="${L + i * bw}" y="${y0 + 16}" text-anchor="middle">${numFmt.format(b.from)}</text>`);
+				}
+			});
+			parts.push(`<line class="axis" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>`,
+			           `<text x="${L + pw / 2}" y="${H - 4}" text-anchor="middle">${escapeHtml(t('an_hist_x'))}</text>`);
+
+			const wrap = anEl('div', 'an-hist');
+			wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(t('an_h_length'))}">${parts.join('')}</svg>`;
+			const tip = anEl('div', 'an-tip');
+			tip.hidden = true;
+			wrap.append(tip);
+			const svg = wrap.querySelector('svg');
+			let current = null;
+			const clear = () => {
+				if (current) current.classList.remove('hover');
+				current = null;
+				tip.hidden = true;
+			};
+			svg.addEventListener('mouseover', e => {
+				const hit = e.target.closest('.hit');
+				if (!hit) return;
+				clear();
+				const i = +hit.dataset.i, b = bins[i];
+				current = svg.querySelector(`.bar[data-i="${i}"]`);
+				if (current) current.classList.add('hover');
+				tip.textContent = t('an_hist_tip', { from: numFmt.format(b.from), to: numFmt.format(b.to), n: numFmt.format(b.n) });
+				const box = hit.getBoundingClientRect(), outer = wrap.getBoundingClientRect();
+				const scale = box.height / ph;
+				tip.style.left = `${box.left - outer.left + box.width / 2}px`;
+				tip.style.top = `${box.top - outer.top + (y(b.n) - T) * scale}px`;
+				tip.hidden = false;
+			});
+			svg.addEventListener('mouseleave', clear);
+			return wrap;
+		}
+
+		function anInit() {
+			if (!document.getElementById('analysisPanel')) return;
+			document.getElementById('anIntro').innerHTML = t('an_intro_text', { limit: numFmt.format(AN_LIMIT) });
+			anBuildMarkerSelect();
+			document.querySelectorAll('input[name="anSource"]').forEach(r => r.addEventListener('change', anSourceChanged));
+			document.getElementById('anFastaFile').addEventListener('change', anInputChanged);
+			document.getElementById('anFastaText').addEventListener('input', anInputChanged);
+			document.getElementById('anFastaClear').addEventListener('click', () => {
+				document.getElementById('anFastaFile').value = '';
+				anInputChanged();
+			});
+			document.getElementById('anRunBtn').addEventListener('click', anRun);
+			document.getElementById('anInputToggle').addEventListener('click', () =>
+				anSetInputOpen(document.getElementById('anInputForm').hidden));
+			document.getElementById('anMarker').addEventListener('change', anSyncCodeSelect);
+			document.getElementById('anCode').addEventListener('change', anSyncCodeSelect);
+			anUpdateSourceCounts();
+		}
+
+		document.addEventListener('DOMContentLoaded', anInit);
+
+		// ── Sequence identification ───────────────────────────────────────────
+		// The "Identify sequences" tab (server.py → seq_identify.py): query
+		// sequences searched against the database through an index per marker,
+		// built once. Index build and identification run on the server; the
+		// page starts them and polls their status.
+
+		const IdState = { markers: [], job: null, poll: null, indexPoll: null, results: null, filter: 'all', open: new Set() };
+
+		function idMarker() { return document.getElementById('idMarker').value; }
+
+		async function idInit() {
+			if (!document.getElementById('identifyPanel')) return;
+			document.getElementById('idRunBtn').addEventListener('click', idRun);
+			document.getElementById('idCancelBtn').addEventListener('click', () => {
+				if (IdState.job) fetch(`/api/identify/cancel/${IdState.job}`, { method: 'POST' });
+			});
+			document.getElementById('idMarker').addEventListener('change', idRefreshIndex);
+			document.getElementById('idIndexBuild').addEventListener('click', idBuildIndex);
+			document.getElementById('idIndexCancel').addEventListener('click', () =>
+				fetch('/api/identify/index/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+				                                      body: JSON.stringify({ marker: idMarker() }) }));
+			document.getElementById('idFastaClear').addEventListener('click', () => { document.getElementById('idFastaFile').value = ''; });
+		}
+
+		// Loaded the first time the tab is opened (one GROUP BY over the table)
+		async function idLoadMarkers() {
+			if (IdState.markers.length) return;
+			const sel = document.getElementById('idMarker');
+			try {
+				const r = await fetch('/api/identify/markers');
+				const data = await r.json();
+				if (!r.ok || data.error) throw new Error(data.error || r.status);
+				IdState.markers = data.markers;
+				IdState.maxQueries = data.max_queries;
+				document.getElementById('idIntro').innerHTML = t('id_intro', { n: numFmt.format(data.max_queries) });
+				sel.innerHTML = '';
+				data.markers.filter(m => m.n >= 20).forEach(m => {
+					const o = anEl('option', '', `${m.marker} (${numFmt.format(m.n)})`);
+					o.value = m.marker;
+					sel.append(o);
+				});
+				const coi = data.markers.find(m => m.marker.toUpperCase() === 'COI-5P');
+				if (coi) sel.value = coi.marker;
+				idRefreshIndex();
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+			}
+		}
+
+		async function idRefreshIndex() {
+			clearTimeout(IdState.indexPoll);
+			const marker = idMarker();
+			if (!marker) return;
+			let st;
+			try {
+				st = await (await fetch(`/api/identify/index/${encodeURIComponent(marker)}`)).json();
+			} catch (e) { return; }
+			if (marker !== idMarker()) return;
+			const status = document.getElementById('idIndexStatus');
+			const build = document.getElementById('idIndexBuild');
+			const cancel = document.getElementById('idIndexCancel');
+			const bar = document.getElementById('idIndexProgress');
+			build.hidden = true; cancel.hidden = true; bar.hidden = true;
+			const run = document.getElementById('idRunBtn');
+			run.disabled = st.state !== 'ready' || !!IdState.job;
+			if (st.state === 'ready') {
+				status.textContent = t('id_index_ready', { n: numFmt.format(st.meta.entries), bins: numFmt.format(st.meta.bins), date: st.meta.built });
+				if (!st.meta.bins) status.textContent = t('id_index_ready_nobins', { n: numFmt.format(st.meta.entries), date: st.meta.built });
+			} else if (st.state === 'building') {
+				const pct = st.total ? Math.round(100 * st.done / st.total) : 0;
+				status.textContent = t('id_index_phase_' + st.phase, { done: numFmt.format(st.done), total: numFmt.format(st.total) });
+				bar.hidden = false;
+				bar.firstElementChild.style.width = `${st.phase === 'sort' ? 100 : pct}%`;
+				cancel.hidden = false;
+				IdState.indexPoll = setTimeout(idRefreshIndex, 1500);
+			} else {
+				status.textContent = (st.error ? st.error + ' ' : '') + t(st.state === 'stale' ? 'id_index_stale' : 'id_index_missing');
+				build.hidden = false;
+				build.textContent = t(st.state === 'stale' ? 'id_index_rebuild' : 'id_index_build');
+			}
+		}
+
+		async function idBuildIndex() {
+			try {
+				const r = await fetch('/api/identify/index', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+				                                              body: JSON.stringify({ marker: idMarker() }) });
+				const data = await r.json();
+				if (!r.ok || data.error) throw new Error(data.error || r.status);
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+			}
+			idRefreshIndex();
+		}
+
+		async function idRun() {
+			if (IdState.job) return;
+			let fasta = document.getElementById('idFastaText').value;
+			if (!fasta.trim()) {
+				const file = document.getElementById('idFastaFile').files[0];
+				if (file) {
+					if (file.size > AN_FASTA_MAX_MB * 1e6) { showBatchDialog(escapeHtml(t('an_fasta_too_large', { mb: AN_FASTA_MAX_MB }))); return; }
+					fasta = await file.text();
+				}
+			}
+			if (!fasta.trim()) { showBatchDialog(escapeHtml(t('an_need_fasta'))); return; }
+			const pct = id => Number(document.getElementById(id).value) / 100;
+			const body = {
+				marker: idMarker(), fasta,
+				thresholds: { species: pct('idThSpecies'), genus: pct('idThGenus'), family: pct('idThFamily') },
+				max_hits: Number(document.getElementById('idMaxHits').value),
+			};
+			try {
+				const r = await fetch('/api/identify/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+				const data = await r.json();
+				if (!r.ok || data.error) throw new Error(data.error || r.status);
+				IdState.job = data.job_id;
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+				return;
+			}
+			document.getElementById('idRunBtn').disabled = true;
+			document.getElementById('idCancelBtn').hidden = false;
+			document.getElementById('idProgress').hidden = false;
+			document.getElementById('idResults').hidden = true;
+			idPoll();
+		}
+
+		async function idPoll() {
+			const job = IdState.job;
+			let st;
+			try {
+				st = await (await fetch(`/api/identify/status/${job}`)).json();
+			} catch (e) { IdState.poll = setTimeout(idPoll, 2000); return; }
+			const bar = document.getElementById('idProgress');
+			const status = document.getElementById('idStatus');
+			if (st.status === 'running') {
+				bar.firstElementChild.style.width = `${st.total ? Math.round(100 * st.done / st.total) : 0}%`;
+				status.textContent = t('id_running', { done: numFmt.format(st.done), total: numFmt.format(st.total) });
+				IdState.poll = setTimeout(idPoll, 1000);
+				return;
+			}
+			IdState.job = null;
+			bar.hidden = true;
+			document.getElementById('idCancelBtn').hidden = true;
+			document.getElementById('idRunBtn').disabled = false;
+			status.textContent = '';
+			if (st.status === 'done') {
+				IdState.results = Object.assign({ job }, st);
+				IdState.open = new Set();
+				idRender();
+			} else if (st.status === 'error' || st.error) {
+				showBatchDialog(escapeHtml(st.message || st.error));
+			}
+		}
+
+		const ID_LEVELS = ['species', 'genus', 'family', 'none'];
+
+		function idRender() {
+			const R = IdState.results;
+			const box = document.getElementById('idResults');
+			box.innerHTML = '';
+			box.hidden = false;
+			const res = R.results;
+
+			const head = anEl('div', 'an-head');
+			head.append(anEl('span', 'an-title', t('id_result_title', { n: numFmt.format(res.length), marker: R.marker })),
+			            anEl('span', 'an-muted', t('an_result_time', { s: R.seconds })));
+			const actions = anEl('div', 'an-actions');
+			const zip = anEl('a', 'btn btn-sm btn-outline-secondary', t('id_dl_zip'));
+			zip.href = `/api/identify/download/${R.job}`;
+			actions.append(zip);
+			head.append(actions);
+			box.append(head);
+			const th = R.thresholds;
+			box.append(anEl('p', 'an-muted', t('id_thresholds_note', {
+				s: Math.round(th.species * 1000) / 10, g: Math.round(th.genus * 1000) / 10, f: Math.round(th.family * 1000) / 10 })));
+
+			const counts = Object.fromEntries(ID_LEVELS.map(l => [l, res.filter(r => r.level === l).length]));
+			const tiles = anEl('div', 'an-tiles');
+			ID_LEVELS.forEach(l => tiles.append(anTile(numFmt.format(counts[l]), t('id_level_' + l), anPct(counts[l], res.length))));
+			box.append(tiles);
+
+			const bar = anEl('div', 'an-options mb-2');
+			const filter = anEl('select', 'form-select form-select-sm');
+			[['all', 'id_filter_all'], ...ID_LEVELS.map(l => [l, 'id_level_' + l])].forEach(([v, k]) => {
+				const o = anEl('option', '', t(k)); o.value = v; filter.append(o);
+			});
+			filter.value = IdState.filter;
+			const tableBox = anEl('div');
+			filter.addEventListener('change', () => { IdState.filter = filter.value; idRenderTable(tableBox); });
+			const l = anEl('label', 'd-flex align-items-center gap-2');
+			l.append(anEl('span', 'text-secondary small', t('id_filter')), filter);
+			bar.append(l, anEl('span', 'an-muted', t('id_click_hint')));
+			box.append(bar, tableBox);
+			idRenderTable(tableBox);
+		}
+
+		function idLevelBadge(level) {
+			return anEl('span', 'id-level id-level-' + level, t('id_level_' + level));
+		}
+
+		function idRenderTable(container) {
+			const rows = IdState.results.results.filter(r => IdState.filter === 'all' || r.level === IdState.filter);
+			container.innerHTML = '';
+			const wrap = anEl('div', 'an-table-wrap id-table-wrap');
+			const table = anEl('table', 'an-table');
+			const hr = anEl('tr');
+			[['id_c_query', ''], ['an_c_length', 'num'], ['id_c_best', 'num'], ['id_c_level', ''],
+			 ['id_c_taxon', ''], ['id_c_best_match', ''], ['an_c_bin', '']].forEach(([k, cls]) => hr.append(anEl('th', cls, t(k))));
+			const thead = anEl('thead');
+			thead.append(hr);
+			const tbody = anEl('tbody');
+			rows.forEach(r => {
+				const tr = anEl('tr', 'id-row');
+				const best = r.hits && r.hits[0];
+				const taxon = anEl('td');
+				if (r.taxon) taxon.append(anEl('span', r.level === 'species' || r.level === 'genus' ? 'sp' : '', r.taxon));
+				if (r.level === 'none' && r.taxon) taxon.append(anEl('span', 'an-muted', ' ' + t('id_low_similarity')));
+				if (r.note) taxon.append(anEl('div', 'an-muted id-note', t('id_ambiguous', { list: r.note })));
+				const lvl = anEl('td');
+				lvl.append(idLevelBadge(r.level));
+				const match = anEl('td');
+				if (best) {
+					if (best.species) match.append(anEl('span', 'sp', best.species + ' '));
+					match.append(anEl('span', 'mono', best.processid));
+				} else {
+					match.textContent = r.short ? t('id_too_short') : t('id_no_hits');
+				}
+				tr.append(anEl('td', 'mono', r.id), anEl('td', 'num', numFmt.format(r.length)),
+				          anEl('td', 'num', r.best === null || r.best === undefined ? '—' : anPctOf(r.best)),
+				          lvl, taxon, match, anEl('td', 'mono', best ? (best.bin || '') : ''));
+				tbody.append(tr);
+				const detail = anEl('tr', 'id-detail');
+				detail.hidden = !IdState.open.has(r.id);
+				const cell = anEl('td');
+				cell.colSpan = 7;
+				detail.append(cell);
+				tbody.append(detail);
+				const fill = () => {
+					if (cell.childElementCount || !r.hits.length) return;
+					cell.append(anTable([
+						{ label: '#', cls: 'num', get: (h, ) => String(r.hits.indexOf(h) + 1) },
+						{ label: t('id_c_identity'), cls: 'num', get: h => anPctOf(h.identity) },
+						{ label: t('id_c_overlap'), cls: 'num', get: h => numFmt.format(h.overlap) },
+						{ label: t('an_c_species'), cls: 'sp', get: h => h.species || '' },
+						{ label: t('id_c_genus'), cls: 'sp', get: h => h.genus || '' },
+						{ label: t('id_c_family'), get: h => h.family || '' },
+						{ label: t('id_c_order'), get: h => h.order || '' },
+						{ label: t('an_c_bin'), cls: 'mono', get: h => h.bin || '' },
+						{ label: t('an_tree_country'), get: h => h.country || '' },
+						{ label: t('an_c_id'), cls: 'mono', get: h => h.processid },
+					], r.hits));
+				};
+				if (!detail.hidden) fill();
+				tr.addEventListener('click', () => {
+					detail.hidden = !detail.hidden;
+					if (detail.hidden) IdState.open.delete(r.id); else { IdState.open.add(r.id); fill(); }
+					tr.classList.toggle('open', !detail.hidden);
+				});
+			});
+			table.append(thead, tbody);
+			wrap.append(table);
+			container.append(wrap);
+			if (!rows.length) container.append(anEl('p', 'an-muted mt-2', t('id_no_rows')));
+		}
+
+		document.addEventListener('DOMContentLoaded', idInit);
 
 		// ── GenBank batch search ──────────────────────────────────────────────────
 		// Ported from BarcodeSuite's GenBank Batch panel. Unlike the other tabs it

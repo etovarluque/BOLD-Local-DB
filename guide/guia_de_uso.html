@@ -4,19 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOLD DB — Instrucciones de uso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* Palette and type of the viewer (dev/frontend/templates/index.html):
+     slate carries the structure, BOLD's orange is the single accent,
+     emerald marks downloads, IDs and code go in a monospaced face. */
   :root {
-    --blue:    #2c4685;
-    --blue2:   #3E92CC;
-    --orange:  #f8901f;
-    --bg:      #f5f7fa;
+    --slate:   #2e3846;
+    --slate-2: #222a35;
+    --slate-3: #3a4656;
+    --orange:  #e8831a;
+    --accent:  #f39323;
+    --orange-ink: #a85a0c;
+    --ink:     #18213a;
+    --mute:    #67718a;
+    --line:    #e3e7ef;
+    --page:    #f4f5f7;
+    --tint:    #eef0f3;
     --white:   #ffffff;
-    --text:    #2d2d2d;
-    --muted:   #6c757d;
-    --border:  #dee2e6;
-    --green:   #198754;
-    --yellow:  #e8a000;
-    --code-bg: #f0f4ff;
+    --emerald: #34d399;
+    --emerald-ink: #047857;
+    --yellow:  #e0a42a;
+    --red:     #dd4f58;
+    --f-ui:   'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, 'Courier New', monospace;
     --sidebar-w: 290px;
   }
 
@@ -25,11 +38,11 @@
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: var(--f-ui);
     font-size: 15px;
     line-height: 1.7;
-    color: var(--text);
-    background: var(--bg);
+    color: var(--ink);
+    background: var(--page);
   }
 
   /* ── Sidebar: mapa del documento ── */
@@ -40,39 +53,41 @@
     width: var(--sidebar-w);
     height: 100vh;
     overflow-y: auto;
-    background: #1e2a3a;
-    color: #c9d3e0;
+    background: var(--slate-2);
+    color: #c7cdd7;
     padding: 22px 0 40px;
     z-index: 20;
   }
   .sidebar::-webkit-scrollbar { width: 8px; }
-  .sidebar::-webkit-scrollbar-thumb { background: #3a4a60; border-radius: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--slate-3); border-radius: 4px; }
 
   .sidebar .sb-brand {
     padding: 0 22px 16px;
-    border-bottom: 1px solid #2f3d51;
+    border-bottom: 1px solid var(--slate-3);
     margin-bottom: 14px;
   }
   .sidebar .sb-brand .name {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #fff;
     letter-spacing: -0.3px;
   }
-  .sidebar .sb-brand .name span { color: var(--orange); }
+  .sidebar .sb-brand .name span { color: var(--accent); }
   .sidebar .sb-brand .tag {
     font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: #7f8ea3;
+    letter-spacing: .14em;
+    color: #8d96a7;
     margin-top: 2px;
   }
 
   .sidebar .sb-heading {
     font-size: 0.68rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: #6c7d94;
+    letter-spacing: .14em;
+    color: #8d96a7;
     padding: 0 22px;
     margin-bottom: 8px;
   }
@@ -81,31 +96,31 @@
 
   .sidebar nav a {
     display: block;
-    color: #c9d3e0;
+    color: #c7cdd7;
     text-decoration: none;
     font-size: 0.9rem;
     padding: 6px 22px 6px 20px;
     border-left: 3px solid transparent;
     transition: background 0.12s, color 0.12s, border-color 0.12s;
   }
-  .sidebar nav a:hover { background: #263447; color: #fff; }
+  .sidebar nav a:hover { background: var(--slate); color: #fff; }
   .sidebar nav a.active {
-    background: #263447;
+    background: var(--slate);
     color: #fff;
-    border-left-color: var(--orange);
+    border-left-color: var(--accent);
     font-weight: 600;
   }
   .sidebar nav .lvl1 > a { font-weight: 600; }
   .sidebar nav .lvl1 > a .n {
     display: inline-block;
     width: 20px;
-    color: var(--blue2);
+    color: #8d96a7;
     font-size: 0.8rem;
   }
-  .sidebar nav .lvl1 > a.active .n { color: var(--orange); }
+  .sidebar nav .lvl1 > a.active .n { color: var(--accent); }
   .sidebar nav ol ol a {
     font-size: 0.83rem;
-    color: #96a5b8;
+    color: #a3abb9;
     padding-left: 42px;
   }
   .sidebar nav ol ol a.active { color: #fff; }
@@ -114,9 +129,9 @@
   .sidebar .sb-footer {
     margin-top: 22px;
     padding: 14px 22px 0;
-    border-top: 1px solid #2f3d51;
+    border-top: 1px solid var(--slate-3);
     font-size: 0.75rem;
-    color: #6c7d94;
+    color: #8d96a7;
   }
 
   /* ── Botón de menú (pantallas angostas) ── */
@@ -126,7 +141,7 @@
     top: 14px;
     left: 14px;
     z-index: 30;
-    background: var(--blue);
+    background: var(--slate);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -134,13 +149,14 @@
     height: 42px;
     font-size: 1.2rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    box-shadow: 0 2px 8px rgba(24, 33, 58, 0.25);
   }
+  .sb-toggle:hover { background: var(--slate-2); }
   .sb-backdrop {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.45);
+    background: rgba(24, 33, 58, 0.45);
     z-index: 19;
   }
 
@@ -155,17 +171,18 @@
 
   /* ── Header ── */
   .site-header {
-    background: linear-gradient(135deg, var(--blue) 0%, var(--blue2) 100%);
+    background: var(--slate);
     color: #fff;
     padding: 48px 32px 36px;
     margin-bottom: 40px;
+    box-shadow: inset 0 -4px 0 var(--accent);
   }
   .site-header .brand {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.5px;
   }
-  .site-header .brand span { color: var(--orange); }
+  .site-header .brand span { color: var(--accent); }
   .site-header .subtitle {
     font-size: 1.05rem;
     opacity: 0.85;
@@ -178,13 +195,15 @@
     flex-wrap: wrap;
   }
   .badge {
-    background: rgba(255,255,255,0.18);
-    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 20px;
     padding: 3px 14px;
     font-size: 0.8rem;
     color: #fff;
   }
+  .site-header a.badge { color: #fff; font-weight: 400; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .site-header a.badge:hover { background: var(--accent); border-color: var(--accent); color: var(--ink) !important; }
 
   /* ── Sections ── */
   section { margin-bottom: 44px; scroll-margin-top: 20px; }
@@ -192,16 +211,27 @@
 
   h1.section-title {
     font-size: 1.45rem;
-    color: var(--blue);
-    border-bottom: 2px solid var(--blue2);
+    font-weight: 600;
+    color: var(--slate);
+    border-bottom: 2px solid var(--line);
     padding-bottom: 8px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
+  }
+  h1.section-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 64px;
+    height: 2px;
+    background: var(--accent);
   }
   h1.section-title .num {
-    background: var(--blue);
+    background: var(--slate);
     color: #fff;
     border-radius: 50%;
     width: 28px;
@@ -215,31 +245,33 @@
 
   h2.sub-title {
     font-size: 1.1rem;
-    color: var(--blue);
+    font-weight: 600;
+    color: var(--slate);
     margin: 26px 0 10px;
   }
 
   h3.step-title {
     font-size: 1rem;
-    color: var(--text);
+    color: var(--ink);
     font-weight: 600;
     margin: 20px 0 8px;
     padding-left: 12px;
-    border-left: 3px solid var(--orange);
+    border-left: 3px solid var(--accent);
   }
 
   p { margin-bottom: 12px; }
 
   /* ── Links del contenido ── */
   .page-wrap a {
-    color: var(--blue2);
+    color: var(--slate);
+    font-weight: 500;
     text-decoration: none;
-    border-bottom: 1px solid rgba(62,146,204,0.4);
+    border-bottom: 1px solid rgba(232, 131, 26, 0.55);
     word-break: break-word;
   }
   .page-wrap a:hover {
-    color: var(--blue);
-    border-bottom-color: var(--blue);
+    color: var(--orange-ink);
+    border-bottom-color: var(--orange);
   }
 
   /* ── Callouts ── */
@@ -253,10 +285,10 @@
     font-size: 0.93rem;
   }
   .callout .icon { font-size: 1.2rem; flex-shrink: 0; line-height: 1.5; }
-  .callout.tip    { background: #e8f4fd; border-left: 4px solid var(--blue2); }
-  .callout.warn   { background: #fff8e1; border-left: 4px solid var(--yellow); }
-  .callout.danger { background: #fdecea; border-left: 4px solid #e53935; }
-  .callout.ok     { background: #e8f5e9; border-left: 4px solid var(--green); }
+  .callout.tip    { background: var(--tint); border-left: 4px solid var(--slate); }
+  .callout.warn   { background: #fff7ee; border-left: 4px solid var(--orange); }
+  .callout.danger { background: #fdeeef; border-left: 4px solid var(--red); }
+  .callout.ok     { background: #ecfdf5; border-left: 4px solid var(--emerald); }
 
   /* ── Tables ── */
   .table-wrap { overflow-x: auto; margin: 16px 0; }
@@ -265,14 +297,15 @@
     border-collapse: collapse;
     font-size: 0.92rem;
     background: var(--white);
-    border-radius: 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 2px rgba(24, 33, 58, 0.05);
   }
-  thead tr { background: var(--blue); color: #fff; }
-  thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px; }
-  tbody tr:nth-child(even) { background: #f7f9fc; }
-  tbody td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead tr { background: var(--slate); color: #fff; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  tbody tr:nth-child(even) { background: #f8f9fb; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
   tbody tr:last-child td { border-bottom: none; }
 
   /* ── Steps list ── */
@@ -293,56 +326,59 @@
     position: absolute;
     left: 0;
     top: 2px;
-    background: var(--blue2);
+    background: var(--slate);
     color: #fff;
     border-radius: 50%;
     width: 24px;
     height: 24px;
     font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 24px;
     text-align: center;
+    box-shadow: inset 0 -2px 0 var(--accent);
   }
 
   /* ── Bullets ── */
   ul.bullet { padding-left: 22px; margin: 10px 0; }
   ul.bullet li { margin: 5px 0; }
+  ul.bullet li::marker { color: var(--orange); }
 
   /* ── Code / path ── */
   code {
-    background: var(--code-bg);
-    color: #2c4685;
+    background: var(--tint);
+    color: var(--slate);
     padding: 2px 6px;
     border-radius: 4px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.88em;
+    font-family: var(--f-mono);
+    font-size: 0.86em;
   }
   kbd {
     background: #fff;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-bottom-width: 2px;
     border-radius: 4px;
     padding: 1px 6px;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--f-mono);
     font-size: 0.85em;
+    color: var(--ink);
   }
   pre {
-    background: #1e2a3a;
-    color: #cdd6f4;
+    background: var(--slate-2);
+    color: #d9dee7;
     padding: 16px 20px;
     border-radius: 8px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.88rem;
+    font-family: var(--f-mono);
+    font-size: 0.86rem;
     overflow-x: auto;
     margin: 14px 0;
     line-height: 1.6;
   }
-  pre .comment { color: #6c8993; }
-  pre .path    { color: #89dceb; }
-  pre .label   { color: #a6e3a1; }
+  pre .comment { color: #8d96a7; }
+  pre .path    { color: #f6b26b; }
+  pre .label   { color: #6ee7b7; }
   pre .pin {
-    background: var(--green);
-    color: #fff;
+    background: var(--accent);
+    color: var(--ink);
     font-weight: 600;
     padding: 1px 9px;
     border-radius: 12px;
@@ -357,8 +393,8 @@
     border-radius: 50%;
     margin-right: 6px;
   }
-  .dot-green  { background: #4caf50; }
-  .dot-yellow { background: #ffa000; }
+  .dot-green  { background: #2f9e6a; }
+  .dot-yellow { background: var(--yellow); }
 
   /* ── Search mode cards ── */
   .mode-cards {
@@ -369,19 +405,21 @@
   }
   .mode-card {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-top: 4px solid var(--blue2);
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--slate);
+    border-radius: 10px;
     padding: 18px 20px;
+    box-shadow: 0 1px 2px rgba(24, 33, 58, 0.05);
   }
   .mode-card h3 {
     font-size: 0.95rem;
-    color: var(--blue);
+    font-weight: 600;
+    color: var(--slate);
     margin-bottom: 8px;
   }
   .mode-card p {
     font-size: 0.88rem;
-    color: var(--muted);
+    color: var(--mute);
     margin: 0;
   }
 
@@ -394,45 +432,45 @@
   }
   .export-card {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
     padding: 16px 18px;
   }
   .export-card .label {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.95rem;
     margin-bottom: 4px;
   }
-  .export-card .label.csv   { color: var(--green); }
-  .export-card .label.fasta { color: var(--blue2); }
-  .export-card p { font-size: 0.88rem; color: var(--muted); margin: 0; }
+  .export-card .label.csv   { color: var(--emerald-ink); }
+  .export-card .label.fasta { color: var(--emerald-ink); }
+  .export-card p { font-size: 0.88rem; color: var(--mute); margin: 0; }
 
   /* ── FAQ ── */
   .faq-item {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
     padding: 16px 20px;
     margin-bottom: 12px;
   }
   .faq-item .q {
     font-weight: 600;
-    color: var(--blue);
+    color: var(--slate);
     margin-bottom: 6px;
     font-size: 0.97rem;
   }
   .faq-item .a {
     font-size: 0.92rem;
-    color: var(--text);
+    color: var(--ink);
   }
 
   /* ── Footer ── */
   .site-footer {
     text-align: center;
-    color: var(--muted);
+    color: var(--mute);
     font-size: 0.82rem;
     padding: 24px 0 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
     margin-top: 50px;
   }
 
@@ -443,11 +481,14 @@
     .sidebar {
       transform: translateX(-100%);
       transition: transform 0.2s ease;
-      box-shadow: 4px 0 18px rgba(0,0,0,0.3);
+      box-shadow: 4px 0 18px rgba(24, 33, 58, 0.3);
     }
     body.sb-open .sidebar    { transform: translateX(0); }
     body.sb-open .sb-backdrop { display: block; }
     .site-header { padding-left: 70px; }
+  }
+  @media (max-width: 640px) {
+    .export-cards { grid-template-columns: 1fr; }
   }
 
   /* ── Print ── */
@@ -455,7 +496,7 @@
     body { background: #fff; font-size: 13px; }
     .sidebar, .sb-toggle, .sb-backdrop { display: none !important; }
     .main { margin-left: 0; }
-    .site-header { background: var(--blue) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .site-header, thead tr, h1.section-title .num, .steps li::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .callout, .mode-card, .faq-item, .export-card { break-inside: avoid; }
     section { break-inside: avoid; }
     h1.section-title, h2.sub-title, h3.step-title { break-after: avoid; }
@@ -480,11 +521,12 @@
   <nav id="docMap">
     <ol>
       <li class="sb-group lvl1"><a href="#que-es"><span class="n">1</span>¿Para qué sirve?</a></li>
-      <li class="sb-group lvl1"><a href="#requisitos"><span class="n">2</span>Requisitos previos</a></li>
+      <li class="sb-group lvl1"><a href="#requisitos"><span class="n">2</span>Instalación</a></li>
       <li class="sb-group lvl1"><a href="#carpetas"><span class="n">3</span>Estructura de carpetas</a></li>
       <li class="sb-group lvl1">
         <a href="#parte1"><span class="n">4</span>Construir la base de datos</a>
         <ol>
+          <li><a href="#inicio">La pantalla Inicio</a></li>
           <li><a href="#paso0">Descargar el archivo de BOLD</a></li>
           <li><a href="#campos-panel">Elegir los campos (opcional)</a></li>
           <li><a href="#opcionA">Ejecutar todos los pasos de golpe</a></li>
@@ -504,11 +546,26 @@
           <li><a href="#busqueda-batch">Lote en BOLD local</a></li>
           <li><a href="#busqueda-genbank">Lote en GenBank</a></li>
           <li><a href="#tabla">Trabajar con la tabla</a></li>
+          <li><a href="#seleccion">Seleccionar registros</a></li>
           <li><a href="#exportar">Exportar resultados</a></li>
         </ol>
       </li>
-      <li class="sb-group lvl1"><a href="#campos"><span class="n">6</span>Campos disponibles</a></li>
-      <li class="sb-group lvl1"><a href="#faq"><span class="n">7</span>Preguntas frecuentes</a></li>
+      <li class="sb-group lvl1">
+        <a href="#analisis"><span class="n">6</span>Análisis de secuencias</a>
+        <ol>
+          <li><a href="#an-entrada">Entrada y opciones</a></li>
+          <li><a href="#an-resumen">Resumen de resultados</a></li>
+          <li><a href="#an-calidad">Composición y calidad</a></li>
+          <li><a href="#an-haplotipos">Haplotipos</a></li>
+          <li><a href="#an-concordancia">Especies y BINs</a></li>
+          <li><a href="#an-distancias">Distancias y barcode gap</a></li>
+          <li><a href="#an-arbol">Árbol NJ</a></li>
+          <li><a href="#an-descargas">Descargas y límites</a></li>
+          <li><a href="#an-ejemplo">Ejemplo completo</a></li>
+        </ol>
+      </li>
+      <li class="sb-group lvl1"><a href="#campos"><span class="n">7</span>Campos disponibles</a></li>
+      <li class="sb-group lvl1"><a href="#faq"><span class="n">8</span>Preguntas frecuentes</a></li>
     </ol>
   </nav>
 
@@ -524,9 +581,8 @@
     <div class="brand">BOLD <span>DB</span></div>
     <div class="subtitle">Instrucciones de instalación y uso — Base de datos local de BOLD</div>
     <div class="badge-row">
-      <span class="badge">Windows</span>
-      <span class="badge">Python 3.10+</span>
-      <a href="user_guide.html" class="badge" style="color:#fff;text-decoration:none;border-bottom:none;cursor:pointer;">🌐 English version</a>
+      <span class="badge">Windows · macOS · Linux</span>
+      <a href="user_guide.html" class="badge" style="text-decoration:none;border-bottom:none;cursor:pointer;">🌐 English version</a>
     </div>
   </div>
 </header>
@@ -541,20 +597,20 @@
       y los convierte en una base de datos local que puedes consultar desde tu navegador,
       <strong>sin necesidad de internet</strong> una vez instalada.
     </p>
-    <p>Son dos programas, y se usan en ese orden:</p>
+    <p>Tiene dos partes, y se usan en ese orden:</p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Programa</th><th>Para qué sirve</th><th>Cómo se abre</th></tr></thead>
+        <thead><tr><th>Parte</th><th>Para qué sirve</th><th>Cómo se abre</th></tr></thead>
         <tbody>
           <tr>
-            <td><strong>BOLD DB Creator</strong></td>
-            <td>Procesa el archivo descargado de BOLD y construye la base de datos</td>
-            <td>Acceso directo <code>1_Crear_base_de_datos</code><br><span style="color:var(--muted);font-size:0.85em;">(equivale a <code>dev/bold_db_creator.bat</code>)</span></td>
+            <td><strong>BOLD-Local-DB</strong></td>
+            <td>Procesa el archivo descargado de BOLD y construye o actualiza la base de datos</td>
+            <td>Acceso directo <code>BOLD-Local-DB</code>, o <code>Start BOLD-Local-DB</code> en la carpeta del programa</td>
           </tr>
           <tr>
-            <td><strong>Visor web BOLD DB</strong></td>
-            <td>Permite buscar y exportar registros una vez que la base está construida</td>
-            <td>Acceso directo <code>2_Abrir_visor_web_BD_BOLD</code><br><span style="color:var(--muted);font-size:0.85em;">(equivale a <code>dev/launch_bold_db.bat</code>)</span></td>
+            <td><strong>Visor web</strong></td>
+            <td>Permite buscar, analizar y exportar registros una vez que la base está construida</td>
+            <td>Acceso directo <code>Visor BOLD-Local-DB</code>, o el botón <em>Abrir el visor</em> en Inicio</td>
           </tr>
         </tbody>
       </table>
@@ -562,31 +618,47 @@
     <div class="callout tip">
       <span class="icon">ℹ️</span>
       <div>
-        Los dos accesos directos están en la carpeta principal <code>BOLD_DB/</code>. Si copias el proyecto a otro
-        equipo o a otra unidad y los accesos dejan de funcionar, ejecuta una vez
-        <code>Reparar_accesos.bat</code>: los regenera apuntando a la ubicación actual.
+        Los accesos directos se crean desde la pantalla <strong>Inicio</strong> (en el escritorio, en el menú o en
+        ambos). Si mueves la carpeta del programa a otro disco, se rehacen solos la próxima vez que lo abras.
       </div>
     </div>
   </section>
 
-  <!-- 2. REQUISITOS -->
+  <!-- 2. INSTALACIÓN -->
   <section id="requisitos">
-    <h1 class="section-title"><span class="num">2</span> Requisitos previos</h1>
-    <p>Solo necesitas tener instalado:</p>
+    <h1 class="section-title"><span class="num">2</span> Instalación</h1>
+    <ol class="steps">
+      <li>Descarga el zip de tu sistema desde la página de <strong>Releases</strong> del proyecto en GitHub
+          (<code>BOLD-Local-DB-windows.zip</code>, <code>-macos.zip</code> o <code>-linux.zip</code>) y descomprímelo
+          donde quieras.</li>
+      <li>Abre <strong>Start BOLD-Local-DB</strong> dentro de la carpeta descomprimida (<code>.bat</code> en Windows,
+          <code>.command</code> en macOS, <code>.sh</code> en Linux).</li>
+      <li>La primera vez descarga su propio Python y los componentes que necesita (unos 150 MB, solo una vez).
+          Después se abre el programa y te ofrece crear los accesos directos.</li>
+    </ol>
+    <p>No hace falta instalar Python ni nada más: todo queda dentro de la carpeta del programa.
+       Necesitas además:</p>
     <ul class="bullet">
-      <li>
-        <strong>Python 3.10 o superior</strong> — descárgalo desde
-        <strong>python.org</strong>. Durante la instalación marca la opción
-        <em>"Add Python to PATH"</em>.
-      </li>
       <li><strong>Espacio en disco:</strong> al menos <strong>80 GB libres</strong> (ver preguntas frecuentes).</li>
+      <li><strong>Internet</strong> la primera vez que abres el programa, para descargar BOLD y para el Lote en GenBank.</li>
     </ul>
     <div class="callout tip">
       <span class="icon">ℹ️</span>
       <div>
-        Las librerías necesarias se instalan <strong>automáticamente</strong> la primera vez que ejecutas cada
-        programa: <code>PySide6</code> para el Constructor, y <code>Flask</code> y <code>psutil</code> para el visor web.
-        Solo necesitas conexión a internet en ese primer arranque.
+        <strong>macOS:</strong> la primera vez, macOS bloquea el archivo descargado. Haz clic derecho sobre
+        <code>Start BOLD-Local-DB.command</code> → <em>Abrir</em> → <em>Abrir</em>. Solo una vez.<br>
+        <strong>Linux:</strong> si al hacer doble clic el <code>.sh</code> se abre en un editor de texto, permite
+        ejecutar archivos en tu gestor de archivos o ábrelo desde una terminal.
+      </div>
+    </div>
+    <div class="callout ok">
+      <span class="icon">✅</span>
+      <div>
+        <strong>Actualizar el programa:</strong> cuando hay una versión nueva, la pantalla Inicio lo avisa. El botón
+        <em>Actualizar</em> la descarga y reinicia el programa con ella; tu base de datos y tus archivos no se tocan.
+        Si la versión nueva no arrancara, se vuelve sola a la anterior.<br>
+        <strong>Desinstalar:</strong> el botón <em>Desinstalar…</em> de Inicio quita los accesos directos y abre la
+        carpeta para que la borres. Fuera de esa carpeta no queda nada.
       </div>
     </div>
   </section>
@@ -594,29 +666,25 @@
   <!-- 3. CARPETAS -->
   <section id="carpetas">
     <h1 class="section-title"><span class="num">3</span> Estructura de carpetas</h1>
-    <p>Cuando abras la carpeta del proyecto verás esta organización:</p>
-<pre><span class="path">BOLD_DB/</span>
-├── <span class="label">1_Crear_base_de_datos</span>       <span class="comment">← acceso directo al Constructor</span>
-├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← acceso directo al visor web</span>
-├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenera los accesos si mueves la carpeta</span>
-├── <span class="path">data/</span>
-│   ├── <span class="path">raw/</span>          <span class="pin">← el Constructor guarda aquí el .tar.gz que arrastres o selecciones; se crea sola</span>
-│   ├── <span class="path">processed/</span>    <span class="comment">← archivos intermedios (TSV filtrado); se crea sola</span>
-│   └── <span class="path">exports/</span>      <span class="comment">← copia de todo lo que exportas; se crea sola</span>
-├── <span class="path">dev/</span>
-│   ├── <span class="label">bold_db_creator.bat</span>
-│   └── <span class="label">launch_bold_db.bat</span>
+    <p>Cuando abras la carpeta del programa verás esta organización:</p>
+<pre><span class="path">BOLD-Local-DB/</span>
+├── <span class="label">Start BOLD-Local-DB</span>         <span class="comment">← lo único que tienes que abrir</span>
 ├── <span class="path">guide/</span>            <span class="comment">← esta guía</span>
-└── <span class="path">app/</span>              <span class="comment">← se crea sola: base de datos, servidor web y registros</span>
-    ├── <span class="label">bold_db.db</span>    <span class="comment">← la base de datos terminada</span>
-    └── <span class="path">logs/</span>         <span class="comment">← historial de cada ejecución del Constructor</span></pre>
+└── <span class="path">data/</span>             <span class="comment">← todo lo tuyo; las actualizaciones no lo tocan</span>
+    ├── <span class="path">raw/</span>          <span class="pin">← el .tar.gz de BOLD que arrastres o selecciones</span>
+    ├── <span class="path">processed/</span>    <span class="comment">← archivos intermedios (TSV filtrado)</span>
+    ├── <span class="path">exports/</span>      <span class="comment">← copia de todo lo que exportas</span>
+    ├── <span class="path">database/</span>     <span class="comment">← bold_db.db, la base de datos terminada</span>
+    └── <span class="path">state/</span>        <span class="comment">← ajustes, selección de campos y registros (logs/)</span></pre>
+    <p>Hay además dos carpetas ocultas: <code>.program/</code>, con el programa (la sustituyen las actualizaciones),
+       y <code>.runtime/</code>, con el Python y los componentes que descarga el lanzador. Si borras
+       <code>.runtime/</code>, se vuelve a descargar la próxima vez.</p>
     <div class="callout ok">
       <span class="icon">✅</span>
       <div>
-        <strong>No tienes que crear ninguna carpeta a mano.</strong> Al igual que <code>app/</code>, toda la
-        carpeta <code>data/</code> (<code>raw/</code>, <code>processed/</code> y <code>exports/</code>) se genera
-        automáticamente cada vez que abres el Constructor, aunque partas de una copia recién descargada de GitHub
-        sin ninguna de estas carpetas.
+        <strong>No tienes que crear ninguna carpeta a mano.</strong> Toda la carpeta <code>data/</code> se genera
+        automáticamente al abrir el programa. Si vienes de la versión 1.2.0 o anterior, el programa mueve solo
+        la base de datos y los ajustes de la antigua carpeta <code>app/</code> a <code>data/</code>.
       </div>
     </div>
   </section>
@@ -627,11 +695,41 @@
     <p>Solo necesitas hacer esto <strong>una vez</strong>. Cuando BOLD publique una versión nueva puedes actualizar
        la base en lugar de reconstruirla (ver <a href="#reanudar">Reanudar y actualizar</a>).</p>
 
+    <!-- Inicio -->
+    <h2 class="sub-title" id="inicio">La pantalla Inicio</h2>
+    <p>Es lo primero que ves al abrir BOLD-Local-DB. Reúne todo lo necesario para crear, actualizar y abrir la base;
+       la barra lateral da acceso además al panel <a href="#campos-panel">Campos</a> y a los pasos individuales.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Elemento</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Zona de arrastre</strong></td><td>Arrastra aquí el <code>.tar.gz</code> de BOLD (o pulsa <em>Examinar</em>): se copia a <code>data/raw/</code>.</td></tr>
+          <tr><td><strong>Opción 1 · Crear la base de datos</strong></td><td>Pasos 1 a 3. Es lo que necesita la mayoría. Cuando la base ya existe, el botón pasa a llamarse <em>Rehacer la base de datos</em>.</td></tr>
+          <tr><td><strong>Opción 2 · Crear la base de datos completa</strong></td><td>Pasos 1 a 4: añade la búsqueda por texto libre.</td></tr>
+          <tr><td><strong>Opción 3 · Actualizar la base de datos</strong></td><td>Aplica solo lo que cambió en un paquete nuevo de BOLD. Muestra la RAM del equipo y el tamaño de la base para que decidas si conviene (ver <a href="#reanudar">Reanudar y actualizar</a>).</td></tr>
+          <tr><td><strong>Estado</strong></td><td>Versión de datos cargada (fecha del paquete) y si cada paso está hecho: <em>1. Preparar datos</em>, <em>2. Base de datos</em> (con el número de registros), <em>3. Búsquedas aceleradas</em> y <em>4. Texto libre</em>.</td></tr>
+          <tr><td><strong>Abrir el visor</strong></td><td>Arranca el visor web y lo abre en el navegador. Solo se habilita cuando hay base de datos.</td></tr>
+          <tr><td><strong>Manual de uso</strong></td><td>Abre esta guía.</td></tr>
+          <tr><td><strong>Descargar datos de BOLD</strong></td><td>Abre en el navegador la página de descarga del paquete público de BOLD.</td></tr>
+          <tr><td><strong>Abrir carpeta data/raw</strong></td><td>Abre la carpeta donde debe estar el <code>.tar.gz</code>.</td></tr>
+          <tr><td><strong>Liberar espacio</strong></td><td>Borra los archivos de trabajo del Paso 1 (TSV, y el <code>.tar.gz</code> si lo conservaste) e indica cuánto ocupan. La base de datos no se toca, pero para reconstruirla tendrías que volver a descargar el paquete. Solo se habilita cuando la base ya está construida.</td></tr>
+          <tr><td><strong>📁 Carpeta de exportaciones</strong></td><td>Abre <code>data/exports/</code>, donde se guarda una copia de todo lo que exporta el visor.</td></tr>
+          <tr><td><strong>Accesos directos</strong></td><td>Marca <em>Escritorio</em> y/o <em>Menú</em> (Menú Inicio en Windows, Aplicaciones/Launchpad en macOS, menú de aplicaciones en Linux) y pulsa <em>Crear accesos directos</em>. Crea «BOLD-Local-DB» y «Visor BOLD-Local-DB». <em>Volver a crear</em> los rehace y <em>Quitar</em> borra exactamente los que se crearon.</td></tr>
+          <tr><td><strong>Aviso de versión nueva</strong></td><td>Cuando hay una versión nueva del programa: <em>Ver cambios</em> abre las notas, <em>Actualizar</em> la descarga y <em>Reiniciar ahora</em> la instala.</td></tr>
+          <tr><td><strong>Desinstalar…</strong></td><td>Quita los accesos directos y abre la carpeta del programa para que la borres.</td></tr>
+          <tr><td><strong>Idioma</strong></td><td>Español o inglés. Se aplica al reiniciar el programa.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Debajo de cada pantalla está el panel <strong>Log</strong>, con lo que va ocurriendo. <em>Ver estado</em> vuelve
+       a escribir en qué punto está el proyecto (qué pasos faltan y qué hacer a continuación) y <em>Limpiar</em> vacía el
+       panel sin afectar a los archivos.</p>
+
     <!-- Paso 0 -->
     <h2 class="sub-title" id="paso0">Descargar el archivo de BOLD</h2>
     <ol class="steps">
       <li>Desde <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> descarga el archivo completo de datos (se requiere de una cuenta en BOLD). Tendrá un nombre similar a <code>BOLD_Public.DIA-MES-AÑO.tar.gz</code>. Puedes dejarlo donde sea (por ejemplo, tu carpeta de Descargas).</li>
-      <li>Abre el Constructor (acceso directo <code>1_Crear_base_de_datos</code>) y, en la barra lateral, entra en
+      <li>Abre BOLD-Local-DB (acceso directo <code>BOLD-Local-DB</code>) y, en la barra lateral, entra en
           <strong>«1. Preparar datos»</strong> (sección PASOS INDIVIDUALES).</li>
       <li><strong>Arrastra</strong> el archivo <code>.tar.gz</code> sobre el recuadro que aparece ahí — o pulsa
           <strong>«Examinar»</strong> y selecciónalo. El Constructor lo <strong>copia</strong> automáticamente a
@@ -690,7 +788,7 @@
           campos por los que realmente vayas a buscar (crea un índice en el Paso 3 y los incluye en la búsqueda
           de texto completo del Paso 4). Déjala apagada en campos que solo quieres ver o exportar — cada índice
           cuesta espacio en disco.</li>
-      <li>Pulsa <strong>"Guardar selección"</strong> para escribirla en <code>dev/fields_config.json</code>.</li>
+      <li>Pulsa <strong>"Guardar selección"</strong> para escribirla en <code>data/state/fields_config.json</code>.</li>
     </ol>
     <div class="table-wrap">
       <table>
@@ -728,7 +826,7 @@
     <!-- Opción A -->
     <h2 class="sub-title" id="opcionA">Opción A — Ejecutar todos los pasos al tiempo <em>(recomendado)</em></h2>
     <ol class="steps">
-      <li>Haz doble clic en el acceso directo <strong>1_Crear_base_de_datos</strong>. Se abrirá el Constructor en la pantalla de <strong>Inicio</strong>.</li>
+      <li>Haz doble clic en el acceso directo <strong>BOLD-Local-DB</strong> (o en <strong>Start BOLD-Local-DB</strong>). Se abrirá el programa en la pantalla de <strong>Inicio</strong>.</li>
       <li>Haz clic en <strong>«Crear la base de datos»</strong>, bajo la <strong>Opción 1</strong>.</li>
       <li>Confirma en el diálogo que aparece.</li>
       <li>Espera a que finalice. El proceso puede tardar <strong>varias horas</strong> dependiendo del tamaño del archivo y la velocidad de tu computadora.</li>
@@ -747,7 +845,21 @@
 
     <!-- Opción B -->
     <h2 class="sub-title" id="opcionB">Opción B — Ejecutar los pasos uno a uno</h2>
-    <p>Útil si necesitas retomar desde un punto específico o quieres ver el detalle de cada etapa.</p>
+    <p>Útil si necesitas retomar desde un punto específico o quieres ver el detalle de cada etapa. Cada paso tiene su
+       panel en la barra lateral (sección <strong>PASOS INDIVIDUALES</strong>) con los mismos controles:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>OBLIGATORIO / RECOMENDADO / OPCIONAL</strong></td><td>Etiqueta del paso: sin los obligatorios (1 y 2) no hay base; sin el recomendado (3) el visor va lento; el opcional (4) solo hace falta para la búsqueda de texto completo.</td></tr>
+          <tr><td><strong>Ejecutar este paso</strong></td><td>Ejecuta solo ese paso.</td></tr>
+          <tr><td><strong>Detener</strong></td><td>Interrumpe el paso y descarta lo que llevaba hecho. No se pierde nada de lo ya guardado.</td></tr>
+          <tr><td><strong>Abrir carpeta de entrada</strong></td><td>Abre la carpeta donde el paso busca sus archivos.</td></tr>
+          <tr><td><strong>⚙ Opciones avanzadas</strong> (Paso 2)</td><td><em>Registros por lote</em>: cuántos registros se escriben de una vez. Más alto, algo más rápido y más RAM; más bajo, más lento pero seguro en equipos con poca memoria. Si no sabes qué poner, deja el valor por defecto.</td></tr>
+          <tr><td><strong>Conservar el .tar.gz al terminar</strong> (Paso 1)</td><td>Ver <a href="#paso0">Descargar el archivo de BOLD</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3 class="step-title">Paso 1 — Preparar datos <em>(obligatorio)</em></h3>
     <p>Descomprime el archivo <code>.tar.gz</code> y extrae solo las columnas marcadas en el panel
@@ -762,6 +874,9 @@
           intacta donde estaba.</li>
       <li>Antes de filtrar, el programa <strong>verifica</strong> que los campos configurados existan en la
           cabecera real del archivo descargado — ver <a href="#campos-panel">panel Campos</a>.</li>
+      <li>Al terminar resume cuántas filas tenía el paquete, cuántas se guardan (las que tienen secuencia) y cuántas
+          se descartan por no tenerla. Si alguna línea del paquete está rota (le faltan columnas) y no se pudo leer,
+          también lo indica.</li>
     </ul>
 
     <h3 class="step-title">Paso 2 — Construir base de datos <em>(obligatorio)</em></h3>
@@ -769,10 +884,28 @@
     <ul class="bullet">
       <li>Selecciona <strong>«2. Construir base de datos»</strong> → clic en <strong>Ejecutar</strong>.</li>
       <li>Duración aproximada: <strong>10–20 minutos</strong>.</li>
-      <li>Resultado: el archivo <code>app/bold_db.db</code>.</li>
-      <li>Si un <code>processid</code> aparece más de una vez, solo se conserva el primer registro; el registro de
-          actividad indica cuántos se omitieron.</li>
+      <li>Resultado: el archivo <code>data/database/bold_db.db</code>.</li>
+      <li>Cada fila del paquete de BOLD es una <strong>secuencia</strong>, no un espécimen: un espécimen secuenciado
+          para varios marcadores (p. ej. COI-5P y 16S, o matK y rbcLa) tiene una fila por marcador con el mismo
+          <code>processid</code>. Se guardan todas, y el registro de actividad indica cuántas son secuencias
+          adicionales de especímenes con más de un marcador.</li>
+      <li>Al terminar, el paso <strong>comprueba</strong> que se hayan guardado todas las filas que dejó el Paso 1. Si
+          no cuadran, la base nueva se descarta y la actual queda intacta.</li>
+      <li>La base nueva se construye aparte (<code>bold_db.db.building</code>) y solo sustituye a la actual al
+          terminar los pasos, así que el visor puede seguir usando la anterior mientras tanto. Por eso hace falta
+          temporalmente tanto espacio libre como el que ocupa la base actual; el paso avisa si el disco parece
+          pequeño.</li>
     </ul>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Bases creadas con versiones anteriores.</strong> Hasta ahora el programa guardaba una sola secuencia por
+        espécimen y dejaba fuera unas 400.000 secuencias de otros marcadores. Si tu base es de esa época, el
+        Constructor te avisa: el visor sigue funcionando, pero conviene <strong>reconstruirla</strong> (Opción 1 o 2)
+        para tenerlas todas, y la actualización (Opción 3) no la acepta hasta entonces. El <code>.filt.tsv</code>
+        actual sirve: no hace falta repetir el Paso 1.
+      </div>
+    </div>
 
     <h3 class="step-title">Paso 3 — Acelerar búsquedas <em>(recomendado)</em></h3>
     <p>Crea índices para que las búsquedas sean rápidas. Sin este paso la base funciona, pero cada consulta puede tardar minutos en vez de segundos.</p>
@@ -810,12 +943,16 @@
         <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
         <tbody>
           <tr>
-            <td><span class="status-dot dot-green"></span> <strong>Entrada disponible</strong></td>
+            <td><span class="status-dot dot-green"></span> <strong>Todo listo para ejecutar este paso</strong></td>
             <td>Los archivos necesarios para este paso están listos.</td>
           </tr>
           <tr>
-            <td><span class="status-dot dot-yellow"></span> <strong>Entrada no encontrada</strong></td>
-            <td>Debes completar el paso anterior primero.</td>
+            <td><span class="status-dot dot-green"></span> <strong>Este paso ya está hecho</strong></td>
+            <td>No hace falta repetirlo, salvo que descargues datos nuevos.</td>
+          </tr>
+          <tr>
+            <td><span class="status-dot dot-yellow"></span> <strong>Falta el archivo de BOLD / Faltan los datos preparados / Falta la base de datos</strong></td>
+            <td>Debes completar antes el paso indicado (o poner el <code>.tar.gz</code> en <code>data/raw/</code>).</td>
           </tr>
         </tbody>
       </table>
@@ -872,8 +1009,8 @@
       <table>
         <thead><tr><th>Archivo</th><th>Contenido</th></tr></thead>
         <tbody>
-          <tr><td><code>app/logs/run_AAAA-MM-DD_HH-MM-SS.log</code></td><td>Todo lo que apareció en el panel de salida durante esa sesión. Se conservan los 100 más recientes.</td></tr>
-          <tr><td><code>app/logs/error.log</code></td><td>Detalle técnico de los errores. Es el archivo que hay que revisar cuando algo falla.</td></tr>
+          <tr><td><code>data/state/logs/run_AAAA-MM-DD_HH-MM-SS.log</code></td><td>Todo lo que apareció en el panel de salida durante esa sesión. Se conservan los 100 más recientes.</td></tr>
+          <tr><td><code>data/state/logs/error.log</code></td><td>Detalle técnico de los errores. Es el archivo que hay que revisar cuando algo falla.</td></tr>
         </tbody>
       </table>
     </div>
@@ -884,7 +1021,7 @@
     <h1 class="section-title"><span class="num">5</span> Consultar la base de datos</h1>
 
     <h2 class="sub-title" id="abrir">Abrir la base de datos</h2>
-    <p>Haz doble clic en el acceso directo <strong>2_Abrir_visor_web_BD_BOLD</strong> (o pulsa <strong>«Abrir el visor»</strong> en la pantalla de Inicio del Constructor). Se abrirá una ventana de terminal y, en cuanto el servidor esté listo, el navegador en <code>http://127.0.0.1:5001</code>. Si el visor ya está en marcha, el acceso directo solo vuelve a abrirlo en el navegador.</p>
+    <p>Haz doble clic en el acceso directo <strong>Visor BOLD-Local-DB</strong> (o pulsa <strong>«Abrir el visor»</strong> en la pantalla de Inicio del Constructor). Se abrirá una ventana de terminal y, en cuanto el servidor esté listo, el navegador en <code>http://127.0.0.1:5001</code>. Si el visor ya está en marcha, el acceso directo solo vuelve a abrirlo en el navegador.</p>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>La ventana de terminal debe <strong>permanecer abierta</strong> mientras uses la base de datos. Si la cierras, el navegador dejará de funcionar y verás el aviso <em>"SIN CONEXIÓN AL SERVIDOR"</em>.</div>
@@ -897,7 +1034,13 @@
     </div>
     <p>
       Arriba a la derecha de la página aparece la <strong>versión de BOLD</strong> cargada, y junto al título el
-      <strong>número total de registros</strong> de la base.
+      <strong>número total de registros</strong> de la base. Si el paquete de BOLD con el que se construyó tiene más
+      de un mes, junto a la fecha aparece una etiqueta amarilla (<em>«hace 50 días»</em>): es un recordatorio de que
+      BOLD ya ha publicado versiones más recientes y puedes <a href="#reanudar">actualizar la base</a>.
+    </p>
+    <p>
+      La pestaña <strong>Análisis de secuencias</strong>, a la derecha de los modos de búsqueda, se explica en su
+      propia sección: <a href="#analisis">Análisis de secuencias</a>.
     </p>
 
     <!-- Modos -->
@@ -918,6 +1061,10 @@
       <div class="mode-card">
         <h3>🧬 Lote en GenBank</h3>
         <p>Busca una lista de términos en NCBI GenBank, en línea. Conteos, metadatos y secuencias por término.</p>
+      </div>
+      <div class="mode-card">
+        <h3>📊 Análisis de secuencias</h3>
+        <p>No es una búsqueda: analiza las secuencias de una búsqueda, de los registros marcados o de un FASTA. Ver <a href="#analisis">sección 6</a>.</p>
       </div>
     </div>
 
@@ -948,8 +1095,12 @@
     <div class="callout tip">
       <span class="icon">ℹ️</span>
       <div>
-        Las condiciones se evalúan <strong>en orden, de arriba hacia abajo</strong>, sin paréntesis. Si necesitas
-        agrupar, divide la consulta en dos búsquedas o usa el modo Batch.
+        No hay paréntesis: como en SQL, <strong>AND y NOT se aplican antes que OR</strong>. Así,
+        <em>Especie = Panthera leo</em> OR <em>Especie = Panthera onca</em> AND <em>País = Brazil</em> devuelve
+        <strong>todos</strong> los leones (de cualquier país) más los jaguares de Brasil. Para limitar las dos especies a
+        Brasil, repite la condición en cada rama: <em>Especie = Panthera leo</em> AND <em>País = Brazil</em> OR
+        <em>Especie = Panthera onca</em> AND <em>País = Brazil</em>. Para listas largas, usa el
+        <a href="#busqueda-batch">Lote en BOLD local</a> con un segundo campo de filtro.
       </div>
     </div>
 
@@ -971,7 +1122,7 @@
     </div>
 
     <h3 class="step-title">Autocompletar</h3>
-    <p>A partir del <strong>tercer carácter</strong> que escribes aparecen hasta <strong>10 sugerencias</strong> de valores que existen realmente en la base, tomadas de los campos taxonómicos, marcador, país, estado, región e identificación.</p>
+    <p>A partir del <strong>tercer carácter</strong> que escribes aparecen hasta <strong>10 sugerencias</strong> de valores que existen realmente en la base, tomadas de los campos taxonómicos, marcador, país, estado, región e identificación. Primero salen los valores que <strong>empiezan</strong> por lo que escribiste y, entre ellos, los más frecuentes en la base: con <code>Colom</code> aparece <em>Colombia</em> antes que nombres raros que solo lo contienen, como <em>Scolomys</em>.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
@@ -1309,11 +1460,13 @@
       <table>
         <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
         <tbody>
-          <tr><td><strong>Clic en una celda</strong></td><td>Expande la celda para ver el contenido completo (útil en secuencias largas)</td></tr>
-          <tr><td><strong>Doble clic en una celda</strong></td><td>Copia su contenido al portapapeles; aparece el aviso <em>"Copiado"</em></td></tr>
+          <tr><td><strong>Clic en una fila</strong></td><td>Abre la <strong>ficha del registro</strong> en un panel lateral (ver abajo)</td></tr>
+          <tr><td><strong>Doble clic en una celda</strong></td><td>Copia su contenido al portapapeles; aparece el aviso <em>"Copiado"</em>. En la columna de secuencia copia la secuencia completa</td></tr>
+          <tr><td><strong>Columna Secuencia</strong></td><td>Muestra una barra de colores con la secuencia en miniatura (A verde, C azul, G amarillo, T rojo, gris para N y ambigüedades); al pasar el ratón indica su longitud en pb. Así se ven de un vistazo secuencias cortas o con muchas N</td></tr>
+          <tr><td><strong>Borde de una cabecera</strong></td><td>Arrastra el borde derecho de la cabecera de una columna para cambiar su ancho</td></tr>
           <tr><td><strong>⠿ Orden de columnas ▼</strong></td><td>Arrastra los nombres para reordenar las columnas. <em>↺ Restablecer</em> vuelve al orden original</td></tr>
           <tr><td><strong>Mostrar/ocultar columnas ▼</strong></td><td>Muestra u oculta columnas de la tabla. Tu selección se recuerda para la próxima vez</td></tr>
-          <tr><td><strong>Expandir filas</strong></td><td>Muestra a la vez el contenido completo de todas las celdas</td></tr>
+          <tr><td><strong>Expandir filas</strong></td><td>Muestra a la vez el contenido completo de todas las celdas; la secuencia aparece como texto coloreado en lugar de la barra</td></tr>
           <tr><td><strong>Cancelar Búsqueda</strong></td><td>Interrumpe una consulta que está tardando demasiado</td></tr>
           <tr><td><strong>Limpiar resultados</strong></td><td>El enlace discreto de la cabecera de resultados: vacía la tabla y libera memoria</td></tr>
         </tbody>
@@ -1324,6 +1477,47 @@
       <div>Los resultados pertenecen a la pestaña donde hiciste la búsqueda: si cambias de pestaña se ocultan, y
         vuelven al regresar. Cambiar de página y exportar actúan siempre sobre la búsqueda que muestra la tabla,
         aunque hayas editado el formulario después.</div>
+    </div>
+    <p>Sobre la tabla, la línea <strong>Búsqueda mostrada</strong> resume la consulta a la que pertenecen los
+       resultados. En una búsqueda por campos, <strong>✎ Editar</strong> vuelve a cargar esas condiciones en el
+       formulario para modificarlas, por ejemplo después de haber probado otra búsqueda.</p>
+
+    <h3 class="step-title" id="ficha">Ficha del registro</h3>
+    <p>Al hacer clic en una fila se abre a la derecha la ficha completa del registro:</p>
+    <ul class="bullet">
+      <li>Cabecera con el <strong>ID BOLD</strong> y la identificación (en cursiva si es un género o una especie).</li>
+      <li><strong>Taxonomía</strong> completa y <strong>Datos del registro</strong>: todos los campos con valor, sin
+          recortar. Doble clic en un valor lo copia.</li>
+      <li><strong>Secuencia</strong> coloreada por base, con su cabecera FASTA y la leyenda de colores.</li>
+      <li>Botones <strong>Copiar FASTA</strong>, <strong>Copiar secuencia</strong> y <strong>Ver en BOLD ↗</strong>,
+          que abre la ficha pública del registro en el portal de BOLD (requiere internet).</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Un mismo <strong>ID BOLD</strong> puede aparecer en varias filas: cada fila es una secuencia, y un espécimen
+        secuenciado para varios marcadores tiene una por marcador. Fíjate en la columna <em>Marcador</em>.</div>
+    </div>
+
+    <!-- Selección -->
+    <h2 class="sub-title" id="seleccion">Seleccionar registros</h2>
+    <p>La primera columna de la tabla tiene una casilla por fila. La casilla de la cabecera marca todas las filas de la
+       página. Al marcar alguna aparece la <strong>barra de selección</strong>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Botón</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>N seleccionados</strong></td><td>Cuántos registros llevas marcados</td></tr>
+          <tr><td><strong>⤓ CSV</strong></td><td>Exporta solo los registros marcados en CSV</td></tr>
+          <tr><td><strong>⤓ FASTA</strong></td><td>Exporta sus secuencias en FASTA (las de menos de 50 pb se descartan, como en la exportación normal)</td></tr>
+          <tr><td><strong>Analizar</strong></td><td>Abre la pestaña <a href="#analisis">Análisis de secuencias</a> y analiza los registros marcados</td></tr>
+          <tr><td><strong>Quitar selección</strong></td><td>Desmarca todo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>La selección <strong>se mantiene al cambiar de página</strong>, así que puedes ir marcando registros de varias
+        páginas. Se borra al hacer una búsqueda nueva.</div>
     </div>
 
     <!-- Exportar -->
@@ -1369,9 +1563,438 @@
     </div>
   </section>
 
-  <!-- 6. CAMPOS -->
+  <!-- 6. ANÁLISIS -->
+  <section id="analisis">
+    <h1 class="section-title"><span class="num">6</span> Análisis de secuencias</h1>
+    <p>
+      La pestaña <strong>Análisis de secuencias</strong> del visor revisa un conjunto de secuencias sin salir del
+      programa ni necesitar internet. Tiene dos niveles:
+    </p>
+    <ul class="bullet">
+      <li><strong>Análisis básico</strong> (sin alinear, segundos aunque sean miles de secuencias): composición y
+          calidad, revisión de la traducción (codones de parada), haplotipos por especie y concordancia
+          especie–BIN.</li>
+      <li><strong>Distancias y árbol</strong> (bajo demanda, sobre las mismas secuencias): alineamiento, distancias
+          genéticas al estilo de BOLD, <em>barcode gap</em> por especie y árbol neighbour-joining.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Cada análisis usa un solo marcador.</strong> Longitudes, composición, haplotipos y distancias de genes
+        distintos no se pueden comparar, y el marcador decide si las secuencias se traducen y con qué código
+        genético. Si la entrada mezcla marcadores (p. ej. COI-5P y 16S de los mismos especímenes), la pestaña te
+        pregunta cuál analizar y deja fuera el resto.
+      </div>
+    </div>
+
+    <!-- Entrada -->
+    <h2 class="sub-title" id="an-entrada">Entrada y opciones</h2>
+    <h3 class="step-title">De dónde salen las secuencias</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Qué analiza</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Registros seleccionados</strong></td><td>Los registros marcados con las casillas de la tabla de resultados (el número aparece al lado). Es lo que usa el botón <em>Analizar</em> de la <a href="#seleccion">barra de selección</a>.</td></tr>
+          <tr><td><strong>Resultados de la búsqueda mostrada</strong></td><td>Todos los registros de la búsqueda que hay en pantalla, no solo la página visible.</td></tr>
+          <tr><td><strong>Archivo FASTA</strong></td><td>Un archivo <code>.fasta</code>, <code>.fas</code>, <code>.fa</code>, <code>.fna</code>, <code>.ffn</code> o <code>.txt</code> (hasta 50 MB), o secuencias pegadas en el cuadro. Se reconocen las cabeceras que exporta este visor (<code>processid|sampleid|BIN|taxón|marcador</code>) y las de BOLD (<code>processid|taxón|marcador|accesión</code>); de ellas se sacan la especie, el BIN y el marcador. Con cualquier otra cabecera solo se usa la primera palabra como identificador.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Opciones</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Para qué sirve</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Marcador</strong></td><td><em>Detectar en los datos</em> (por defecto) usa el marcador de los registros. Si hay varios, o el FASTA no lo indica, la pestaña lista los marcadores con su número de secuencias y te pide elegir uno; después pulsa <em>Analizar</em> otra vez. La lista ofrece los marcadores <em>En los datos</em> y los <em>Marcadores habituales</em>.</td></tr>
+          <tr><td><strong>Código genético</strong></td><td><em>Automático</em> (recomendado) elige la tabla de traducción según el marcador y la taxonomía de cada registro (ver tabla siguiente). Puedes forzar una tabla concreta (1, 2, 4, 5, 9, 11 o 13); es la única forma de traducir un FASTA sin marcador. Junto al selector se indica qué se hará con el marcador elegido.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Con el código <strong>automático</strong>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo de marcador</th><th>Ejemplos</th><th>Código usado</th></tr></thead>
+        <tbody>
+          <tr><td>Mitocondrial codificante</td><td>COI-5P, COI-3P, COII, COIII, CYTB, ND1–ND6, ATP6, ATP8</td><td>Según la taxonomía del registro: 2 vertebrados (Chordata) · 13 ascidias · 9 equinodermos, hemicordados y platelmintos · 4 cnidarios, esponjas, ctenóforos, hongos y protistas · 1 plantas · <strong>5 (invertebrados) en el resto</strong>, incluidos artrópodos, moluscos y anélidos, y cuando no hay taxonomía</td></tr>
+          <tr><td>Plastos y bacterias</td><td>rbcL, rbcLa, matK, tufA, rpoB, rpoC1, psbA; genes de <em>Wolbachia</em> (wsp, coxA, fbpA, hcpA)</td><td>11</td></tr>
+          <tr><td>Nuclear sin intrones</td><td>H3, RAG1, RAG2, RHO, WNT1, MC1R</td><td>1 (estándar)</td></tr>
+          <tr><td>No codificante o no traducible</td><td>ITS, 12S, 16S, 18S, 28S, D-loop, espaciadores, COI-NUMT, EF1-alfa, CAD…</td><td>No se traduce: rRNA, regiones de varios genes, pseudogenes y genes con intrones darían codones de parada sin significado</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Pulsa <strong>Analizar</strong>. Al terminar, la entrada se pliega en una línea resumen (fuente, marcador, código);
+       <strong>▾ Cambiar</strong> la vuelve a abrir para otro análisis.</p>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Las secuencias se limpian antes de analizar: se pasan a mayúsculas, se quitan huecos de alineamiento
+        (<code>-</code>, <code>.</code>) y las N de los extremos, y la U se lee como T. Las que quedan con <strong>menos de
+        50 pb</strong> se dejan fuera (el resultado indica cuántas). Si la entrada supera las 20.000 secuencias se
+        analizan las primeras 20.000 y se avisa: acota la búsqueda para analizarla completa.</div>
+    </div>
+
+    <!-- Resumen -->
+    <h2 class="sub-title" id="an-resumen">Resumen de resultados</h2>
+    <p>El título indica el marcador, el número de secuencias analizadas y el tiempo empleado. Debajo, tres grupos de
+       cifras:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Grupo</th><th>Cifra</th><th>Cómo leerla</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="2"><strong>Composición</strong></td><td>Longitud mediana (pb) y rango</td><td>La longitud típica del conjunto. Para COI-5P, el barcode estándar ronda los 650 pb (658 pb en la región completa); un rango muy amplio indica mezcla de fragmentos parciales y secuencias completas.</td></tr>
+          <tr><td>GC medio</td><td>Porcentaje de G + C. Depende del grupo: en COI de insectos suele estar en torno al 30–35 %, en peces y otros vertebrados más cerca del 40–48 %. Lo útil es comparar dentro del conjunto: una secuencia muy alejada de la media merece una revisión.</td></tr>
+          <tr><td rowspan="3"><strong>Calidad y traducción</strong></td><td>Cumplen el estándar barcode</td><td>Solo para COI-5P (o secuencias sin marcador). Criterio de BOLD: al menos 500 pb, menos del 1 % de N, sin codones de parada y sin caracteres no válidos.</td></tr>
+          <tr><td>GC en 3.ª posición (GC3)</td><td>GC en la tercera posición de los codones, la más libre de cambiar sin alterar la proteína. Refleja el sesgo de composición del genoma (en insectos suele ser muy bajo). Solo se calcula en marcadores que se traducen.</td></tr>
+          <tr><td>Con codones de parada</td><td>Secuencias que no tienen ningún marco de lectura libre de paradas. Se resalta en naranja si hay alguna. Debería ser 0 en un gen codificante.</td></tr>
+          <tr><td><strong>Taxonomía</strong></td><td>Especies y BINs</td><td>Cuántas especies y cuántos BINs distintos hay en el conjunto. Si hay muchos más BINs que especies, o al revés, la vista <em>Especies y BINs</em> te dirá dónde.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Los resultados se reparten en pestañas: <strong>Composición y calidad</strong>, <strong>Haplotipos</strong>,
+       <strong>Especies y BINs</strong>, <strong>Distancias</strong> y <strong>Árbol NJ</strong>. Cada una muestra un
+       contador (secuencias con alertas, haplotipos, casos para revisar), en naranja cuando hay algo que conviene
+       mirar.</p>
+
+    <!-- Calidad -->
+    <h2 class="sub-title" id="an-calidad">Composición y calidad</h2>
+    <h3 class="step-title">Distribución de longitudes</h3>
+    <p>Histograma con barras de 25 pb (más anchas si las longitudes están muy dispersas). Pasa el ratón por una barra
+       para ver cuántas secuencias tiene.</p>
+    <ul class="bullet">
+      <li><strong>Un solo pico</strong> estrecho (p. ej. 600–675 pb en COI-5P): conjunto homogéneo, el caso ideal.</li>
+      <li><strong>Dos picos</strong> (p. ej. uno en ~300 pb y otro en ~650 pb): mezcla de mini-barcodes o secuencias
+          parciales con barcodes completos. Las cortas aportan menos información en las distancias.</li>
+      <li><strong>Una cola</strong> de secuencias mucho más largas: genomas mitocondriales o genes completos
+          depositados con el mismo nombre de marcador.</li>
+    </ul>
+
+    <h3 class="step-title">Alertas de calidad</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Alerta</th><th>Qué indica</th><th>Qué hacer</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Corta (&lt; 500 pb)</strong></td><td>Por debajo de los 500 pb del estándar barcode (solo COI-5P).</td><td>Válida para identificar, pero menos fiable para delimitar especies. Considera filtrarla con <em>Bases &gt; 500</em>.</td></tr>
+          <tr><td><strong>Más de 1 % de N</strong></td><td>Demasiadas bases indeterminadas: lectura de baja calidad.</td><td>Úsala con cautela; queda fuera de los haplotipos.</td></tr>
+          <tr><td><strong>Bases ambiguas</strong></td><td>Códigos IUPAC (R, Y, K, M, S, W…): el secuenciador vio dos señales en esa posición. Puede ser heteroplasmia, una mezcla de muestras o, en genes nucleares, un heterocigoto.</td><td>Pocas ambigüedades no suelen ser un problema; muchas sugieren contaminación.</td></tr>
+          <tr><td><strong>Caracteres no válidos</strong></td><td>Símbolos que no son nucleótidos.</td><td>Revisa el archivo de origen. Se excluye de las distancias.</td></tr>
+          <tr><td><strong>Codones de parada</strong></td><td>Ningún marco de lectura está libre de paradas. Causas posibles: pseudogén nuclear de origen mitocondrial (<strong>NUMT</strong>), error de secuenciación que desplaza el marco, código genético equivocado o secuencia que en realidad no es de ese marcador.</td><td>No la uses para delimitar especies: se excluye automáticamente de las distancias y del árbol.</td></tr>
+          <tr><td><strong>Posible hebra invertida</strong></td><td>Tiene paradas en los 3 marcos directos pero ninguna en la hebra complementaria: casi seguro se depositó en sentido inverso.</td><td>No es un error grave: el programa la lee en la hebra complementaria (marco negativo) para el GC3, los haplotipos y las distancias.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Debajo, la tabla <strong>Secuencias con alertas</strong> lista cada secuencia problemática con su ID, especie,
+       BIN, longitud, GC %, GC3 %, N, ambigüedades, <strong>marco</strong> de lectura (1, 2 o 3; −1, −2 o −3 si se leyó en
+       la hebra complementaria), número de <strong>paradas</strong> y alertas. Si son muchas, se muestran las primeras y
+       el CSV las incluye todas.</p>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Ejemplo: codones de parada por un código equivocado.</strong> Analizas 300 secuencias COI-5P de
+        escarabajos forzando el código <em>1 · Estándar</em> y salen 280 con codones de parada. No son pseudogenes: en
+        el código estándar <code>TGA</code> es una parada, pero en las mitocondrias de invertebrados (código 5) codifica
+        triptófano, y en COI aparece a menudo. Con el código <em>Automático</em> (que usa el 5 para artrópodos) las
+        alertas bajan a 0 o a unas pocas, y esas sí merecen una revisión.
+      </div>
+    </div>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Ejemplo: un posible NUMT.</strong> En 120 secuencias de COI-5P de un género de ortópteros, una tiene 3
+        paradas en su mejor marco, GC 6 puntos por encima de la media y cae en un BIN distinto al de su especie. Esa
+        combinación (paradas + composición rara + BIN aparte) apunta a un NUMT o a una contaminación, no a una especie
+        críptica.
+      </div>
+    </div>
+
+    <!-- Haplotipos -->
+    <h2 class="sub-title" id="an-haplotipos">Haplotipos</h2>
+    <p>Agrupa por especie las secuencias idénticas, sin alinear. Como los barcodes de un mismo haplotipo suelen
+       diferir solo en dónde se recortaron, una secuencia <strong>contenida</strong> en otra más larga cuenta como el
+       mismo haplotipo. Las secuencias con N o bases ambiguas se excluyen (una sola N crearía un haplotipo
+       falso).</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Columna</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Secuencias</strong></td><td>Secuencias de la especie que entran en el cálculo</td></tr>
+          <tr><td><strong>Haplotipos</strong></td><td>Variantes distintas encontradas</td></tr>
+          <tr><td><strong>Únicos</strong></td><td>Haplotipos vistos una sola vez (<em>singletons</em>)</td></tr>
+          <tr><td><strong>Hd</strong></td><td>Diversidad haplotípica de Nei: probabilidad de que dos secuencias tomadas al azar de la especie sean distintas. Va de 0 (todas iguales) a 1 (todas distintas). Se calcula como Hd = n/(n−1) · (1 − Σ p<sub>i</sub>²), donde p<sub>i</sub> es la frecuencia de cada haplotipo</td></tr>
+          <tr><td><strong>Excluidas</strong></td><td>Secuencias que no entraron por tener N o ambigüedades</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Ejemplo.</strong> <em>Especie A</em> tiene 10 secuencias repartidas en 3 haplotipos de 6, 3 y 1
+        secuencias. Haplotipos = 3, únicos = 1, y
+        Hd = 10/9 · (1 − (0,6² + 0,3² + 0,1²)) = 1,111 · 0,54 = <strong>0,60</strong>.
+        <br><br>
+        Cómo leerlo:
+        <ul class="bullet">
+          <li><strong>Hd cercano a 0</strong> con muchas secuencias: población poco diversa, un cuello de botella, o
+              muestras de una sola localidad o del mismo linaje.</li>
+          <li><strong>Hd cercano a 1</strong> y casi todos los haplotipos únicos: mucha diversidad, o un muestreo que
+              aún no ha capturado la variación de la especie (cada secuencia nueva añadiría un haplotipo).</li>
+          <li>Con <strong>2 o 3 secuencias</strong> Hd solo puede tomar unos pocos valores y apenas dice nada: compara
+              especies con tamaños de muestra parecidos.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Concordancia -->
+    <h2 class="sub-title" id="an-concordancia">Especies y BINs</h2>
+    <p>Un <strong>BIN</strong> (<em>Barcode Index Number</em>) es el grupo que asigna BOLD a secuencias muy parecidas
+       entre sí, de forma independiente de la identificación taxonómica. Lo esperable es que cada especie tenga su
+       propio BIN. Esta vista compara las dos clasificaciones usando solo los registros que tienen <strong>a la vez
+       especie y BIN</strong> (un FASTA sin cabeceras de BOLD no tendrá ninguno).</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Cifra / tabla</th><th>Qué significa</th><th>Causas habituales</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Especies con un BIN exclusivo</strong></td><td>Especie con un solo BIN que no comparte con ninguna otra. Concordancia total.</td><td>—</td></tr>
+          <tr><td><strong>BINs con varias especies</strong></td><td>Un mismo BIN contiene registros identificados como especies distintas. La tabla lista cada BIN con sus registros y las especies (con el número de registros de cada una).</td><td>Identificación errónea de algún ejemplar; sinonimias; especies muy recientes o con hibridación/introgresión que el marcador no separa; contaminación.</td></tr>
+          <tr><td><strong>Especies en varios BINs</strong></td><td>Los registros de una especie se reparten en varios BINs.</td><td>Especies crípticas (varias especies bajo un mismo nombre); linajes geográficos muy divergentes; identificaciones erróneas; NUMTs que forman su propio BIN.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Ejemplo.</strong> En una búsqueda de <em>Familia = Nymphalidae, País = Colombia</em> aparece:
+        <br>• <code>BOLD:AAA1234</code> con <em>Heliconius erato</em> (25) y <em>Heliconius himera</em> (2). Las dos son
+        especies hermanas que hibridan: el BIN compartido es esperable y no indica un error.
+        <br>• <em>Adelpha cytherea</em> en <code>BOLD:ABC0001</code> (18) y <code>BOLD:ABC0002</code> (1). Un BIN con
+        un solo registro frente a otro mayoritario sugiere revisar ese registro (identificación, calidad de la
+        secuencia) antes de pensar en una especie críptica. Si los dos BINs tuvieran muchos registros y procedieran de
+        regiones distintas, la hipótesis de linajes separados ganaría peso.
+        <br><br>
+        Los nombres y números de este ejemplo son ilustrativos. La vista <a href="#an-arbol">Árbol NJ</a> con
+        <em>Color: Discordancias especie–BIN</em> muestra estos casos sobre el árbol.
+      </div>
+    </div>
+
+    <!-- Distancias -->
+    <h2 class="sub-title" id="an-distancias">Distancias y barcode gap</h2>
+    <p>Las pestañas <strong>Distancias</strong> y <strong>Árbol NJ</strong> se calculan bajo demanda sobre la misma
+       entrada del análisis básico. Elige las opciones y pulsa <strong>Calcular</strong>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Valores</th><th>Cuándo usarla</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Modelo</strong></td><td><em>K2P (Kimura 2 parámetros)</em> — por defecto</td><td>El estándar de BOLD y de la literatura de barcoding. Corrige por sustituciones múltiples y trata por separado transiciones (A↔G, C↔T) y transversiones. Úsalo para comparar con valores publicados.</td></tr>
+          <tr><td></td><td><em>Jukes-Cantor (JC69)</em></td><td>Corrección más simple: una sola tasa de sustitución y bases equifrecuentes.</td></tr>
+          <tr><td></td><td><em>Distancia p</em></td><td>Proporción de sitios distintos, sin corrección. Fácil de interpretar («3 % de las posiciones difieren»); subestima las distancias grandes.</td></tr>
+          <tr><td><strong>Máx. por especie</strong></td><td>Todas, 1, 2, 3, 5, 10, 20 o 50</td><td>Submuestrea antes de calcular, quedándose con las secuencias más largas de cada especie (o de cada BIN si no hay especie). Útil cuando unas pocas especies tienen cientos de secuencias y dominan el resultado, o para entrar en los límites. Con 1 no hay distancias intraespecíficas.</td></tr>
+          <tr><td><strong>Construir árbol NJ</strong></td><td>Activado por defecto</td><td>Desactívalo si solo quieres las distancias: el árbol es lo más lento con muchas secuencias.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Cómo se alinean</h3>
+    <p>Las secuencias se alinean contra una <strong>referencia</strong> elegida entre ellas (la más larga sin
+       ambigüedades, sin contar el 10 % más largo, para no escoger un gen completo raro entre barcodes), de forma parecida
+       a como BOLD alinea contra su perfil de COI. Cada secuencia se coloca por los fragmentos que comparte con la
+       referencia y solo donde aparece una inserción o deleción se alinea con huecos. Las bases que una secuencia tiene
+       más allá de la referencia, o insertadas respecto a ella, se descartan. El resultado indica qué referencia se
+       usó, cuántas secuencias necesitaron huecos y cuántas se leyeron en la hebra complementaria.</p>
+    <ul class="bullet">
+      <li>Se excluyen las secuencias con <strong>codones de parada</strong> o caracteres no válidos (probables
+          pseudogenes o contaminación, que distorsionan las distancias) y las de <strong>menos de 100 pb</strong>.</li>
+      <li>Dos secuencias que comparten <strong>menos de 100 posiciones</strong> comparables (p. ej. dos fragmentos de
+          extremos opuestos del gen), o tan distintas que el modelo se satura, quedan <strong>sin distancia</strong>;
+          el resultado indica cuántos pares.</li>
+      <li>Con un <strong>marcador no codificante</strong> (ITS, 16S, 18S…) el alineamiento contra una referencia es
+          aproximado, porque abundan las inserciones y deleciones: toma las distancias con cautela.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Grupos de alineamiento.</strong> Un mismo nombre de marcador puede reunir genes distintos (el «16S» de
+        BOLD incluye el 16S bacteriano y el 16S mitocondrial de animales) o taxones demasiado lejanos para alinearse.
+        Las secuencias que no se alinean con la primera referencia forman otro grupo con su propia referencia (hasta 6
+        grupos de al menos 3 secuencias). Las distancias y los árboles se calculan <strong>dentro de cada grupo</strong>;
+        el resultado lista los grupos con sus clases o filos principales. Para analizar uno solo, acota la búsqueda por
+        reino, filo o clase.
+      </div>
+    </div>
+
+    <h3 class="step-title">Resumen de distancias</h3>
+    <p>Como el <em>Distance Summary</em> de BOLD: mínimo, media y máximo de las distancias (en %) en tres niveles,
+       con el número de taxones y de comparaciones de cada uno.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nivel</th><th>Taxones</th><th>Comparaciones</th><th>Mín.</th><th>Media</th><th>Máx.</th></tr></thead>
+        <tbody>
+          <tr><td>Dentro de especie</td><td>42</td><td>3.410</td><td>0,00</td><td>0,61</td><td>3,85</td></tr>
+          <tr><td>Dentro de género (entre especies)</td><td>9</td><td>12.880</td><td>1,72</td><td>9,40</td><td>16,10</td></tr>
+          <tr><td>Dentro de familia (entre géneros)</td><td>1</td><td>41.215</td><td>8,90</td><td>15,30</td><td>22,70</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Cómo leerlo (valores de ejemplo, COI-5P de una familia de insectos):</p>
+    <ul class="bullet">
+      <li>Lo esperable es que las distancias <strong>crezcan de un nivel al siguiente</strong>: media intraespecífica
+          baja (en COI animal suele estar por debajo del 1–2 %) y media entre especies del mismo género claramente
+          mayor.</li>
+      <li>El <strong>máximo intraespecífico</strong> (3,85 %) es mayor que el <strong>mínimo entre congéneres</strong>
+          (1,72 %): hay al menos una especie con mucha variación interna y dos especies muy próximas. El barcode gap
+          (abajo) dice cuáles.</li>
+      <li>Los umbrales del tipo «2 %» son orientativos: varían mucho entre grupos, y un valor anómalo debe
+          contrastarse con la taxonomía, la geografía y la calidad de las secuencias.</li>
+    </ul>
+
+    <h3 class="step-title">Distribución de distancias</h3>
+    <p>Histograma superpuesto de las distancias por pares en tres series: <strong>dentro de especie</strong>,
+       <strong>entre especies del mismo género</strong> y <strong>entre especies</strong> (de géneros distintos). En
+       un grupo bien resuelto por el barcode las distancias intraespecíficas se acumulan cerca de 0 y las demás
+       empiezan claramente más a la derecha, con un hueco entre ambas. Si las series se solapan, hay especies que el
+       marcador no separa bien (o identificaciones que revisar).</p>
+
+    <h3 class="step-title">Barcode gap por especie</h3>
+    <p>Para cada especie se comparan dos valores:</p>
+    <ul class="bullet">
+      <li><strong>Intra máx.</strong>: la mayor distancia entre dos secuencias de la propia especie (también se muestra la
+          media, <strong>Intra media</strong>).</li>
+      <li><strong>Vecino</strong>: la distancia a la secuencia más cercana de <em>otra</em> especie (su vecino más
+          cercano), con el nombre de esa <strong>Especie vecina</strong>.</li>
+      <li><strong>Gap</strong> = Vecino − Intra máx. Si es <strong>positivo</strong> la especie tiene barcode gap: su
+          secuencia más alejada sigue más cerca de las suyas que de cualquier otra especie. Si es <strong>cero o
+          negativo</strong>, no lo tiene.</li>
+    </ul>
+    <p>Las cifras superiores indican cuántas especies se evaluaron y cuántas no tienen gap (y qué porcentaje). El
+       gráfico de dispersión pone cada especie como un punto: eje X = intra máx., eje Y = vecino. Los puntos <strong>por
+       encima de la diagonal</strong> tienen gap; los que caen <strong>sobre ella o por debajo</strong>, no (en otro
+       color). La tabla está ordenada de peor a mejor gap, así que los casos problemáticos salen arriba. Las especies con
+       una sola secuencia no tienen distancia intraespecífica y aparecen con «—».</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Especie</th><th>Intra máx.</th><th>Vecino</th><th>Especie vecina</th><th>Gap</th><th>Lectura</th></tr></thead>
+        <tbody>
+          <tr><td><em>Especie B</em></td><td>2,80 %</td><td>0,60 %</td><td><em>Especie C</em></td><td>−2,20 %</td><td>Sin gap. Hay una secuencia de C más cerca de B que las propias secuencias de B entre sí. Puede ser una identificación errónea, introgresión, o que B y C sean en realidad la misma especie (o B sea dos especies).</td></tr>
+          <tr><td><em>Especie D</em></td><td>0,90 %</td><td>1,10 %</td><td><em>Especie E</em></td><td>+0,20 %</td><td>Gap muy estrecho: el barcode las separa, pero por poco. Las identificaciones por similitud entre D y E serán poco seguras.</td></tr>
+          <tr><td><em>Especie A</em></td><td>1,20 %</td><td>4,50 %</td><td><em>Especie F</em></td><td>+3,30 %</td><td>Gap claro: la especie queda bien delimitada por el marcador.</td></tr>
+          <tr><td><em>Especie G</em></td><td>—</td><td>6,00 %</td><td><em>Especie A</em></td><td>—</td><td>Una sola secuencia: no se puede evaluar el gap, solo su distancia al vecino.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div>Ante una especie sin gap, abre el <strong>Árbol NJ</strong>, escribe su nombre en <em>Resaltar especie o
+        ID…</em> y comprueba si sus secuencias forman un grupo propio o se mezclan con las de la especie vecina. Después
+        busca el registro sospechoso en la tabla de resultados y haz clic en él para ver su ficha (país, identificador,
+        quién lo identificó).</div>
+    </div>
+
+    <!-- Árbol -->
+    <h2 class="sub-title" id="an-arbol">Árbol NJ</h2>
+    <p>Árbol <strong>neighbour-joining</strong> construido sobre las distancias calculadas y enraizado en el
+       <strong>punto medio</strong> (la mitad del camino entre las dos secuencias más alejadas). Si hay varios grupos de
+       alineamiento, se elige el grupo en <em>Árbol del grupo</em>. Las secuencias sin distancia con todas las demás se
+       quitan del árbol y se indica cuántas.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Colapsar</strong></td><td><em>Nada</em>, <em>Por especie</em> o <em>Por BIN</em>: reúne en un triángulo los clados formados solo por una especie (o un BIN). Con más de 300 secuencias el árbol se abre colapsado por especie. También puedes hacer clic en cualquier nodo para colapsar o expandir su clado.</td></tr>
+          <tr><td><strong>Color</strong></td><td>Colorea las puntas por <em>especie</em>, <em>BIN</em>, <em>género</em>, <em>país</em> o <em>discordancias especie–BIN</em> (BIN con varias especies, especie en varios BINs, o ambas). Hay ocho colores; el resto de valores aparecen en gris como «Otros».</td></tr>
+          <tr><td><strong>Ramas</strong></td><td><em>Filograma</em>: la longitud de las ramas es proporcional a la distancia. <em>Cladograma</em>: solo la forma del árbol, con las puntas alineadas, más fácil de leer cuando hay ramas muy cortas.</td></tr>
+          <tr><td><strong>Fila / Letra</strong></td><td>Alto de cada fila y tamaño de letra. Por debajo de 5 px de fila las etiquetas se ocultan.</td></tr>
+          <tr><td><strong>Etiquetas</strong></td><td>Qué mostrar en cada punta: especie, ID, BIN, país. <em>Etiquetas en color</em> las pinta con el color de su grupo (oscurecido si hace falta para que se lean).</td></tr>
+          <tr><td><strong>Resaltar especie o ID…</strong></td><td>Resalta las puntas que coinciden con el texto e indica cuántas hay.</td></tr>
+          <tr><td><strong>Expandir todo</strong></td><td>Deshace todos los colapsos.</td></tr>
+          <tr><td><strong>Exportar figura</strong></td><td>Tal como se ve (colapsos, colores, etiquetas): <em>SVG</em> (editable en Inkscape o Illustrator), <em>PNG 2×</em> o <em>4×</em> (si la imagen es demasiado grande se genera a menor escala y se avisa) y <em>PDF</em> (se abre el diálogo de impresión: elige «Guardar como PDF»; el navegador debe permitir ventanas emergentes).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 class="step-title">Cómo interpretarlo</h3>
+    <ul class="bullet">
+      <li>Un árbol NJ de barcodes es una <strong>herramienta de agrupamiento</strong>, no una filogenia: no lleva
+          valores de soporte (bootstrap) y las relaciones profundas entre géneros o familias no son fiables con un
+          solo fragmento de gen.</li>
+      <li>Lo que sí muestra bien es si cada especie forma un <strong>grupo compacto propio</strong>. Colorea por
+          especie: un color que aparece en dos ramas separadas del árbol corresponde a una especie dividida
+          (compárala con la vista <em>Especies y BINs</em>); dos colores entremezclados en un mismo clado, a especies
+          que el marcador no separa.</li>
+      <li>En el filograma, una <strong>rama larga aislada</strong> que lleva a una sola secuencia suele ser una
+          secuencia problemática (NUMT, contaminación, mucha N) o un taxón muy distinto del resto.</li>
+      <li>Colorear por <strong>país</strong> ayuda a ver si los linajes dentro de una especie siguen la geografía
+          (p. ej. un clado andino y otro amazónico).</li>
+    </ul>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Ejemplo.</strong> Analizas 800 secuencias COI-5P de un género de abejas. El árbol se abre colapsado por
+        especie (más de 300 puntas). Pones <em>Color: Discordancias especie–BIN</em> y ves dos triángulos en naranja.
+        Al expandir el primero, las secuencias de <em>Especie X</em> se dividen en dos subclados bien separados, uno con
+        muestras de México y otro de Costa Rica (lo confirmas con <em>Etiquetas: País</em>), cada uno con su BIN: un
+        candidato a especie críptica. En el segundo, una única secuencia identificada como <em>Especie Y</em> aparece
+        dentro del clado de <em>Especie Z</em>: probablemente un error de identificación de ese ejemplar.
+      </div>
+    </div>
+    <p>El ZIP de resultados incluye el árbol en formato <strong>Newick</strong> (<code>tree.nwk</code>) para abrirlo
+       y editarlo en FigTree, iTOL o MEGA. Las etiquetas son <code>processid|especie|BIN</code>.</p>
+
+    <!-- Descargas -->
+    <h2 class="sub-title" id="an-descargas">Descargas y límites</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Descarga</th><th>Contenido</th></tr></thead>
+        <tbody>
+          <tr><td><strong>⤓ Secuencias (CSV)</strong></td><td>Una fila por secuencia: id, especie, BIN, marcador, longitud, recuento de A, C, G, T, N, ambiguas y no válidas, GC %, GC3 %, código genético, marco, codones de parada, si cumple el estándar barcode (<code>yes</code>/<code>no</code>) y alertas</td></tr>
+          <tr><td><strong>⤓ Haplotipos (CSV)</strong></td><td>Por especie: secuencias, haplotipos, únicos, Hd, excluidas por N/ambigüedades y el tamaño de cada haplotipo (<code>6;3;1</code>)</td></tr>
+          <tr><td><strong>⤓ Especies y BINs (CSV)</strong></td><td>Cada BIN con varias especies y cada especie en varios BINs, con sus registros y el detalle</td></tr>
+          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code> y <code>distance_summary.csv</code>. Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Una copia queda en <code>data/exports/analysis_exports/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>En los archivos del ZIP las distancias van como <strong>fracción</strong> (<code>0.01234</code> = 1,234 %),
+        mientras que la página las muestra en porcentaje.</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Límite</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Secuencias en el análisis básico</td><td>20.000 (se analizan las primeras y se avisa)</td></tr>
+          <tr><td>Tamaño de un FASTA</td><td>50 MB</td></tr>
+          <tr><td>Longitud mínima</td><td>50 pb en el análisis básico; 100 pb para distancias</td></tr>
+          <tr><td>Secuencias leídas para distancias</td><td>100.000 (antes del submuestreo por especie; por encima, acota la búsqueda)</td></tr>
+          <tr><td>Secuencias en distancias</td><td>5.000 (1.000 si el marcador no es codificante), después del submuestreo</td></tr>
+          <tr><td>Secuencias en el árbol</td><td>2.000 por grupo</td></tr>
+          <tr><td>Posiciones comparables para una distancia</td><td>100</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Si superas el límite de distancias, usa <strong>Máx. por especie</strong> (p. ej. 5 o 10) o acota la búsqueda.</p>
+
+    <!-- Ejemplo -->
+    <h2 class="sub-title" id="an-ejemplo">Ejemplo completo</h2>
+    <p>Revisar la calidad de los barcodes de los felinos de Brasil:</p>
+    <ol class="steps">
+      <li>En <strong>Búsqueda avanzada por campos</strong>: <em>Familia = Felidae</em> AND <em>Marcador = COI-5P</em>
+          AND <em>País = Brazil</em>. Pulsa <strong>Buscar</strong>.</li>
+      <li>Abre la pestaña <strong>Análisis de secuencias</strong>, elige <em>Resultados de la búsqueda mostrada</em>,
+          deja <em>Marcador: Detectar en los datos</em> y <em>Código genético: Automático</em> (usará el código 2,
+          vertebrados) y pulsa <strong>Analizar</strong>.</li>
+      <li>En el resumen comprueba la longitud mediana (~650 pb), el porcentaje que cumple el estándar barcode y que
+          <em>Con codones de parada</em> esté en 0. En <strong>Composición y calidad</strong> revisa las secuencias con
+          alertas.</li>
+      <li>En <strong>Especies y BINs</strong> anota los BINs compartidos y las especies divididas.</li>
+      <li>En <strong>Distancias</strong> deja K2P, pon <em>Máx. por especie: 20</em> si alguna especie tiene cientos de
+          secuencias, y pulsa <strong>Calcular</strong>. Mira qué especies no tienen barcode gap.</li>
+      <li>En <strong>Árbol NJ</strong> colorea por especie, busca las especies problemáticas con <em>Resaltar</em> y
+          exporta la figura en SVG o PDF.</li>
+      <li>Descarga el <strong>ZIP</strong> para tener el alineamiento, las distancias y el árbol en Newick.</li>
+    </ol>
+  </section>
+
+  <!-- 7. CAMPOS -->
   <section id="campos">
-    <h1 class="section-title"><span class="num">6</span> Campos disponibles</h1>
+    <h1 class="section-title"><span class="num">7</span> Campos disponibles</h1>
     <p>
       Estas son las <strong>23 columnas que se incluyen por defecto</strong>, con el nombre que verás en la
       interfaz. No son fijas: desde el panel <a href="#campos-panel">Campos</a> del Constructor puedes quitar
@@ -1404,9 +2027,9 @@
     </div>
   </section>
 
-  <!-- 7. FAQ -->
+  <!-- 8. FAQ -->
   <section id="faq">
-    <h1 class="section-title"><span class="num">7</span> Preguntas frecuentes</h1>
+    <h1 class="section-title"><span class="num">8</span> Preguntas frecuentes</h1>
 
     <div class="faq-item">
       <div class="q">¿Cuánto espacio en disco necesito?</div>
@@ -1414,8 +2037,8 @@
     </div>
 
     <div class="faq-item">
-      <div class="q">¿Tengo que crear la carpeta <code>app/</code> antes de construir la base?</div>
-      <div class="a">No. El Constructor la crea automáticamente al abrirse, junto con el servidor web, las plantillas y la carpeta de registros. Tú solo debes colocar el <code>.tar.gz</code> en <code>data/raw/</code>.</div>
+      <div class="q">¿Tengo que crear alguna carpeta antes de construir la base?</div>
+      <div class="a">No. El programa crea <code>data/</code> y todo lo que contiene al abrirse. Tú solo tienes que arrastrar el <code>.tar.gz</code> a la pantalla Inicio (o dejarlo en <code>data/raw/</code>).</div>
     </div>
 
     <div class="faq-item">
@@ -1425,7 +2048,7 @@
 
     <div class="faq-item">
       <div class="q">El navegador dice "SIN CONEXIÓN AL SERVIDOR".</div>
-      <div class="a">Significa que el servidor ya no está en marcha: se cerró su ventana de terminal, o se cerró solo tras cerrar la última pestaña del visor. Vuelve a abrir el acceso directo <strong>2_Abrir_visor_web_BD_BOLD</strong>.</div>
+      <div class="a">Significa que el servidor ya no está en marcha: se cerró su ventana de terminal, o se cerró solo tras cerrar la última pestaña del visor. Vuelve a abrir el acceso directo <strong>Visor BOLD-Local-DB</strong>.</div>
     </div>
 
     <div class="faq-item">
@@ -1455,7 +2078,7 @@
 
     <div class="faq-item">
       <div class="q">Cambié la selección de campos, guardé, pero el visor sigue mostrando lo mismo.</div>
-      <div class="a">Guardar la selección solo actualiza <code>dev/fields_config.json</code>; la base de datos no cambia hasta que repites el Paso 1 con el <code>.tar.gz</code> de BOLD (el programa detecta el cambio y vuelve a filtrar solo). Si ya se borró el <code>.tar.gz</code>, tendrás que descargarlo de nuevo; para evitarlo la próxima vez, marca <em>«Conservar el .tar.gz al terminar»</em> en el Paso 1.</div>
+      <div class="a">Guardar la selección solo actualiza <code>data/state/fields_config.json</code>; la base de datos no cambia hasta que repites el Paso 1 con el <code>.tar.gz</code> de BOLD (el programa detecta el cambio y vuelve a filtrar solo). Si ya se borró el <code>.tar.gz</code>, tendrás que descargarlo de nuevo; para evitarlo la próxima vez, marca <em>«Conservar el .tar.gz al terminar»</em> en el Paso 1.</div>
     </div>
 
     <div class="faq-item">
@@ -1465,7 +2088,7 @@
 
     <div class="faq-item">
       <div class="q">¿Puedo tener la base de datos en un disco externo?</div>
-      <div class="a">Sí. Copia toda la carpeta <code>BOLD_DB/</code> al disco externo y ejecuta una vez <code>Reparar_accesos.bat</code> para que los accesos directos apunten a la nueva unidad.</div>
+      <div class="a">Sí. Copia toda la carpeta del programa al disco externo y ábrelo desde allí: los accesos directos que hubieras creado se rehacen solos para apuntar a la nueva ubicación.</div>
     </div>
 
     <div class="faq-item">
@@ -1475,7 +2098,22 @@
 
     <div class="faq-item">
       <div class="q">Algo falló y el mensaje no me dice lo suficiente.</div>
-      <div class="a">Abre <code>app/logs/error.log</code>: contiene el detalle técnico del último error. El historial completo de cada sesión está en <code>app/logs/run_*.log</code>.</div>
+      <div class="a">Abre <code>data/state/logs/error.log</code>: contiene el detalle técnico del último error. El historial completo de cada sesión está en <code>data/state/logs/run_*.log</code>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Al pulsar «Analizar» me pide elegir un marcador.</div>
+      <div class="a">La entrada tiene secuencias de varios marcadores (o un FASTA cuyas cabeceras no lo indican) y cada análisis usa uno solo. Elige el marcador en la lista, que muestra cuántas secuencias hay de cada uno, y pulsa <strong>Analizar</strong> de nuevo; las de otros marcadores quedan fuera. Ver <a href="#an-entrada">Entrada y opciones</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Las distancias dicen que hay demasiadas secuencias.</div>
+      <div class="a">El cálculo de distancias admite hasta 5.000 secuencias (1.000 en marcadores no codificantes) y el árbol 2.000. Usa <strong>Máx. por especie</strong> para quedarte con unas pocas secuencias por especie, o acota la búsqueda (por género, país, etc.). Ver <a href="#an-descargas">Descargas y límites</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Casi todas mis secuencias de COI salen con codones de parada.</div>
+      <div class="a">Casi siempre es el código genético: si lo forzaste a mano (p. ej. el 1 · Estándar en invertebrados), vuelve a <strong>Automático</strong>. Si ya era automático, revisa que el marcador sea el correcto y que los registros tengan taxonomía (sin ella se usa el código 5). Ver el <a href="#an-calidad">ejemplo</a>.</div>
     </div>
   </section>
 

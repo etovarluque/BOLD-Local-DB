@@ -1085,6 +1085,9 @@
 		   background; switched off so the row colors below are the only ones */
 		.table { --bs-table-hover-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-accent-bg: transparent; }
 		.table tbody tr { cursor: pointer; }
+		/* Bootstrap fills cells with a 9999px inset shadow; animated into the
+		   3px bar of the selected row it washes the whole first cell dark */
+		.table th, .table td { transition: all .3s ease, box-shadow 0s; }
 		.table tbody tr:hover td { background-color: var(--tint) !important; }
 		.table tbody tr.row-selected td { background-color: var(--selected) !important; }
 		.table tbody tr.row-selected td:first-child { box-shadow: inset 3px 0 0 var(--slate); }

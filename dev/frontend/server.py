@@ -1419,6 +1419,8 @@ AUTOCOMPLETE_ENOUGH_VALUES = 40
 # Distinct values read per column (and per capitalization) from its index
 AUTOCOMPLETE_PREFIX_PER_COLUMN = 8
 AUTOCOMPLETE_LIMIT = 10
+# Past this many records a value counts as "very common": enough to rank it
+AUTOCOMPLETE_FREQUENCY_CAP = 1000
 
 
 @lru_cache(maxsize=1)
@@ -1468,9 +1470,23 @@ def _autocomplete_prefix(conn, columns, query):
     return rows
 
 
-def _suggestion_rank(value, query):
+def _value_frequency(conn, col, value):
+    """Records with this value, counted up to AUTOCOMPLETE_FREQUENCY_CAP.
+
+    Counted on the column's index and capped, so a value in a million
+    records costs no more than one in a thousand. 0 without an index.
+    """
+    if col not in get_indexed_columns():
+        return 0
+    return conn.execute(
+        f"SELECT COUNT(*) FROM (SELECT 1 FROM {MAIN_TABLE_NAME} WHERE {col} = ? LIMIT ?)",
+        (value, AUTOCOMPLETE_FREQUENCY_CAP)).fetchone()[0]
+
+
+def _suggestion_rank(value, query, frequency=0):
     """Sort key: values that start with the query, then those with a word
-    that does ("Costa Rica" for "rica"), then the rest; shortest first."""
+    that does ("Lake Ontario" for "ontario"), then the rest. Within each,
+    the most common first (Colombia before Colombo), then the shortest."""
     text = str(value).lower()
     q = query.lower()
     if text.startswith(q):
@@ -1479,7 +1495,7 @@ def _suggestion_rank(value, query):
         tier = 1
     else:
         tier = 2
-    return (tier, len(text), text)
+    return (tier, -frequency, len(text), text)
 
 
 def _autocomplete_fts(conn, columns, query):
@@ -1563,20 +1579,16 @@ def autocomplete():
             cursor.execute(sql_query, params)
             results = _autocomplete_prefix(conn, columns, query) + cursor.fetchall()
 
-        seen_values = set()
-        formatted_results = []
+        candidates = {}  # value -> column it was found in (the first one)
         for row in results:
             for col, value in zip(columns, row):
-                if value and value not in seen_values:
-                    if query.lower() in str(value).lower():
-                        seen_values.add(value)
-                        formatted_results.append({
-                            "field": get_friendly_name(col),
-                            "value": value
-                        })
+                if value and value not in candidates and query.lower() in str(value).lower():
+                    candidates[value] = col
 
-        formatted_results.sort(key=lambda x: _suggestion_rank(x['value'], query))
-        return jsonify({"results": formatted_results[:AUTOCOMPLETE_LIMIT]})
+        ranked = sorted(candidates.items(), key=lambda kv: _suggestion_rank(
+            kv[0], query, _value_frequency(conn, kv[1], kv[0])))
+        return jsonify({"results": [{"field": get_friendly_name(col), "value": value}
+                                    for value, col in ranked[:AUTOCOMPLETE_LIMIT]]})
 
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500

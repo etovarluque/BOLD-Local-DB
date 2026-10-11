@@ -2121,6 +2121,17 @@ def _report_fts_availability():
         print(f"❌ {STRINGS['en'][problem]}")
         return
     try:
+        conn = get_db_connection()
+        try:
+            version = db_contract.schema_version(conn)
+        finally:
+            conn.close()
+        if version < db_contract.SCHEMA_VERSION:
+            print("⚠️ This database was built by an older version of the Creator that kept "
+                  "only one sequence per specimen. Rebuild it to get every marker's sequences.")
+    except sqlite3.Error:
+        pass
+    try:
         if fts_table_available():
             print(f"✅ Full-text index available ({FTS_TABLE_NAME}).")
         else:

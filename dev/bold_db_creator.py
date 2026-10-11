@@ -103,7 +103,8 @@ FILTER_FIELD = "nuc"
 
 
 COL_DEFS = {
-    "processid":                    "TEXT PRIMARY KEY COLLATE NOCASE",
+    # Not a key: a specimen has one row per sequence (see run_step2)
+    "processid":                    "TEXT COLLATE NOCASE",
     "sampleid":                     "TEXT COLLATE NOCASE",
     "fieldid":                      "TEXT COLLATE NOCASE",
     "museumid":                     "TEXT COLLATE NOCASE",
@@ -188,9 +189,8 @@ DEFAULT_FIELDS = [
 # Factory-indexed fields. Must cover every field the viewer offers as a Batch
 # search criterion: without an index, each list of terms forces SQLite to
 # scan the whole of bold_records.
-# processid is deliberately omitted: it's PRIMARY KEY, so SQLite already
-# maintains its own index (sqlite_autoindex_bold_records_1) with the same
-# collation.
+# processid is deliberately omitted: Step 2 always indexes it (idx_processid),
+# whatever this list says.
 # nuc (sequence) and coord are left out: nobody searches by their exact value
 # and indexing nuc would cost several GB.
 DEFAULT_INDEXED = [
@@ -285,6 +285,10 @@ STRINGS_ES = {
     'rows_processed_pct': '\r  {n:,} filas procesadas ({pct:.1f}%)',
     'filtering_interrupted': '⚠️ Filtrado interrumpido — archivo parcial eliminado',
     'filtered_records': '✅ Registros filtrados: {n:,}',
+    'filter_summary': '📊 Filas del paquete: {read:,} · con secuencia (se guardan): {kept:,} · '
+                      'sin secuencia (se descartan): {no_seq:,}',
+    'filter_malformed': '⚠️ {n:,} línea(s) del paquete están rotas (les faltan columnas, '
+                        'probablemente por un salto de línea dentro de un campo) y no se pudieron leer',
     'file_label': '📁 Archivo: {name}',
     'ctx_generate_tsv': 'Generar TSV',
     'no_filt_tsv_found': '❌ No se encontró archivo *.filt.tsv en ../data/processed/',
@@ -298,6 +302,14 @@ STRINGS_ES = {
     'import_progress_nototal': '\r  {processed:,} filas importadas',
     'db_created': '✅ BD creada: {name}',
     'records_inserted': '✅ Registros insertados: {n:,}',
+    'import_count_mismatch': '❌ Validación fallida: se leyeron {read:,} filas, se guardaron {stored:,} '
+                             '(huellas: {hashed:,}) y se esperaban {expected:,}. La BD nueva se descarta; '
+                             'la actual no se ha tocado. Repite el Paso 1 por si el .filt.tsv está dañado.',
+    'import_irregular_rows': '⚠️ {n:,} fila(s) del .filt.tsv no tienen {cols} columnas; se guardaron '
+                             'igualmente (las que faltan, vacías). Repite el Paso 1 si no esperabas esto.',
+    'creating_processid_index': '⏳ Creando el índice de ID BOLD (processid)...',
+    'sequences_per_specimen': '📊 {seqs:,} secuencias de {specimens:,} especímenes: {extra:,} son '
+                              'secuencias adicionales de especímenes con más de un marcador',
     'import_interrupted': '⚠️ Importación interrumpida — se borró la BD a medio crear; la actual no se ha tocado',
     'db_build_target': '💾 La BD nueva se crea en {name}: el visor sigue usando la actual hasta que '
                        'termine y la reemplace',
@@ -674,8 +686,6 @@ STRINGS_ES = {
     'unsafe_tar_member': '⚠️ Entrada del .tar.gz omitida por seguridad: {name}',
     'old_targz_ignored': '⚠️ {names}: de otra versión y anterior a los datos ya preparados '
                          '({filt}). Se ignora (no se borra).',
-    'duplicates_skipped': '⚠️ {n:,} registros no se insertaron por tener un processid repetido '
-                          '(se conserva el primero).',
     'indexes_dropped': '🗑 {n} índice(s) eliminado(s) porque su campo ya no está marcado '
                        'para indexar: {names}',
     'targz_kept': '📦 Se conserva {name} en data/raw/ (opción «Conservar el .tar.gz»)',
@@ -697,6 +707,12 @@ STRINGS_ES = {
                             'Opción 1 o 2 de Inicio',
     'missing_update_old_db': '● La base de datos se creó con una versión anterior del programa — '
                              'reconstrúyela una vez (Opción 1 o 2 de Inicio) para poder actualizarla',
+    'db_outdated_rebuild': '⚠️ Esta base de datos se creó con una versión anterior que guardaba una sola '
+                           'secuencia por espécimen y descartaba las de los demás marcadores. Reconstrúyela '
+                           '(Opción 1 o 2 de Inicio) para que estén todas.',
+    'update_count_mismatch': '❌ Validación fallida: el paquete tiene {package:,} filas, pero la BD '
+                             'quedaría con {stored:,} (huellas: {hashed:,}; esperado: {expected:,}). '
+                             'La actualización se deshace y la BD queda como estaba.',
     'pipeline3_title': 'Opción 3 · Actualizar',
     'pipeline3_label': 'Actualizar la base de datos',
     'pipeline3_hint': 'Para el paquete semanal de BOLD: aplica solo lo que ha cambiado en lugar de '
@@ -719,9 +735,9 @@ STRINGS_ES = {
                      'una vez al mes): los índices se fragmentan.\n\n'
                      'Si falla o lo detienes, la base de datos queda exactamente como estaba, y el '
                      'visor puede seguir usándose mientras se actualiza.',
-    'update_unavailable_tip': 'Tu base de datos se creó con una versión anterior del programa y no '
-                              'guarda las huellas de los registros que necesita la actualización. '
-                              'Reconstrúyela una vez con la Opción 1 o 2; después ya podrás actualizarla.',
+    'update_unavailable_tip': 'Tu base de datos se creó con una versión anterior del programa, en un '
+                              'formato que la actualización no puede modificar. Reconstrúyela una vez '
+                              'con la Opción 1 o 2; después ya podrás actualizarla.',
     'update_needs_package_tip': 'Arrastra primero el .tar.gz nuevo de BOLD a la zona de arriba (o '
                                 'cópialo a data/raw/): la actualización compara ese paquete con tu base de datos.',
     'pipeline_needs_package_tip': 'Arrastra primero el .tar.gz descargado de BOLD a la zona de arriba '
@@ -812,6 +828,10 @@ STRINGS_EN = {
     'rows_processed_pct': '\r  {n:,} rows processed ({pct:.1f}%)',
     'filtering_interrupted': '⚠️ Filtering interrupted — partial file deleted',
     'filtered_records': '✅ Filtered records: {n:,}',
+    'filter_summary': '📊 Package rows: {read:,} · with a sequence (kept): {kept:,} · '
+                      'without a sequence (left out): {no_seq:,}',
+    'filter_malformed': '⚠️ {n:,} line(s) of the package are broken (missing columns, probably '
+                        'because of a line break inside a field) and couldn\'t be read',
     'file_label': '📁 File: {name}',
     'ctx_generate_tsv': 'Generate TSV',
     'no_filt_tsv_found': '❌ No *.filt.tsv file found in ../data/processed/',
@@ -825,6 +845,15 @@ STRINGS_EN = {
     'import_progress_nototal': '\r  {processed:,} rows imported',
     'db_created': '✅ DB created: {name}',
     'records_inserted': '✅ Records inserted: {n:,}',
+    'import_count_mismatch': '❌ Validation failed: {read:,} rows were read, {stored:,} stored '
+                             '(fingerprints: {hashed:,}) and {expected:,} expected. The new DB is '
+                             'discarded; the current one was not touched. Repeat Step 1 in case the '
+                             '.filt.tsv is damaged.',
+    'import_irregular_rows': '⚠️ {n:,} row(s) of the .filt.tsv don\'t have {cols} columns; they were '
+                             'stored anyway (missing ones empty). Repeat Step 1 if you didn\'t expect this.',
+    'creating_processid_index': '⏳ Creating the BOLD ID (processid) index...',
+    'sequences_per_specimen': '📊 {seqs:,} sequences from {specimens:,} specimens: {extra:,} are '
+                              'additional sequences of specimens with more than one marker',
     'import_interrupted': '⚠️ Import interrupted — the half-built DB was deleted; the current one was not touched',
     'db_build_target': '💾 The new DB is built in {name}: the viewer keeps using the current one until '
                        'it finishes and replaces it',
@@ -1200,8 +1229,6 @@ STRINGS_EN = {
     'unsafe_tar_member': '⚠️ .tar.gz entry skipped for safety: {name}',
     'old_targz_ignored': '⚠️ {names}: a different version, older than the data already '
                          'prepared ({filt}). Ignored (not deleted).',
-    'duplicates_skipped': '⚠️ {n:,} records were not inserted because their processid was '
-                          'repeated (the first one is kept).',
     'indexes_dropped': '🗑 {n} index(es) dropped because their field is no longer marked '
                        'for indexing: {names}',
     'targz_kept': '📦 Keeping {name} in data/raw/ ("Keep the .tar.gz" option)',
@@ -1223,6 +1250,12 @@ STRINGS_EN = {
                             'or 2 on Home',
     'missing_update_old_db': '● The database was built by an older version of the program — rebuild '
                              'it once (Option 1 or 2 on Home) to be able to update it',
+    'db_outdated_rebuild': '⚠️ This database was built by an older version that kept a single sequence '
+                           'per specimen and left out those of its other markers. Rebuild it (Option 1 '
+                           'or 2 on Home) to get all of them.',
+    'update_count_mismatch': '❌ Validation failed: the package has {package:,} rows, but the DB would '
+                             'end up with {stored:,} (fingerprints: {hashed:,}; expected: {expected:,}). '
+                             'The update is rolled back and the DB stays as it was.',
     'pipeline3_title': 'Option 3 · Update',
     'pipeline3_label': 'Update the database',
     'pipeline3_hint': 'For BOLD\'s weekly package: applies only what changed instead of redoing '
@@ -1244,9 +1277,9 @@ STRINGS_EN = {
                      'month): the indexes get fragmented.\n\n'
                      'If it fails or you stop it, the database stays exactly as it was, and the '
                      'viewer can still be used while the update runs.',
-    'update_unavailable_tip': 'Your database was built by an older version of the program and '
-                              'doesn\'t store the record fingerprints the update needs. Rebuild it '
-                              'once with Option 1 or 2; after that you can update it.',
+    'update_unavailable_tip': 'Your database was built by an older version of the program, in a '
+                              'layout the update can\'t modify. Rebuild it once with Option 1 or 2; '
+                              'after that you can update it.',
     'update_needs_package_tip': 'First drop the new BOLD .tar.gz on the area above (or copy it to '
                                 'data/raw/): the update compares that package with your database.',
     'pipeline_needs_package_tip': 'First drop the .tar.gz downloaded from BOLD on the area above (or '
@@ -1751,8 +1784,27 @@ def _promote_pending_build(log):
 
 
 # Fingerprint of every stored record, written by Step 2 and kept up to date by
-# the update (run_update), which compares it against the new package.
+# the update (run_update), which compares it against the new package. One row
+# per row of bold_records (rid = its rowid), with the key the update matches
+# records by: processid + marker. Exact text (BINARY), unlike the viewer's
+# case-insensitive searches, so two IDs differing in case are never merged.
 ROW_HASH_TABLE = db_contract.ROW_HASH_TABLE
+_ROW_HASH_DDL  = ("CREATE TABLE {0} (rid INTEGER PRIMARY KEY, processid TEXT NOT NULL, "
+                  "marker TEXT NOT NULL, h INTEGER NOT NULL)".format(ROW_HASH_TABLE))
+
+# Index on processid, built by Step 2 (see run_step2)
+PROCESSID_INDEX = "idx_processid"
+
+
+def _row_key_idx(cols_clean):
+    """Positions of processid and marker_code among the columns (None if absent)."""
+    return tuple(cols_clean.index(c) if c in cols_clean else None
+                 for c in ("col_processid", "col_marker_code"))
+
+
+def _row_key(values, key_idx):
+    """(processid, marker) of a row; a missing value counts as ''."""
+    return tuple("" if i is None or values[i] is None else values[i] for i in key_idx)
 
 
 def _tsv_row_values(row, n_cols):
@@ -2200,6 +2252,9 @@ def run_step1(log, progress, cfg):
         stop        = cfg.get("_stop")
         interrupted = False
         processed   = written = 0
+        # What's left out, and why: only rows without a sequence may be, and
+        # the counts are reported so nothing goes missing unnoticed
+        no_seq = malformed = 0
         with open(archivo_tsv, "r", encoding="utf-8", errors="replace", buffering=_IO_BUF) as fin, \
              open(archivo_filtrado, "w", encoding="utf-8", newline="", buffering=_IO_BUF) as fout:
             writer = csv.writer(fout, delimiter="\t")
@@ -2237,6 +2292,12 @@ def run_step1(log, progress, cfg):
                         if len(batch) >= _BATCH:
                             writer.writerows(batch)
                             batch.clear()
+                    else:
+                        no_seq += 1
+                elif line.strip():
+                    # Too few columns to even reach the sequence: a line
+                    # broken by a stray line break inside a field
+                    malformed += 1
                 if processed % _STOP_CHK == 0 and stop and stop.is_set():
                     interrupted = True
                     break
@@ -2265,6 +2326,9 @@ def run_step1(log, progress, cfg):
         except OSError:
             pass
         log(t('filtered_records', n=total_filtrado))
+        log(t('filter_summary', read=processed - 1, kept=total_filtrado, no_seq=no_seq))
+        if malformed:
+            log(t('filter_malformed', n=malformed))
         log(t('file_label', name=os.path.basename(archivo_filtrado)))
         _cleanup_raw_files(log, gz_path, archivo_tsv, keep_gz=cfg.get("keep_targz", False))
         progress(100)
@@ -2293,7 +2357,11 @@ def run_step2(log, progress, cfg):
                     conn_chk = sqlite3.connect(_db_path, timeout=3)
                     cur_chk  = conn_chk.cursor()
                     cur_chk.execute("SELECT 1 FROM bold_records LIMIT 1")
-                    _has_data = bool(cur_chk.fetchone())
+                    # ...and in this version's layout: a database from before
+                    # schema 2 is missing sequences and must be rebuilt even
+                    # from the same .filt.tsv
+                    _has_data = (bool(cur_chk.fetchone()) and
+                                 db_contract.schema_version(conn_chk) == db_contract.SCHEMA_VERSION)
                     conn_chk.close()
                     if _has_data:
                         log(t('db_already_built', name=os.path.basename(archivo_tsv)))
@@ -2367,11 +2435,7 @@ def run_step2(log, progress, cfg):
             cur.execute("DROP TABLE IF EXISTS {0}".format(DB_META_TABLE))
             cur.execute("DROP TABLE IF EXISTS {0}".format(ROW_HASH_TABLE))
             cur.execute("CREATE TABLE bold_records ({})".format(", ".join(cols_sql)))
-            # Fingerprints for later updates (see run_update). Same NOCASE key
-            # and INSERT OR IGNORE as bold_records, so a duplicated processid
-            # keeps the same (first) row in both tables.
-            cur.execute("CREATE TABLE {0} (processid TEXT PRIMARY KEY COLLATE NOCASE, "
-                        "h INTEGER NOT NULL)".format(ROW_HASH_TABLE))
+            cur.execute(_ROW_HASH_DDL)
             conn.commit()
             log(t('table_created'))
 
@@ -2379,15 +2443,29 @@ def run_step2(log, progress, cfg):
             chunk_n      = cfg.get("chunksize", CHUNKSIZE)
             cols_clean   = list(mapeo.values())
             n_cols       = len(cols_clean)
-            placeholders = ",".join(["?"] * n_cols)
-            insert_q     = "INSERT OR IGNORE INTO bold_records VALUES ({})".format(placeholders)
-            hash_q       = "INSERT OR IGNORE INTO {0} VALUES (?, ?)".format(ROW_HASH_TABLE)
-            pid_idx      = cols_clean.index("col_processid") if "col_processid" in cols_clean else None
+            # Every row of the .filt.tsv is a sequence and gets in: there's no
+            # key to collide on. Each row is one sequence, not one specimen, so
+            # a processid repeats once per marker (COI-5P + 16S, matK + rbcLa...)
+            # and, rarely, within the same marker. Before, processid was the
+            # PRIMARY KEY and INSERT OR IGNORE kept whichever sequence of the
+            # specimen came first in the file, dropping ~400,000 of them.
+            # The rowid is given explicitly (1, 2, 3... in file order) so the
+            # fingerprint table can point at each row without asking SQLite.
+            insert_q     = "INSERT INTO bold_records (rowid, {0}) VALUES (?, {1})".format(
+                               ", ".join('"{0}"'.format(c) for c in cols_clean),
+                               ",".join(["?"] * n_cols))
+            hash_q       = "INSERT INTO {0} (rid, processid, marker, h) VALUES (?, ?, ?, ?)".format(
+                               ROW_HASH_TABLE)
+            key_idx      = _row_key_idx(cols_clean)
             hash_order   = _hash_order(cols_clean)
 
             _IO_BUF    = 8 * 1024 * 1024   # 8 MB read buffer
             _COMMIT_N  = 5                  # commit every N chunks
             processed  = chunk_count = 0
+            # Rows with more or fewer columns than the header: stored anyway
+            # (missing values as NULL, as before), but counted and reported,
+            # since Step 1 always writes the full set
+            irregular  = 0
             stop       = cfg.get("_stop")
             _last_ui   = 0.0
 
@@ -2409,11 +2487,13 @@ def run_step2(log, progress, cfg):
                     # the FASTA taxonomic fallback and the With/Without data filters.
                     # The TSV was generated by Step 1, so almost every row carries
                     # exactly n_cols: this avoids the per-column index check.
+                    if len(row) != n_cols:
+                        irregular += 1
                     vals = _tsv_row_values(row, n_cols)
-                    batch.append(vals)
-                    if pid_idx is not None and vals[pid_idx] is not None:
-                        hbatch.append((vals[pid_idx], _row_hash(vals, hash_order)))
                     processed += 1
+                    batch.append((processed,) + vals)
+                    hbatch.append((processed,) + _row_key(vals, key_idx) +
+                                  (_row_hash(vals, hash_order),))
                     if len(batch) >= chunk_n:
                         cur.executemany(insert_q, batch)
                         cur.executemany(hash_q, hbatch)
@@ -2450,6 +2530,31 @@ def run_step2(log, progress, cfg):
 
             cur.execute("SELECT COUNT(*) FROM bold_records")
             real_count = cur.fetchone()[0]
+            hash_count = cur.execute("SELECT COUNT(*) FROM {0}".format(ROW_HASH_TABLE)).fetchone()[0]
+            # Validation: every row read is in the database, and the count
+            # matches what Step 1 wrote. Anything else is a bug or a damaged
+            # .filt.tsv, and the build is discarded rather than put in service.
+            if not (real_count == hash_count == processed and
+                    (total_lines == 0 or total_lines == processed)):
+                log(t('import_count_mismatch', read=processed, stored=real_count,
+                      hashed=hash_count, expected=total_lines or processed))
+                return False
+            if irregular:
+                log(t('import_irregular_rows', n=irregular, cols=n_cols))
+
+            # Searching by BOLD ID used to rely on the PRIMARY KEY's index.
+            # Built here, not in Step 3, so it's there whatever steps are run,
+            # and named outside Step 3's idx_col_* set so Step 3 never drops it.
+            if "col_processid" in cols_clean:
+                log(t('creating_processid_index'))
+                cur.execute('CREATE INDEX {0} ON bold_records ("col_processid")'.format(
+                    PROCESSID_INDEX))
+                with_id, n_specimens = cur.execute(
+                    "SELECT COUNT(col_processid), COUNT(DISTINCT col_processid) "
+                    "FROM bold_records").fetchone()
+                log(t('sequences_per_specimen', seqs=real_count, specimens=n_specimens,
+                      extra=with_id - n_specimens))
+
             _write_db_meta(conn, {
                 "record_count":    real_count,
                 "source_file":     os.path.basename(archivo_tsv),
@@ -2461,11 +2566,6 @@ def run_step2(log, progress, cfg):
                 _f.write(os.path.basename(archivo_tsv))
             log(t('db_created', name=os.path.basename(_db_path)))
             log(t('records_inserted', n=real_count))
-            # INSERT OR IGNORE drops repeated processids without a word: the
-            # difference with the filtered count is reported, otherwise the
-            # viewer's total silently disagrees with Step 1's.
-            if total_lines > real_count:
-                log(t('duplicates_skipped', n=total_lines - real_count))
             built = True
             progress(100)
             return True
@@ -2876,7 +2976,7 @@ def run_update(log, progress, cfg):
                   missing=", ".join(sorted(set(db_cols) - set(cols_clean))) or "—"))
             return False
         n_cols  = len(cols_clean)
-        pid_idx = cols_clean.index("col_processid")
+        key_idx = _row_key_idx(cols_clean)
         order   = _hash_order(cols_clean)
         fts_cols = []
         if "bold_records_fts" in tables:
@@ -2892,7 +2992,7 @@ def run_update(log, progress, cfg):
         attached = True
         cur.execute("PRAGMA st.journal_mode = OFF")
         cur.execute("PRAGMA st.synchronous  = OFF")
-        cur.execute("CREATE TABLE st.stage (processid TEXT COLLATE NOCASE, h INTEGER, line INTEGER)")
+        cur.execute("CREATE TABLE st.stage (line INTEGER PRIMARY KEY, processid TEXT, marker TEXT, h INTEGER)")
         log(t('update_pass1'))
         total_bytes = os.path.getsize(archivo_tsv) or 1
         line = 0
@@ -2904,12 +3004,12 @@ def run_update(log, progress, cfg):
             next(reader)
             for row in reader:
                 line += 1
+                # Every row, as Step 2 stores every row: one without a
+                # processid is still a sequence (it used to be skipped here)
                 vals = _tsv_row_values(row, n_cols)
-                if vals[pid_idx] is None:
-                    continue
-                batch.append((vals[pid_idx], _row_hash(vals, order), line))
+                batch.append((line,) + _row_key(vals, key_idx) + (_row_hash(vals, order),))
                 if len(batch) >= 100_000:
-                    cur.executemany("INSERT INTO st.stage VALUES (?, ?, ?)", batch)
+                    cur.executemany("INSERT INTO st.stage VALUES (?, ?, ?, ?)", batch)
                     batch.clear()
                     _check_stop()
                     now = time.monotonic()
@@ -2919,31 +3019,55 @@ def run_update(log, progress, cfg):
                         progress(pct * 0.4)
                         log(t('update_pass1_progress', n=line, pct=pct))
             if batch:
-                cur.executemany("INSERT INTO st.stage VALUES (?, ?, ?)", batch)
+                cur.executemany("INSERT INTO st.stage VALUES (?, ?, ?, ?)", batch)
         conn.commit()
+        n_package = line
         progress(40)
 
         # ---- Diff --------------------------------------------------------------
+        # A specimen can have several rows (one per marker, and rarely two of
+        # the same marker), so rows are matched by content, not by processid:
+        #  1. A stored row and a package row with the same processid, marker
+        #     and fingerprint are the same sequence: untouched. The k-th copy
+        #     pairs with the k-th, so identical rows are counted, not merged.
+        #  2. What's left of a processid + marker on both sides is paired in
+        #     order and counts as modified (rewritten in place).
+        #  3. Left over in the package: new. Left over in the database: gone.
         log(t('update_diff'))
         watch_done = _interrupt_on_stop(conn, stop)
-        # One row per processid (the first one, as Step 2 keeps the first of
-        # any duplicates), sorted, so the joins below walk both sides in order.
-        cur.execute("CREATE TABLE st.uniq (processid TEXT PRIMARY KEY COLLATE NOCASE, h INTEGER, line INTEGER)")
-        cur.execute("INSERT INTO st.uniq SELECT processid, h, MIN(line) FROM st.stage GROUP BY processid")
+        cur.execute("CREATE TABLE st.newk AS SELECT line, processid, marker, h, ROW_NUMBER() OVER "
+                    "(PARTITION BY processid, marker, h ORDER BY line) AS k FROM st.stage")
         cur.execute("DROP TABLE st.stage")
-        cur.execute("CREATE TABLE st.todo (line INTEGER PRIMARY KEY, kind INTEGER)")   # 1 new, 2 changed
-        cur.execute("INSERT INTO st.todo SELECT u.line, 1 FROM st.uniq u WHERE NOT EXISTS "
-                    "(SELECT 1 FROM {0} b WHERE b.processid = u.processid)".format(ROW_HASH_TABLE))
-        cur.execute("INSERT INTO st.todo SELECT u.line, 2 FROM st.uniq u JOIN {0} b "
-                    "ON b.processid = u.processid WHERE b.h <> u.h".format(ROW_HASH_TABLE))
-        cur.execute("CREATE TABLE st.gone (processid TEXT)")
-        cur.execute("INSERT INTO st.gone SELECT b.processid FROM {0} b WHERE NOT EXISTS "
-                    "(SELECT 1 FROM st.uniq u WHERE u.processid = b.processid)".format(ROW_HASH_TABLE))
+        cur.execute("CREATE TABLE st.oldk AS SELECT rid, processid, marker, h, ROW_NUMBER() OVER "
+                    "(PARTITION BY processid, marker, h ORDER BY rid) AS k FROM main.{0}"
+                    .format(ROW_HASH_TABLE))
+        cur.execute("CREATE INDEX st.newk_i ON newk (processid, marker, h, k)")
+        cur.execute("CREATE INDEX st.oldk_i ON oldk (processid, marker, h, k)")
+        _check_stop()
+        for side, other, id_col in (("new", "oldk", "line"), ("old", "newk", "rid")):
+            cur.execute(
+                "CREATE TABLE st.{0}_left AS SELECT {2}, processid, marker, ROW_NUMBER() OVER "
+                "(PARTITION BY processid, marker ORDER BY {2}) AS j FROM st.{0}k x "
+                "WHERE NOT EXISTS (SELECT 1 FROM st.{1} y WHERE y.processid = x.processid "
+                "AND y.marker = x.marker AND y.h = x.h AND y.k = x.k)".format(side, other, id_col))
+            cur.execute("CREATE INDEX st.{0}_left_i ON {0}_left (processid, marker, j)".format(side))
+            _check_stop()
+        cur.execute("DROP TABLE st.newk")
+        cur.execute("DROP TABLE st.oldk")
+        # rid NULL: new record. Otherwise the stored row it replaces.
+        cur.execute("CREATE TABLE st.todo (line INTEGER PRIMARY KEY, rid INTEGER)")
+        cur.execute("INSERT INTO st.todo SELECT n.line, o.rid FROM st.new_left n "
+                    "LEFT JOIN st.old_left o ON o.processid = n.processid "
+                    "AND o.marker = n.marker AND o.j = n.j")
+        cur.execute("CREATE TABLE st.gone (rid INTEGER PRIMARY KEY)")
+        cur.execute("INSERT INTO st.gone SELECT o.rid FROM st.old_left o WHERE NOT EXISTS "
+                    "(SELECT 1 FROM st.new_left n WHERE n.processid = o.processid "
+                    "AND n.marker = o.marker AND n.j = o.j)")
         conn.commit()
         _check_stop()
         n_old  = cur.execute("SELECT COUNT(*) FROM {0}".format(ROW_HASH_TABLE)).fetchone()[0]
-        n_new  = cur.execute("SELECT COUNT(*) FROM st.todo WHERE kind = 1").fetchone()[0]
-        n_chg  = cur.execute("SELECT COUNT(*) FROM st.todo WHERE kind = 2").fetchone()[0]
+        n_new  = cur.execute("SELECT COUNT(*) FROM st.todo WHERE rid IS NULL").fetchone()[0]
+        n_chg  = cur.execute("SELECT COUNT(*) FROM st.todo WHERE rid IS NOT NULL").fetchone()[0]
         n_gone = cur.execute("SELECT COUNT(*) FROM st.gone").fetchone()[0]
         n_all  = n_new + n_chg + n_gone
         frac   = n_all / max(n_old, 1)
@@ -2962,22 +3086,23 @@ def run_update(log, progress, cfg):
             conn.execute("PRAGMA main.journal_mode = WAL")
             wal = True
             log(t('update_applying', fts=t('update_with_fts') if fts_cols else ""))
-            todo = dict(cur.execute("SELECT line, kind FROM st.todo"))
-            gone = [r[0] for r in cur.execute("SELECT processid FROM st.gone")]
+            todo = dict(cur.execute("SELECT line, rid FROM st.todo"))
+            gone = [r[0] for r in cur.execute("SELECT rid FROM st.gone")]
 
             quoted   = ['"{0}"'.format(c) for c in cols_clean]
             ins_q    = "INSERT INTO bold_records ({0}) VALUES ({1})".format(
                            ", ".join(quoted), ", ".join("?" * n_cols))
             upd_q    = "UPDATE bold_records SET {0} WHERE rowid = ?".format(
                            ", ".join(q + " = ?" for q in quoted))
-            sel_q    = "SELECT rowid{0} FROM bold_records WHERE col_processid = ?".format(
+            sel_q    = "SELECT rowid{0} FROM bold_records WHERE rowid = ?".format(
                            "".join(', "{0}"'.format(c) for c in fts_cols))
             fts_list = ", ".join('"{0}"'.format(c) for c in fts_cols)
             fts_del  = ("INSERT INTO bold_records_fts(bold_records_fts, rowid, {0}) VALUES ('delete', ?, {1})"
                         .format(fts_list, ", ".join("?" * len(fts_cols)))) if fts_cols else None
             fts_ins  = ("INSERT INTO bold_records_fts(rowid, {0}) VALUES (?, {1})"
                         .format(fts_list, ", ".join("?" * len(fts_cols)))) if fts_cols else None
-            hash_q   = "INSERT OR REPLACE INTO {0} (processid, h) VALUES (?, ?)".format(ROW_HASH_TABLE)
+            hash_ins = "INSERT INTO {0} (rid, processid, marker, h) VALUES (?, ?, ?, ?)".format(ROW_HASH_TABLE)
+            hash_upd = "UPDATE {0} SET processid = ?, marker = ?, h = ? WHERE rid = ?".format(ROW_HASH_TABLE)
 
             done = 0
             _last_ui = 0.0
@@ -2992,13 +3117,13 @@ def run_update(log, progress, cfg):
                     log(t('update_apply_progress', done=done, total=n_all, pct=pct))
 
             # Removed records
-            for pid in gone:
-                old = cur.execute(sel_q, (pid,)).fetchone()
+            for rid in gone:
+                old = cur.execute(sel_q, (rid,)).fetchone()
                 if old is not None:
                     if fts_cols:
                         cur.execute(fts_del, old)
-                    cur.execute("DELETE FROM bold_records WHERE rowid = ?", (old[0],))
-                cur.execute("DELETE FROM {0} WHERE processid = ?".format(ROW_HASH_TABLE), (pid,))
+                    cur.execute("DELETE FROM bold_records WHERE rowid = ?", (rid,))
+                cur.execute("DELETE FROM {0} WHERE rid = ?".format(ROW_HASH_TABLE), (rid,))
                 done += 1
                 if done % 2000 == 0:
                     _check_stop()
@@ -3012,23 +3137,25 @@ def run_update(log, progress, cfg):
                 line = 0
                 for row in reader:
                     line += 1
-                    kind = todo.get(line)
-                    if kind is None:
+                    if line not in todo:
                         continue
+                    rid  = todo[line]
                     vals = _tsv_row_values(row, n_cols)
-                    pid  = vals[pid_idx]
-                    old  = cur.execute(sel_q, (pid,)).fetchone() if kind == 2 else None
+                    key  = _row_key(vals, key_idx)
+                    h    = _row_hash(vals, order)
+                    old  = cur.execute(sel_q, (rid,)).fetchone() if rid is not None else None
                     if old is not None:
                         if fts_cols:
                             cur.execute(fts_del, old)
-                        cur.execute(upd_q, vals + (old[0],))
-                        rowid = old[0]
+                        cur.execute(upd_q, vals + (rid,))
+                        cur.execute(hash_upd, key + (h, rid))
+                        rowid = rid
                     else:
                         cur.execute(ins_q, vals)
                         rowid = cur.lastrowid
+                        cur.execute(hash_ins, (rowid,) + key + (h,))
                     if fts_cols:
                         cur.execute(fts_ins, (rowid,) + tuple(vals[i] for i in fts_idx))
-                    cur.execute(hash_q, (pid, _row_hash(vals, order)))
                     done += 1
                     if done % 2000 == 0:
                         _check_stop()
@@ -3036,9 +3163,20 @@ def run_update(log, progress, cfg):
         else:
             log(t('update_nothing'))
 
-        # ---- Commit ------------------------------------------------------------
+        # ---- Validation ----------------------------------------------------------
+        # The database must end up with exactly one row per row of the package.
+        # Otherwise the whole update is rolled back (nothing is committed yet).
         _check_stop()
-        total = n_old + n_new - n_gone
+        total     = n_old + n_new - n_gone
+        n_records = cur.execute("SELECT COUNT(*) FROM bold_records").fetchone()[0]
+        n_hashes  = cur.execute("SELECT COUNT(*) FROM {0}".format(ROW_HASH_TABLE)).fetchone()[0]
+        if not (n_records == n_hashes == total == n_package):
+            log(t('update_count_mismatch', package=n_package, stored=n_records,
+                  hashed=n_hashes, expected=total))
+            conn.rollback()
+            return False
+
+        # ---- Commit ------------------------------------------------------------
         _write_db_meta(conn, {      # also commits the whole transaction
             "record_count":    total,
             "source_file":     os.path.basename(archivo_tsv),
@@ -3778,6 +3916,8 @@ def _pipeline_blocker(pl, st, flags):
         return None
     if any(not flags[i] and _check_input(STEPS[i][0]) for i in pl["steps"]):
         return None
+    if st.get("outdated"):
+        return 'pipeline_needs_package_tip'
     if not st["done1"] and not st["step2"]:
         return 'pipeline_needs_package_tip'
     return 'pipeline_done_needs_package_tip'
@@ -3845,6 +3985,7 @@ def _get_project_status(max_age=0.5):
     # the window; with timeout=3 we measured 4.6s of freeze per query.
     record_count = 0
     step2 = False
+    outdated = False
     if os.path.exists(db):
         try:
             conn = sqlite3.connect(db, timeout=0.3)
@@ -3852,6 +3993,9 @@ def _get_project_status(max_age=0.5):
             cur.execute("SELECT 1 FROM bold_records LIMIT 1")
             if cur.fetchone():
                 step2 = True
+                # Usable by the viewer, but built in an older layout (before
+                # schema 2 it left out every sequence after a specimen's first)
+                outdated = db_contract.schema_version(conn) < db_contract.SCHEMA_VERSION
                 rn = os.path.join(root, "..", "data", "processed", "records.number")
                 if os.path.exists(rn):
                     try: record_count = int(open(rn).read().strip())
@@ -3899,7 +4043,7 @@ def _get_project_status(max_age=0.5):
     # The .filt.tsv can be deleted once imported (it takes up tens of GB), so
     # its absence with the DB already built doesn't mean Step 1 is missing:
     # marking it pending produced the absurd sequence "1 ○  2 ✅".
-    st = {"version": version, "step1": step1, "step2": step2,
+    st = {"version": version, "step1": step1, "step2": step2, "outdated": outdated,
           "step3": step3, "step4": step4, "record_count": record_count,
           "done1": step1 or step2, "updatable": updatable}
     _STATUS_CACHE.update(t=now, v=st)
@@ -4447,7 +4591,7 @@ class StepPanel(QWidget):
             return False
         return {
             STEPS[0][0]: st["done1"],
-            STEPS[1][0]: st["step2"],
+            STEPS[1][0]: st["step2"] and not st["outdated"],
             STEPS[2][0]: st["step3"],
             STEPS[3][0]: st["step4"],
             STEPS[4][0]: False,      # an update is never "done": each package brings new data
@@ -4827,7 +4971,7 @@ class PrepPanel(QWidget):
                 db_part = ""
             self._update_hint.setText(t('pipeline3_hint', ram=upd["ram"], db=db_part))
         # One flag per entry of STEPS; the update (index 4) is never "done"
-        flags = [st["done1"], st["step2"], st["step3"], st["step4"], False]
+        flags = [st["done1"], st["step2"] and not st["outdated"], st["step3"], st["step4"], False]
         # Disabled while any step runs, not just during a pipeline: launching
         # Steps 1-3 while Step 4 ran on its own put two steps on the same DB.
         busy = self.app._is_any_running()
@@ -5653,7 +5797,7 @@ class App(QMainWindow):
             st = _get_project_status()
         except Exception:
             return
-        flags = [st["done1"], st["step2"], st["step3"], st["step4"]]
+        flags = [st["done1"], st["step2"] and not st["outdated"], st["step3"], st["step4"]]
         for i, done in enumerate(flags):
             if self._btns[i]:
                 # Two glyphs from the same text font: "✅" rendered as a colour
@@ -6125,6 +6269,8 @@ class App(QMainWindow):
         self.log(t('output_line', ok=ok(st["step2"]), msg=(
             t('dbfile_with_count', cnt=cnt) if st["step2"] else t('db_not_created_run_step')
         )))
+        if st["outdated"]:
+            self.log(t('db_outdated_rebuild'))
 
         self.log(t('header_step3'))
         self.log(t('input_line', ok=ok(st["step2"]), msg=(

@@ -32,9 +32,15 @@ ROW_HASH_TABLE = "bold_row_hash"
 # the FTS index's tokenizer... Raise it with any change the viewer or the
 # update would misread, and set MIN_VIEWER_SCHEMA to the oldest layout the
 # viewer still reads. Written to META_TABLE as "schema_version".
-#   1 - bold_records (col_* columns) + bold_records_fts (trigram, external
-#       content) + bold_meta + bold_row_hash
-SCHEMA_VERSION    = 1
+#   1 - bold_records (col_* columns, processid PRIMARY KEY) + bold_records_fts
+#       (trigram, external content) + bold_meta + bold_row_hash (processid, h).
+#       Kept only the first sequence of each specimen.
+#   2 - One row per sequence: processid is no longer a key (a specimen has a
+#       row per marker), with its own index idx_processid. bold_row_hash is
+#       (rid, processid, marker, h), rid being the bold_records rowid.
+# The viewer still reads layout 1 (same columns, fewer rows); the update
+# doesn't, and the Creator asks for a rebuild.
+SCHEMA_VERSION    = 2
 MIN_VIEWER_SCHEMA = 1
 
 # Databases built before the version was recorded (Creator <= 1.2.0) already

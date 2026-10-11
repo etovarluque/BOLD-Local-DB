@@ -7,6 +7,13 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 
 ## [Unreleased]
 
+### Upgrade notes
+- **Rebuild the database** (Option 1 or 2 on Home). Databases built until
+  now kept only one sequence per specimen and left out ~400,000 sequences of
+  its other markers (see *Fixed*). The viewer still opens them, but the
+  Creator marks them as outdated and the update refuses them. The current
+  `.filt.tsv` can be reused: Step 1 doesn't need repeating.
+
 ### Added
 - **GenBank batch** tab, ported from BarcodeSuite: batch-searches NCBI
   GenBank (nucleotide) online with one list of terms, optionally crossed with
@@ -56,6 +63,22 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   keeping the ones from startup.
 
 ### Fixed
+- **Sequences were left out of the database.** Each row of a BOLD package is
+  a sequence, not a specimen: a specimen sequenced for several markers
+  (COI-5P + 16S, matK + rbcLa, ITS2...) has one row per marker under the same
+  processid. Step 2 used processid as the table's key and kept whichever row
+  came first in the file, so ~400,000 sequences (about 2%, mostly non-COI
+  markers) never reached the database, and some specimens appeared under a
+  marker other than the one searched for. Every row with a sequence is now
+  stored (database layout 2), and searching by BOLD ID returns one row per
+  sequence. The update matches records by processid + marker + content, and
+  no longer skipped rows without a processid either.
+- Data validation: Step 1 reports how many rows of the package it kept, how
+  many it left out for having no sequence (the only reason a row may be left
+  out) and how many lines were broken and unreadable. Step 2 checks that
+  every row read is stored and matches Step 1's count, and discards the new
+  database otherwise; the update checks that the database ends up with
+  exactly the package's rows, and rolls back otherwise.
 - Two batch searches started in the same second wrote to the same ZIP, and
   if one failed or was cancelled it deleted the other's.
 - Batch search: different terms that map to the same file name (`A.B` and

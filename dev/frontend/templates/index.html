@@ -6,6 +6,9 @@
     <title>BOLD Database v{{ version }}</title>
     <link rel="icon" type="image/x-icon" href="/static/database.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
 		.autocomplete-dropdown {
 			position: absolute;
@@ -862,39 +865,348 @@
 			white-space: pre-wrap;
 		}
 		.gb-log:empty { display: none; }
+
+		/* ── Visual theme ────────────────────────────────────────────────────
+		   Last in the sheet on purpose: it restyles the rules above without
+		   touching them. Navy carries the structure (active tab, card headers,
+		   primary actions), BOLD's orange is the single accent, IDs and
+		   sequences go in a monospaced face. */
+		:root {
+			--navy: #2c4685;
+			--navy-2: #223a73;
+			--orange: #e8831a;
+			--ink: #18213a;
+			--mute: #67718a;
+			--line: #e3e7ef;
+			--page: #f4f6fa;
+			--tint: #eef2fb;
+			--tab-idle: #e2e8f3;
+			--selected: #e3ebfb;
+			/* Nucleotides, as in the sequence viewers people already know */
+			--base-a: #2f9e6a;
+			--base-c: #3f6fd8;
+			--base-g: #e0a42a;
+			--base-t: #dd4f58;
+			--base-n: #c3c8d4;
+			--f-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+			--f-mono: 'IBM Plex Mono', ui-monospace, Consolas, 'Courier New', monospace;
+			--color-primary: var(--navy);
+		}
+		body { font-family: var(--f-ui); background: var(--page); color: var(--ink); }
+		.table th, .table td { font-family: var(--f-ui); }
+
+		/* Header: logo with the product name under it, record count on the right */
+		.app-header {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: 16px 32px;
+			margin-bottom: 1.5rem;
+		}
+		.brand { display: flex; flex-direction: column; gap: 6px; }
+		.brand-logo { height: 32px; width: auto; display: block; }
+		.brand-sub {
+			display: flex;
+			align-items: baseline;
+			gap: 10px;
+			font-size: .78rem;
+			font-weight: 600;
+			letter-spacing: .14em;
+			text-transform: uppercase;
+			color: var(--mute);
+		}
+		.brand-ver { letter-spacing: 0; font-weight: 400; text-transform: none; opacity: .8; }
+		.header-meta { display: flex; align-items: center; gap: 24px; }
+		.db-stat { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+		.db-stat-num { display: flex; align-items: baseline; gap: 8px; line-height: 1; }
+		#total-records {
+			font-size: 1.9rem;
+			font-weight: 600;
+			color: var(--navy);
+			font-variant-numeric: tabular-nums;
+			letter-spacing: -.01em;
+		}
+		.db-stat-label {
+			font-size: .78rem;
+			font-weight: 600;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--mute);
+		}
+		.db-stat-src {
+			font-family: var(--f-mono);
+			font-size: .78rem;
+			color: var(--mute);
+		}
+		.db-stat-src::before {
+			content: "";
+			display: inline-block;
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: #2fa36b;
+			margin-right: 6px;
+			vertical-align: 1px;
+		}
+		.lang-switch {
+			display: flex;
+			border: 1px solid #cfd6e4;
+			border-radius: 7px;
+			overflow: hidden;
+			background: #fff;
+		}
+		.lang-switch .lang-btn {
+			border: 0;
+			background: transparent;
+			color: var(--mute);
+			font-size: .8rem;
+			font-weight: 600;
+			padding: 6px 12px;
+		}
+		.lang-switch .lang-btn + .lang-btn { border-left: 1px solid #cfd6e4; }
+		.lang-switch .lang-btn.active { background: var(--navy) !important; color: #fff !important; }
+		.lang-switch .lang-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
+
+		/* Tabs: folder tabs standing on a navy rule, which the active one joins */
+		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--navy); }
+		.search-tabs .btn-group { margin-bottom: 0 !important; gap: 4px; }
+		.search-tabs .btn-group > .btn {
+			border: 0 !important;
+			border-radius: 9px 9px 0 0 !important;
+			margin: 0 !important;
+			background: var(--tab-idle);
+			color: var(--navy);
+			font-weight: 500;
+			padding: .65rem 1rem;
+		}
+		.search-tabs .btn-group > .btn:hover { background: #d3dbeb; color: var(--navy-2); }
+		.search-tabs .btn-group > .btn.active-tab { background: var(--navy) !important; color: #fff !important; }
+		.search-tabs .btn-group > .btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; z-index: 2; }
+		.search-tabs .btn-group > .btn.tab-unavailable:hover { background: var(--tab-idle); color: var(--navy); }
+
+		/* Cards: navy header band over a white body, as before, in the new tones.
+		   The search panels hang from the tab rule, so their top is square. */
+		.card { border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 1px 2px rgba(24, 33, 58, .05); }
+		.card-header { background: var(--navy); border-bottom: 0; padding: .85rem 1.25rem; }
+		.card-header h5 { font-weight: 600; font-size: 1.05rem; }
+		#fieldSearchPanel, #ftsSearchPanel, #batchSearchPanel, #genbankSearchPanel { border-top: 0; border-radius: 0 0 10px 10px; }
+		#fieldSearchPanel > .card-header, #ftsSearchPanel > .card-header,
+		#batchSearchPanel > .card-header, #genbankSearchPanel > .card-header { border-radius: 0; }
+
+		.btn-primary {
+			--bs-btn-bg: var(--navy);
+			--bs-btn-border-color: var(--navy);
+			--bs-btn-hover-bg: var(--navy-2);
+			--bs-btn-hover-border-color: var(--navy-2);
+			--bs-btn-active-bg: var(--navy-2);
+			--bs-btn-active-border-color: var(--navy-2);
+			--bs-btn-disabled-bg: var(--navy);
+			--bs-btn-disabled-border-color: var(--navy);
+			font-weight: 500;
+		}
+		#addCondition { border-style: dashed; border-color: #b9c3d9; color: var(--navy); }
+		#addCondition:hover { background: var(--tint); }
+		.first-cond-label { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
+		.remove-condition { background-color: #e6e9f1 !important; color: var(--mute) !important; box-shadow: none; }
+		.remove-condition:hover { background-color: var(--base-t) !important; color: #fff !important; }
+
+		/* The search on screen, as chips under the (blank again) form */
+		.last-search {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px 12px;
+			margin-top: 1rem;
+			padding-top: .9rem;
+			border-top: 1px dashed var(--line);
+		}
+		.last-search-label {
+			font-size: .72rem;
+			font-weight: 600;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--mute);
+		}
+		.last-search-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+		.crit-join { font-family: var(--f-mono); font-size: .75rem; font-weight: 500; color: var(--orange); }
+		.crit-chip {
+			display: inline-flex;
+			align-items: baseline;
+			gap: 6px;
+			max-width: 100%;
+			padding: 3px 9px;
+			border: 1px solid #d5ddef;
+			border-radius: 6px;
+			background: var(--tint);
+			font-size: .85rem;
+		}
+		.crit-field { font-weight: 600; color: var(--ink); }
+		.crit-op { color: var(--mute); }
+		.crit-val { font-family: var(--f-mono); font-size: .8rem; color: var(--navy); overflow-wrap: anywhere; }
+		.last-search-edit { margin-left: auto; color: var(--navy); text-decoration: none; font-weight: 500; }
+		.last-search-edit:hover { text-decoration: underline; }
+
+		/* Results header: the count stands out, the time is a quiet chip */
+		#resultsCardHeader h5 { align-items: center; }
+		#resultsCardHeader [data-i18n="results_label"] { font-weight: 400; opacity: .85; }
+		#resultsCount .results-count { font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+		#executionTime {
+			font-family: var(--f-mono);
+			font-size: .75rem;
+			opacity: 1;
+			background: rgba(255, 255, 255, .14);
+			padding: 2px 8px;
+			border-radius: 5px;
+		}
+		.results-card #exportButton,
+		.results-card #exportFastaButton { font-weight: 500; border-radius: 7px; }
+		.results-card #exportButton {
+			background: transparent;
+			border: 1px solid rgba(255, 255, 255, .6);
+			color: #fff;
+		}
+		.results-card #exportButton:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+		.results-card #exportFastaButton { background: var(--orange); border-color: var(--orange); color: #fff; }
+		.results-card #exportFastaButton:hover { background: #cf7212; border-color: #cf7212; color: #fff; }
+
+		/* Table: IDs line up, the selected record is marked */
+		.table thead th { background: #f7f8fb; color: var(--mute); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; }
+		/* Bootstrap paints hover and stripes as an inset shadow over the
+		   background; switched off so the row colors below are the only ones */
+		.table { --bs-table-hover-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-accent-bg: transparent; }
+		.table tbody tr { cursor: pointer; }
+		.table tbody tr:hover td { background-color: #eef3fc !important; }
+		.table tbody tr.row-selected td { background-color: var(--selected) !important; }
+		.table tbody tr.row-selected td:first-child { box-shadow: inset 3px 0 0 var(--navy); }
+		.table td.seq-cell { padding-top: 0; padding-bottom: 0; }
+		canvas.seq-bar { display: block; border-radius: 2px; }
+
+		/* Results next to the record panel */
+		.results-layout { display: flex; align-items: flex-start; gap: 16px; }
+		.results-main { flex: 1 1 auto; min-width: 0; }
+		.record-panel {
+			flex: 0 0 360px;
+			position: sticky;
+			top: 12px;
+			max-height: calc(100vh - 24px);
+			overflow-y: auto;
+			background: #fbfcfe;
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			padding: 16px 18px 18px;
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+		}
+		.record-panel[hidden] { display: none; }
+		@media (max-width: 1199.98px) {
+			/* No room beside the table: it slides over from the right */
+			.record-panel {
+				position: fixed;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				width: min(380px, 92vw);
+				max-height: none;
+				border-radius: 0;
+				z-index: 1060;
+				box-shadow: -12px 0 32px rgba(24, 33, 58, .18);
+			}
+		}
+		.rp-head { display: flex; align-items: flex-start; gap: 10px; }
+		.rp-head > div { min-width: 0; flex: 1; }
+		.rp-eyebrow, .rp-k {
+			font-size: .7rem;
+			font-weight: 600;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--mute);
+		}
+		.rp-eyebrow { font-family: var(--f-mono); letter-spacing: .04em; text-transform: none; font-size: .78rem; }
+		.rp-k { margin-bottom: 6px; }
+		.rp-title { margin: 2px 0 0; font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere; }
+		.rp-title.taxon-italic { font-style: italic; }
+		.rp-close {
+			flex: none;
+			border: 0;
+			background: transparent;
+			color: var(--mute);
+			font-size: 1.3rem;
+			line-height: 1;
+			padding: 2px 6px;
+			border-radius: 6px;
+		}
+		.rp-close:hover { background: var(--tint); color: var(--ink); }
+		.rp-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+		.rp-pill {
+			font-family: var(--f-mono);
+			font-size: .75rem;
+			padding: 2px 8px;
+			border-radius: 20px;
+			background: var(--tint);
+			color: var(--navy);
+		}
+		.rp-pill.bin { background: #fff2e3; color: #9a5a0c; }
+		.rp-lineage { display: flex; flex-wrap: wrap; gap: 2px 4px; font-size: .85rem; }
+		.rp-lineage span:not(:last-child)::after { content: "›"; margin-left: 4px; color: #b7bfd0; }
+		.rp-fields { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 14px; margin: 0; font-size: .85rem; }
+		.rp-fields dt { color: var(--mute); font-weight: 400; }
+		.rp-fields dd { margin: 0; overflow-wrap: anywhere; cursor: copy; }
+		.rp-fields dd:hover { color: var(--navy); }
+		.rp-seq {
+			font-family: var(--f-mono);
+			font-size: .74rem;
+			line-height: 1.55;
+			word-break: break-all;
+			max-height: 220px;
+			overflow-y: auto;
+			background: #fff;
+			border: 1px solid var(--line);
+			border-radius: 7px;
+			padding: 8px 10px;
+		}
+		.rp-seq .fa-head { color: var(--mute); }
+		.rp-seq .b-A { color: var(--base-a); }
+		.rp-seq .b-C { color: var(--base-c); }
+		.rp-seq .b-G { color: #b07d10; }
+		.rp-seq .b-T { color: var(--base-t); }
+		.rp-seq .b-N { color: #98a0b3; }
+		.rp-legend { display: flex; gap: 10px; font-family: var(--f-mono); font-size: .72rem; color: var(--mute); }
+		.rp-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
+		.rp-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+		.rp-actions .btn { font-size: .8rem; }
+		.rp-hint { font-size: .75rem; color: var(--mute); margin: 0; }
     </style>
 </head>
 <body>
     <div class="container mt-4">
 	
-		<div class="d-flex align-items-center gap-3 mb-4">
-		  <div class="position-relative" style="width:300px; height:35px;">
-			<img src="/static/logo.png" alt="Logo" width="300" height="35">
-			<span class="text-muted" style="position:absolute; top:100%; left:0; font-size:0.7rem; white-space:nowrap;">v{{ version }}</span>
-		  </div>
-
-		  <!-- Flex container for title and file name -->
-		  <div class="d-flex w-100 align-items-center justify-content-between">
-			<h1 class="title-lab mb-0" id="mainTitle">
-			  <span class="lgc" data-i18n="title_line1">BASE DE</span>
-			  <span class="bold" data-i18n="title_line2">DATOS</span>
-			  <small class="subtitle"><span data-i18n="title_local">Local</span>
-				<span id="total-records" class="badge rounded-pill fs-6 align-center" style="background-color: #6d6c7a; position: relative; top: -5px; left: 15px;">...</span>
-			  </small>
-			</h1>
-
-			<div class="d-flex align-items-center gap-2">
-			  <!-- File name -->
-			  <span id="file-name" style="display:none; background:linear-gradient(135deg,#2c4685,#3E92CC); color:#fff; padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:500; letter-spacing:0.4px; box-shadow:0 2px 8px rgba(44,70,133,0.3); white-space:nowrap;"></span>
-
-			  <!-- Language selector -->
-			  <div class="btn-group btn-group-sm" role="group" aria-label="Language">
-				<button type="button" class="btn btn-outline-secondary lang-btn" id="langBtnEs" onclick="setLang('es')">ES</button>
-				<button type="button" class="btn btn-outline-secondary lang-btn" id="langBtnEn" onclick="setLang('en')">EN</button>
-			  </div>
+		<header class="app-header">
+		  <div class="brand">
+			<img src="/static/logo.png" alt="BOLD Systems" class="brand-logo">
+			<div class="brand-sub">
+			  <span data-i18n="local_database">Base de datos local</span>
+			  <span class="brand-ver">v{{ version }}</span>
 			</div>
 		  </div>
-		</div>
+
+		  <div class="header-meta">
+			<!-- Records in the database and the BOLD package it was built from -->
+			<div class="db-stat">
+			  <div class="db-stat-num">
+				<span id="total-records">…</span>
+				<span class="db-stat-label" data-i18n="records_label">registros</span>
+			  </div>
+			  <span id="file-name" class="db-stat-src" style="display:none;"></span>
+			</div>
+
+			<div class="lang-switch" role="group" aria-label="Language">
+			  <button type="button" class="lang-btn" id="langBtnEn" onclick="setLang('en')">EN</button>
+			  <button type="button" class="lang-btn" id="langBtnEs" onclick="setLang('es')">ES</button>
+			</div>
+		  </div>
+		</header>
 		
 				
         <!-- Tabs to switch between search methods -->
@@ -1359,6 +1671,13 @@
 					<button id="searchButton" class="btn btn-primary px-5" data-i18n="search_btn">Buscar</button>
 				</div>
 
+				<!-- The search on screen, once the form has gone back to blank -->
+				<div id="lastSearchBar" class="last-search" hidden>
+					<span class="last-search-label" data-i18n="last_search_label">Búsqueda mostrada</span>
+					<div id="lastSearchChips" class="last-search-chips"></div>
+					<button type="button" id="editLastSearch" class="btn btn-sm btn-link last-search-edit" data-i18n="edit_search_btn">✎ Editar</button>
+				</div>
+
                 
 
                 <div id="explainPanel" class="explain-panel mt-3">
@@ -1382,6 +1701,8 @@
 				</div>
 			</div>
 			<div class="card-body results-container">
+			<div class="results-layout">
+			<div class="results-main">
 				<div id="loading" class="loading">
 					<img src="/static/dna.gif" alt="Cargando..." width="140" height="140" data-i18n-alt="loading_alt">
 					<p class="mt-2" data-i18n="loading_text">Cargando resultados...</p>
@@ -1411,6 +1732,10 @@
 				<div id="resultsTable"></div>
 				
 				<div id="pagination" class="pagination justify-content-center mt-3"></div>
+			</div>
+			<!-- Record clicked in the table: all its fields and its sequence -->
+			<aside id="recordPanel" class="record-panel" hidden></aside>
+			</div>
 			</div>
 		</div>
 
@@ -1514,6 +1839,14 @@
                 searching_sequences: 'Buscando secuencias...',
                 searching_database: 'Buscando en la base de datos...',
                 copied_toast: 'Copiado',
+                local_database: 'Base de datos local', records_label: 'registros',
+                last_search_label: 'Búsqueda mostrada', edit_search_btn: '✎ Editar',
+                record_label: 'Registro', record_close: 'Cerrar',
+                record_taxonomy: 'Taxonomía', record_fields: 'Datos del registro',
+                record_sequence: 'Secuencia', record_copy_fasta: 'Copiar FASTA',
+                record_copy_sequence: 'Copiar secuencia', record_open_bold: 'Ver en BOLD ↗',
+                record_copy_hint: 'Doble clic en un valor para copiarlo.',
+                seq_cell_title: '{n} pb · doble clic para copiar la secuencia completa',
                 expand_rows: 'Expandir filas', collapse_rows: 'Contraer filas',
                 columns_btn: 'Mostrar/ocultar columnas', show_all_btn: 'Mostrar todas', hide_all_btn: 'Ocultar todas',
                 fasta_export_error_alert: '⛔ Error al exportar FASTA: ', csv_export_error_alert: '⛔ Error al exportar CSV: ',
@@ -1668,6 +2001,14 @@
                 searching_sequences: 'Searching sequences...',
                 searching_database: 'Searching the database...',
                 copied_toast: 'Copied',
+                local_database: 'Local Database', records_label: 'records',
+                last_search_label: 'Showing results for', edit_search_btn: '✎ Edit',
+                record_label: 'Record', record_close: 'Close',
+                record_taxonomy: 'Taxonomy', record_fields: 'Record data',
+                record_sequence: 'Sequence', record_copy_fasta: 'Copy FASTA',
+                record_copy_sequence: 'Copy sequence', record_open_bold: 'Open in BOLD ↗',
+                record_copy_hint: 'Double-click a value to copy it.',
+                seq_cell_title: '{n} bp · double-click to copy the full sequence',
                 expand_rows: 'Expand rows', collapse_rows: 'Collapse rows',
                 columns_btn: 'Show/hide columns', show_all_btn: 'Show all', hide_all_btn: 'Hide all',
                 fasta_export_error_alert: '⛔ Error exporting FASTA: ', csv_export_error_alert: '⛔ Error exporting CSV: ',
@@ -1770,10 +2111,6 @@
                 const isOpen = document.getElementById('colOrderPanel') && document.getElementById('colOrderPanel').style.display !== 'none';
                 colBtn.textContent = `⠿ ${t('col_order_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
             }
-            const totalRecordsEl = document.getElementById('total-records');
-            if (totalRecordsEl && totalRecordsEl.dataset.total) {
-                totalRecordsEl.textContent = ` ${totalRecordsEl.dataset.total} ${t('total_records_suffix')} `;
-            }
         }
 
         function setLang(lang) {
@@ -1862,6 +2199,53 @@
         // so a new field shows up automatically, in the position that
         // matches its actual proximity in the BOLD TSV.
         const ORDERED_COLUMNS = {{ columns | map(attribute='friendly') | list | tojson }};
+
+        // Results rows come keyed by display name (in the active language);
+        // the record panel and the sequence cells need to know which column
+        // is which, so the technical names travel along.
+        const COLUMN_LABEL = Object.fromEntries(
+            {{ columns | tojson }}.map(c => [c.technical, c.friendly]));
+        const colLabel = tech => COLUMN_LABEL[tech];
+        const SEQ_COL = colLabel('col_nuc');
+        const TAXONOMY_COLS = ['col_kingdom', 'col_phylum', 'col_class', 'col_order',
+                               'col_family', 'col_subfamily', 'col_tribe', 'col_genus',
+                               'col_species', 'col_subspecies'];
+
+        // Colors of each nucleotide in the compact bar and the record panel
+        const BASE_COLORS = { A: '#2f9e6a', C: '#3f6fd8', G: '#e0a42a', T: '#dd4f58' };
+        const BASE_OTHER  = '#c3c8d4';
+
+        // Draws a sequence as a strip of colored bars, one per base sampled
+        // across the width: a recognisable fingerprint of the sequence in
+        // ~140 px, where the text itself needs hundreds of characters.
+        function drawSequenceBar(canvas, seq, width, height) {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.round(width * dpr);
+            canvas.height = Math.round(height * dpr);
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            const g = canvas.getContext('2d');
+            g.scale(dpr, dpr);
+            const n = seq.length;
+            if (!n) return;
+            const step = width / n;
+            if (step >= 1) {
+                for (let i = 0; i < n; i++) {
+                    g.fillStyle = BASE_COLORS[seq[i]] || BASE_OTHER;
+                    g.fillRect(i * step, 0, Math.max(step - (step > 2 ? .3 : 0), 1), height);
+                }
+            } else {
+                for (let x = 0; x < width; x++) {
+                    g.fillStyle = BASE_COLORS[seq[Math.floor(x / width * n)]] || BASE_OTHER;
+                    g.fillRect(x, 0, 1, height);
+                }
+            }
+        }
+
+        function copyText(text) {
+            if (!navigator.clipboard) return;
+            navigator.clipboard.writeText(text).then(showCopyToast).catch(() => {});
+        }
 
         // Operators that take no value (the condition is complete on its own,
         // e.g. "has no value"). Shared by handleOperatorChange (disables the
@@ -2109,9 +2493,8 @@
 			fetch('/total_records')
                 .then(response => response.json())
                 .then(data => {
-                    const formattedTotal = numFmt.format(data.total);
-                    document.getElementById('total-records').dataset.total = formattedTotal;
-                    document.getElementById('total-records').textContent = ` ${formattedTotal} ${t('total_records_suffix')} `;
+                    // The label next to it ("records") is a separate, translated element
+                    document.getElementById('total-records').textContent = numFmt.format(data.total);
                 })
                 .catch(error => console.error('Error obteniendo el total de registros:', error));
         });
@@ -2565,27 +2948,8 @@
 
 				document.querySelector('.results-card').classList.add('hidden');
 
-				// Clear advanced search fields
-				document.querySelectorAll('.search-condition').forEach((condition, index) => {
-					const columnSelect = condition.querySelector('.column-select');
-					const operatorSelect = condition.querySelector('.operator-select');
-					const valueInput = condition.querySelector('.value-input');
-
-					// Reset values (leave the first condition with its defaults)
-					if (index === 0) {
-						columnSelect.value = '';
-						operatorSelect.value = 'EQUALS';
-						valueInput.value = '';
-						valueInput.disabled = false;
-						valueInput.style.visibility = 'visible';
-						valueInput.placeholder = t('value_input_placeholder');
-						const v2 = condition.querySelector('.value2-input');
-						if (v2) { v2.style.display = 'none'; v2.value = ''; }
-					} else {
-						// Remove additional conditions
-						condition.remove();
-					}
-				});
+				resetFieldSearchForm();
+				document.getElementById('lastSearchBar').hidden = true;
 
 				// Clear FTS search (absent if the database has no FTS index)
 				const ftsInput = document.getElementById('ftsQueryInput');
@@ -2602,6 +2966,87 @@
 			});
 
 			document.getElementById('exportButton').addEventListener('click', exportToCSV);
+			document.getElementById('editLastSearch').addEventListener('click', () => {
+				const s = AppState.resultsSearch;
+				if (s && s.type === 'field') restoreFieldSearchForm(s.conditions);
+			});
+		}
+
+		// The field-search form back to its initial state: one blank condition
+		function resetFieldSearchForm() {
+			document.querySelectorAll('.search-condition').forEach((condition, index) => {
+				if (index > 0) { condition.remove(); return; }
+				condition.querySelector('.condition-type').value = 'AND';
+				condition.querySelector('.column-select').value = '';
+				condition.querySelector('.operator-select').value = 'EQUALS';
+				const valueInput = condition.querySelector('.value-input');
+				valueInput.value = '';
+				valueInput.disabled = false;
+				valueInput.style.visibility = 'visible';
+				valueInput.placeholder = t('value_input_placeholder');
+				const v2 = condition.querySelector('.value2-input');
+				if (v2) { v2.style.display = 'none'; v2.value = ''; }
+			});
+			updateConditionVisibility();
+		}
+
+		// Puts a search's conditions back into the form, to change and re-run it
+		function restoreFieldSearchForm(conditions) {
+			resetFieldSearchForm();
+			conditions.forEach((c, i) => {
+				if (i > 0) document.getElementById('addCondition').click();
+				const row = document.querySelectorAll('.search-condition')[i];
+				row.querySelector('.condition-type').value = c.condition_type || 'AND';
+				row.querySelector('.column-select').value = c.column;
+				const op = row.querySelector('.operator-select');
+				op.value = c.operator;
+				handleOperatorChange(op);
+				if (!NO_VALUE_OPERATORS.includes(c.operator)) row.querySelector('.value-input').value = c.value;
+				const v2 = row.querySelector('.value2-input');
+				if (v2 && c.operator === 'BETWEEN') v2.value = c.value2 || '';
+			});
+			const first = document.querySelector('.search-condition .value-input');
+			if (first) first.focus();
+		}
+
+		// How each operator reads in a chip: a symbol where there is one
+		const CHIP_OPERATORS = {
+			EQUALS: '=', NOT_EQUALS: '≠', GREATER_THAN: '>', LESS_THAN: '<',
+			LIKE: 'op_contains', NOT_LIKE: 'op_not_contains', STARTS_WITH: 'op_starts_with',
+			ENDS_WITH: 'op_ends_with', BETWEEN: 'op_between',
+			IS_NOT_EMPTY: 'op_has_value', IS_EMPTY: 'op_no_value',
+		};
+
+		// Shows the conditions of the search on screen as chips under the form
+		function showLastSearch(conditions) {
+			const chips = document.getElementById('lastSearchChips');
+			chips.innerHTML = '';
+			conditions.forEach((c, i) => {
+				if (i > 0) {
+					const join = document.createElement('span');
+					join.className = 'crit-join';
+					join.textContent = c.condition_type || 'AND';
+					chips.appendChild(join);
+				}
+				const chip = document.createElement('span');
+				chip.className = 'crit-chip';
+				const field = document.createElement('span');
+				field.className = 'crit-field';
+				field.textContent = c.column;
+				const op = document.createElement('span');
+				op.className = 'crit-op';
+				const sym = CHIP_OPERATORS[c.operator] || c.operator;
+				op.textContent = sym.startsWith('op_') ? t(sym).toLowerCase() : sym;
+				chip.append(field, op);
+				if (!NO_VALUE_OPERATORS.includes(c.operator)) {
+					const val = document.createElement('span');
+					val.className = 'crit-val';
+					val.textContent = c.operator === 'BETWEEN' ? `${c.value} – ${c.value2}` : c.value;
+					chip.appendChild(val);
+				}
+				chips.appendChild(chip);
+			});
+			document.getElementById('lastSearchBar').hidden = false;
 		}
 		
 
@@ -2701,6 +3146,12 @@
 					return;
 				}
 				conditions = parsed.conditions;
+				// The form goes back to blank for the next search, and the
+				// conditions of this one stay visible under it (with Edit to
+				// bring them back)
+				showLastSearch(conditions);
+				resetFieldSearchForm();
+				document.querySelectorAll('.autocomplete-dropdown').forEach(d => { d.innerHTML = ''; });
 			}
 			AppState.resultsSearch = { type: 'field', conditions: JSON.parse(JSON.stringify(conditions)) };
 
@@ -3310,24 +3761,16 @@
 		}
 
 		// One click + one dblclick listener on the (never-replaced) #resultsTable
-		// container, instead of two per <td>: event.target.closest('td') finds
-		// the actual cell regardless of how many times the table inside has
-		// been rebuilt by displayResults(). Click expands/collapses a cell
-		// (single-click, after a short delay so a dblclick can cancel it);
+		// container, instead of two per <td>: event.target.closest('tr') finds
+		// the actual row regardless of how many times the table inside has
+		// been rebuilt by displayResults(). Click opens the record in the side
+		// panel (which shows every value in full, so cells no longer expand
+		// one by one: "Expand rows" still does it for the whole table);
 		// dblclick selects the cell's text and copies it.
-		let _resultsClickTimer = null;
-
 		function handleResultsTableClick(event) {
-			const cell = event.target.closest('td');
-			if (!cell) return;
-			clearTimeout(_resultsClickTimer);
-			_resultsClickTimer = setTimeout(() => {
-				const currentlyExpanded = cell.classList.contains('expanded');
-				document.querySelectorAll('.table td.expanded').forEach(td => {
-					td.classList.remove('expanded');
-				});
-				if (!currentlyExpanded) cell.classList.add('expanded');
-			}, 220);
+			const row = event.target.closest('tbody tr');
+			if (!row || row.dataset.idx === undefined) return;
+			selectRecord(Number(row.dataset.idx));
 		}
 
 		function handleResultsTableDblClick(event) {
@@ -3335,14 +3778,189 @@
 			if (!cell) return;
 			event.stopPropagation();
 			event.preventDefault();
-			clearTimeout(_resultsClickTimer);
 			const sel = window.getSelection();
 			const range = document.createRange();
 			range.selectNodeContents(cell);
 			sel.removeAllRanges();
 			sel.addRange(range);
-			navigator.clipboard.writeText(cell.textContent.trim()).then(showCopyToast);
+			// The sequence cell shows a bar, not the text: its value is kept apart
+			copyText(cell.dataset.copy !== undefined ? cell.dataset.copy : cell.textContent.trim());
 		}
+
+		// ── Record panel ──────────────────────────────────────────────────────
+
+		function selectRecord(idx) {
+			const rows = AppState.pageResults || [];
+			if (idx < 0 || idx >= rows.length) return;
+			AppState.selectedIdx = idx;
+			document.querySelectorAll('#resultsTable tbody tr.row-selected')
+				.forEach(tr => tr.classList.remove('row-selected'));
+			const tr = document.querySelector(`#resultsTable tbody tr[data-idx="${idx}"]`);
+			if (tr) {
+				tr.classList.add('row-selected');
+				tr.scrollIntoView({ block: 'nearest' });
+			}
+			renderRecordPanel(rows[idx]);
+		}
+
+		function closeRecordPanel() {
+			AppState.selectedIdx = null;
+			document.getElementById('recordPanel').hidden = true;
+			document.querySelectorAll('#resultsTable tbody tr.row-selected')
+				.forEach(tr => tr.classList.remove('row-selected'));
+			setTimeout(adjustTableFrame, 0);
+		}
+
+		// The most specific taxon a record has, as the FASTA header uses it
+		function bestTaxon(row) {
+			for (const tech of ['col_species', 'col_genus', 'col_family', 'col_order',
+			                    'col_class', 'col_phylum', 'col_kingdom']) {
+				const v = row[colLabel(tech)];
+				if (v) return v;
+			}
+			return '';
+		}
+
+		// Same header as the viewer's FASTA export: processid|sampleid|bin|taxon|marker
+		function fastaOf(row) {
+			const v = tech => row[colLabel(tech)] || '';
+			const seq = (row[SEQ_COL] || '').replace(/-/g, '');
+			const head = [v('col_processid'), v('col_sampleid').replace(/ /g, '_'), v('col_bin_uri'),
+			              bestTaxon(row), v('col_marker_code')].filter(Boolean).join('|');
+			return `>${head}\n${seq}\n`;
+		}
+
+		function renderRecordPanel(row) {
+			const panel = document.getElementById('recordPanel');
+			const v = tech => row[colLabel(tech)];
+			const el = (tag, cls, text) => {
+				const e = document.createElement(tag);
+				if (cls) e.className = cls;
+				if (text !== undefined) e.textContent = text;
+				return e;
+			};
+			const section = (titleKey, ...children) => {
+				const s = el('section');
+				s.append(el('div', 'rp-k', t(titleKey)), ...children);
+				return s;
+			};
+			panel.innerHTML = '';
+
+			// Head: the ID and the identification
+			const head = el('div', 'rp-head');
+			const titles = el('div');
+			titles.append(el('div', 'rp-eyebrow', `${t('record_label')} · ${v('col_processid') || '—'}`));
+			const ident = v('col_identification') || bestTaxon(row) || '—';
+			const title = el('h4', 'rp-title', ident);
+			// Genus and species names are italicised; higher ranks are not
+			const rank = (v('col_identification_rank') || '').toLowerCase();
+			if (['genus', 'species', 'subspecies'].includes(rank) || (!rank && v('col_species') === ident)) {
+				title.classList.add('taxon-italic');
+			}
+			titles.appendChild(title);
+			const close = el('button', 'rp-close', '×');
+			close.type = 'button';
+			close.title = t('record_close');
+			close.setAttribute('aria-label', t('record_close'));
+			close.addEventListener('click', closeRecordPanel);
+			head.append(titles, close);
+			panel.appendChild(head);
+
+			// Marker, length and BIN, with the sequence bar
+			const seq = (row[SEQ_COL] || '').replace(/-/g, '').toUpperCase();
+			const pills = el('div', 'rp-pills');
+			if (v('col_marker_code')) pills.appendChild(el('span', 'rp-pill', v('col_marker_code')));
+			if (seq) pills.appendChild(el('span', 'rp-pill', `${seq.length} ${currentLang === 'es' ? 'pb' : 'bp'}`));
+			if (v('col_bin_uri')) pills.appendChild(el('span', 'rp-pill bin', v('col_bin_uri')));
+			const summary = el('div');
+			summary.style.display = 'grid';
+			summary.style.gap = '8px';
+			summary.appendChild(pills);
+			if (seq) {
+				const bar = el('canvas', 'seq-bar');
+				summary.appendChild(bar);
+				requestAnimationFrame(() => drawSequenceBar(bar, seq, Math.max(summary.clientWidth, 200), 18));
+			}
+			panel.appendChild(summary);
+
+			// Taxonomy as a lineage
+			const lineage = el('div', 'rp-lineage');
+			TAXONOMY_COLS.forEach(tech => { if (v(tech)) lineage.appendChild(el('span', '', v(tech))); });
+			if (lineage.childElementCount) panel.appendChild(section('record_taxonomy', lineage));
+
+			// Every other field that has a value, in the table's order
+			const skip = new Set([SEQ_COL, ...TAXONOMY_COLS.map(colLabel)]);
+			const dl = el('dl', 'rp-fields');
+			ORDERED_COLUMNS.forEach(name => {
+				const value = row[name];
+				if (skip.has(name) || value === null || value === undefined || value === '') return;
+				const dd = el('dd', '', String(value));
+				dd.addEventListener('dblclick', () => copyText(String(value)));
+				dl.append(el('dt', '', name), dd);
+			});
+			panel.appendChild(section('record_fields', dl, el('p', 'rp-hint', t('record_copy_hint'))));
+
+			// The sequence, colored, as FASTA
+			if (seq) {
+				const box = el('div', 'rp-seq');
+				box.appendChild(el('div', 'fa-head', fastaOf(row).split('\n')[0]));
+				// One span per run of the same base, not per base
+				const frag = document.createDocumentFragment();
+				for (let i = 0; i < seq.length;) {
+					let j = i + 1;
+					while (j < seq.length && seq[j] === seq[i]) j++;
+					const b = 'ACGT'.includes(seq[i]) ? seq[i] : 'N';
+					frag.appendChild(el('span', 'b-' + b, seq.slice(i, j)));
+					i = j;
+				}
+				box.appendChild(frag);
+				const legend = el('div', 'rp-legend');
+				Object.entries(BASE_COLORS).forEach(([b, c]) => {
+					const s = el('span');
+					const sw = el('i');
+					sw.style.background = c;
+					s.append(sw, b);
+					legend.appendChild(s);
+				});
+				panel.appendChild(section('record_sequence', box, legend));
+			}
+
+			// Actions
+			const actions = el('div', 'rp-actions');
+			if (seq) {
+				const fa = el('button', 'btn btn-sm btn-primary', t('record_copy_fasta'));
+				fa.type = 'button';
+				fa.addEventListener('click', () => copyText(fastaOf(row)));
+				const cs = el('button', 'btn btn-sm btn-outline-secondary', t('record_copy_sequence'));
+				cs.type = 'button';
+				cs.addEventListener('click', () => copyText(seq));
+				actions.append(fa, cs);
+			}
+			if (v('col_processid')) {
+				const a = el('a', 'btn btn-sm btn-outline-secondary', t('record_open_bold'));
+				a.href = 'https://portal.boldsystems.org/record/' + encodeURIComponent(v('col_processid'));
+				a.target = '_blank';
+				a.rel = 'noopener';
+				actions.appendChild(a);
+			}
+			panel.appendChild(actions);
+
+			const wasHidden = panel.hidden;
+			panel.hidden = false;
+			panel.scrollTop = 0;
+			if (wasHidden) setTimeout(adjustTableFrame, 0);
+		}
+
+		// Arrow keys move through the records while the panel is open; Esc closes it
+		document.addEventListener('keydown', e => {
+			if (AppState.selectedIdx === null || AppState.selectedIdx === undefined) return;
+			if (e.target.closest('input, select, textarea')) return;
+			if (e.key === 'Escape') { closeRecordPanel(); return; }
+			if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+				e.preventDefault();
+				selectRecord(AppState.selectedIdx + (e.key === 'ArrowDown' ? 1 : -1));
+			}
+		});
 
 		function setupResultsTableDelegation() {
 			const resultsTable = document.getElementById('resultsTable');
@@ -3372,6 +3990,9 @@
 
 			// Clear only the table content, not the whole container
 			resultsTable.innerHTML = '';
+			// Another page or search: the open record no longer belongs to it
+			AppState.pageResults = results || [];
+			if (AppState.selectedIdx !== null && AppState.selectedIdx !== undefined) closeRecordPanel();
 
 			AppState.currentPage = page;
 
@@ -3442,10 +4063,26 @@
 				results.forEach((row, rowIndex) => {
 					const tr = document.createElement("tr");
 					tr.classList.add(rowIndex % 2 === 0 ? 'even-row' : 'odd-row');
-					
+					tr.dataset.idx = rowIndex;
+
 					orderedColumns.forEach(col => {
 						const td = document.createElement("td");
-						td.textContent = (row[col] === null || row[col] === undefined) ? "" : row[col];
+						const value = (row[col] === null || row[col] === undefined) ? "" : row[col];
+						if (col === SEQ_COL && value) {
+							// A compact colored bar instead of hundreds of letters;
+							// the full sequence is in the record panel, and a
+							// double-click still copies it
+							const seq = String(value).replace(/-/g, '').toUpperCase();
+							td.className = 'seq-cell';
+							td.dataset.copy = String(value);
+							td.title = t('seq_cell_title', { n: seq.length });
+							const bar = document.createElement('canvas');
+							bar.className = 'seq-bar';
+							drawSequenceBar(bar, seq, 130, 14);
+							td.appendChild(bar);
+						} else {
+							td.textContent = value;
+						}
 						// Click (expand/collapse) and double-click (copy) are handled by
 						// one delegated listener each on #resultsTable (see
 						// setupResultsTableDelegation), instead of two listeners per
@@ -3586,8 +4223,8 @@
 				const headerMinWidth = header.length * 10 + 24; // 24px para padding y margen
 				
 				if (extraWideColumns.includes(header)) {
-					// For extra-wide columns like sequences
-					maxWidth = `${Math.max(headerMinWidth, 500)}px`;
+					// The sequence is drawn as a 130 px bar (see displayResults)
+					maxWidth = `${Math.max(headerMinWidth, 160)}px`;
 					widthClass = 'sequence-column';
 				} else if (wideColumns.includes(header)) {
 					// For wide columns
@@ -3644,8 +4281,9 @@
 		// Separate function to detect truncated cells (for use with resize events)
 		function detectTruncatedCells() {
 			document.querySelectorAll('.table td').forEach(cell => {
-				// Skip cells that are already expanded (single-cell click or "expand all")
-				if (cell.classList.contains('expanded')) return;
+				// Skip cells that are already expanded ("expand rows"), and the
+				// sequence bar, whose tooltip is its own
+				if (cell.classList.contains('expanded') || cell.classList.contains('seq-cell')) return;
 				
 				if (cell.scrollWidth > cell.clientWidth) {
 					cell.setAttribute('title', cell.textContent);

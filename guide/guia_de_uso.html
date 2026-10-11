@@ -501,8 +501,8 @@
           <li><a href="#modos">Modos de búsqueda</a></li>
           <li><a href="#busqueda-campos">Búsqueda avanzada por campos</a></li>
           <li><a href="#busqueda-fts">Búsqueda de texto completo</a></li>
-          <li><a href="#busqueda-batch">Búsqueda en Batch</a></li>
-          <li><a href="#busqueda-genbank">Búsqueda en Batch en GenBank</a></li>
+          <li><a href="#busqueda-batch">Lote en BOLD local</a></li>
+          <li><a href="#busqueda-genbank">Lote en GenBank</a></li>
           <li><a href="#tabla">Trabajar con la tabla</a></li>
           <li><a href="#exportar">Exportar resultados</a></li>
         </ol>
@@ -912,11 +912,11 @@
         <p>Busca una o varias palabras en todos los campos de texto a la vez. Requiere haber completado el Paso 4.</p>
       </div>
       <div class="mode-card">
-        <h3>📦 Búsqueda en Batch</h3>
+        <h3>📦 Lote en BOLD local</h3>
         <p>Busca una lista entera de valores cargando un archivo de texto. Ideal para muchas especies o IDs a la vez.</p>
       </div>
       <div class="mode-card">
-        <h3>🧬 GenBank Batch</h3>
+        <h3>🧬 Lote en GenBank</h3>
         <p>Busca una lista de términos en NCBI GenBank, en línea. Conteos, metadatos y secuencias por término.</p>
       </div>
     </div>
@@ -1055,11 +1055,11 @@
     </div>
 
     <!-- Batch -->
-    <h2 class="sub-title" id="busqueda-batch">Búsqueda en Batch</h2>
+    <h2 class="sub-title" id="busqueda-batch">Lote en BOLD local</h2>
     <p>Ideal cuando tienes una lista de especies, BINs o IDs y quieres obtener todos sus registros a la vez.</p>
 
     <p>
-      La Búsqueda en Batch es, en esencia, una <strong>búsqueda por campos automatizada</strong>: repite la misma
+      La búsqueda por lote en BOLD local es, en esencia, una <strong>búsqueda por campos automatizada</strong>: repite la misma
       consulta una vez por cada término de tu archivo. Eso implica que <strong>todos los términos del archivo
       deben pertenecer a un mismo campo</strong>, el que selecciones en <em>Campo 1</em>. El programa no deduce a
       qué categoría pertenece cada línea: aplica el campo elegido a todas por igual.
@@ -1213,7 +1213,7 @@
     </p>
 
     <!-- GenBank batch -->
-    <h2 class="sub-title" id="busqueda-genbank">Búsqueda en Batch en GenBank</h2>
+    <h2 class="sub-title" id="busqueda-genbank">Lote en GenBank</h2>
     <p>
       A diferencia de las otras tres pestañas, esta <strong>no</strong> consulta tu base de datos local: busca en
       <strong>NCBI GenBank</strong> (base de datos nucleotide) <strong>en línea</strong>, así que necesita
@@ -1270,7 +1270,7 @@
 
     <h3 class="step-title">Reporte resumen</h3>
     <p>
-      Funciona como el de la Búsqueda en Batch, para cuatro categorías: <em>Marker/Gene</em>, <em>Moltype</em>,
+      Funciona como el de <em>Lote en BOLD local</em>, para cuatro categorías: <em>Marker/Gene</em>, <em>Moltype</em>,
       <em>Division</em> y <em>Country</em>. Para cada una puedes añadir <strong>cuántos</strong> valores distintos
       encontró cada consulta, <strong>cuáles</strong> y, en la lista, <strong>con conteo</strong>
       (<code>Colombia (12); Peru (3)</code>). Las listas pueden acortarse a los N valores más frecuentes.
@@ -1349,7 +1349,7 @@
 
     <h3 class="step-title">Formato de los archivos FASTA</h3>
     <p>Cada encabezado combina los datos disponibles del registro, separados por <code>|</code>. Es el mismo en la
-       exportación desde la tabla de resultados y en la Búsqueda en Batch:</p>
+       exportación desde la tabla de resultados y en <em>Lote en BOLD local</em>:</p>
 <pre>&gt;ID_BOLD|ID_Muestra|BIN|Taxón_más_específico|Marcador</pre>
     <ul class="bullet">
       <li>El <em>taxón más específico</em> es el primero disponible en este orden: especie, género, familia, orden, clase, filo, reino.</li>

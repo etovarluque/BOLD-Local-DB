@@ -916,8 +916,8 @@
                         data-i18n="fts_panel_title">
                     Búsqueda de texto completo
                 </button>
-                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_panel_title">Búsqueda en Batch</button>
-                <button type="button" class="btn btn-outline-primary" id="genbankSearchTab" data-i18n="genbank_tab_btn">GenBank Batch</button>
+                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_tab_btn">Lote en BOLD local</button>
+                <button type="button" class="btn btn-outline-primary" id="genbankSearchTab" data-i18n="genbank_tab_btn">Lote en GenBank</button>
             </div>
         </div>
 
@@ -947,7 +947,7 @@
         <!-- Batch search panel -->
         <div id="batchSearchPanel" class="card mb-4" style="display:none;">
             <div class="card-header">
-                <h5 data-i18n="batch_panel_title">Búsqueda en Batch</h5>
+                <h5 data-i18n="batch_panel_title">Búsqueda por lote en la base BOLD local</h5>
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-4" data-i18n-html="batch_intro_text">
@@ -1176,7 +1176,7 @@
         <!-- GenBank batch search panel (queries NCBI online; ported from BarcodeSuite) -->
         <div id="genbankSearchPanel" class="card mb-4" style="display:none;">
             <div class="card-header">
-                <h5 data-i18n="genbank_panel_title">Búsqueda en Batch en GenBank (NCBI)</h5>
+                <h5 data-i18n="genbank_panel_title">Búsqueda por lote en NCBI GenBank (en línea)</h5>
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-4" data-i18n-html="genbank_intro_text"></p>
@@ -1430,7 +1430,8 @@
                 fts_panel_title: 'Búsqueda de texto completo',
                 fts_help_text: 'Busca en toda la base de datos con una consulta de texto completo. Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.',
                 fts_query_placeholder: 'Introduce tu consulta...',
-                batch_panel_title: 'Búsqueda en Batch',
+                batch_tab_btn: 'Lote en BOLD local',
+                batch_panel_title: 'Búsqueda por lote en la base BOLD local',
                 batch_intro_text: 'Búsqueda por campos automatizada: repite la misma consulta una vez por cada término de tu archivo de texto plano (un valor por línea). Todos los términos deben pertenecer al <strong>mismo campo</strong>, el que selecciones abajo. Los resultados se descargan como un ZIP con archivos TSV individuales por término, <code>all_results.tsv</code> y <code>summary.csv</code>.',
                 batch_field1_label: 'Campo 1 · requerido',
                 batch_field2_label: 'Campo 2 · filtro adicional',
@@ -1540,8 +1541,8 @@
                 exporting_csv_title: 'Exportando CSV',
                 exporting_generic_title: 'Exportando',
                 fts_case_sensitive_label: 'Sensible a mayúsculas/minúsculas',
-                genbank_tab_btn: 'GenBank Batch',
-                genbank_panel_title: 'Búsqueda en Batch en GenBank (NCBI)',
+                genbank_tab_btn: 'Lote en GenBank',
+                genbank_panel_title: 'Búsqueda por lote en NCBI GenBank (en línea)',
                 genbank_intro_text: 'Busca en <strong>NCBI GenBank</strong> (nucleotide) <strong>en línea</strong>, no en la base local, así que requiere conexión a internet. Escribe o pega una lista de términos para el criterio 1 (uno por línea, o arrastra un archivo .txt/.csv), opcionalmente cruzada con el criterio 2: <strong>un solo valor</strong> filtra todos los términos de arriba; <strong>una lista</strong> se cruza con cada uno. Los resultados se descargan como un ZIP con <code>genbank_counts.csv</code> (registros por consulta) y, opcionalmente, metadatos y FASTA compilados, más una carpeta por término con los suyos.',
                 genbank_ncbi_settings: 'Ajustes de NCBI',
                 genbank_api_key_label: 'API key (opcional):',
@@ -1582,7 +1583,8 @@
                 fts_panel_title: 'Full-text search',
                 fts_help_text: 'Search the whole database with a full-text query. You can use operators like AND, OR, NOT and quotes for exact phrases.',
                 fts_query_placeholder: 'Enter your query...',
-                batch_panel_title: 'Batch Search',
+                batch_tab_btn: 'Local BOLD batch',
+                batch_panel_title: 'Batch search in the local BOLD database',
                 batch_intro_text: 'Automated field search: it repeats the same query once for each term in your plain text file (one value per line). All terms must belong to the <strong>same field</strong>, the one you select below. Results are downloaded as a ZIP with individual TSV files per term, <code>all_results.tsv</code> and <code>summary.csv</code>.',
                 batch_field1_label: 'Field 1 · required',
                 batch_field2_label: 'Field 2 · additional filter',
@@ -1692,8 +1694,8 @@
                 exporting_csv_title: 'Exporting CSV',
                 exporting_generic_title: 'Exporting',
                 fts_case_sensitive_label: 'Case-sensitive search',
-                genbank_tab_btn: 'GenBank Batch',
-                genbank_panel_title: 'GenBank Batch Search (NCBI)',
+                genbank_tab_btn: 'GenBank batch',
+                genbank_panel_title: 'Batch search in NCBI GenBank (online)',
                 genbank_intro_text: 'Searches <strong>NCBI GenBank</strong> (nucleotide) <strong>online</strong>, not the local database, so it needs an internet connection. Type or paste a list of terms for Criterion 1 (one per line, or drop a .txt/.csv file), optionally crossed with Criterion 2: <strong>a single value</strong> filters every term above; <strong>a list</strong> is crossed with every term above. Results are downloaded as a ZIP with <code>genbank_counts.csv</code> (records per query) and, optionally, a compiled metadata table and FASTA file, plus one folder per term with its own.',
                 genbank_ncbi_settings: 'NCBI settings',
                 genbank_api_key_label: 'API key (optional):',

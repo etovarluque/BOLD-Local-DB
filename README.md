@@ -21,7 +21,7 @@ Two programs, used in order:
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.
 
-   It also has a **GenBank Batch** tab (ported from BarcodeSuite) that
+   It also has a **GenBank batch** tab (ported from BarcodeSuite) that
    searches NCBI GenBank online — the only feature that needs internet — for
    a list of terms, optionally crossed with a second criterion, and downloads
    a ZIP with record counts per query and, optionally, metadata (TSV) and
@@ -29,9 +29,9 @@ Two programs, used in order:
 
 ### Screenshots
 
-| Full-text search | Advanced field search | Batch search |
+| Full-text search | Advanced field search | Local BOLD batch |
 |---|---|---|
-| ![Full-text search](dev/screenshots/full_text_search.png) | ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Batch search](dev/screenshots/batch_search.png) |
+| ![Full-text search](dev/screenshots/full_text_search.png) | ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Local BOLD batch](dev/screenshots/batch_search.png) |
 
 ## Requirements
 
@@ -131,7 +131,7 @@ BOLD_DB/
 │   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
 │   ├── frontend/
 │   │   ├── server.py          # Local web server (search / filter / export)
-│   │   ├── genbank_batch.py   # GenBank Batch search (NCBI E-utilities), used by server.py
+│   │   ├── genbank_batch.py   # GenBank batch search (NCBI E-utilities), used by server.py
 │   │   ├── static/
 │   │   └── templates/
 │   └── screenshots/

@@ -8,7 +8,7 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 ## [Unreleased]
 
 ### Added
-- **GenBank Batch** tab, ported from BarcodeSuite: batch-searches NCBI
+- **GenBank batch** tab, ported from BarcodeSuite: batch-searches NCBI
   GenBank (nucleotide) online with one list of terms, optionally crossed with
   a second criterion (a single value filters every term; a list is crossed
   with each). Downloads a ZIP with `genbank_counts.csv` (records per query,
@@ -20,6 +20,8 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   instead of counting as 0 records. One GenBank search runs at a time.
 
 ### Changed
+- The *Batch search* tab is now called **Local BOLD batch** (*Lote en BOLD
+  local*), to tell it apart from the new GenBank one, which searches online.
 - Batch search with two fields: `summary.csv` also lists, at the end and at
   0, the term × Field 2 value combinations with no records, as the
   single-field mode does with terms. Above a million they're left out (Excel

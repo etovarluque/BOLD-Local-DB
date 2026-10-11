@@ -69,9 +69,9 @@
         }
 
         .lang-btn.active {
-            background-color: #2c4685 !important;
+            background-color: #2e3846 !important;
             color: #fff !important;
-            border-color: #2c4685 !important;
+            border-color: #2e3846 !important;
         }
 
         /* Tab with no function in this database. Kept mouse-sensitive
@@ -393,6 +393,20 @@
 			transform: translateY(-10px);
 		}
 
+		/* A removed condition fades and folds its height away, so the rows
+		   below slide up instead of jumping */
+		.condition-leaving {
+			overflow: hidden;
+			pointer-events: none;
+			transition: opacity .2s ease, transform .2s ease, height .3s ease, margin-bottom .3s ease;
+		}
+		.condition-leaving.gone {
+			opacity: 0;
+			transform: translateY(-10px);
+			height: 0 !important;
+			margin-bottom: 0 !important;
+		}
+
 		/* Column order sortable list */
 		.col-order-list {
 			list-style: none;
@@ -504,7 +518,7 @@
 		}
 		
 		:root {
-		  --color-primary: #2c4685;
+		  --color-primary: #2e3846;
 		  --color-secondary: #3E92CC;
 		  --color-light: #F8F9FA;
 		}
@@ -639,7 +653,7 @@
 			bottom: 28px;
 			left: 50%;
 			transform: translateX(-50%);
-			background: #2c4685;
+			background: #2e3846;
 			color: #fff;
 			padding: 8px 18px;
 			border-radius: 8px;
@@ -868,21 +882,21 @@
 
 		/* ── Visual theme ────────────────────────────────────────────────────
 		   Last in the sheet on purpose: it restyles the rules above without
-		   touching them. Navy carries the structure (active tab, card headers,
+		   touching them. Slate carries the structure (active tab, card headers,
 		   primary actions), BOLD's orange is the single accent, IDs and
 		   sequences go in a monospaced face. */
 		:root {
-			--navy: #2c4685;
-			--navy-2: #223a73;
+			--slate: #2e3846;
+			--slate-2: #222a35;
 			--orange: #e8831a;
 			--ink: #18213a;
 			--mute: #67718a;
 			--line: #e3e7ef;
-			--page: #f4f6fa;
-			--tint: #eef2fb;
-			--tab-idle: #e2e8f3;
-			--sky: #92e8f1;
-			--selected: #e3ebfb;
+			--page: #f4f5f7;
+			--tint: #eef0f3;
+			--tab-idle: #e3e6eb;
+			--tab-accent: #f39323;
+			--selected: #e3e8ef;
 			/* Nucleotides, as in the sequence viewers people already know */
 			--base-a: #2f9e6a;
 			--base-c: #3f6fd8;
@@ -891,7 +905,7 @@
 			--base-n: #c3c8d4;
 			--f-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 			--f-mono: 'IBM Plex Mono', ui-monospace, Consolas, 'Courier New', monospace;
-			--color-primary: var(--navy);
+			--color-primary: var(--slate);
 		}
 		body { font-family: var(--f-ui); background: var(--page); color: var(--ink); }
 		.table th, .table td { font-family: var(--f-ui); }
@@ -924,7 +938,7 @@
 		#total-records {
 			font-size: 1.9rem;
 			font-weight: 600;
-			color: var(--navy);
+			color: var(--slate);
 			font-variant-numeric: tabular-nums;
 			letter-spacing: -.01em;
 		}
@@ -952,7 +966,7 @@
 		}
 		.lang-switch {
 			display: flex;
-			border: 1px solid #cfd6e4;
+			border: 1px solid #d3d8e0;
 			border-radius: 7px;
 			overflow: hidden;
 			background: #fff;
@@ -965,52 +979,52 @@
 			font-weight: 600;
 			padding: 6px 12px;
 		}
-		.lang-switch .lang-btn + .lang-btn { border-left: 1px solid #cfd6e4; }
-		.lang-switch .lang-btn.active { background: var(--navy) !important; color: #fff !important; }
+		.lang-switch .lang-btn + .lang-btn { border-left: 1px solid #d3d8e0; }
+		.lang-switch .lang-btn.active { background: var(--slate) !important; color: #fff !important; }
 		.lang-switch .lang-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
 
-		/* Tabs: folder tabs standing on a navy rule; the active one is filled
-		   and underlined in sky blue */
-		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--navy); }
+		/* Tabs: folder tabs standing on a slate rule; the active one is filled
+		   and underlined in BOLD orange */
+		.search-tabs { margin-bottom: 0; border-bottom: 3px solid var(--slate); }
 		.search-tabs .btn-group { margin-bottom: 0 !important; gap: 4px; }
 		.search-tabs .btn-group > .btn {
 			border: 0 !important;
 			border-radius: 9px 9px 0 0 !important;
 			margin: 0 !important;
 			background: var(--tab-idle);
-			color: var(--navy);
+			color: var(--slate);
 			font-weight: 500;
 			padding: .65rem 1rem;
 		}
-		.search-tabs .btn-group > .btn:hover { background: #d3dbeb; color: var(--navy-2); }
-		.search-tabs .btn-group > .btn.active-tab { background: var(--navy) !important; color: #fff !important; box-shadow: inset 0 -3px 0 var(--sky); }
+		.search-tabs .btn-group > .btn:hover { background: #d2d7df; color: var(--slate-2); }
+		.search-tabs .btn-group > .btn.active-tab { background: var(--slate) !important; color: #fff !important; box-shadow: inset 0 -3px 0 var(--tab-accent); }
 		.search-tabs .btn-group > .btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; z-index: 2; }
-		.search-tabs .btn-group > .btn.tab-unavailable:hover { background: var(--tab-idle); color: var(--navy); }
+		.search-tabs .btn-group > .btn.tab-unavailable:hover { background: var(--tab-idle); color: var(--slate); }
 
-		/* Cards: navy header band over a white body, as before, in the new tones.
+		/* Cards: slate header band over a white body, as before, in the new tones.
 		   The search panels hang from the tab rule, so their top is square. */
 		.card { border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 1px 2px rgba(24, 33, 58, .05); }
-		.card-header { background: var(--navy); border-bottom: 0; padding: .85rem 1.25rem; }
+		.card-header { background: var(--slate); border-bottom: 0; padding: .85rem 1.25rem; }
 		.card-header h5 { font-weight: 600; font-size: 1.05rem; }
 		#fieldSearchPanel, #ftsSearchPanel, #batchSearchPanel, #genbankSearchPanel { border-top: 0; border-radius: 0 0 10px 10px; }
 		#fieldSearchPanel > .card-header, #ftsSearchPanel > .card-header,
 		#batchSearchPanel > .card-header, #genbankSearchPanel > .card-header { border-radius: 0; }
 
 		.btn-primary {
-			--bs-btn-bg: var(--navy);
-			--bs-btn-border-color: var(--navy);
-			--bs-btn-hover-bg: var(--navy-2);
-			--bs-btn-hover-border-color: var(--navy-2);
-			--bs-btn-active-bg: var(--navy-2);
-			--bs-btn-active-border-color: var(--navy-2);
-			--bs-btn-disabled-bg: var(--navy);
-			--bs-btn-disabled-border-color: var(--navy);
+			--bs-btn-bg: var(--slate);
+			--bs-btn-border-color: var(--slate);
+			--bs-btn-hover-bg: var(--slate-2);
+			--bs-btn-hover-border-color: var(--slate-2);
+			--bs-btn-active-bg: var(--slate-2);
+			--bs-btn-active-border-color: var(--slate-2);
+			--bs-btn-disabled-bg: var(--slate);
+			--bs-btn-disabled-border-color: var(--slate);
 			font-weight: 500;
 		}
-		#addCondition { border-style: dashed; border-color: #b9c3d9; color: var(--navy); }
+		#addCondition { border-style: dashed; border-color: #bcc3ce; color: var(--slate); }
 		#addCondition:hover { background: var(--tint); }
 		.first-cond-label { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
-		.remove-condition { background-color: #e6e9f1 !important; color: var(--mute) !important; box-shadow: none; }
+		.remove-condition { background-color: #e6e8ec !important; color: var(--mute) !important; box-shadow: none; }
 		.remove-condition:hover { background-color: var(--base-t) !important; color: #fff !important; }
 
 		/* The search on screen, as chips under the (blank again) form */
@@ -1038,15 +1052,15 @@
 			gap: 6px;
 			max-width: 100%;
 			padding: 3px 9px;
-			border: 1px solid #d5ddef;
+			border: 1px solid #d3d8e0;
 			border-radius: 6px;
 			background: var(--tint);
 			font-size: .85rem;
 		}
 		.crit-field { font-weight: 600; color: var(--ink); }
 		.crit-op { color: var(--mute); }
-		.crit-val { font-family: var(--f-mono); font-size: .8rem; color: var(--navy); overflow-wrap: anywhere; }
-		.last-search-edit { margin-left: auto; color: var(--navy); text-decoration: none; font-weight: 500; }
+		.crit-val { font-family: var(--f-mono); font-size: .8rem; color: var(--slate); overflow-wrap: anywhere; }
+		.last-search-edit { margin-left: auto; color: var(--slate); text-decoration: none; font-weight: 500; }
 		.last-search-edit:hover { text-decoration: underline; }
 
 		/* Results header: the count stands out, the time is a quiet chip */
@@ -1063,7 +1077,7 @@
 		}
 		.results-card #exportButton,
 		.results-card #exportFastaButton { font-weight: 500; border-radius: 7px; }
-		/* Pastel green, so it stands out from the navy band */
+		/* Pastel green, so it stands out from the slate band */
 		.results-card #exportButton { background: #6ee7b7; border-color: #6ee7b7; color: #064e3b; font-weight: 600; }
 		.results-card #exportButton:hover { background: #34d399; border-color: #34d399; color: #064e3b; }
 		.results-card #exportFastaButton { background: var(--orange); border-color: var(--orange); color: #fff; }
@@ -1077,7 +1091,7 @@
 		.table tbody tr { cursor: pointer; }
 		.table tbody tr:hover td { background-color: #eef3fc !important; }
 		.table tbody tr.row-selected td { background-color: var(--selected) !important; }
-		.table tbody tr.row-selected td:first-child { box-shadow: inset 3px 0 0 var(--navy); }
+		.table tbody tr.row-selected td:first-child { box-shadow: inset 3px 0 0 var(--slate); }
 		.table td.seq-cell { padding-top: 0; padding-bottom: 0; }
 		canvas.seq-bar { display: block; border-radius: 2px; }
 
@@ -1142,7 +1156,7 @@
 			padding: 2px 8px;
 			border-radius: 20px;
 			background: var(--tint);
-			color: var(--navy);
+			color: var(--slate);
 		}
 		.rp-pill.bin { background: #fff2e3; color: #9a5a0c; }
 		.rp-lineage { display: flex; flex-wrap: wrap; gap: 2px 4px; font-size: .85rem; }
@@ -1150,7 +1164,7 @@
 		.rp-fields { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 14px; margin: 0; font-size: .85rem; }
 		.rp-fields dt { color: var(--mute); font-weight: 400; }
 		.rp-fields dd { margin: 0; overflow-wrap: anywhere; cursor: copy; }
-		.rp-fields dd:hover { color: var(--navy); }
+		.rp-fields dd:hover { color: var(--slate); }
 		.rp-seq {
 			font-family: var(--f-mono);
 			font-size: .74rem;
@@ -1182,8 +1196,8 @@
 		/* Record selection for export */
 		.table th.sel-col, .table td.sel-cell { width: 44px !important; max-width: 44px !important; text-align: center; padding-left: 6px; padding-right: 6px; }
 		.table td.sel-cell { cursor: default; }
-		.sel-col input, .sel-cell input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); vertical-align: middle; }
-		.table tbody tr.row-checked td { background-color: #f3f6fc !important; }
+		.sel-col input, .sel-cell input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--slate); vertical-align: middle; }
+		.table tbody tr.row-checked td { background-color: #f4f5f7 !important; }
 		.table tbody tr.row-checked.row-selected td { background-color: var(--selected) !important; }
 		.sel-bar {
 			display: flex;
@@ -1191,13 +1205,13 @@
 			gap: 8px;
 			margin-right: auto;
 			padding: 3px 4px 3px 12px;
-			border: 1px solid #c9d4ea;
+			border: 1px solid #d3d8e0;
 			border-radius: 8px;
 			background: var(--tint);
 			font-size: .85rem;
 		}
 		.sel-bar[hidden] { display: none; }
-		.sel-bar strong { color: var(--navy); font-variant-numeric: tabular-nums; }
+		.sel-bar strong { color: var(--slate); font-variant-numeric: tabular-nums; }
 		.rp-legend { display: flex; gap: 10px; font-family: var(--f-mono); font-size: .72rem; color: var(--mute); }
 		.rp-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
 		.rp-actions { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -3116,7 +3130,15 @@
             removeButton.addEventListener('click', function() {
                 const conditions = document.querySelectorAll('.search-condition');
                 if (conditions.length > 1) {
-                    conditionElement.remove();
+                    // Leaves the set of conditions at once (searches and the
+                    // AND/OR logic stop seeing it) and is removed after it folds
+                    const height = conditionElement.offsetHeight;
+                    conditionElement.classList.replace('search-condition', 'condition-leaving');
+                    conditionElement.style.height = height + 'px';
+                    conditionElement.style.marginBottom = '0.75rem';
+                    void conditionElement.offsetHeight;  // commit the start state
+                    conditionElement.classList.add('gone');
+                    setTimeout(() => conditionElement.remove(), 320);
                     updateConditionVisibility();
                 }
             });
@@ -3795,7 +3817,7 @@
 					height: 100%;
 					width: 0%;
 					border-radius: 5px;
-					background: linear-gradient(90deg, #2c4685, #3E92CC);
+					background: linear-gradient(90deg, #2e3846, #3E92CC);
 					transition: width 0.4s ease;
 				}
 				.export-progress.done .export-progress-fill  { background: #4CAF50; }

@@ -1,0 +1,67 @@
+# Checks, on the three systems, what can't be tried on the developer's own
+# machine: that a release zip unpacks, that the launcher's uv bootstrap works,
+# that the program's packages install and import, and that the shortcuts can
+# be made and removed. Runs on every push and pull request.
+name: Launcher check
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, zip: linux}
+          - {os: macos-latest, zip: macos}
+          - {os: windows-latest, zip: windows}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build and unpack the release zip
+        run: |
+          VERSION=$(python -c "import re;print(re.search(r'APP_VERSION = \"(.+)\"', open('dev/frontend/db_contract.py').read()).group(1))")
+          python dev/tools/build_release.py --version "$VERSION" --out dist
+          mkdir unpacked && cd unpacked && unzip -q "../dist/BOLD-Local-DB-${{ matrix.zip }}.zip"
+          ls -la BOLD-Local-DB
+      - name: Download uv as the launcher does
+        working-directory: unpacked/BOLD-Local-DB
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            powershell -NoProfile -ExecutionPolicy Bypass -File ".program\bootstrap\get_uv.ps1" -Dest "$(pwd -W)/.runtime"
+          else
+            bash .program/bootstrap/get_uv.sh "$(pwd)/.runtime"
+          fi
+          ls .runtime
+      # A desktop Linux has these; the runner's server image doesn't, and
+      # PySide6 can't load without them (libEGL.so.1 first)
+      - name: System libraries Qt needs (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y -q libegl1 libgl1 libxkbcommon0 libfontconfig1 libdbus-1-3
+      - name: Install and import the packages
+        working-directory: unpacked/BOLD-Local-DB
+        env:
+          UV_PYTHON_PREFERENCE: only-managed
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          export UV_CACHE_DIR="$PWD/.runtime/cache" UV_PYTHON_INSTALL_DIR="$PWD/.runtime/python" UV_PROJECT_ENVIRONMENT="$PWD/.runtime/venv"
+          UV=.runtime/uv; [ -x "$UV" ] || UV=.runtime/uv.exe
+          "$UV" run --project .program --frozen python -c "import PySide6.QtWidgets, flask, numpy, psutil; print('packages OK')"
+          cd .program/frontend
+          "../../$UV" run --project .. --frozen python -c "import server; print(server.app.test_client().get('/list-static-files').status_code)"
+      - name: Make and remove the shortcuts
+        working-directory: unpacked/BOLD-Local-DB
+        run: |
+          python -c "
+          import sys; sys.path.insert(0, '.program')
+          import shortcuts
+          made = shortcuts.create(desktop=True, menu=True, lang='en')
+          print(*made, sep='\n'); assert made
+          assert shortcuts.remove() and not shortcuts.current()
+          "

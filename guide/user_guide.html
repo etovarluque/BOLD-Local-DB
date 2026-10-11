@@ -4,19 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOLD DB — User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* Palette and type of the viewer (dev/frontend/templates/index.html):
+     slate carries the structure, BOLD's orange is the single accent,
+     emerald marks downloads, IDs and code go in a monospaced face. */
   :root {
-    --blue:    #2c4685;
-    --blue2:   #3E92CC;
-    --orange:  #f8901f;
-    --bg:      #f5f7fa;
+    --slate:   #2e3846;
+    --slate-2: #222a35;
+    --slate-3: #3a4656;
+    --orange:  #e8831a;
+    --accent:  #f39323;
+    --orange-ink: #a85a0c;
+    --ink:     #18213a;
+    --mute:    #67718a;
+    --line:    #e3e7ef;
+    --page:    #f4f5f7;
+    --tint:    #eef0f3;
     --white:   #ffffff;
-    --text:    #2d2d2d;
-    --muted:   #6c757d;
-    --border:  #dee2e6;
-    --green:   #198754;
-    --yellow:  #e8a000;
-    --code-bg: #f0f4ff;
+    --emerald: #34d399;
+    --emerald-ink: #047857;
+    --yellow:  #e0a42a;
+    --red:     #dd4f58;
+    --f-ui:   'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, 'Courier New', monospace;
     --sidebar-w: 290px;
   }
 
@@ -25,11 +38,11 @@
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: var(--f-ui);
     font-size: 15px;
     line-height: 1.7;
-    color: var(--text);
-    background: var(--bg);
+    color: var(--ink);
+    background: var(--page);
   }
 
   /* ── Sidebar: document map ── */
@@ -40,39 +53,41 @@
     width: var(--sidebar-w);
     height: 100vh;
     overflow-y: auto;
-    background: #1e2a3a;
-    color: #c9d3e0;
+    background: var(--slate-2);
+    color: #c7cdd7;
     padding: 22px 0 40px;
     z-index: 20;
   }
   .sidebar::-webkit-scrollbar { width: 8px; }
-  .sidebar::-webkit-scrollbar-thumb { background: #3a4a60; border-radius: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--slate-3); border-radius: 4px; }
 
   .sidebar .sb-brand {
     padding: 0 22px 16px;
-    border-bottom: 1px solid #2f3d51;
+    border-bottom: 1px solid var(--slate-3);
     margin-bottom: 14px;
   }
   .sidebar .sb-brand .name {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #fff;
     letter-spacing: -0.3px;
   }
-  .sidebar .sb-brand .name span { color: var(--orange); }
+  .sidebar .sb-brand .name span { color: var(--accent); }
   .sidebar .sb-brand .tag {
     font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: #7f8ea3;
+    letter-spacing: .14em;
+    color: #8d96a7;
     margin-top: 2px;
   }
 
   .sidebar .sb-heading {
     font-size: 0.68rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: #6c7d94;
+    letter-spacing: .14em;
+    color: #8d96a7;
     padding: 0 22px;
     margin-bottom: 8px;
   }
@@ -81,31 +96,31 @@
 
   .sidebar nav a {
     display: block;
-    color: #c9d3e0;
+    color: #c7cdd7;
     text-decoration: none;
     font-size: 0.9rem;
     padding: 6px 22px 6px 20px;
     border-left: 3px solid transparent;
     transition: background 0.12s, color 0.12s, border-color 0.12s;
   }
-  .sidebar nav a:hover { background: #263447; color: #fff; }
+  .sidebar nav a:hover { background: var(--slate); color: #fff; }
   .sidebar nav a.active {
-    background: #263447;
+    background: var(--slate);
     color: #fff;
-    border-left-color: var(--orange);
+    border-left-color: var(--accent);
     font-weight: 600;
   }
   .sidebar nav .lvl1 > a { font-weight: 600; }
   .sidebar nav .lvl1 > a .n {
     display: inline-block;
     width: 20px;
-    color: var(--blue2);
+    color: #8d96a7;
     font-size: 0.8rem;
   }
-  .sidebar nav .lvl1 > a.active .n { color: var(--orange); }
+  .sidebar nav .lvl1 > a.active .n { color: var(--accent); }
   .sidebar nav ol ol a {
     font-size: 0.83rem;
-    color: #96a5b8;
+    color: #a3abb9;
     padding-left: 42px;
   }
   .sidebar nav ol ol a.active { color: #fff; }
@@ -114,9 +129,9 @@
   .sidebar .sb-footer {
     margin-top: 22px;
     padding: 14px 22px 0;
-    border-top: 1px solid #2f3d51;
+    border-top: 1px solid var(--slate-3);
     font-size: 0.75rem;
-    color: #6c7d94;
+    color: #8d96a7;
   }
 
   /* ── Menu button (narrow screens) ── */
@@ -126,7 +141,7 @@
     top: 14px;
     left: 14px;
     z-index: 30;
-    background: var(--blue);
+    background: var(--slate);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -134,13 +149,14 @@
     height: 42px;
     font-size: 1.2rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    box-shadow: 0 2px 8px rgba(24, 33, 58, 0.25);
   }
+  .sb-toggle:hover { background: var(--slate-2); }
   .sb-backdrop {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.45);
+    background: rgba(24, 33, 58, 0.45);
     z-index: 19;
   }
 
@@ -155,17 +171,18 @@
 
   /* ── Header ── */
   .site-header {
-    background: linear-gradient(135deg, var(--blue) 0%, var(--blue2) 100%);
+    background: var(--slate);
     color: #fff;
     padding: 48px 32px 36px;
     margin-bottom: 40px;
+    box-shadow: inset 0 -4px 0 var(--accent);
   }
   .site-header .brand {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.5px;
   }
-  .site-header .brand span { color: var(--orange); }
+  .site-header .brand span { color: var(--accent); }
   .site-header .subtitle {
     font-size: 1.05rem;
     opacity: 0.85;
@@ -178,13 +195,15 @@
     flex-wrap: wrap;
   }
   .badge {
-    background: rgba(255,255,255,0.18);
-    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 20px;
     padding: 3px 14px;
     font-size: 0.8rem;
     color: #fff;
   }
+  .site-header a.badge { color: #fff; font-weight: 400; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .site-header a.badge:hover { background: var(--accent); border-color: var(--accent); color: var(--ink) !important; }
 
   /* ── Sections ── */
   section { margin-bottom: 44px; scroll-margin-top: 20px; }
@@ -192,16 +211,27 @@
 
   h1.section-title {
     font-size: 1.45rem;
-    color: var(--blue);
-    border-bottom: 2px solid var(--blue2);
+    font-weight: 600;
+    color: var(--slate);
+    border-bottom: 2px solid var(--line);
     padding-bottom: 8px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
+  }
+  h1.section-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 64px;
+    height: 2px;
+    background: var(--accent);
   }
   h1.section-title .num {
-    background: var(--blue);
+    background: var(--slate);
     color: #fff;
     border-radius: 50%;
     width: 28px;
@@ -215,31 +245,33 @@
 
   h2.sub-title {
     font-size: 1.1rem;
-    color: var(--blue);
+    font-weight: 600;
+    color: var(--slate);
     margin: 26px 0 10px;
   }
 
   h3.step-title {
     font-size: 1rem;
-    color: var(--text);
+    color: var(--ink);
     font-weight: 600;
     margin: 20px 0 8px;
     padding-left: 12px;
-    border-left: 3px solid var(--orange);
+    border-left: 3px solid var(--accent);
   }
 
   p { margin-bottom: 12px; }
 
   /* ── Content links ── */
   .page-wrap a {
-    color: var(--blue2);
+    color: var(--slate);
+    font-weight: 500;
     text-decoration: none;
-    border-bottom: 1px solid rgba(62,146,204,0.4);
+    border-bottom: 1px solid rgba(232, 131, 26, 0.55);
     word-break: break-word;
   }
   .page-wrap a:hover {
-    color: var(--blue);
-    border-bottom-color: var(--blue);
+    color: var(--orange-ink);
+    border-bottom-color: var(--orange);
   }
 
   /* ── Callouts ── */
@@ -253,10 +285,10 @@
     font-size: 0.93rem;
   }
   .callout .icon { font-size: 1.2rem; flex-shrink: 0; line-height: 1.5; }
-  .callout.tip    { background: #e8f4fd; border-left: 4px solid var(--blue2); }
-  .callout.warn   { background: #fff8e1; border-left: 4px solid var(--yellow); }
-  .callout.danger { background: #fdecea; border-left: 4px solid #e53935; }
-  .callout.ok     { background: #e8f5e9; border-left: 4px solid var(--green); }
+  .callout.tip    { background: var(--tint); border-left: 4px solid var(--slate); }
+  .callout.warn   { background: #fff7ee; border-left: 4px solid var(--orange); }
+  .callout.danger { background: #fdeeef; border-left: 4px solid var(--red); }
+  .callout.ok     { background: #ecfdf5; border-left: 4px solid var(--emerald); }
 
   /* ── Tables ── */
   .table-wrap { overflow-x: auto; margin: 16px 0; }
@@ -265,14 +297,15 @@
     border-collapse: collapse;
     font-size: 0.92rem;
     background: var(--white);
-    border-radius: 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 2px rgba(24, 33, 58, 0.05);
   }
-  thead tr { background: var(--blue); color: #fff; }
-  thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px; }
-  tbody tr:nth-child(even) { background: #f7f9fc; }
-  tbody td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead tr { background: var(--slate); color: #fff; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  tbody tr:nth-child(even) { background: #f8f9fb; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
   tbody tr:last-child td { border-bottom: none; }
 
   /* ── Steps list ── */
@@ -293,56 +326,59 @@
     position: absolute;
     left: 0;
     top: 2px;
-    background: var(--blue2);
+    background: var(--slate);
     color: #fff;
     border-radius: 50%;
     width: 24px;
     height: 24px;
     font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 24px;
     text-align: center;
+    box-shadow: inset 0 -2px 0 var(--accent);
   }
 
   /* ── Bullets ── */
   ul.bullet { padding-left: 22px; margin: 10px 0; }
   ul.bullet li { margin: 5px 0; }
+  ul.bullet li::marker { color: var(--orange); }
 
   /* ── Code / path ── */
   code {
-    background: var(--code-bg);
-    color: #2c4685;
+    background: var(--tint);
+    color: var(--slate);
     padding: 2px 6px;
     border-radius: 4px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.88em;
+    font-family: var(--f-mono);
+    font-size: 0.86em;
   }
   kbd {
     background: #fff;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-bottom-width: 2px;
     border-radius: 4px;
     padding: 1px 6px;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--f-mono);
     font-size: 0.85em;
+    color: var(--ink);
   }
   pre {
-    background: #1e2a3a;
-    color: #cdd6f4;
+    background: var(--slate-2);
+    color: #d9dee7;
     padding: 16px 20px;
     border-radius: 8px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.88rem;
+    font-family: var(--f-mono);
+    font-size: 0.86rem;
     overflow-x: auto;
     margin: 14px 0;
     line-height: 1.6;
   }
-  pre .comment { color: #6c8993; }
-  pre .path    { color: #89dceb; }
-  pre .label   { color: #a6e3a1; }
+  pre .comment { color: #8d96a7; }
+  pre .path    { color: #f6b26b; }
+  pre .label   { color: #6ee7b7; }
   pre .pin {
-    background: var(--green);
-    color: #fff;
+    background: var(--accent);
+    color: var(--ink);
     font-weight: 600;
     padding: 1px 9px;
     border-radius: 12px;
@@ -357,8 +393,8 @@
     border-radius: 50%;
     margin-right: 6px;
   }
-  .dot-green  { background: #4caf50; }
-  .dot-yellow { background: #ffa000; }
+  .dot-green  { background: #2f9e6a; }
+  .dot-yellow { background: var(--yellow); }
 
   /* ── Search mode cards ── */
   .mode-cards {
@@ -369,19 +405,21 @@
   }
   .mode-card {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-top: 4px solid var(--blue2);
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--slate);
+    border-radius: 10px;
     padding: 18px 20px;
+    box-shadow: 0 1px 2px rgba(24, 33, 58, 0.05);
   }
   .mode-card h3 {
     font-size: 0.95rem;
-    color: var(--blue);
+    font-weight: 600;
+    color: var(--slate);
     margin-bottom: 8px;
   }
   .mode-card p {
     font-size: 0.88rem;
-    color: var(--muted);
+    color: var(--mute);
     margin: 0;
   }
 
@@ -394,45 +432,45 @@
   }
   .export-card {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
     padding: 16px 18px;
   }
   .export-card .label {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.95rem;
     margin-bottom: 4px;
   }
-  .export-card .label.csv   { color: var(--green); }
-  .export-card .label.fasta { color: var(--blue2); }
-  .export-card p { font-size: 0.88rem; color: var(--muted); margin: 0; }
+  .export-card .label.csv   { color: var(--emerald-ink); }
+  .export-card .label.fasta { color: var(--emerald-ink); }
+  .export-card p { font-size: 0.88rem; color: var(--mute); margin: 0; }
 
   /* ── FAQ ── */
   .faq-item {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
     padding: 16px 20px;
     margin-bottom: 12px;
   }
   .faq-item .q {
     font-weight: 600;
-    color: var(--blue);
+    color: var(--slate);
     margin-bottom: 6px;
     font-size: 0.97rem;
   }
   .faq-item .a {
     font-size: 0.92rem;
-    color: var(--text);
+    color: var(--ink);
   }
 
   /* ── Footer ── */
   .site-footer {
     text-align: center;
-    color: var(--muted);
+    color: var(--mute);
     font-size: 0.82rem;
     padding: 24px 0 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
     margin-top: 50px;
   }
 
@@ -443,11 +481,14 @@
     .sidebar {
       transform: translateX(-100%);
       transition: transform 0.2s ease;
-      box-shadow: 4px 0 18px rgba(0,0,0,0.3);
+      box-shadow: 4px 0 18px rgba(24, 33, 58, 0.3);
     }
     body.sb-open .sidebar    { transform: translateX(0); }
     body.sb-open .sb-backdrop { display: block; }
     .site-header { padding-left: 70px; }
+  }
+  @media (max-width: 640px) {
+    .export-cards { grid-template-columns: 1fr; }
   }
 
   /* ── Print ── */
@@ -455,7 +496,7 @@
     body { background: #fff; font-size: 13px; }
     .sidebar, .sb-toggle, .sb-backdrop { display: none !important; }
     .main { margin-left: 0; }
-    .site-header { background: var(--blue) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .site-header, thead tr, h1.section-title .num, .steps li::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .callout, .mode-card, .faq-item, .export-card { break-inside: avoid; }
     section { break-inside: avoid; }
     h1.section-title, h2.sub-title, h3.step-title { break-after: avoid; }
@@ -480,11 +521,12 @@
   <nav id="docMap">
     <ol>
       <li class="sb-group lvl1"><a href="#que-es"><span class="n">1</span>What is this for?</a></li>
-      <li class="sb-group lvl1"><a href="#requisitos"><span class="n">2</span>Prerequisites</a></li>
+      <li class="sb-group lvl1"><a href="#requisitos"><span class="n">2</span>Installation</a></li>
       <li class="sb-group lvl1"><a href="#carpetas"><span class="n">3</span>Folder structure</a></li>
       <li class="sb-group lvl1">
         <a href="#parte1"><span class="n">4</span>Building the database</a>
         <ol>
+          <li><a href="#inicio">The Start screen</a></li>
           <li><a href="#paso0">Download the file from BOLD</a></li>
           <li><a href="#campos-panel">Choose the fields (optional)</a></li>
           <li><a href="#opcionA">Run all the steps at once</a></li>
@@ -504,11 +546,26 @@
           <li><a href="#busqueda-batch">Local BOLD batch</a></li>
           <li><a href="#busqueda-genbank">GenBank batch</a></li>
           <li><a href="#tabla">Working with the results table</a></li>
+          <li><a href="#seleccion">Selecting records</a></li>
           <li><a href="#exportar">Exporting results</a></li>
         </ol>
       </li>
-      <li class="sb-group lvl1"><a href="#campos"><span class="n">6</span>Available fields</a></li>
-      <li class="sb-group lvl1"><a href="#faq"><span class="n">7</span>Frequently asked questions</a></li>
+      <li class="sb-group lvl1">
+        <a href="#analisis"><span class="n">6</span>Sequence analysis</a>
+        <ol>
+          <li><a href="#an-entrada">Input and options</a></li>
+          <li><a href="#an-resumen">Results summary</a></li>
+          <li><a href="#an-calidad">Composition and quality</a></li>
+          <li><a href="#an-haplotipos">Haplotypes</a></li>
+          <li><a href="#an-concordancia">Species and BINs</a></li>
+          <li><a href="#an-distancias">Distances and barcode gap</a></li>
+          <li><a href="#an-arbol">NJ tree</a></li>
+          <li><a href="#an-descargas">Downloads and limits</a></li>
+          <li><a href="#an-ejemplo">Worked example</a></li>
+        </ol>
+      </li>
+      <li class="sb-group lvl1"><a href="#campos"><span class="n">7</span>Available fields</a></li>
+      <li class="sb-group lvl1"><a href="#faq"><span class="n">8</span>Frequently asked questions</a></li>
     </ol>
   </nav>
 
@@ -524,9 +581,8 @@
     <div class="brand">BOLD <span>DB</span></div>
     <div class="subtitle">Installation and usage instructions — Local BOLD database</div>
     <div class="badge-row">
-      <span class="badge">Windows</span>
-      <span class="badge">Python 3.10+</span>
-      <a href="guia_de_uso.html" class="badge" style="color:#fff;text-decoration:none;border-bottom:none;cursor:pointer;">🌐 Versión en español</a>
+      <span class="badge">Windows · macOS · Linux</span>
+      <a href="guia_de_uso.html" class="badge" style="text-decoration:none;border-bottom:none;cursor:pointer;">🌐 Versión en español</a>
     </div>
   </div>
 </header>
@@ -535,26 +591,26 @@
 
   <!-- 1. WHAT IS THIS -->
   <section id="que-es">
-    <h1 class="section-title"><span class="num">1</span> What is this for?</h1>
+    <h1 class="section-title"><span class="num">1</span> What is it for?</h1>
     <p>
-      This tool downloads the public records from the <strong>BOLD (Barcode of Life Data System)</strong> system
+      This tool takes the public records of <strong>BOLD (Barcode of Life Data System)</strong>
       and turns them into a local database you can query from your browser,
-      <strong>without needing an internet connection</strong> once it's installed.
+      <strong>with no internet needed</strong> once it's set up.
     </p>
-    <p>It's two programs, used in this order:</p>
+    <p>It has two parts, used in this order:</p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Program</th><th>What it's for</th><th>How to open it</th></tr></thead>
+        <thead><tr><th>Part</th><th>What it does</th><th>How to open it</th></tr></thead>
         <tbody>
           <tr>
-            <td><strong>BOLD DB Creator</strong></td>
-            <td>Processes the file downloaded from BOLD and builds the database</td>
-            <td>Shortcut <code>1_Crear_base_de_datos</code><br><span style="color:var(--muted);font-size:0.85em;">(same as <code>dev/bold_db_creator.bat</code>)</span></td>
+            <td><strong>BOLD-Local-DB</strong></td>
+            <td>Processes the file downloaded from BOLD and builds or updates the database</td>
+            <td>The <code>BOLD-Local-DB</code> shortcut, or <code>Start BOLD-Local-DB</code> in the program folder</td>
           </tr>
           <tr>
-            <td><strong>BOLD DB web viewer</strong></td>
-            <td>Lets you search and export records once the database is built</td>
-            <td>Shortcut <code>2_Abrir_visor_web_BD_BOLD</code><br><span style="color:var(--muted);font-size:0.85em;">(same as <code>dev/launch_bold_db.bat</code>)</span></td>
+            <td><strong>Web viewer</strong></td>
+            <td>Searches, analyses and exports records once the database is built</td>
+            <td>The <code>BOLD-Local-DB Viewer</code> shortcut, or <em>Open the viewer</em> on Start</td>
           </tr>
         </tbody>
       </table>
@@ -562,32 +618,47 @@
     <div class="callout tip">
       <span class="icon">ℹ️</span>
       <div>
-        Both shortcuts are in the main <code>BOLD_DB/</code> folder. Their file names stay in Spanish regardless
-        of which language you pick in the apps — they're just Windows shortcuts. If you copy the project to
-        another computer or drive and the shortcuts stop working, run <code>Reparar_accesos.bat</code> once:
-        it regenerates them pointing at the current location.
+        The shortcuts are made from the <strong>Start</strong> screen (on the desktop, in the menu or both). If you
+        move the program folder to another drive, they're remade the next time you open it.
       </div>
     </div>
   </section>
 
-  <!-- 2. PREREQUISITES -->
+  <!-- 2. INSTALLATION -->
   <section id="requisitos">
-    <h1 class="section-title"><span class="num">2</span> Prerequisites</h1>
-    <p>You only need to have installed:</p>
+    <h1 class="section-title"><span class="num">2</span> Installation</h1>
+    <ol class="steps">
+      <li>Download the zip for your system from the project's <strong>Releases</strong> page on GitHub
+          (<code>BOLD-Local-DB-windows.zip</code>, <code>-macos.zip</code> or <code>-linux.zip</code>) and unpack it
+          wherever you like.</li>
+      <li>Open <strong>Start BOLD-Local-DB</strong> in the unpacked folder (<code>.bat</code> on Windows,
+          <code>.command</code> on macOS, <code>.sh</code> on Linux).</li>
+      <li>The first time it downloads its own Python and the components it needs (about 150 MB, once).
+          Then the program opens and offers to create the shortcuts.</li>
+    </ol>
+    <p>There's no need to install Python or anything else: everything stays inside the program folder.
+       You also need:</p>
     <ul class="bullet">
-      <li>
-        <strong>Python 3.10 or newer</strong> — download it from
-        <strong>python.org</strong>. During installation, check the
-        <em>"Add Python to PATH"</em> option.
-      </li>
       <li><strong>Disk space:</strong> at least <strong>80 GB free</strong> (see the FAQ).</li>
+      <li><strong>Internet</strong> the first time you open the program, to download from BOLD and for the GenBank batch.</li>
     </ul>
     <div class="callout tip">
       <span class="icon">ℹ️</span>
       <div>
-        The required libraries are installed <strong>automatically</strong> the first time you run each
-        program: <code>PySide6</code> for the Creator, and <code>Flask</code> and <code>psutil</code> for the web viewer.
-        You only need an internet connection for that first launch.
+        <strong>macOS:</strong> the first time, macOS blocks the downloaded file. Right-click
+        <code>Start BOLD-Local-DB.command</code> → <em>Open</em> → <em>Open</em>. Only once.<br>
+        <strong>Linux:</strong> if double-clicking the <code>.sh</code> opens it in a text editor, allow running
+        executable files in your file manager or open it from a terminal.
+      </div>
+    </div>
+    <div class="callout ok">
+      <span class="icon">✅</span>
+      <div>
+        <strong>Updating the program:</strong> when a new version is out, the Start screen says so. The
+        <em>Update</em> button downloads it and restarts the program with it; your database and files are not
+        touched. If the new version failed to start, it goes back to the previous one by itself.<br>
+        <strong>Uninstalling:</strong> <em>Uninstall…</em> on Start removes the shortcuts and opens the folder for you
+        to delete it. Nothing is left outside that folder.
       </div>
     </div>
   </section>
@@ -595,29 +666,25 @@
   <!-- 3. FOLDERS -->
   <section id="carpetas">
     <h1 class="section-title"><span class="num">3</span> Folder structure</h1>
-    <p>When you open the project folder you'll see this layout:</p>
-<pre><span class="path">BOLD_DB/</span>
-├── <span class="label">1_Crear_base_de_datos</span>       <span class="comment">← shortcut to the Creator</span>
-├── <span class="label">2_Abrir_visor_web_BD_BOLD</span>   <span class="comment">← shortcut to the web viewer</span>
-├── <span class="label">Reparar_accesos.bat</span>         <span class="comment">← regenerates the shortcuts if you move the folder</span>
-├── <span class="path">data/</span>
-│   ├── <span class="path">raw/</span>          <span class="pin">← the Creator saves here the .tar.gz you drag in or pick; created automatically</span>
-│   ├── <span class="path">processed/</span>    <span class="comment">← intermediate files (filtered TSV); created automatically</span>
-│   └── <span class="path">exports/</span>      <span class="comment">← copy of everything you export; created automatically</span>
-├── <span class="path">dev/</span>
-│   ├── <span class="label">bold_db_creator.bat</span>
-│   └── <span class="label">launch_bold_db.bat</span>
+    <p>When you open the program folder you'll see this layout:</p>
+<pre><span class="path">BOLD-Local-DB/</span>
+├── <span class="label">Start BOLD-Local-DB</span>         <span class="comment">← the only thing you need to open</span>
 ├── <span class="path">guide/</span>            <span class="comment">← this guide</span>
-└── <span class="path">app/</span>              <span class="comment">← created automatically: database, web server and logs</span>
-    ├── <span class="label">bold_db.db</span>    <span class="comment">← the finished database</span>
-    └── <span class="path">logs/</span>         <span class="comment">← history of each Creator run</span></pre>
+└── <span class="path">data/</span>             <span class="comment">← everything that's yours; updates never touch it</span>
+    ├── <span class="path">raw/</span>          <span class="pin">← BOLD's .tar.gz, dropped or selected</span>
+    ├── <span class="path">processed/</span>    <span class="comment">← intermediate files (filtered TSV)</span>
+    ├── <span class="path">exports/</span>      <span class="comment">← a copy of everything you export</span>
+    ├── <span class="path">database/</span>     <span class="comment">← bold_db.db, the finished database</span>
+    └── <span class="path">state/</span>        <span class="comment">← settings, field selection and logs (logs/)</span></pre>
+    <p>There are also two hidden folders: <code>.program/</code>, with the program (updates replace it), and
+       <code>.runtime/</code>, with the Python and components the launcher downloads. If you delete
+       <code>.runtime/</code>, it's downloaded again next time.</p>
     <div class="callout ok">
       <span class="icon">✅</span>
       <div>
-        <strong>You don't have to create any folder by hand.</strong> Just like <code>app/</code>, the whole
-        <code>data/</code> tree (<code>raw/</code>, <code>processed/</code> and <code>exports/</code>) is generated
-        automatically every time you open the Creator, even if you're starting from a fresh GitHub clone that has
-        none of these folders yet.
+        <strong>You don't have to create any folder by hand.</strong> The whole <code>data/</code> folder is
+        created when the program opens. Coming from version 1.2.0 or earlier, the program moves the database and
+        settings from the old <code>app/</code> folder into <code>data/</code> by itself.
       </div>
     </div>
   </section>
@@ -628,11 +695,42 @@
     <p>You only need to do this <strong>once</strong>. When BOLD publishes a new version you can update the
        database instead of rebuilding it (see <a href="#reanudar">Resuming and updating</a>).</p>
 
+    <!-- Start screen -->
+    <h2 class="sub-title" id="inicio">The Start screen</h2>
+    <p>It's the first thing you see when you open BOLD-Local-DB. It holds everything needed to create, update and open
+       the database; the sidebar also leads to the <a href="#campos-panel">Field Selection</a> panel and the individual
+       steps.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Element</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Drop zone</strong></td><td>Drag BOLD's <code>.tar.gz</code> here (or press <em>Browse</em>): it's copied to <code>data/raw/</code>.</td></tr>
+          <tr><td><strong>Option 1 · Create the database</strong></td><td>Steps 1 to 3. What most people need. Once the database exists, the button reads <em>Redo the database</em>.</td></tr>
+          <tr><td><strong>Option 2 · Create the full database</strong></td><td>Steps 1 to 4: adds full-text search.</td></tr>
+          <tr><td><strong>Option 3 · Update the database</strong></td><td>Applies only what changed in a new BOLD package. Shows the computer's RAM and the database size so you can judge whether it pays off (see <a href="#reanudar">Resuming and updating</a>).</td></tr>
+          <tr><td><strong>Status</strong></td><td>Loaded data version (package date) and whether each step is done: <em>1. Prepare data</em>, <em>2. Database</em> (with the record count), <em>3. Sped-up searches</em> and <em>4. Full text</em>.</td></tr>
+          <tr><td><strong>Open the viewer</strong></td><td>Starts the web viewer and opens it in the browser. Enabled only once there's a database.</td></tr>
+          <tr><td><strong>User manual</strong></td><td>Opens this guide.</td></tr>
+          <tr><td><strong>Download data from BOLD</strong></td><td>Opens BOLD's public data package page in the browser.</td></tr>
+          <tr><td><strong>Open data/raw folder</strong></td><td>Opens the folder where the <code>.tar.gz</code> must be.</td></tr>
+          <tr><td><strong>Free up space</strong></td><td>Deletes Step 1's working files (TSV, and the <code>.tar.gz</code> if you kept it) and shows how much they take. The database isn't touched, but rebuilding it would need the package downloaded again. Enabled only once the database is built.</td></tr>
+          <tr><td><strong>📁 Exports folder</strong></td><td>Opens <code>data/exports/</code>, where a copy of everything the viewer exports is kept.</td></tr>
+          <tr><td><strong>Shortcuts</strong></td><td>Tick <em>Desktop</em> and/or the menu (Start menu on Windows, Applications/Launchpad on macOS, applications menu on Linux) and press <em>Create shortcuts</em>. It makes "BOLD-Local-DB" and "BOLD-Local-DB Viewer". <em>Create again</em> remakes them and <em>Remove</em> deletes exactly the ones that were made.</td></tr>
+          <tr><td><strong>New version notice</strong></td><td>When a new version of the program is out: <em>See changes</em> opens the notes, <em>Update</em> downloads it and <em>Restart now</em> installs it.</td></tr>
+          <tr><td><strong>Uninstall…</strong></td><td>Removes the shortcuts and opens the program folder for you to delete.</td></tr>
+          <tr><td><strong>Language</strong></td><td>Spanish or English. Applied when the program restarts.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Below every screen is the <strong>Log</strong> panel, showing what's going on. <em>View status</em> writes again
+       where the project stands (which steps are missing and what to do next) and <em>Clear</em> empties the panel
+       without touching any file.</p>
+
     <!-- Step 0 -->
     <h2 class="sub-title" id="paso0">Download the file from BOLD</h2>
     <ol class="steps">
       <li>From <a href="https://bench.boldsystems.org/index.php/datapackages/Latest" target="_blank" rel="noopener">bench.boldsystems.org/index.php/datapackages/Latest</a> download the complete data file (a BOLD account is required). It will have a name similar to <code>BOLD_Public.DAY-MONTH-YEAR.tar.gz</code>. You can leave it wherever it lands (e.g. your Downloads folder).</li>
-      <li>Open the Creator (shortcut <code>1_Crear_base_de_datos</code>) and, in the sidebar, go to
+      <li>Open BOLD-Local-DB (the <code>BOLD-Local-DB</code> shortcut) and, in the sidebar, go to
           <strong>"1. Prepare data"</strong> (INDIVIDUAL STEPS section).</li>
       <li><strong>Drag</strong> the <code>.tar.gz</code> file onto the box shown there — or click
           <strong>"Browse"</strong> and select it. The Creator <strong>copies</strong> it automatically into
@@ -689,7 +787,7 @@
           you're actually going to search by (it creates an index in Step 3 and includes the field in Step 4's
           full-text search). Leave it off for fields you only want to view or export — every index costs disk
           space.</li>
-      <li>Click <strong>"Save selection"</strong> to write it to <code>dev/fields_config.json</code>.</li>
+      <li>Click <strong>"Save selection"</strong> to write it to <code>data/state/fields_config.json</code>.</li>
     </ol>
     <div class="table-wrap">
       <table>
@@ -727,7 +825,7 @@
     <!-- Option A -->
     <h2 class="sub-title" id="opcionA">Option A — Run all the steps at once <em>(recommended)</em></h2>
     <ol class="steps">
-      <li>Double-click the <strong>1_Crear_base_de_datos</strong> shortcut. The Creator will open on the <strong>Start</strong> screen.</li>
+      <li>Double-click the <strong>BOLD-Local-DB</strong> shortcut (or <strong>Start BOLD-Local-DB</strong>). The program will open on the <strong>Start</strong> screen.</li>
       <li>Click <strong>"Create the database"</strong>, under <strong>Option 1</strong>.</li>
       <li>Confirm in the dialog that appears.</li>
       <li>Wait for it to finish. The process can take <strong>several hours</strong> depending on the file size and your computer's speed.</li>
@@ -746,7 +844,21 @@
 
     <!-- Option B -->
     <h2 class="sub-title" id="opcionB">Option B — Run the steps one at a time</h2>
-    <p>Useful if you need to resume from a specific point or want to see the detail of each stage.</p>
+    <p>Useful if you need to resume from a specific point or want to see the detail of each stage. Each step has its
+       own panel in the sidebar (<strong>INDIVIDUAL STEPS</strong> section) with the same controls:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>REQUIRED / RECOMMENDED / OPTIONAL</strong></td><td>The step's label: without the required ones (1 and 2) there's no database; without the recommended one (3) the viewer is slow; the optional one (4) is only needed for full-text search.</td></tr>
+          <tr><td><strong>Run this step</strong></td><td>Runs that step only.</td></tr>
+          <tr><td><strong>Stop</strong></td><td>Interrupts the step and discards what it had done. Nothing already saved is lost.</td></tr>
+          <tr><td><strong>Open input folder</strong></td><td>Opens the folder where the step looks for its files.</td></tr>
+          <tr><td><strong>⚙ Advanced options</strong> (Step 2)</td><td><em>Records per batch</em>: how many records are written at once. Higher is slightly faster and uses more RAM; lower is slower but safe on computers with little memory. If unsure, leave the default.</td></tr>
+          <tr><td><strong>Keep the .tar.gz when done</strong> (Step 1)</td><td>See <a href="#paso0">Download the file from BOLD</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3 class="step-title">Step 1 — Prepare data <em>(required)</em></h3>
     <p>Extracts the <code>.tar.gz</code> file and keeps only the columns checked in the
@@ -761,6 +873,9 @@
           download is still intact where it was.</li>
       <li>Before filtering, the program <strong>checks</strong> that the configured fields exist in the actual
           header of the downloaded file — see the <a href="#campos-panel">Field Selection panel</a>.</li>
+      <li>When it finishes it reports how many rows the package had, how many are kept (those with a sequence) and
+          how many are left out for having none. If any line of the package is broken (missing columns) and couldn't
+          be read, it says so too.</li>
     </ul>
 
     <h3 class="step-title">Step 2 — Build database <em>(required)</em></h3>
@@ -768,10 +883,27 @@
     <ul class="bullet">
       <li>Select <strong>"2. Build database"</strong> → click <strong>Run</strong>.</li>
       <li>Approximate duration: <strong>10–20 minutes</strong>.</li>
-      <li>Result: the <code>app/bold_db.db</code> file.</li>
-      <li>If a <code>processid</code> appears more than once, only the first record is kept; the log says how many
-          were skipped.</li>
+      <li>Result: the <code>data/database/bold_db.db</code> file.</li>
+      <li>Each row of a BOLD package is a <strong>sequence</strong>, not a specimen: a specimen sequenced for several
+          markers (e.g. COI-5P and 16S, or matK and rbcLa) has one row per marker under the same
+          <code>processid</code>. All of them are stored, and the log says how many are additional sequences of
+          specimens with more than one marker.</li>
+      <li>When it finishes, the step <strong>checks</strong> that every row Step 1 kept was stored. If the counts don't
+          match, the new database is discarded and the current one is left as it was.</li>
+      <li>The new database is built separately (<code>bold_db.db.building</code>) and replaces the current one only
+          when the steps finish, so the viewer can keep using the previous one meanwhile. That's why it temporarily
+          needs as much free space as the current database takes; the step warns when the disk looks too small.</li>
     </ul>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Databases built by earlier versions.</strong> Until now the program kept a single sequence per specimen
+        and left out about 400,000 sequences of other markers. If your database dates from then, the Creator warns you:
+        the viewer still works, but you should <strong>rebuild it</strong> (Option 1 or 2) to get them all, and the
+        update (Option 3) refuses it until you do. The current <code>.filt.tsv</code> can be reused: Step 1 doesn't
+        need repeating.
+      </div>
+    </div>
 
     <h3 class="step-title">Step 3 — Speed up searches <em>(recommended)</em></h3>
     <p>Creates indexes so searches are fast. Without this step the database still works, but every query can take minutes instead of seconds.</p>
@@ -809,12 +941,16 @@
         <thead><tr><th>Indicator</th><th>Meaning</th></tr></thead>
         <tbody>
           <tr>
-            <td><span class="status-dot dot-green"></span> <strong>Input available</strong></td>
+            <td><span class="status-dot dot-green"></span> <strong>Everything ready to run this step</strong></td>
             <td>The files needed for this step are ready.</td>
           </tr>
           <tr>
-            <td><span class="status-dot dot-yellow"></span> <strong>Input not found</strong></td>
-            <td>You need to complete the previous step first.</td>
+            <td><span class="status-dot dot-green"></span> <strong>This step is already done</strong></td>
+            <td>No need to run it again, unless you download new data.</td>
+          </tr>
+          <tr>
+            <td><span class="status-dot dot-yellow"></span> <strong>Missing the BOLD file / Missing the prepared data / Missing the database</strong></td>
+            <td>Complete the step named first (or put the <code>.tar.gz</code> in <code>data/raw/</code>).</td>
           </tr>
         </tbody>
       </table>
@@ -871,8 +1007,8 @@
       <table>
         <thead><tr><th>File</th><th>Content</th></tr></thead>
         <tbody>
-          <tr><td><code>app/logs/run_YYYY-MM-DD_HH-MM-SS.log</code></td><td>Everything that appeared in the output panel during that session. The 100 most recent are kept.</td></tr>
-          <tr><td><code>app/logs/error.log</code></td><td>Technical detail of errors. This is the file to check when something fails.</td></tr>
+          <tr><td><code>data/state/logs/run_YYYY-MM-DD_HH-MM-SS.log</code></td><td>Everything that appeared in the output panel during that session. The 100 most recent are kept.</td></tr>
+          <tr><td><code>data/state/logs/error.log</code></td><td>Technical detail of errors. This is the file to check when something fails.</td></tr>
         </tbody>
       </table>
     </div>
@@ -883,7 +1019,7 @@
     <h1 class="section-title"><span class="num">5</span> Querying the database</h1>
 
     <h2 class="sub-title" id="abrir">Opening the database</h2>
-    <p>Double-click the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut (or click <strong>"Open the viewer"</strong> on the Creator's Start screen). A terminal window will open and your browser will open at <code>http://127.0.0.1:5001</code> as soon as the server is ready. If the viewer is already running, the shortcut just opens it in the browser again.</p>
+    <p>Double-click the <strong>BOLD-Local-DB Viewer</strong> shortcut (or click <strong>"Open the viewer"</strong> on the Creator's Start screen). A terminal window will open and your browser will open at <code>http://127.0.0.1:5001</code> as soon as the server is ready. If the viewer is already running, the shortcut just opens it in the browser again.</p>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>The terminal window must <strong>stay open</strong> while you use the database. If you close it, the browser will stop working and you'll see the <em>"SERVER DISCONNECTED"</em> notice.</div>
@@ -896,7 +1032,13 @@
     </div>
     <p>
       In the top right of the page you'll see the loaded <strong>BOLD version</strong>, and next to the title the
-      database's <strong>total record count</strong>.
+      database's <strong>total record count</strong>. If the BOLD package it was built from is over a month old, a
+      yellow badge appears next to the date (<em>"50 days old"</em>): a reminder that BOLD has published newer versions
+      and you can <a href="#reanudar">update the database</a>.
+    </p>
+    <p>
+      The <strong>Sequence analysis</strong> tab, to the right of the search modes, has a section of its own:
+      <a href="#analisis">Sequence analysis</a>.
     </p>
 
     <!-- Modes -->
@@ -917,6 +1059,10 @@
       <div class="mode-card">
         <h3>🧬 GenBank batch</h3>
         <p>Searches a list of terms in NCBI GenBank, online. Record counts, metadata and sequences per term.</p>
+      </div>
+      <div class="mode-card">
+        <h3>📊 Sequence analysis</h3>
+        <p>Not a search: analyses the sequences of a search, of the checked records or of a FASTA file. See <a href="#analisis">section 6</a>.</p>
       </div>
     </div>
 
@@ -947,8 +1093,12 @@
     <div class="callout tip">
       <span class="icon">ℹ️</span>
       <div>
-        Conditions are evaluated <strong>in order, top to bottom</strong>, with no parentheses. If you need to
-        group them, split the query into two searches or use Batch mode.
+        There are no parentheses: as in SQL, <strong>AND and NOT apply before OR</strong>. So
+        <em>Species = Panthera leo</em> OR <em>Species = Panthera onca</em> AND <em>Country = Brazil</em> returns
+        <strong>every</strong> lion (from any country) plus the jaguars from Brazil. To limit both species to Brazil,
+        repeat the condition in each branch: <em>Species = Panthera leo</em> AND <em>Country = Brazil</em> OR
+        <em>Species = Panthera onca</em> AND <em>Country = Brazil</em>. For long lists, use the
+        <a href="#busqueda-batch">Local BOLD batch</a> with a second filter field.
       </div>
     </div>
 
@@ -970,7 +1120,7 @@
     </div>
 
     <h3 class="step-title">Autocomplete</h3>
-    <p>From the <strong>third character</strong> you type, up to <strong>10 suggestions</strong> appear, taken from values that actually exist in the database, drawn from the taxonomic fields, marker, country, state, region and identification.</p>
+    <p>From the <strong>third character</strong> you type, up to <strong>10 suggestions</strong> appear, taken from values that actually exist in the database, drawn from the taxonomic fields, marker, country, state, region and identification. Values that <strong>start</strong> with what you typed come first, and among them the most common in the database: <code>Colom</code> brings up <em>Colombia</em> before rare names that merely contain it, such as <em>Scolomys</em>.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Key</th><th>Action</th></tr></thead>
@@ -1306,11 +1456,13 @@
       <table>
         <thead><tr><th>Control</th><th>What it does</th></tr></thead>
         <tbody>
-          <tr><td><strong>Click a cell</strong></td><td>Expands the cell to show its full content (useful for long sequences)</td></tr>
-          <tr><td><strong>Double-click a cell</strong></td><td>Copies its content to the clipboard; the <em>"Copied"</em> notice appears</td></tr>
+          <tr><td><strong>Click a row</strong></td><td>Opens the <strong>record card</strong> in a side panel (see below)</td></tr>
+          <tr><td><strong>Double-click a cell</strong></td><td>Copies its content to the clipboard; the <em>"Copied"</em> notice appears. In the sequence column it copies the whole sequence</td></tr>
+          <tr><td><strong>Sequence column</strong></td><td>Shows the sequence as a thumbnail colour bar (A green, C blue, G yellow, T red, grey for N and ambiguities); hovering shows its length in bp. Short sequences or ones full of Ns stand out at a glance</td></tr>
+          <tr><td><strong>Edge of a header</strong></td><td>Drag the right edge of a column header to change its width</td></tr>
           <tr><td><strong>⠿ Column order ▼</strong></td><td>Drag the names to reorder the columns. <em>↺ Reset</em> returns to the original order</td></tr>
           <tr><td><strong>Show/hide columns ▼</strong></td><td>Shows or hides table columns. Your selection is remembered for next time</td></tr>
-          <tr><td><strong>Expand rows</strong></td><td>Shows every cell's full content at once</td></tr>
+          <tr><td><strong>Expand rows</strong></td><td>Shows every cell's full content at once; the sequence appears as coloured text instead of the bar</td></tr>
           <tr><td><strong>Cancel Search</strong></td><td>Interrupts a query that's taking too long</td></tr>
           <tr><td><strong>Clear results</strong></td><td>The discreet link in the results header: empties the table and frees up memory</td></tr>
         </tbody>
@@ -1321,6 +1473,47 @@
       <div>The results belong to the tab where you ran the search: if you switch tabs they're hidden, and they come
         back when you return. Changing pages and exporting always act on the search shown in the table, even if
         you've edited the form since.</div>
+    </div>
+    <p>Above the table, the <strong>Showing results for</strong> line sums up the query the results belong to. For a
+       field search, <strong>✎ Edit</strong> loads those conditions back into the form so you can change them, for
+       instance after trying another search.</p>
+
+    <h3 class="step-title" id="ficha">Record card</h3>
+    <p>Clicking a row opens the record's full card on the right:</p>
+    <ul class="bullet">
+      <li>A header with the <strong>BOLD ID</strong> and the identification (in italics for a genus or species).</li>
+      <li>The full <strong>Taxonomy</strong> and the <strong>Record data</strong>: every field that has a value, uncut.
+          Double-click a value to copy it.</li>
+      <li>The <strong>Sequence</strong>, coloured by base, with its FASTA header and the colour legend.</li>
+      <li><strong>Copy FASTA</strong>, <strong>Copy sequence</strong> and <strong>Open in BOLD ↗</strong>, which opens
+          the record's public page on the BOLD portal (needs internet).</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>One <strong>BOLD ID</strong> can appear on several rows: each row is a sequence, and a specimen sequenced for
+        several markers has one per marker. Look at the <em>Marker</em> column.</div>
+    </div>
+
+    <!-- Selection -->
+    <h2 class="sub-title" id="seleccion">Selecting records</h2>
+    <p>The first column of the table has a checkbox per row. The header checkbox ticks every row on the page. Once
+       any is ticked, the <strong>selection bar</strong> appears:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Button</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>N selected</strong></td><td>How many records you've ticked</td></tr>
+          <tr><td><strong>⤓ CSV</strong></td><td>Exports only the ticked records as CSV</td></tr>
+          <tr><td><strong>⤓ FASTA</strong></td><td>Exports their sequences as FASTA (those under 50 bp are left out, as in the normal export)</td></tr>
+          <tr><td><strong>Analyse</strong></td><td>Opens the <a href="#analisis">Sequence analysis</a> tab and analyses the ticked records</td></tr>
+          <tr><td><strong>Clear selection</strong></td><td>Unticks everything</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>The selection <strong>survives page changes</strong>, so you can tick records across several pages. A new
+        search clears it.</div>
     </div>
 
     <!-- Export -->
@@ -1366,9 +1559,429 @@
     </div>
   </section>
 
-  <!-- 6. FIELDS -->
+  <!-- 6. ANALYSIS -->
+  <section id="analisis">
+    <h1 class="section-title"><span class="num">6</span> Sequence analysis</h1>
+    <p>
+      The viewer's <strong>Sequence analysis</strong> tab checks a set of sequences without leaving the program or
+      needing internet. It works at two levels:
+    </p>
+    <ul class="bullet">
+      <li><strong>Basic analysis</strong> (no alignment, seconds even for thousands of sequences): composition and
+          quality, a translation check (stop codons), haplotypes per species and species–BIN concordance.</li>
+      <li><strong>Distances and tree</strong> (on demand, on the same sequences): alignment, BOLD-style genetic
+          distances, <em>barcode gap</em> per species and a neighbour-joining tree.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Each analysis covers a single marker.</strong> Lengths, composition, haplotypes and distances of
+        different genes can't be compared, and the marker decides whether sequences are translated and with which
+        genetic code. If the input mixes markers (e.g. COI-5P and 16S from the same specimens), the tab asks which one
+        to analyse and leaves the rest out.
+      </div>
+    </div>
+
+    <!-- Input -->
+    <h2 class="sub-title" id="an-entrada">Input and options</h2>
+    <h3 class="step-title">Where the sequences come from</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Option</th><th>What it analyses</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Selected records</strong></td><td>The records ticked in the results table (the count is shown next to it). This is what the <em>Analyse</em> button of the <a href="#seleccion">selection bar</a> uses.</td></tr>
+          <tr><td><strong>Results of the search on screen</strong></td><td>Every record of the search on screen, not just the visible page.</td></tr>
+          <tr><td><strong>FASTA file</strong></td><td>A <code>.fasta</code>, <code>.fas</code>, <code>.fa</code>, <code>.fna</code>, <code>.ffn</code> or <code>.txt</code> file (up to 50 MB), or sequences pasted into the box. The headers this viewer exports (<code>processid|sampleid|BIN|taxon|marker</code>) and BOLD's (<code>processid|taxon|marker|accession</code>) are recognised, and species, BIN and marker are taken from them. With any other header only its first word is used, as the identifier.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">Options</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Option</th><th>What it's for</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Marker</strong></td><td><em>Detect from the data</em> (the default) uses the records' marker. If there are several, or the FASTA doesn't say, the tab lists the markers with their sequence counts and asks you to pick one; then press <em>Analyse</em> again. The list offers the markers <em>In the data</em> and <em>Common markers</em>.</td></tr>
+          <tr><td><strong>Genetic code</strong></td><td><em>Automatic</em> (recommended) picks the translation table from the marker and each record's taxonomy (see the next table). You can force a given table (1, 2, 4, 5, 9, 11 or 13); it's the only way to translate a FASTA with no marker. Next to the selector, a note says what will happen with the chosen marker.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>With the <strong>automatic</strong> code:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Marker type</th><th>Examples</th><th>Code used</th></tr></thead>
+        <tbody>
+          <tr><td>Mitochondrial, protein-coding</td><td>COI-5P, COI-3P, COII, COIII, CYTB, ND1–ND6, ATP6, ATP8</td><td>From the record's taxonomy: 2 vertebrates (Chordata) · 13 ascidians · 9 echinoderms, hemichordates and flatworms · 4 cnidarians, sponges, ctenophores, fungi and protists · 1 plants · <strong>5 (invertebrate) for the rest</strong>, arthropods, molluscs and annelids included, and when there's no taxonomy</td></tr>
+          <tr><td>Plastid and bacterial</td><td>rbcL, rbcLa, matK, tufA, rpoB, rpoC1, psbA; <em>Wolbachia</em> genes (wsp, coxA, fbpA, hcpA)</td><td>11</td></tr>
+          <tr><td>Nuclear without introns</td><td>H3, RAG1, RAG2, RHO, WNT1, MC1R</td><td>1 (standard)</td></tr>
+          <tr><td>Non-coding or not translatable</td><td>ITS, 12S, 16S, 18S, 28S, D-loop, spacers, COI-NUMT, EF1-alpha, CAD…</td><td>Not translated: rRNA, multi-gene regions, pseudogenes and genes with introns would show meaningless stop codons</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Press <strong>Analyse</strong>. When it's done, the input folds into a one-line summary (source, marker, code);
+       <strong>▾ Change</strong> reopens it for another analysis.</p>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>Sequences are cleaned before analysis: uppercased, alignment gaps (<code>-</code>, <code>.</code>) and end Ns
+        removed, and U read as T. Those left with <strong>fewer than 50 bp</strong> are left out (the result says how
+        many). If the input holds over 20,000 sequences, the first 20,000 are analysed and a notice says so: narrow the
+        search to analyse it whole.</div>
+    </div>
+
+    <!-- Summary -->
+    <h2 class="sub-title" id="an-resumen">Results summary</h2>
+    <p>The title gives the marker, the number of sequences analysed and the time taken. Below it, three groups of
+       figures:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Group</th><th>Figure</th><th>How to read it</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="2"><strong>Composition</strong></td><td>Median length (bp) and range</td><td>The typical length of the set. For COI-5P the standard barcode is about 650 bp (658 bp for the full region); a very wide range means partial fragments mixed with full sequences.</td></tr>
+          <tr><td>Mean GC</td><td>Percentage of G + C. It depends on the group: in insect COI it's usually around 30–35 %, in fish and other vertebrates closer to 40–48 %. What matters is comparing within the set: a sequence far from the mean deserves a look.</td></tr>
+          <tr><td rowspan="3"><strong>Quality and translation</strong></td><td>Meet the barcode standard</td><td>Only for COI-5P (or sequences with no marker). BOLD's criterion: at least 500 bp, under 1 % Ns, no stop codons and no invalid characters.</td></tr>
+          <tr><td>GC at 3rd position (GC3)</td><td>GC at the third codon position, the one most free to change without altering the protein. It reflects the genome's composition bias (in insects it's usually very low). Only computed for markers that are translated.</td></tr>
+          <tr><td>With stop codons</td><td>Sequences with no reading frame free of stops. Highlighted in orange when there's any. Should be 0 in a coding gene.</td></tr>
+          <tr><td><strong>Taxonomy</strong></td><td>Species and BINs</td><td>How many distinct species and BINs the set holds. If there are many more BINs than species, or the other way round, the <em>Species and BINs</em> view tells you where.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The results are split into tabs: <strong>Composition and quality</strong>, <strong>Haplotypes</strong>,
+       <strong>Species and BINs</strong>, <strong>Distances</strong> and <strong>NJ tree</strong>. Each shows a count
+       (flagged sequences, haplotypes, cases to review), in orange when something deserves a look.</p>
+
+    <!-- Quality -->
+    <h2 class="sub-title" id="an-calidad">Composition and quality</h2>
+    <h3 class="step-title">Length distribution</h3>
+    <p>Histogram with 25 bp bars (wider if lengths are very spread). Hover over a bar to see how many sequences it
+       holds.</p>
+    <ul class="bullet">
+      <li><strong>One narrow peak</strong> (e.g. 600–675 bp in COI-5P): a homogeneous set, the ideal case.</li>
+      <li><strong>Two peaks</strong> (e.g. one at ~300 bp and another at ~650 bp): mini-barcodes or partial sequences
+          mixed with full barcodes. The short ones carry less information for distances.</li>
+      <li><strong>A tail</strong> of much longer sequences: mitochondrial genomes or full genes filed under the same
+          marker name.</li>
+    </ul>
+
+    <h3 class="step-title">Quality flags</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Flag</th><th>What it means</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Short (&lt; 500 bp)</strong></td><td>Below the 500 bp of the barcode standard (COI-5P only).</td><td>Fine for identification, less reliable for delimiting species. Consider filtering with <em>Base count &gt; 500</em>.</td></tr>
+          <tr><td><strong>Over 1% Ns</strong></td><td>Too many undetermined bases: a low-quality read.</td><td>Use with caution; it's left out of haplotypes.</td></tr>
+          <tr><td><strong>Ambiguous bases</strong></td><td>IUPAC codes (R, Y, K, M, S, W…): the sequencer saw two signals at that position. Could be heteroplasmy, mixed samples or, in nuclear genes, a heterozygote.</td><td>A few ambiguities are rarely a problem; many suggest contamination.</td></tr>
+          <tr><td><strong>Invalid characters</strong></td><td>Symbols that aren't nucleotides.</td><td>Check the source file. Left out of distances.</td></tr>
+          <tr><td><strong>Stop codons</strong></td><td>No reading frame is free of stops. Possible causes: a nuclear pseudogene of mitochondrial origin (<strong>NUMT</strong>), a sequencing error that shifts the frame, the wrong genetic code, or a sequence that isn't actually of that marker.</td><td>Don't use it to delimit species: it's left out of distances and the tree automatically.</td></tr>
+          <tr><td><strong>Possibly reversed</strong></td><td>Stops in all 3 forward frames but none on the reverse strand: almost certainly submitted reversed.</td><td>Not a serious problem: the program reads it on the reverse strand (negative frame) for GC3, haplotypes and distances.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Below, the <strong>Flagged sequences</strong> table lists each problem sequence with its ID, species, BIN,
+       length, GC %, GC3 %, N, ambiguities, reading <strong>frame</strong> (1, 2 or 3; −1, −2 or −3 when read on the
+       reverse strand), number of <strong>stops</strong> and flags. If there are many, the first ones are shown and the
+       CSV holds them all.</p>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Example: stop codons from the wrong code.</strong> You analyse 300 COI-5P sequences of beetles forcing
+        code <em>1 · Standard</em>, and 280 come out with stop codons. They aren't pseudogenes: in the standard code
+        <code>TGA</code> is a stop, but in invertebrate mitochondria (code 5) it codes for tryptophan, and it's common
+        in COI. With the <em>Automatic</em> code (which uses 5 for arthropods) the flags drop to 0 or a handful, and
+        those do deserve a look.
+      </div>
+    </div>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Example: a possible NUMT.</strong> Among 120 COI-5P sequences of an orthopteran genus, one has 3 stops in
+        its best frame, GC 6 points above the mean and sits in a BIN apart from its species. That combination (stops +
+        odd composition + separate BIN) points to a NUMT or contamination, not a cryptic species.
+      </div>
+    </div>
+
+    <!-- Haplotypes -->
+    <h2 class="sub-title" id="an-haplotipos">Haplotypes</h2>
+    <p>Groups identical sequences by species, without aligning. Since barcodes of one haplotype mostly differ in where
+       they were trimmed, a sequence <strong>contained</strong> in a longer one counts as that same haplotype. Sequences
+       with Ns or ambiguous bases are left out (a single N would create a false haplotype).</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sequences</strong></td><td>Sequences of the species included in the count</td></tr>
+          <tr><td><strong>Haplotypes</strong></td><td>Distinct variants found</td></tr>
+          <tr><td><strong>Singletons</strong></td><td>Haplotypes seen only once</td></tr>
+          <tr><td><strong>Hd</strong></td><td>Nei's haplotype diversity: the probability that two sequences picked at random from the species differ. Ranges from 0 (all identical) to 1 (all different). Computed as Hd = n/(n−1) · (1 − Σ p<sub>i</sub>²), where p<sub>i</sub> is each haplotype's frequency</td></tr>
+          <tr><td><strong>Left out</strong></td><td>Sequences not included because of Ns or ambiguities</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Example.</strong> <em>Species A</em> has 10 sequences in 3 haplotypes of 6, 3 and 1 sequences.
+        Haplotypes = 3, singletons = 1, and
+        Hd = 10/9 · (1 − (0.6² + 0.3² + 0.1²)) = 1.111 · 0.54 = <strong>0.60</strong>.
+        <br><br>
+        How to read it:
+        <ul class="bullet">
+          <li><strong>Hd near 0</strong> with many sequences: a population with little diversity, a bottleneck, or
+              samples from a single site or lineage.</li>
+          <li><strong>Hd near 1</strong> with almost every haplotype a singleton: high diversity, or sampling that hasn't
+              yet captured the species' variation (each new sequence would add a haplotype).</li>
+          <li>With <strong>2 or 3 sequences</strong> Hd can only take a few values and says little: compare species with
+              similar sample sizes.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Concordance -->
+    <h2 class="sub-title" id="an-concordancia">Species and BINs</h2>
+    <p>A <strong>BIN</strong> (<em>Barcode Index Number</em>) is the cluster BOLD assigns to closely similar sequences,
+       independently of the taxonomic identification. Each species would be expected to have a BIN of its own. This
+       view compares the two classifications using only records that have <strong>both a species and a BIN</strong> (a
+       FASTA without BOLD headers has none).</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Figure / table</th><th>What it means</th><th>Usual causes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Species with a BIN of their own</strong></td><td>A species with a single BIN shared with no other species. Full agreement.</td><td>—</td></tr>
+          <tr><td><strong>BINs with several species</strong></td><td>One BIN holds records identified as different species. The table lists each BIN with its records and species (with each one's record count).</td><td>A misidentified specimen; synonyms; very recent species, or ones with hybridisation/introgression, that the marker doesn't separate; contamination.</td></tr>
+          <tr><td><strong>Species in several BINs</strong></td><td>A species' records are spread over several BINs.</td><td>Cryptic species (several species under one name); deeply divergent geographic lineages; misidentifications; NUMTs forming a BIN of their own.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Example.</strong> A search for <em>Family = Nymphalidae, Country = Colombia</em> shows:
+        <br>• <code>BOLD:AAA1234</code> with <em>Heliconius erato</em> (25) and <em>Heliconius himera</em> (2). They're
+        sister species that hybridise: the shared BIN is expected and doesn't mean an error.
+        <br>• <em>Adelpha cytherea</em> in <code>BOLD:ABC0001</code> (18) and <code>BOLD:ABC0002</code> (1). A BIN with a
+        single record against a majority one suggests checking that record (identification, sequence quality) before
+        thinking of a cryptic species. If both BINs had many records from different regions, the separate-lineages
+        hypothesis would gain weight.
+        <br><br>
+        Names and numbers in this example are illustrative. The <a href="#an-arbol">NJ tree</a> view with
+        <em>Colour: Species–BIN discordances</em> shows these cases on the tree.
+      </div>
+    </div>
+
+    <!-- Distances -->
+    <h2 class="sub-title" id="an-distancias">Distances and barcode gap</h2>
+    <p>The <strong>Distances</strong> and <strong>NJ tree</strong> tabs are computed on demand from the same input as
+       the basic analysis. Choose the options and press <strong>Compute</strong>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Option</th><th>Values</th><th>When to use it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Model</strong></td><td><em>K2P (Kimura 2-parameter)</em> — default</td><td>BOLD's and the barcoding literature's standard. Corrects for multiple substitutions and treats transitions (A↔G, C↔T) and transversions separately. Use it to compare with published values.</td></tr>
+          <tr><td></td><td><em>Jukes-Cantor (JC69)</em></td><td>A simpler correction: one substitution rate and equal base frequencies.</td></tr>
+          <tr><td></td><td><em>p-distance</em></td><td>Proportion of differing sites, uncorrected. Easy to read ("3 % of positions differ"); underestimates large distances.</td></tr>
+          <tr><td><strong>Max. per species</strong></td><td>All, 1, 2, 3, 5, 10, 20 or 50</td><td>Subsamples before computing, keeping the longest sequences of each species (or of each BIN when there's no species). Useful when a few species have hundreds of sequences and dominate the result, or to get within the limits. With 1 there are no intraspecific distances.</td></tr>
+          <tr><td><strong>Build NJ tree</strong></td><td>On by default</td><td>Turn it off if you only want the distances: with many sequences the tree is the slowest part.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="step-title">How they're aligned</h3>
+    <p>Sequences are aligned to a <strong>reference</strong> picked from among them (the longest one without
+       ambiguities, leaving out the longest 10 %, so as not to pick a rare full gene among barcodes), much as BOLD aligns
+       against its COI profile. Each sequence is placed by the stretches it shares with the reference, and only where an
+       insertion or deletion shows is it aligned with gaps. Bases a sequence has beyond the reference, or inserted
+       relative to it, are dropped. The result says which reference was used, how many sequences needed gaps and how
+       many were read on the reverse strand.</p>
+    <ul class="bullet">
+      <li>Sequences with <strong>stop codons</strong> or invalid characters (probable pseudogenes or contamination, which
+          distort distances) and those under <strong>100 bp</strong> are left out.</li>
+      <li>Two sequences sharing <strong>fewer than 100 comparable positions</strong> (e.g. two fragments from opposite
+          ends of the gene), or so different that the model saturates, get <strong>no distance</strong>; the result
+          says how many pairs.</li>
+      <li>With a <strong>non-coding marker</strong> (ITS, 16S, 18S…) aligning to a reference is approximate, because
+          insertions and deletions are common: take the distances with caution.</li>
+    </ul>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Alignment groups.</strong> One marker name can hold different genes (BOLD's "16S" covers bacterial 16S
+        and the mitochondrial 16S of animals) or taxa too far apart to align. Sequences that don't align to the first
+        reference form another group with its own reference (up to 6 groups of at least 3 sequences). Distances and trees
+        are computed <strong>within each group</strong>; the result lists the groups with their main classes or phyla.
+        To analyse just one, narrow the search by kingdom, phylum or class.
+      </div>
+    </div>
+
+    <h3 class="step-title">Distance summary</h3>
+    <p>Like BOLD's <em>Distance Summary</em>: minimum, mean and maximum distance (in %) at three levels, with the number
+       of taxa and comparisons of each.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Level</th><th>Taxa</th><th>Comparisons</th><th>Min</th><th>Mean</th><th>Max</th></tr></thead>
+        <tbody>
+          <tr><td>Within species</td><td>42</td><td>3,410</td><td>0.00</td><td>0.61</td><td>3.85</td></tr>
+          <tr><td>Within genus (between species)</td><td>9</td><td>12,880</td><td>1.72</td><td>9.40</td><td>16.10</td></tr>
+          <tr><td>Within family (between genera)</td><td>1</td><td>41,215</td><td>8.90</td><td>15.30</td><td>22.70</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>How to read it (example values, COI-5P of an insect family):</p>
+    <ul class="bullet">
+      <li>Distances are expected to <strong>grow from one level to the next</strong>: a low intraspecific mean (in
+          animal COI usually below 1–2 %) and a clearly higher mean between species of a genus.</li>
+      <li>The <strong>intraspecific maximum</strong> (3.85 %) is above the <strong>congeneric minimum</strong> (1.72 %):
+          there's at least one species with a lot of internal variation and two very close species. The barcode gap
+          (below) tells you which.</li>
+      <li>Thresholds such as "2 %" are only a guide: they vary a lot between groups, and an odd value should be checked
+          against taxonomy, geography and sequence quality.</li>
+    </ul>
+
+    <h3 class="step-title">Distance distribution</h3>
+    <p>Overlaid histogram of pairwise distances in three series: <strong>within species</strong>, <strong>between
+       species of a genus</strong> and <strong>between species</strong> (of different genera). In a group the barcode
+       resolves well, intraspecific distances pile up near 0 and the others start clearly further right, with a gap
+       between them. If the series overlap, some species aren't well separated by the marker (or some identifications
+       need checking).</p>
+
+    <h3 class="step-title">Barcode gap per species</h3>
+    <p>Each species is assessed on two values:</p>
+    <ul class="bullet">
+      <li><strong>Max intra</strong>: the largest distance between two sequences of the species itself (the mean,
+          <strong>Mean intra</strong>, is shown too).</li>
+      <li><strong>Neighbour</strong>: the distance to the closest sequence of <em>another</em> species (its nearest
+          neighbour), with that <strong>Neighbour species</strong>' name.</li>
+      <li><strong>Gap</strong> = Neighbour − Max intra. When it's <strong>positive</strong> the species has a barcode
+          gap: its farthest sequence is still closer to its own than to any other species. When it's <strong>zero or
+          negative</strong>, it hasn't.</li>
+    </ul>
+    <p>The figures on top say how many species were assessed and how many have no gap (and what percentage). The scatter
+       plot shows each species as a point: X axis = max intra, Y axis = neighbour. Points <strong>above the
+       diagonal</strong> have a gap; those <strong>on or below it</strong> don't (in another colour). The table is sorted
+       from worst to best gap, so the problem cases come first. Species with a single sequence have no intraspecific
+       distance and show "—".</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Species</th><th>Max intra</th><th>Neighbour</th><th>Neighbour species</th><th>Gap</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr><td><em>Species B</em></td><td>2.80 %</td><td>0.60 %</td><td><em>Species C</em></td><td>−2.20 %</td><td>No gap. A sequence of C is closer to B than B's own sequences are to each other. Could be a misidentification, introgression, or B and C actually being one species (or B being two).</td></tr>
+          <tr><td><em>Species D</em></td><td>0.90 %</td><td>1.10 %</td><td><em>Species E</em></td><td>+0.20 %</td><td>A very narrow gap: the barcode separates them, but barely. Similarity-based identifications between D and E will be unreliable.</td></tr>
+          <tr><td><em>Species A</em></td><td>1.20 %</td><td>4.50 %</td><td><em>Species F</em></td><td>+3.30 %</td><td>A clear gap: the marker delimits the species well.</td></tr>
+          <tr><td><em>Species G</em></td><td>—</td><td>6.00 %</td><td><em>Species A</em></td><td>—</td><td>A single sequence: the gap can't be assessed, only its distance to the neighbour.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div>For a species with no gap, open the <strong>NJ tree</strong>, type its name in <em>Highlight species or
+        ID…</em> and check whether its sequences form a group of their own or mix with the neighbour species'. Then look
+        up the suspect record in the results table and click it to see its card (country, identifier, who identified
+        it).</div>
+    </div>
+
+    <!-- Tree -->
+    <h2 class="sub-title" id="an-arbol">NJ tree</h2>
+    <p>A <strong>neighbour-joining</strong> tree built on the computed distances and rooted at the <strong>midpoint</strong>
+       (halfway along the path between the two most distant sequences). With several alignment groups, pick the group in
+       <em>Tree of group</em>. Sequences lacking a distance to some other one are taken out of the tree, and the count is
+       shown.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Collapse</strong></td><td><em>Nothing</em>, <em>By species</em> or <em>By BIN</em>: folds clades made only of one species (or BIN) into a triangle. With more than 300 sequences the tree opens collapsed by species. You can also click any node to collapse or expand its clade.</td></tr>
+          <tr><td><strong>Colour</strong></td><td>Colours the tips by <em>species</em>, <em>BIN</em>, <em>genus</em>, <em>country</em> or <em>species–BIN discordances</em> (BIN with several species, species in several BINs, or both). There are eight colours; the remaining values show in grey as "Other".</td></tr>
+          <tr><td><strong>Branches</strong></td><td><em>Phylogram</em>: branch length is proportional to distance. <em>Cladogram</em>: only the tree's shape, with tips aligned, easier to read when branches are very short.</td></tr>
+          <tr><td><strong>Row / Font</strong></td><td>Height of each row and font size. Below 5 px rows the labels are hidden.</td></tr>
+          <tr><td><strong>Labels</strong></td><td>What to show at each tip: species, ID, BIN, country. <em>Coloured labels</em> paints them in their group's colour (darkened where needed to stay readable).</td></tr>
+          <tr><td><strong>Highlight species or ID…</strong></td><td>Highlights the tips matching the text and says how many there are.</td></tr>
+          <tr><td><strong>Expand all</strong></td><td>Undoes every collapse.</td></tr>
+          <tr><td><strong>Export figure</strong></td><td>As shown (collapses, colours, labels): <em>SVG</em> (editable in Inkscape or Illustrator), <em>PNG 2×</em> or <em>4×</em> (if the image would be too large it's made at a smaller scale and a notice says so) and <em>PDF</em> (the print dialog opens: choose "Save as PDF"; the browser must allow pop-ups).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 class="step-title">How to interpret it</h3>
+    <ul class="bullet">
+      <li>A barcode NJ tree is a <strong>clustering tool</strong>, not a phylogeny: it carries no support values
+          (bootstrap), and deep relationships between genera or families aren't reliable from a single gene fragment.</li>
+      <li>What it does show well is whether each species forms a <strong>compact group of its own</strong>. Colour by
+          species: a colour showing up on two separate branches of the tree is a split species (compare with the
+          <em>Species and BINs</em> view); two colours mixed in one clade are species the marker doesn't separate.</li>
+      <li>In the phylogram, a <strong>long isolated branch</strong> leading to a single sequence is often a problem
+          sequence (NUMT, contamination, many Ns) or a taxon very different from the rest.</li>
+      <li>Colouring by <strong>country</strong> helps see whether lineages within a species follow geography (e.g. an
+          Andean clade and an Amazonian one).</li>
+    </ul>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Example.</strong> You analyse 800 COI-5P sequences of a bee genus. The tree opens collapsed by species
+        (over 300 tips). You set <em>Colour: Species–BIN discordances</em> and see two orange triangles. Expanding the
+        first, the sequences of <em>Species X</em> split into two well-separated subclades, one with samples from Mexico
+        and the other from Costa Rica (you confirm it with <em>Labels: Country</em>), each with its own BIN: a cryptic
+        species candidate. In the second, a single sequence identified as <em>Species Y</em> sits inside the clade of
+        <em>Species Z</em>: most likely a misidentified specimen.
+      </div>
+    </div>
+    <p>The results ZIP holds the tree in <strong>Newick</strong> format (<code>tree.nwk</code>) to open and edit in
+       FigTree, iTOL or MEGA. Labels are <code>processid|species|BIN</code>.</p>
+
+    <!-- Downloads -->
+    <h2 class="sub-title" id="an-descargas">Downloads and limits</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Download</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td><strong>⤓ Sequences (CSV)</strong></td><td>One row per sequence: id, species, BIN, marker, length, counts of A, C, G, T, N, ambiguous and invalid, GC %, GC3 %, genetic code, frame, stop codons, whether it meets the barcode standard (<code>yes</code>/<code>no</code>) and flags</td></tr>
+          <tr><td><strong>⤓ Haplotypes (CSV)</strong></td><td>Per species: sequences, haplotypes, singletons, Hd, left out for Ns/ambiguities and the size of each haplotype (<code>6;3;1</code>)</td></tr>
+          <tr><td><strong>⤓ Species and BINs (CSV)</strong></td><td>Each BIN with several species and each species in several BINs, with its records and the detail</td></tr>
+          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code> and <code>distance_summary.csv</code>. With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). A copy stays in <code>data/exports/analysis_exports/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>In the ZIP files distances are <strong>fractions</strong> (<code>0.01234</code> = 1.234 %), while the page
+        shows them as percentages.</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Sequences in the basic analysis</td><td>20,000 (the first ones are analysed, with a notice)</td></tr>
+          <tr><td>FASTA size</td><td>50 MB</td></tr>
+          <tr><td>Minimum length</td><td>50 bp in the basic analysis; 100 bp for distances</td></tr>
+          <tr><td>Sequences read for distances</td><td>100,000 (before the per-species subsample; above that, narrow the search)</td></tr>
+          <tr><td>Sequences in distances</td><td>5,000 (1,000 for non-coding markers), after the subsample</td></tr>
+          <tr><td>Sequences in the tree</td><td>2,000 per group</td></tr>
+          <tr><td>Comparable positions for a distance</td><td>100</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>If you go over the distance limit, use <strong>Max. per species</strong> (e.g. 5 or 10) or narrow the search.</p>
+
+    <!-- Example -->
+    <h2 class="sub-title" id="an-ejemplo">Worked example</h2>
+    <p>Checking the quality of the barcodes of Brazil's cats:</p>
+    <ol class="steps">
+      <li>In <strong>Advanced field search</strong>: <em>Family = Felidae</em> AND <em>Marker = COI-5P</em> AND
+          <em>Country = Brazil</em>. Press <strong>Search</strong>.</li>
+      <li>Open the <strong>Sequence analysis</strong> tab, choose <em>Results of the search on screen</em>, leave
+          <em>Marker: Detect from the data</em> and <em>Genetic code: Automatic</em> (it will use code 2, vertebrates)
+          and press <strong>Analyse</strong>.</li>
+      <li>In the summary, check the median length (~650 bp), the share meeting the barcode standard and that <em>With
+          stop codons</em> is 0. In <strong>Composition and quality</strong>, review the flagged sequences.</li>
+      <li>In <strong>Species and BINs</strong>, note the shared BINs and split species.</li>
+      <li>In <strong>Distances</strong>, keep K2P, set <em>Max. per species: 20</em> if a species has hundreds of
+          sequences, and press <strong>Compute</strong>. See which species have no barcode gap.</li>
+      <li>In <strong>NJ tree</strong>, colour by species, find the problem species with <em>Highlight</em> and export
+          the figure as SVG or PDF.</li>
+      <li>Download the <strong>ZIP</strong> to keep the alignment, distances and Newick tree.</li>
+    </ol>
+  </section>
+
+  <!-- 7. FIELDS -->
   <section id="campos">
-    <h1 class="section-title"><span class="num">6</span> Available fields</h1>
+    <h1 class="section-title"><span class="num">7</span> Available fields</h1>
     <p>
       These are the <strong>23 columns included by default</strong>, with the name you'll see in the interface.
       They aren't fixed: from the Creator's <a href="#campos-panel">Field Selection</a> panel you can remove any
@@ -1401,9 +2014,9 @@
     </div>
   </section>
 
-  <!-- 7. FAQ -->
+  <!-- 8. FAQ -->
   <section id="faq">
-    <h1 class="section-title"><span class="num">7</span> Frequently asked questions</h1>
+    <h1 class="section-title"><span class="num">8</span> Frequently asked questions</h1>
 
     <div class="faq-item">
       <div class="q">How much disk space do I need?</div>
@@ -1411,8 +2024,8 @@
     </div>
 
     <div class="faq-item">
-      <div class="q">Do I have to create the <code>app/</code> folder before building the database?</div>
-      <div class="a">No. The Creator creates it automatically when it opens, along with the web server, templates, and the logs folder. You only need to place the <code>.tar.gz</code> in <code>data/raw/</code>.</div>
+      <div class="q">Do I have to create any folder before building the database?</div>
+      <div class="a">No. The program creates <code>data/</code> and everything in it when it opens. You only need to drop the <code>.tar.gz</code> on the Start screen (or leave it in <code>data/raw/</code>).</div>
     </div>
 
     <div class="faq-item">
@@ -1422,7 +2035,7 @@
 
     <div class="faq-item">
       <div class="q">The browser says "SERVER DISCONNECTED".</div>
-      <div class="a">This means the server is no longer running: its terminal window was closed, or it closed by itself after the last viewer tab was closed. Reopen the <strong>2_Abrir_visor_web_BD_BOLD</strong> shortcut.</div>
+      <div class="a">This means the server is no longer running: its terminal window was closed, or it closed by itself after the last viewer tab was closed. Open the <strong>BOLD-Local-DB Viewer</strong> shortcut again.</div>
     </div>
 
     <div class="faq-item">
@@ -1452,7 +2065,7 @@
 
     <div class="faq-item">
       <div class="q">I changed the field selection, saved it, but the viewer still shows the same thing.</div>
-      <div class="a">Saving the selection only updates <code>dev/fields_config.json</code>; the database doesn't change until you repeat Step 1 with BOLD's <code>.tar.gz</code> (the program detects the change and re-filters on its own). If the <code>.tar.gz</code> was already deleted, you'll need to download it again; to avoid that next time, tick <em>"Keep the .tar.gz when done"</em> in Step 1.</div>
+      <div class="a">Saving the selection only updates <code>data/state/fields_config.json</code>; the database doesn't change until you repeat Step 1 with BOLD's <code>.tar.gz</code> (the program detects the change and re-filters on its own). If the <code>.tar.gz</code> was already deleted, you'll need to download it again; to avoid that next time, tick <em>"Keep the .tar.gz when done"</em> in Step 1.</div>
     </div>
 
     <div class="faq-item">
@@ -1462,7 +2075,7 @@
 
     <div class="faq-item">
       <div class="q">Can I keep the database on an external drive?</div>
-      <div class="a">Yes. Copy the whole <code>BOLD_DB/</code> folder to the external drive and run <code>Reparar_accesos.bat</code> once so the shortcuts point to the new drive.</div>
+      <div class="a">Yes. Copy the whole program folder to the external drive and open it from there: any shortcuts you had made are remade to point at the new location.</div>
     </div>
 
     <div class="faq-item">
@@ -1472,7 +2085,22 @@
 
     <div class="faq-item">
       <div class="q">Something failed and the message doesn't tell me enough.</div>
-      <div class="a">Open <code>app/logs/error.log</code>: it contains the technical detail of the last error. The full history of each session is in <code>app/logs/run_*.log</code>.</div>
+      <div class="a">Open <code>data/state/logs/error.log</code>: it contains the technical detail of the last error. The full history of each session is in <code>data/state/logs/run_*.log</code>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Pressing "Analyse" asks me to choose a marker.</div>
+      <div class="a">The input holds sequences of several markers (or a FASTA whose headers don't name it), and each analysis covers one. Pick the marker in the list, which shows how many sequences each has, and press <strong>Analyse</strong> again; those of other markers are left out. See <a href="#an-entrada">Input and options</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">The distances say there are too many sequences.</div>
+      <div class="a">The distance analysis takes up to 5,000 sequences (1,000 for non-coding markers) and the tree 2,000. Use <strong>Max. per species</strong> to keep a few sequences per species, or narrow the search (by genus, country, etc.). See <a href="#an-descargas">Downloads and limits</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">Almost all my COI sequences come out with stop codons.</div>
+      <div class="a">It's nearly always the genetic code: if you forced it by hand (e.g. 1 · Standard for invertebrates), go back to <strong>Automatic</strong>. If it was already automatic, check that the marker is the right one and that the records have taxonomy (without it, code 5 is used). See the <a href="#an-calidad">example</a>.</div>
     </div>
   </section>
 

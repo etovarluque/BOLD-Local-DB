@@ -1,6 +1,6 @@
 # BOLD-Local-DB
 
-**Version: 1.2.0**
+**Version: 2.0.0**
 
 Desktop tool to build and browse a local, **offline** SQLite database from
 [BOLD Systems](https://www.boldsystems.org/) (Barcode of Life Data System) TSV exports.
@@ -9,7 +9,7 @@ Desktop tool to build and browse a local, **offline** SQLite database from
 
 Two programs, used in order:
 
-1. **BOLD DB Creator** (`dev/bold_db_creator.py`) — filters the raw BOLD
+1. **BOLD-Local-DB / Creator** (`dev/bold_db_creator.py`) — filters the raw BOLD
    TSV/`tar.gz` export, loads it into SQLite, indexes the selected fields and
    builds full-text search.
 
@@ -27,67 +27,87 @@ Two programs, used in order:
    a ZIP with record counts per query and, optionally, metadata (TSV) and
    sequences (FASTA).
 
+   The **Sequence analysis** tab checks the sequences of a search, of the
+   checked records or of a FASTA file, one marker per run: composition and
+   quality, stop codons, haplotypes, species–BIN concordance and, on demand,
+   K2P distances, barcode gap and a neighbour-joining tree. Each panel has a
+   help icon that opens the user guide at its section.
+
 ### Screenshots
+
+**Creator** — builds and updates the database
+
+![Creator](dev/screenshots/creator.png)
+
+**Web viewer**
 
 | Advanced field search | Full-text search |
 |---|---|
 | ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Full-text search](dev/screenshots/full_text_search.png) |
 | **Local BOLD batch** | **GenBank batch** |
 | ![Local BOLD batch](dev/screenshots/batch_search.png) | ![GenBank batch](dev/screenshots/genbank_batch.png) |
+| **Sequence analysis** | **NJ tree (species–BIN discordances)** |
+| ![Sequence analysis](dev/screenshots/sequence_analysis.png) | ![NJ tree](dev/screenshots/sequence_tree.png) |
 
 ## Requirements
 
-- Windows, macOS or Linux
-- Python 3 (dependencies auto-install on first run: PySide6, Flask, etc.)
+- Windows, macOS or Linux. Nothing else to install: the first start downloads
+  its own Python and packages (about 150 MB, once) into the program's folder.
 - A [BOLD Systems](https://bench.boldsystems.org/) account, to download data packages
-- ~80 GB of free disk space, for the downloaded package and the resulting database
+- ~80 GB of free disk space, for the downloaded package and the resulting database.
+  Rebuilding over an existing database needs room for a second copy: the new
+  one is built next to the current one and replaces it when it's finished.
 
 ## Quick start
 
-1. Download a data package (`.tar.gz`) from
-   [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest).
-2. **Generate your shortcuts** — a shortcut's target is an absolute path, so
-   it has to be created for wherever *your* copy of this project ends up.
-   Double-click, once:
-   - Windows: `0_Generate_Shortcuts_Windows.bat`
-   - Linux: `0_Generate_Shortcuts_Linux.sh`
-   - macOS: `0_Generate_Shortcuts_macOS.command`
-
-   This also tidies the project root: repo files you don't need day-to-day
-   (`README.md`, `CHANGELOG.md`, `LICENSE`, `.git*`) and the "step 0"
-   scripts for the *other* two OSes move into `project_files/`, so only the
-   numbered shortcuts for your OS are left to double-click. (Skipped in a
-   `git clone`: there the root is left untouched.)
-   Run it again any time you move the project to another drive, computer or
-   user account, to regenerate broken shortcuts. (Or run
-   `python dev/generate_shortcuts.py` from a terminal instead, on any OS.)
-3. Build the database — double-click the **"1"** shortcut for your OS, at
-   the project root:
-   - Windows: `1_Create_DB.lnk`
-   - macOS: `1_Create_DB.command`
-   - Linux: `1_Create_DB.desktop`
-4. Open the web viewer at `http://127.0.0.1:5001` — double-click the **"2"**
-   shortcut, at the project root:
-   - Windows: `2_Open_web_viewer_BOLD_DB.lnk`
-   - macOS: `2_Open_web_viewer_BOLD_DB.command`
-   - Linux: `2_Open_web_viewer_BOLD_DB.desktop`
-
-None of the OS shortcuts are stored in the repository — they're
-machine-specific, so `generate_shortcuts.py` creates them locally at the
-project root for all three platforms (the macOS ones are copied from the
-templates in `dev/macos_shortcuts/`). All of them just call the matching
-script in `dev/` (`bold_db_creator.bat`/`.sh`, `launch_bold_db.bat`/`.sh`) —
-use those directly instead if you'd rather run them from a terminal.
+1. Download the zip for your system from
+   [Releases](https://github.com/etovarluque/BOLD-Local-DB/releases/latest)
+   (`BOLD-Local-DB-windows.zip`, `-macos.zip` or `-linux.zip`) and unpack it
+   wherever you like.
+2. Open **Start BOLD-Local-DB** in the unpacked folder (`.bat` on Windows,
+   `.command` on macOS, `.sh` on Linux). The first time it downloads its
+   components, which takes a few minutes; then the program opens and offers
+   to create shortcuts on the desktop and in the menu:
+   - **BOLD-Local-DB**: the program, to build or update the database.
+   - **BOLD-Local-DB Viewer**: the viewer, straight in the browser
+     (`http://127.0.0.1:5001`).
+3. Download a data package (`.tar.gz`) from
+   [BOLD Systems — Data Packages](https://bench.boldsystems.org/index.php/datapackages/Latest),
+   drop it on the Home screen and choose **Option 1 · Create the database**.
 
 **First-run OS quirks:**
-- **macOS**: Gatekeeper blocks scripts downloaded from the internet the
-  first time — right-click a `.command` file → *Open* once to allow it.
-  This applies to `0_Generate_Shortcuts_macOS.command` and to the
-  generated `1_Create_DB.command` / `2_Open_web_viewer_BOLD_DB.command`.
-- **Linux**: GNOME/KDE require marking a downloaded `.desktop` launcher as
-  trusted — right-click it → *Allow Launching* (or *Trust*) once.
-- If double-clicking doesn't work at all, run the `.sh`/`.command` script
-  directly from a terminal instead.
+- **macOS**: Gatekeeper blocks a downloaded `.command` the first time:
+  right-click *Start BOLD-Local-DB.command* → *Open* → *Open*. Only once; the
+  shortcuts the program makes afterwards aren't affected.
+- **Linux**: if double-clicking the `.sh` opens it in a text editor, allow
+  running executable files in your file manager or run it from a terminal.
+  The shortcuts the program makes are marked as trusted.
+
+The shortcuts can be removed or made again from the Home screen. If the
+folder is moved, the program remakes them on its next start.
+
+### Updating the program
+
+When a new version is out, the Home screen says so. **Update** downloads it
+and restarts the program with it: only the program is replaced, never
+`data/` (database, exports, field selection). If the new version fails to
+start, the launcher puts the previous one back.
+
+### Uninstalling
+
+**Uninstall…** on the Home screen removes the shortcuts and opens the folder
+holding the program, for you to delete it. Apart from the shortcuts, the
+program keeps everything inside its folder: its Python and packages are in
+`.runtime/`, nothing is installed on the system.
+
+### Coming from 1.2.0 or earlier
+
+Unpack the new zip and copy what's inside its `BOLD-Local-DB` folder
+(including the hidden `.program`) **into your current folder**, then open
+*Start BOLD-Local-DB* there. On its first start the program moves the database, logs and
+settings from `app/` into `data/`, keeps your field selection, and removes
+the old launch scripts, shortcuts and the `dev/` folder. Make the shortcuts
+again from the Home screen.
 
 ## Weekly updates
 
@@ -109,43 +129,77 @@ as it was, and the viewer keeps working while it runs.
 
 ## Project structure
 
+What a user sees after unpacking a release:
+
 ```
-BOLD_DB/
-├── 0_Generate_Shortcuts_Windows.bat        # Windows: creates the 1/2 shortcuts
-├── 0_Generate_Shortcuts_Linux.sh           # Linux: creates the 1/2 shortcuts
-├── 0_Generate_Shortcuts_macOS.command      # macOS: creates the 1/2 shortcuts
-├── 1_Create_DB.lnk / .command / .desktop            # generated shortcut, not versioned
-├── 2_Open_web_viewer_BOLD_DB.lnk / .command / .desktop  # generated shortcut, not versioned
-├── project_files/              # repo metadata + other-OS "step 0" scripts,
-│                                # moved here by generate_shortcuts.py
-│   ├── README.md, CHANGELOG.md, LICENSE
-│   ├── .git/, .gitignore, .gitattributes
-│   └── the two 0_Generate_Shortcuts_* scripts not matching your OS
+BOLD-Local-DB/
+├── Start BOLD-Local-DB.bat / .command / .sh   # the only thing to open
+├── guide/                     # user guide (ES/EN)
+├── data/                      # everything that's yours; updates never touch it
+│   ├── raw/                   # BOLD's .tar.gz goes here
+│   ├── processed/             # Step 1's output
+│   ├── exports/               # what the viewer exports
+│   ├── database/              # bold_db.db
+│   └── state/                 # settings, logs, field selection, shortcuts made
+├── .program/                  # the program (dev/ in this repository); replaced by updates
+└── .runtime/                  # uv, its Python and the packages; made by the launcher
+```
+
+`.program/` and `.runtime/` are hidden (a leading dot on macOS/Linux, the
+hidden attribute on Windows). Deleting `.runtime/` only costs a new download.
+
+This repository:
+
+```
+├── Start BOLD-Local-DB.bat / .command / .sh   # launchers (they use dev/ when there's no .program/)
 ├── dev/
-│   ├── bold_db_creator.py     # Steps 1-4: TSV filtering, SQLite load, indexing, FTS
-│   ├── bold_db_creator.bat    # Windows launcher, called by 1_Create_DB.lnk
-│   ├── bold_db_creator.sh     # macOS/Linux launcher, called by the "1" shortcuts
-│   ├── launch_bold_db.bat     # Windows launcher, called by 2_Open_web_viewer_BOLD_DB.lnk
-│   ├── launch_bold_db.sh      # macOS/Linux launcher, called by the "2" shortcuts
-│   ├── generate_shortcuts.py  # creates/repairs the shortcuts for your OS
-│   ├── macos_shortcuts/       # .command templates, copied to the project root
-│   ├── icons/                 # icons used by the shortcuts and the GUI
-│   ├── fields_config.json     # Fields kept from the BOLD TSV + which are indexed
+│   ├── start.py               # what the launchers run: updates, migration, shortcuts, then the program
+│   ├── bold_db_creator.py     # the program: Home, Steps 1-4, field selection
+│   ├── shortcuts.py           # desktop/menu shortcuts per OS
+│   ├── updater.py             # updates from GitHub Releases
+│   ├── bootstrap/             # downloads uv (pinned version, checksum verified)
+│   ├── pyproject.toml, uv.lock, .python-version   # packages, installed by uv
+│   ├── fields_config.json     # default field selection
+│   ├── icons/
+│   ├── tools/build_release.py # builds the per-OS zips
 │   ├── frontend/
-│   │   ├── server.py          # Local web server (search / filter / export)
-│   │   ├── genbank_batch.py   # GenBank batch search (NCBI E-utilities), used by server.py
+│   │   ├── server.py          # the viewer (Flask)
+│   │   ├── layout.py          # where everything lives; migration from app/
+│   │   ├── db_contract.py     # what the Creator writes and the viewer reads
+│   │   ├── genbank_batch.py, seq_analysis.py, seq_distance.py, seq_identify.py
 │   │   ├── static/
 │   │   └── templates/
 │   └── screenshots/
-├── data/                      # raw / processed / exports (not versioned, auto-created)
-└── guide/                     # user guide (ES/EN)
+├── guide/
+└── .github/workflows/         # release.yml (publishes the zips), launcher-check.yml
 ```
 
-The generated database and raw/processed data are **not** part of this
-repository (see `.gitignore`). Git doesn't track empty folders, so a fresh
-clone won't include `data/` at all — `dev/bold_db_creator.py` recreates the
-whole `data/raw`, `data/processed` and `data/exports/*` tree on every
-startup, the same way it does for `app/`. No manual folder creation needed.
+### Development
+
+Clone the repository and open the launcher for your system: it uses `dev/`
+directly. Or, with [uv](https://docs.astral.sh/uv/) installed:
+
+```
+uv run --project dev python dev/start.py            # the program
+uv run --project dev python dev/start.py --viewer   # the viewer
+```
+
+After changing the packages in `dev/pyproject.toml`, run `uv lock` in `dev/`.
+In a clone the program doesn't update itself (use `git pull`) and doesn't ask
+about shortcuts.
+
+### Releasing
+
+Set the version in `dev/frontend/db_contract.py` (`APP_VERSION`) and
+`dev/pyproject.toml`, add its section to `CHANGELOG.md`, then:
+
+```
+git tag v1.3.0 && git push --tags
+```
+
+`.github/workflows/release.yml` builds the three zips and publishes the
+release with that CHANGELOG section as notes; copies already installed
+offer the update from then on.
 
 ## Documentation
 

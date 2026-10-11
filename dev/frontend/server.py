@@ -50,17 +50,17 @@ def check_and_install_pip():
             sys.exit(1)
 
 # List of required packages
-required_packages = ["flask", "psutil"]
+required_packages = ["flask", "psutil", "numpy"]
 
-# Check and install pip if necessary
-check_and_install_pip()
+# Started by the launcher, the packages are already there (uv, without pip):
+# pip is only looked for when something is missing, with a Python of one's own
+if any(importlib.util.find_spec(p) is None for p in required_packages):
+    check_and_install_pip()
+    for package in required_packages:
+        install_package(package)
 
-# Check and install packages
-for package in required_packages:
-    install_package(package)
 
-
-from flask import Flask, render_template, request, jsonify, send_file, Response
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, Response
 from functools import lru_cache
 import sqlite3
 import os
@@ -81,30 +81,32 @@ from contextlib import contextmanager
 from datetime import datetime
 
 import genbank_batch
+import seq_analysis
+import seq_distance
+import seq_identify
+# What bold_db_creator.py writes and this viewer reads: file and table names,
+# the version and the database layout version
+import db_contract
+import layout
 
-__version__ = "1.2.0"
+__version__ = db_contract.APP_VERSION
 
 app = Flask(__name__)
 
-def _find_project_root():
-    p = os.path.dirname(os.path.abspath(__file__))
-    for _ in range(3):
-        if os.path.isdir(os.path.join(p, "data", "raw")) or os.path.isdir(os.path.join(p, "app")):
-            return p
-        p = os.path.dirname(p)
-    return os.path.dirname(os.path.abspath(__file__))
-
-_PROJECT_ROOT     = _find_project_root()
-_EXPORTS_ROOT     = os.path.join(_PROJECT_ROOT, "data", "exports")
+# Where everything lives: see layout.py
+_PROJECT_ROOT     = layout.ROOT
+_EXPORTS_ROOT     = layout.EXPORTS_DIR
 CSV_EXPORTS_DIR   = os.path.join(_EXPORTS_ROOT, 'csv_exports')
 FASTA_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'fasta_exports')
 BATCH_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'batch_exports')
 GENBANK_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'genbank_exports')
+ANALYSIS_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'analysis_exports')
 
 os.makedirs(CSV_EXPORTS_DIR,   exist_ok=True)
 os.makedirs(FASTA_EXPORTS_DIR, exist_ok=True)
 os.makedirs(BATCH_EXPORTS_DIR, exist_ok=True)
 os.makedirs(GENBANK_EXPORTS_DIR, exist_ok=True)
+os.makedirs(ANALYSIS_EXPORTS_DIR, exist_ok=True)
 
 # File retention in export folders:
 # after generating a new file, only the EXPORT_KEEP most recent files per
@@ -188,7 +190,7 @@ def _prune_export_status(status_dict, keep=EXPORT_STATUS_KEEP):
         for eid, _ in finished[:len(finished) - keep]:
             status_dict.pop(eid, None)
 
-DATABASE_PATH = os.path.join(_PROJECT_ROOT, "app", "bold_db.db")
+DATABASE_PATH = layout.database_path()
 
 # Field name mapping: technical name -> friendly name.
 #
@@ -448,8 +450,7 @@ METRIC_OVERFLOW_LIST = 1000
 # than 1,048,576 rows, and the information is still in the not_found.txt files.
 SUMMARY_ZERO_ROWS_MAX = 1_000_000
 
-# Name of the FTS table
-FTS_TABLE_NAME = 'bold_records_fts'  # Adjust to match your actual FTS table name
+FTS_TABLE_NAME = db_contract.FTS_TABLE
 
 def _connect_readonly(timeout):
     """Read-only connection to the database.
@@ -478,8 +479,7 @@ def get_db_connection():
 
     return conn
 
-# Table built by bold_db_creator.py (TABLE_NAME there)
-MAIN_TABLE_NAME = 'bold_records'
+MAIN_TABLE_NAME = db_contract.MAIN_TABLE
 
 @lru_cache(maxsize=1)
 def get_column_names():
@@ -531,8 +531,7 @@ def fts_table_available():
 
     The FTS index is optional: `bold_db_creator.py` can build the database
     without it, in which case the full-text search tab has nothing to work
-    with. Resolved only once (lru_cache) because a table doesn't appear or
-    disappear while the server is running.
+    with. Cached (lru_cache) until the database file changes: see db_problem().
     """
     try:
         conn = get_db_connection()
@@ -731,6 +730,11 @@ def build_single_condition(column, operator, value, parameters, value2=None, num
 STRINGS = {
     'es': {
         'no_table_found': 'No se encontró ninguna tabla en la base de datos',
+        'db_problem_title': 'La base de datos no está disponible',
+        'db_missing': 'Todavía no hay base de datos. Créala con BOLD-Local-DB (acceso directo «BOLD-Local-DB» o «Start BOLD-Local-DB» en la carpeta del programa) y recarga esta página.',
+        'db_unreadable': 'No se pudo abrir la base de datos: puede estar a medio crear o dañada. Vuelve a crearla con BOLD-Local-DB (acceso directo «BOLD-Local-DB» o «Start BOLD-Local-DB» en la carpeta del programa).',
+        'db_schema_too_old': 'Esta base de datos tiene un formato que esta versión del visor ya no lee. Reconstrúyela con BOLD-Local-DB (acceso directo «BOLD-Local-DB» o «Start BOLD-Local-DB» en la carpeta del programa).',
+        'db_schema_too_new': 'Esta base de datos se creó con una versión más reciente del programa. Actualiza el proyecto para poder abrirla.',
         'invalid_search_conditions': 'Condiciones de búsqueda inválidas',
         'no_search_conditions': 'No se proporcionaron condiciones de búsqueda',
         'no_search_query': 'No se proporcionó ninguna consulta de búsqueda',
@@ -799,9 +803,30 @@ STRINGS = {
         'genbank_done': 'Listo: {done} consulta(s), {records} registro(s) descargados.',
         'genbank_done_failed': ' {n} consulta(s) fallaron (marcadas como ERROR en genbank_counts.csv).',
         'genbank_stopped': 'Detenida tras {done} de {total} consultas. El ZIP contiene los resultados parciales.',
+        'analysis_invalid_request': 'Solicitud de análisis no válida',
+        'analysis_no_sequences': 'No hay secuencias que analizar',
+        'analysis_fasta_too_large': 'El archivo FASTA supera el máximo de {mb} MB',
+        'analysis_distance_input_too_big': 'La entrada tiene más de {limit} secuencias de este marcador. Acota la búsqueda: un análisis de distancias sobre una parte arbitraria sería engañoso.',
+        'analysis_too_many': 'Hay {n} secuencias y el máximo para distancias con este marcador es {limit}. Limita las secuencias por especie o acota la búsqueda.',
+        'analysis_too_few': 'Se necesitan al menos {limit} secuencias alineables; hay {n}.',
+        'analysis_tree_too_many': 'Árbol no calculado: hay {n} secuencias y el máximo es {limit}. Limita las secuencias por especie.',
+        'analysis_tree_too_few': 'Árbol no calculado: solo {n} secuencias tienen distancias con todas las demás.',
+        'analysis_tree_group': 'Grupo {k}: ',
+        'identify_index_failed': 'No se pudo crear el índice: {error}',
+        'identify_index_busy': 'Ya se está creando un índice. Espera a que termine.',
+        'identify_bad_thresholds': 'Los umbrales deben estar entre 50 y 100 % y cumplir especie ≥ género ≥ familia.',
+        'identify_index_missing': 'Este marcador aún no tiene índice de identificación. Créalo primero.',
+        'identify_index_stale': 'El índice de este marcador es de una versión anterior de la base de datos. Vuelve a crearlo.',
+        'identify_index_building': 'El índice de este marcador se está creando. Espera a que termine.',
+        'identify_too_many': 'Hay {n} secuencias y el máximo por análisis es {limit}.',
     },
     'en': {
         'no_table_found': 'No table found in the database',
+        'db_problem_title': 'The database is not available',
+        'db_missing': 'There is no database yet. Create it with BOLD-Local-DB (the "BOLD-Local-DB" shortcut, or "Start BOLD-Local-DB" in the program folder) and reload this page.',
+        'db_unreadable': 'The database could not be opened: it may be half-built or damaged. Build it again with BOLD-Local-DB (the "BOLD-Local-DB" shortcut, or "Start BOLD-Local-DB" in the program folder).',
+        'db_schema_too_old': 'This database has a layout this version of the viewer no longer reads. Rebuild it with BOLD-Local-DB (the "BOLD-Local-DB" shortcut, or "Start BOLD-Local-DB" in the program folder).',
+        'db_schema_too_new': 'This database was built by a newer version of the program. Update the project to open it.',
         'invalid_search_conditions': 'Invalid search conditions',
         'no_search_conditions': 'No search conditions provided',
         'no_search_query': 'No search query provided',
@@ -870,6 +895,22 @@ STRINGS = {
         'genbank_done': 'Done: {done} query(ies), {records} record(s) downloaded.',
         'genbank_done_failed': ' {n} query(ies) failed (marked as ERROR in genbank_counts.csv).',
         'genbank_stopped': 'Stopped after {done} of {total} queries. The ZIP contains the partial results.',
+        'analysis_invalid_request': 'Invalid analysis request',
+        'analysis_no_sequences': 'There are no sequences to analyse',
+        'analysis_fasta_too_large': 'The FASTA file exceeds the {mb} MB maximum',
+        'analysis_distance_input_too_big': 'The input has more than {limit} sequences of this marker. Narrow the search: a distance analysis of an arbitrary part of it would mislead.',
+        'analysis_too_many': 'There are {n} sequences and the most for distances with this marker is {limit}. Limit the sequences per species or narrow the search.',
+        'analysis_too_few': 'At least {limit} alignable sequences are needed; there are {n}.',
+        'analysis_tree_too_many': 'No tree: there are {n} sequences and the most is {limit}. Limit the sequences per species.',
+        'analysis_tree_too_few': 'No tree: only {n} sequences have distances to all the others.',
+        'analysis_tree_group': 'Group {k}: ',
+        'identify_index_failed': 'The index could not be built: {error}',
+        'identify_index_busy': 'An index is already being built. Wait for it to finish.',
+        'identify_bad_thresholds': 'Thresholds must be between 50 and 100 % with species ≥ genus ≥ family.',
+        'identify_index_missing': 'This marker has no identification index yet. Build it first.',
+        'identify_index_stale': "This marker's index is from an earlier version of the database. Build it again.",
+        'identify_index_building': "This marker's index is being built. Wait for it to finish.",
+        'identify_too_many': 'There are {n} sequences and the most per run is {limit}.',
     },
 }
 
@@ -915,6 +956,95 @@ def start_background(target, *args, **kwargs):
     thread = threading.Thread(target=runner, daemon=True)
     thread.start()
     return thread
+
+
+# ── Database state ────────────────────────────────────────────────────────────
+#
+# The viewer can stay open while the Creator rebuilds or updates the database.
+# Whatever is cached about it (columns, FTS index) is dropped as soon as the
+# file changes, and its layout version is checked against the range this
+# viewer reads (db_contract). Before, an incompatible or missing database only
+# showed up as an SQL error in the middle of a search.
+
+_db_state = {"checked": False, "sig": None, "problem": None}
+_db_state_lock = threading.Lock()
+
+# Routes that query the database. Status, download and GenBank routes don't.
+_DB_ROUTES = ('/api/search', '/api/autocomplete', '/api/export_fasta',
+              '/api/export_csv', '/api/explain', '/api/batch_search',
+              '/total_records')
+
+
+def _db_signature():
+    """Changes whenever the Creator writes to the database or replaces it."""
+    try:
+        st = os.stat(DATABASE_PATH)
+    except OSError:
+        return None
+    return (st.st_mtime_ns, st.st_size, st.st_ino)
+
+
+def _check_db():
+    """STRINGS key describing why the database can't be used, or None."""
+    if not os.path.exists(DATABASE_PATH):
+        return 'db_missing'
+    try:
+        conn = _connect_readonly(5.0)
+        try:
+            version = db_contract.schema_version(conn)
+            conn.execute(f"SELECT 1 FROM {MAIN_TABLE_NAME} LIMIT 0")
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return 'db_unreadable'
+    return {'too_old': 'db_schema_too_old',
+            'too_new': 'db_schema_too_new'}.get(db_contract.schema_status(version))
+
+
+def db_problem():
+    """Why the database can't be used right now (a STRINGS key), or None.
+
+    Re-checked only when the file changes, which also clears the caches
+    built from the previous one.
+    """
+    sig = _db_signature()
+    with _db_state_lock:
+        if _db_state["checked"] and _db_state["sig"] == sig:
+            return _db_state["problem"]
+        for cached in (get_column_names, get_numeric_columns,
+                       fts_table_available, get_fts_columns,
+                       get_indexed_columns):
+            cached.cache_clear()
+        problem = _check_db()
+        _db_state.update(checked=True, sig=sig, problem=problem)
+        return problem
+
+
+_DB_PROBLEM_PAGE = """<!doctype html>
+<html lang="{lang}"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOLD Database v{version}</title>
+<style>
+body{{font-family:system-ui,sans-serif;background:#f5f7fa;color:#1b2235;margin:0;padding:64px 16px}}
+main{{max-width:560px;margin:0 auto;background:#fff;border:1px solid #dde2ec;border-radius:10px;padding:28px 32px}}
+h1{{font-size:1.25rem;margin:0 0 12px;color:#2c4685}}
+p{{line-height:1.5;margin:0}}
+</style></head>
+<body><main><h1>{title}</h1><p>{message}</p></main></body></html>"""
+
+
+@app.before_request
+def _guard_database():
+    if request.path != '/' and not request.path.startswith(_DB_ROUTES):
+        return None
+    problem = db_problem()
+    if problem is None:
+        return None
+    if request.path == '/':
+        return _DB_PROBLEM_PAGE.format(
+            lang=get_lang(), version=__version__,
+            title=t('db_problem_title'), message=t(problem)), 503
+    return jsonify({'error': t(problem)}), 503
 
 
 @app.route('/')
@@ -967,8 +1097,21 @@ def index():
         fts_table_name=FTS_TABLE_NAME,
         initial_lang=get_lang(),
         version=__version__,
+        analysis_limit=seq_analysis.MAX_SEQUENCES,
+        analysis_fasta_max_mb=seq_analysis.MAX_FASTA_CHARS // 1_000_000,
+        analysis_marker_kinds=seq_analysis.MARKER_KINDS,
+        analysis_distance_limit=seq_distance.MAX_DISTANCE_SEQUENCES,
+        analysis_tree_limit=seq_distance.MAX_TREE_SEQUENCES,
+        analysis_per_species=ANALYSIS_PER_SPECIES,
+        identify_enabled=IDENTIFY_ENABLED,
     )
 
+
+
+@app.route('/guide/<path:filename>')
+def guide(filename):
+    """The user guide, opened at a section by the panels' help icons."""
+    return send_from_directory(layout.GUIDE_DIR, filename)
 
 
 @app.route('/api/search', methods=['POST'])
@@ -1299,6 +1442,138 @@ AUTOCOMPLETE_COLUMNS = [
     'col_province_state', 'col_region', 'col_identification'
 ]
 
+# Searching column by column finds the rarer values a common one hides (a
+# genus "Mexi..." behind thousands of "Mexico"), but a column where the term
+# is rare costs a walk over every row that has it elsewhere: "Costa Ri" in
+# col_genus reads all the Costa Rica records. So each column gets a time
+# slice, and whatever didn't fit is left out of the suggestions.
+AUTOCOMPLETE_COLUMN_BUDGET_S = 0.05
+AUTOCOMPLETE_TOTAL_BUDGET_S = 0.4
+AUTOCOMPLETE_ENOUGH_VALUES = 40
+# Distinct values read per column (and per capitalization) from its index
+AUTOCOMPLETE_PREFIX_PER_COLUMN = 8
+AUTOCOMPLETE_LIMIT = 10
+# Past this many records a value counts as "very common": enough to rank it
+AUTOCOMPLETE_FREQUENCY_CAP = 1000
+
+
+@lru_cache(maxsize=1)
+def get_indexed_columns():
+    """Columns of the main table that lead a B-tree index (Step 3)."""
+    conn = get_db_connection()
+    try:
+        cols = set()
+        for idx in conn.execute(f"PRAGMA index_list({MAIN_TABLE_NAME})").fetchall():
+            info = conn.execute(f'PRAGMA index_info("{idx[1]}")').fetchall()
+            if info:
+                cols.add(info[0][2])
+        return frozenset(cols)
+    finally:
+        conn.close()
+
+
+def _autocomplete_prefix(conn, columns, query):
+    """Rows (aligned with `columns`) with the values that start with `query`.
+
+    Read from each column's index by seeking value to value, so it costs a
+    few lookups however many records share a value: "Colom" finds Colombia
+    right away, where a substring search sees Scolomys and Discolomatidae
+    first. The index compares case-sensitively, hence the capitalizations.
+    """
+    indexed = get_indexed_columns()
+    variants = dict.fromkeys([query, query[:1].upper() + query[1:],
+                              query.lower(), query.upper()])
+    rows = []
+    for i, col in enumerate(columns):
+        if col not in indexed:
+            continue  # without its index, a range here would scan the table
+        first = (f"SELECT {col} FROM {MAIN_TABLE_NAME} WHERE {col} >= ? AND {col} < ? "
+                 f"ORDER BY {col} LIMIT 1")
+        after = (f"SELECT {col} FROM {MAIN_TABLE_NAME} WHERE {col} > ? AND {col} < ? "
+                 f"ORDER BY {col} LIMIT 1")
+        for low in variants:
+            high = low[:-1] + chr(ord(low[-1]) + 1)
+            hit = conn.execute(first, (low, high)).fetchone()
+            for _ in range(AUTOCOMPLETE_PREFIX_PER_COLUMN):
+                if hit is None:
+                    break
+                row = [None] * len(columns)
+                row[i] = hit[0]
+                rows.append(tuple(row))
+                hit = conn.execute(after, (hit[0], high)).fetchone()
+    return rows
+
+
+def _value_frequency(conn, col, value):
+    """Records with this value, counted up to AUTOCOMPLETE_FREQUENCY_CAP.
+
+    Counted on the column's index and capped, so a value in a million
+    records costs no more than one in a thousand. 0 without an index.
+    """
+    if col not in get_indexed_columns():
+        return 0
+    return conn.execute(
+        f"SELECT COUNT(*) FROM (SELECT 1 FROM {MAIN_TABLE_NAME} WHERE {col} = ? LIMIT ?)",
+        (value, AUTOCOMPLETE_FREQUENCY_CAP)).fetchone()[0]
+
+
+def _suggestion_rank(value, query, frequency=0):
+    """Sort key: values that start with the query, then those with a word
+    that does ("Lake Ontario" for "ontario"), then the rest. Within each,
+    the most common first (Colombia before Colombo), then the shortest."""
+    text = str(value).lower()
+    q = query.lower()
+    if text.startswith(q):
+        tier = 0
+    elif re.search(r'[\s,;/()\-_.]' + re.escape(q), text):
+        tier = 1
+    else:
+        tier = 2
+    return (tier, -frequency, len(text), text)
+
+
+def _autocomplete_fts(conn, columns, query):
+    """Rows (tuples aligned with `columns`) whose values contain `query`.
+
+    It used to be one `col LIKE '%q%' OR ...` over all the columns: SQLite
+    runs that as a full trigram scan per column before LIMIT applies, which
+    took seconds for common terms ("Costa Ri" ~10 s). A MATCH stops at LIMIT.
+    """
+    phrase = '"' + query.replace('"', '""') + '"'
+    # One pass over all the columns at once: milliseconds, and it brings the
+    # most common values
+    rows = conn.execute(
+        f"SELECT {', '.join(columns)} FROM {FTS_TABLE_NAME} "
+        f"WHERE {FTS_TABLE_NAME} MATCH ? LIMIT 50",
+        ['{' + ' '.join(columns) + '} : ' + phrase]).fetchall()
+
+    found = {v for row in rows for v in row if v}
+    deadline = time.monotonic() + AUTOCOMPLETE_TOTAL_BUDGET_S
+    try:
+        for i, col in enumerate(columns):
+            now = time.monotonic()
+            if now >= deadline or len(found) >= AUTOCOMPLETE_ENOUGH_VALUES:
+                break
+            stop = min(deadline, now + AUTOCOMPLETE_COLUMN_BUDGET_S)
+            conn.set_progress_handler(lambda: time.monotonic() > stop, 1000)
+            try:
+                values = conn.execute(
+                    f"SELECT {col} FROM {FTS_TABLE_NAME} "
+                    f"WHERE {FTS_TABLE_NAME} MATCH ? LIMIT 20",
+                    [f'{col} : {phrase}']).fetchall()
+            except sqlite3.OperationalError:
+                continue  # out of time for this column
+            for (v,) in values:
+                if v and v not in found:
+                    found.add(v)
+                    row = [None] * len(columns)
+                    row[i] = v
+                    rows.append(tuple(row))
+    finally:
+        conn.set_progress_handler(None, 0)
+    return rows
+
+
 @app.route('/api/autocomplete')
 def autocomplete():
     query = request.args.get("query", "").strip()
@@ -1320,15 +1595,8 @@ def autocomplete():
             if not columns:
                 return jsonify({"results": []})
 
-            sql_query = f"""
-                SELECT {', '.join(columns)}
-                FROM {FTS_TABLE_NAME}
-                WHERE {' OR '.join([f'{col} LIKE ?' for col in columns])}
-                LIMIT 50
-            """
-            params = [f"%{query}%"] * len(columns)
-            cursor.execute(sql_query, params)
-            results = cursor.fetchall()
+            results = (_autocomplete_prefix(conn, columns, query)
+                       + _autocomplete_fts(conn, columns, query))
 
         else:
             technical_columns, main_table = get_column_names()
@@ -1343,22 +1611,18 @@ def autocomplete():
             """
             params = [f"%{query}%"] * len(columns)
             cursor.execute(sql_query, params)
-            results = cursor.fetchall()
+            results = _autocomplete_prefix(conn, columns, query) + cursor.fetchall()
 
-        seen_values = set()
-        formatted_results = []
+        candidates = {}  # value -> column it was found in (the first one)
         for row in results:
             for col, value in zip(columns, row):
-                if value and value not in seen_values:
-                    if query.lower() in str(value).lower():
-                        seen_values.add(value)
-                        formatted_results.append({
-                            "field": get_friendly_name(col),
-                            "value": value
-                        })
+                if value and value not in candidates and query.lower() in str(value).lower():
+                    candidates[value] = col
 
-        formatted_results.sort(key=lambda x: len(x['value']))
-        return jsonify({"results": formatted_results[:10]})
+        ranked = sorted(candidates.items(), key=lambda kv: _suggestion_rank(
+            kv[0], query, _value_frequency(conn, kv[1], kv[0])))
+        return jsonify({"results": [{"field": get_friendly_name(col), "value": value}
+                                    for value, col in ranked[:AUTOCOMPLETE_LIMIT]]})
 
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500
@@ -1514,8 +1778,10 @@ def build_optimized_fasta_query(request_data):
         technical_columns, _ = get_column_names()
         where_clause, params = build_where_clause(conditions, technical_columns)
 
+        # In parentheses: the conditions may be joined by OR at the top level,
+        # and without them the sequence filter only applied to the last one
         if where_clause:
-            where_clause += " AND (col_nuc IS NOT NULL AND col_nuc != '')"
+            where_clause = f"({where_clause}) AND (col_nuc IS NOT NULL AND col_nuc != '')"
         else:
             where_clause = "(col_nuc IS NOT NULL AND col_nuc != '')"
 
@@ -1980,13 +2246,10 @@ def _count_total_records():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT value FROM bold_meta WHERE key = 'record_count'")
-            row = cursor.fetchone()
-            if row and str(row[0]).isdigit():
-                return int(row[0])
-        except sqlite3.Error:
-            pass   # no bold_meta: database built by an older version
+        # Missing in databases built before bold_meta existed
+        value = db_contract.read_meta(conn).get('record_count')
+        if value is not None and str(value).isdigit():
+            return int(value)
         cursor.execute(f"SELECT COUNT(*) FROM {MAIN_TABLE_NAME}")
         return cursor.fetchone()[0]
     finally:
@@ -2000,7 +2263,8 @@ def total_records():
 def clear_export_folders():
     """On server startup, keeps only the EXPORT_KEEP most recent files per
     export folder (rolling retention), instead of deleting them entirely."""
-    folders = [CSV_EXPORTS_DIR, FASTA_EXPORTS_DIR, BATCH_EXPORTS_DIR, GENBANK_EXPORTS_DIR]
+    folders = [CSV_EXPORTS_DIR, FASTA_EXPORTS_DIR, BATCH_EXPORTS_DIR, GENBANK_EXPORTS_DIR,
+               ANALYSIS_EXPORTS_DIR]
     for folder in folders:
         _prune_export_dir(folder)
     # Scratch folders of GenBank searches cut short by a server stop
@@ -2020,6 +2284,22 @@ def _report_fts_availability():
     disabled. A failure opening the database doesn't stop startup — the rest
     of the app reports that problem on its own.
     """
+    problem = db_problem()
+    if problem:
+        # Startup has no request, hence no language cookie
+        print(f"❌ {STRINGS['en'][problem]}")
+        return
+    try:
+        conn = get_db_connection()
+        try:
+            version = db_contract.schema_version(conn)
+        finally:
+            conn.close()
+        if version < db_contract.SCHEMA_VERSION:
+            print("⚠️ This database was built by an older version of the Creator that kept "
+                  "only one sequence per specimen. Rebuild it to get every marker's sequences.")
+    except sqlite3.Error:
+        pass
     try:
         if fts_table_available():
             print(f"✅ Full-text index available ({FTS_TABLE_NAME}).")
@@ -2033,8 +2313,10 @@ _report_fts_availability()
 
 @app.route('/list-static-files')
 def list_static_files():
-    folder = os.path.join(os.path.dirname(__file__), 'static')
-    files = [f"static/{f}" for f in os.listdir(folder) if f.endswith(".tsv")]
+    # The name of the BOLD package the data comes from, which the Creator
+    # records as an empty "<package>.tsv" (the page reads the name off it)
+    folder = layout.PACKAGE_DIR
+    files = [f"static/{f}" for f in os.listdir(folder) if f.endswith(".tsv")] if os.path.isdir(folder) else []
     return jsonify(files)
 
 
@@ -3337,6 +3619,576 @@ def download_genbank(job_id):
         as_attachment=True,
         download_name=st['filename'],
     )
+
+
+# ── Sequence analysis ─────────────────────────────────────────────────────────
+#
+# The "Sequence analysis" tab. The analyses themselves live in
+# seq_analysis.py; this section only gathers the sequences (the checked
+# records, sent by the page; the search on screen, read here; or a FASTA) and
+# makes sure a run covers a single marker. They take a few seconds even at
+# the cap, so they run within the request, like a search.
+
+# Record keys seq_analysis.py reads, and the column each comes from
+ANALYSIS_COLUMNS = [
+    ('processid', 'col_processid'), ('sampleid', 'col_sampleid'),
+    ('bin', 'col_bin_uri'), ('species', 'col_species'), ('genus', 'col_genus'),
+    ('family', 'col_family'), ('order', 'col_order'), ('class', 'col_class'),
+    ('phylum', 'col_phylum'), ('kingdom', 'col_kingdom'),
+    ('country', 'col_country_ocean'), ('marker', 'col_marker_code'),
+    ('seq', 'col_nuc'),
+]
+_ANALYSIS_KEYS = {key for key, _ in ANALYSIS_COLUMNS}
+
+# Rows of a search read to tell which markers it holds. Past this many the
+# counts are a sample, and the page says so.
+ANALYSIS_MARKER_SCAN = 200_000
+
+
+def _analysis_search_source(data):
+    """FROM and WHERE, with its parameters, of the search a request describes:
+    full-text or by fields (as the FASTA export reads it)."""
+    if data.get('search_type') == 'fts':
+        raw_query = _strip_accents((data.get('query') or '').strip())
+        query = escape_fts_query(raw_query) if raw_query else ''
+        if not query:
+            raise ValueError(t('no_search_term'))
+        if not fts_table_available():
+            raise ValueError(t('fts_unavailable_short'))
+        cs_clause, cs_params = ('', [])
+        if data.get('case_sensitive'):
+            cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'r')
+        return (f'{MAIN_TABLE_NAME} r INNER JOIN {FTS_TABLE_NAME} fts ON r.rowid = fts.rowid',
+                f'fts.{FTS_TABLE_NAME} MATCH ?{cs_clause}', [query, *cs_params])
+
+    conditions = data.get('conditions') or []
+    if not conditions:
+        raise ValueError(t('no_search_conditions'))
+    technical_columns, _ = get_column_names()
+    where_clause, params = build_where_clause(conditions, technical_columns)
+    # In parentheses: the conditions may be joined by OR at the top level
+    return f'{MAIN_TABLE_NAME} r', f'({where_clause})', list(params)
+
+
+def _analysis_search_markers(conn, data):
+    """[(marker, records with a sequence)] of a search, and whether the counts
+    come from a sample of it."""
+    from_sql, where_sql, params = _analysis_search_source(data)
+    rows = conn.execute(f"""
+        SELECT m, COUNT(*) FROM (
+            SELECT r.col_marker_code AS m FROM {from_sql}
+            WHERE {where_sql} AND r.col_nuc IS NOT NULL AND r.col_nuc != ''
+            LIMIT ?)
+        GROUP BY m COLLATE NOCASE ORDER BY 2 DESC
+    """, (*params, ANALYSIS_MARKER_SCAN)).fetchall()
+    markers = [(m or '', n) for m, n in rows]
+    return markers, sum(n for _, n in markers) >= ANALYSIS_MARKER_SCAN
+
+
+def _analysis_search_records(conn, data, marker, cap):
+    """Records of a search with a sequence of `marker`, up to `cap` plus one
+    (so the caller can tell the search went past it)."""
+    from_sql, where_sql, params = _analysis_search_source(data)
+    technical_columns, _ = get_column_names()
+    select = ', '.join(
+        f'r.{col}' if col in technical_columns else 'NULL'
+        for _, col in ANALYSIS_COLUMNS)
+    marker_sql, marker_params = ("(r.col_marker_code IS NULL OR r.col_marker_code = '')", []) \
+        if not marker else ('r.col_marker_code = ? COLLATE NOCASE', [marker])
+    cursor = conn.execute(f"""
+        SELECT {select} FROM {from_sql}
+        WHERE {where_sql} AND {marker_sql}
+          AND r.col_nuc IS NOT NULL AND r.col_nuc != ''
+        LIMIT ?
+    """, (*params, *marker_params, cap + 1))
+    keys = [key for key, _ in ANALYSIS_COLUMNS]
+    return [dict(zip(keys, row)) for row in cursor]
+
+
+def _analysis_client_records(raw):
+    """The checked records the page sent, keeping only the known keys."""
+    if not isinstance(raw, list):
+        raise ValueError(t('analysis_invalid_request'))
+    records = []
+    for item in raw:
+        if isinstance(item, dict):
+            records.append({k: str(v) for k, v in item.items()
+                            if k in _ANALYSIS_KEYS and v not in (None, '')})
+    return records
+
+
+class _AnalysisReply(Exception):
+    """A reply that ends an analysis request early: an error, or the markers
+    found when the input holds several."""
+
+    def __init__(self, body, status=200):
+        super().__init__()
+        self.body, self.status = body, status
+
+
+def _analysis_error(key, status=400, **kwargs):
+    return _AnalysisReply({'error': t(key, **kwargs)}, status)
+
+
+def _analysis_genetic_code(data):
+    """The genetic code the request forces, or None for the automatic one."""
+    code = data.get('genetic_code', 'auto')
+    if code in (None, '', 'auto'):
+        return None
+    try:
+        code = int(code)
+    except (TypeError, ValueError):
+        code = None
+    if code not in seq_analysis.GENETIC_CODES:
+        raise _analysis_error('analysis_invalid_request')
+    return code
+
+
+def _analysis_input(data, cap=seq_analysis.MAX_SEQUENCES):
+    """The sequences a request asks to analyse, all of one marker.
+
+    Returns (records, marker, truncated, total): `truncated` when the input
+    went past `cap` sequences, `total` the records of the marker before the
+    cap (None for a search, which isn't counted).
+    Without a marker and with several in the input, raises a reply listing
+    them ({needs_marker: true, markers: [{marker, n}]}) so the page can ask
+    which one. Records of other markers are left out.
+    """
+    source = data.get('source')
+    marker = data.get('marker')
+    marker = marker.strip() if isinstance(marker, str) else None
+
+    if source == 'search':
+        problem = db_problem()
+        if problem:
+            raise _analysis_error(problem, 503)
+        search = data.get('search') or {}
+        with get_export_connection() as conn:
+            if marker is None:
+                markers, approximate = _analysis_search_markers(conn, search)
+                if not markers:
+                    raise _analysis_error('analysis_no_sequences')
+                if len(markers) > 1:
+                    raise _AnalysisReply({
+                        'needs_marker': True, 'approximate': approximate,
+                        'markers': [{'marker': m, 'n': n} for m, n in markers]})
+                marker = markers[0][0]
+            records = _analysis_search_records(conn, search, marker, cap)
+        total = None
+    else:
+        if source == 'fasta':
+            text = data.get('fasta')
+            if not isinstance(text, str):
+                raise _analysis_error('analysis_invalid_request')
+            if len(text) > seq_analysis.MAX_FASTA_CHARS:
+                raise _analysis_error('analysis_fasta_too_large',
+                                      mb=seq_analysis.MAX_FASTA_CHARS // 1_000_000)
+            records = seq_analysis.parse_fasta(text)
+        elif source == 'records':
+            records = _analysis_client_records(data.get('records'))
+        else:
+            raise _analysis_error('analysis_invalid_request')
+        if not records:
+            raise _analysis_error('analysis_no_sequences')
+
+        markers = seq_analysis.marker_counts(records)
+        labelled = [(m, n) for m, n in markers if m]
+        if marker is None:
+            # A FASTA without markers in its headers: only the user knows
+            # which gene it is
+            if len(labelled) != 1 or len(markers) > 1:
+                raise _AnalysisReply({
+                    'needs_marker': True, 'approximate': False,
+                    'markers': [{'marker': m, 'n': n} for m, n in markers]})
+            marker = labelled[0][0]
+        # Records labelled with another marker are left out; unlabelled
+        # ones (a plain FASTA) take the marker the user chose
+        records = [r for r in records
+                   if not r.get('marker') or seq_analysis.same_marker(r['marker'], marker)]
+        total = len(records)
+        if not records:
+            raise _analysis_error('analysis_no_sequences')
+
+    truncated = len(records) > cap
+    return records[:cap], marker, truncated, total
+
+
+@app.route('/api/analysis/basic', methods=['POST'])
+def analysis_basic():
+    """Composition, translation, haplotypes and species/BIN concordance.
+
+    Body: {source: 'records'|'search'|'fasta', records | search | fasta,
+    marker (optional), genetic_code ('auto' or a table number)}.
+    """
+    data = request.get_json(silent=True) or {}
+    start = time.time()
+    try:
+        forced_code = _analysis_genetic_code(data)
+        records, marker, truncated, total = _analysis_input(data)
+        result = seq_analysis.run_basic(records, marker, forced_code, total)
+    except _AnalysisReply as reply:
+        return jsonify(reply.body), reply.status
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except sqlite3.Error as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    result.update(truncated=truncated, limit=seq_analysis.MAX_SEQUENCES,
+                  seconds=round(time.time() - start, 2))
+    print(f"Analysis OK — {data.get('source')} | {marker or '?'} | "
+          f"{result['summary']['analysed']:,} seqs | {result['seconds']}s")
+    return jsonify(result)
+
+
+# Per-species subsample sizes the distance analysis accepts
+ANALYSIS_PER_SPECIES = (1, 2, 3, 5, 10, 20, 50)
+
+# Runs of the distance analysis whose ZIP can still be downloaded
+analysis_exports = {}
+
+
+@app.route('/api/analysis/distance', methods=['POST'])
+def analysis_distance():
+    """Alignment, distances (K2P, Jukes-Cantor or p), barcode gap and NJ tree.
+
+    Body: as /api/analysis/basic, plus model ('k2p'|'jc'|'p'), per_species
+    (keep at most that many sequences per species; null for all) and tree
+    (bool). The alignment, matrix, tree and tables go into a ZIP, downloaded
+    from /api/analysis/download/<id>.
+    """
+    data = request.get_json(silent=True) or {}
+    model = data.get('model', 'k2p')
+    per_species = data.get('per_species')
+    if model not in ('k2p', 'jc', 'p') or (per_species is not None
+                                     and per_species not in ANALYSIS_PER_SPECIES):
+        return jsonify({'error': t('analysis_invalid_request')}), 400
+
+    start = time.time()
+    try:
+        forced_code = _analysis_genetic_code(data)
+        records, marker, truncated, _ = _analysis_input(
+            data, seq_distance.MAX_INPUT_SEQUENCES)
+        if truncated:
+            # A distance analysis of an arbitrary part of the input would
+            # mislead: the search has to be narrowed
+            raise _analysis_error('analysis_distance_input_too_big',
+                                  limit=f'{seq_distance.MAX_INPUT_SEQUENCES:,}')
+        result, files = seq_distance.run_distance(
+            records, marker, forced_code, model, per_species, bool(data.get('tree', True)))
+    except _AnalysisReply as reply:
+        return jsonify(reply.body), reply.status
+    except seq_distance.AnalysisLimit as e:
+        key = 'analysis_too_few' if e.kind == 'too_few' else 'analysis_too_many'
+        return jsonify({'error': t(key, n=f'{e.n:,}', limit=f'{e.limit:,}')}), 400
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except sqlite3.Error as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    export_id = uuid.uuid4().hex
+    safe_marker = re.sub(r'[^\w.-]+', '_', marker or 'seq')
+    filename = f"bold_analysis_{safe_marker}_{datetime.now():%Y%m%d_%H%M%S}.zip"
+    with zipfile.ZipFile(os.path.join(ANALYSIS_EXPORTS_DIR, f'{export_id}.zip'), 'w',
+                         zipfile.ZIP_DEFLATED) as zf:
+        for name, text in files.items():
+            zf.writestr(name, text)
+    analysis_exports[export_id] = filename
+    _prune_export_dir(ANALYSIS_EXPORTS_DIR)
+    if len(analysis_exports) > EXPORT_KEEP * 5:
+        analysis_exports.pop(next(iter(analysis_exports)))
+
+    notes = []
+    for group, kind, n, limit in result['tree_notes']:
+        key = 'analysis_tree_too_few' if kind == 'too_few' else 'analysis_tree_too_many'
+        note = t(key, n=f'{n:,}', limit=f'{limit:,}')
+        if len(result['groups']) > 1:
+            note = t('analysis_tree_group', k=group + 1) + note
+        notes.append(note)
+    result['tree_notes'] = notes
+    result.update(download_id=export_id, files=sorted(files),
+                  seconds=round(time.time() - start, 2))
+    print(f"Distance analysis OK — {data.get('source')} | {marker or '?'} | "
+          f"{result['analysed']:,} seqs | {len(result['groups'])} group(s) | "
+          f"trees: {len(result['trees'])} | {result['seconds']}s")
+    return jsonify(result)
+
+
+@app.route('/api/analysis/download/<export_id>')
+def analysis_download(export_id):
+    filename = analysis_exports.get(export_id)
+    path = os.path.join(ANALYSIS_EXPORTS_DIR, f'{export_id}.zip')
+    if not filename or not os.path.exists(path):
+        return jsonify({'error': t('file_not_found')}), 404
+    return send_file(path, mimetype='application/zip', as_attachment=True,
+                     download_name=filename)
+
+
+# ── Sequence identification ───────────────────────────────────────────────────
+#
+# The "Identify sequences" tab: query sequences (a FASTA) searched against the
+# database, through an index per marker built once (seq_identify.py). Both
+# the index build and the identification run in the background; the page
+# polls their status.
+#
+# Switched off for now: the index of COI-5P takes ~6 minutes and ~1 GB to
+# build, one per marker, and identification runs at ~0.3-0.7 s per query,
+# far from BOLD's online engine (1,000 sequences in under 5 minutes). The
+# code stays for a later version; with the switch off the tab isn't drawn
+# and these routes answer 404.
+IDENTIFY_ENABLED = False
+
+IDENTIFY_INDEX_DIR = os.path.join(layout.DATA_DIR, "identify_index")
+
+
+@app.before_request
+def _identify_switch():
+    if not IDENTIFY_ENABLED and request.path.startswith('/api/identify'):
+        return jsonify({'error': t('not_available')}), 404
+    return None
+
+identify_index_jobs = {}     # MARKER -> status of its index build
+identify_jobs = {}           # job id -> status (and results) of an identification
+_identify_lock = threading.Lock()
+_identify_markers_cache = {"sig": None, "markers": None}
+
+
+def _identify_markers():
+    """[(marker, records with a sequence)] of the database, most common first."""
+    sig = _db_signature()
+    if _identify_markers_cache["sig"] == sig:
+        return _identify_markers_cache["markers"]
+    with get_export_connection() as conn:
+        rows = conn.execute(
+            "SELECT col_marker_code, COUNT(*) FROM bold_records "
+            "WHERE col_marker_code IS NOT NULL AND col_marker_code != '' "
+            "GROUP BY col_marker_code COLLATE NOCASE ORDER BY 2 DESC").fetchall()
+    _identify_markers_cache.update(sig=sig, markers=rows)
+    return rows
+
+
+def _identify_index_status(marker):
+    job = identify_index_jobs.get(marker.upper())
+    if job and job["status"] == "running":
+        return {"state": "building", "phase": job["phase"], "done": job["done"],
+                "total": job["total"], "started": job["started"]}
+    status = {}
+    if job and job["status"] == "error":
+        status["error"] = job["message"]
+    meta = seq_identify.read_meta(IDENTIFY_INDEX_DIR, marker)
+    if meta is None:
+        status["state"] = "missing"
+    elif meta.get("db") != list(_db_signature() or ()):
+        status.update(state="stale", meta=meta)
+    else:
+        status.update(state="ready", meta=meta)
+    return status
+
+
+@app.route('/api/identify/markers')
+def identify_markers():
+    try:
+        markers = _identify_markers()
+    except sqlite3.Error as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+    return jsonify({'markers': [{'marker': m, 'n': n} for m, n in markers],
+                    'max_queries': seq_identify.MAX_QUERIES,
+                    'thresholds': seq_identify.DEFAULT_THRESHOLDS})
+
+
+@app.route('/api/identify/index/<path:marker>')
+def identify_index_status(marker):
+    return jsonify(_identify_index_status(marker))
+
+
+def _run_index_build(marker, n_marker):
+    job = identify_index_jobs[marker.upper()]
+
+    def progress(phase, done, total):
+        job.update(phase=phase, done=done, total=total)
+
+    try:
+        with get_export_connection() as conn:
+            table_rows = conn.execute(f"SELECT MAX(rowid) FROM {MAIN_TABLE_NAME}").fetchone()[0] or 0
+        start = time.time()
+        meta = seq_identify.build_index(
+            get_export_connection, marker, n_marker, table_rows, IDENTIFY_INDEX_DIR,
+            _db_signature(), progress, lambda: job["cancel"])
+        job.update(status="done", message="")
+        print(f"Identification index OK — {marker} | {meta['entries']:,} sequences | "
+              f"{time.time() - start:.0f}s")
+    except seq_identify.Cancelled:
+        job.update(status="cancelled", message="")
+    except Exception as e:
+        job.update(status="error", message=t('identify_index_failed', error=str(e)))
+        import traceback
+        traceback.print_exc()
+
+
+@app.route('/api/identify/index', methods=['POST'])
+def identify_index_build():
+    data = request.get_json(silent=True) or {}
+    marker = (data.get('marker') or '').strip()
+    counts = {m.upper(): (m, n) for m, n in _identify_markers()}
+    if marker.upper() not in counts:
+        return jsonify({'error': t('analysis_invalid_request')}), 400
+    marker, n_marker = counts[marker.upper()]
+    with _identify_lock:
+        # One build at a time: the COI-5P one takes several GB of memory
+        if any(j["status"] == "running" for j in identify_index_jobs.values()):
+            return jsonify({'error': t('identify_index_busy')}), 409
+        identify_index_jobs[marker.upper()] = {
+            "status": "running", "phase": "read", "done": 0, "total": 0,
+            "started": time.time(), "cancel": False, "message": ""}
+    os.makedirs(IDENTIFY_INDEX_DIR, exist_ok=True)
+    start_background(_run_index_build, marker, n_marker)
+    return jsonify(_identify_index_status(marker))
+
+
+@app.route('/api/identify/index/cancel', methods=['POST'])
+def identify_index_cancel():
+    data = request.get_json(silent=True) or {}
+    job = identify_index_jobs.get((data.get('marker') or '').strip().upper())
+    if job and job["status"] == "running":
+        job["cancel"] = True
+    return jsonify({'ok': True})
+
+
+def _identify_thresholds(raw):
+    thresholds = dict(seq_identify.DEFAULT_THRESHOLDS)
+    for level in thresholds:
+        value = (raw or {}).get(level)
+        if value is None:
+            continue
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            raise ValueError(t('analysis_invalid_request'))
+        if not 0.5 <= value <= 1:
+            raise ValueError(t('identify_bad_thresholds'))
+        thresholds[level] = value
+    if not thresholds["species"] >= thresholds["genus"] >= thresholds["family"]:
+        raise ValueError(t('identify_bad_thresholds'))
+    return thresholds
+
+
+def _run_identify(job_id, index, queries, marker, thresholds, max_hits):
+    job = identify_jobs[job_id]
+
+    def progress(phase, done, total):
+        job.update(done=done, total=total)
+
+    try:
+        start = time.time()
+        job["results"] = seq_identify.identify(
+            index, get_export_connection, queries, marker, thresholds, max_hits,
+            progress, lambda: job["cancel"])
+        job.update(status="done", seconds=round(time.time() - start, 1))
+        print(f"Identification OK — {marker} | {len(queries):,} queries | {job['seconds']}s")
+    except seq_identify.Cancelled:
+        job.update(status="cancelled")
+    except Exception as e:
+        job.update(status="error", message=t('unexpected_error', error=str(e)))
+        import traceback
+        traceback.print_exc()
+
+
+@app.route('/api/identify/run', methods=['POST'])
+def identify_run():
+    data = request.get_json(silent=True) or {}
+    marker = (data.get('marker') or '').strip()
+    text = data.get('fasta')
+    if not marker or not isinstance(text, str):
+        return jsonify({'error': t('analysis_invalid_request')}), 400
+    if len(text) > seq_analysis.MAX_FASTA_CHARS:
+        return jsonify({'error': t('analysis_fasta_too_large',
+                                   mb=seq_analysis.MAX_FASTA_CHARS // 1_000_000)}), 400
+    try:
+        thresholds = _identify_thresholds(data.get('thresholds'))
+        max_hits = int(data.get('max_hits') or 10)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    max_hits = min(max(max_hits, 1), 50)
+
+    status = _identify_index_status(marker)
+    if status["state"] != "ready":
+        return jsonify({'error': t('identify_index_' + status["state"]), 'index': status}), 409
+    queries = [{'id': r.get('id') or f'seq{i + 1}', 'seq': r['seq']}
+               for i, r in enumerate(seq_analysis.parse_fasta(text))]
+    if not queries:
+        return jsonify({'error': t('analysis_no_sequences')}), 400
+    if len(queries) > seq_identify.MAX_QUERIES:
+        return jsonify({'error': t('identify_too_many', n=f'{len(queries):,}',
+                                   limit=f'{seq_identify.MAX_QUERIES:,}')}), 400
+    try:
+        index = seq_identify.load_index(IDENTIFY_INDEX_DIR, marker)
+    except OSError as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    job_id = uuid.uuid4().hex
+    identify_jobs[job_id] = {"status": "running", "done": 0, "total": len(queries),
+                             "cancel": False, "results": None, "message": "",
+                             "marker": marker, "thresholds": thresholds}
+    while len(identify_jobs) > 5:
+        identify_jobs.pop(next(iter(identify_jobs)))
+    start_background(_run_identify, job_id, index, queries, marker, thresholds, max_hits)
+    return jsonify({'job_id': job_id, 'total': len(queries)})
+
+
+@app.route('/api/identify/status/<job_id>')
+def identify_status(job_id):
+    job = identify_jobs.get(job_id)
+    if not job:
+        return jsonify({'error': t('invalid_id')}), 404
+    body = {k: job.get(k) for k in ('status', 'done', 'total', 'message', 'seconds',
+                                     'marker', 'thresholds')}
+    if job["status"] == "done":
+        body["results"] = job["results"]
+    return jsonify(body)
+
+
+@app.route('/api/identify/cancel/<job_id>', methods=['POST'])
+def identify_cancel(job_id):
+    job = identify_jobs.get(job_id)
+    if job and job["status"] == "running":
+        job["cancel"] = True
+    return jsonify({'ok': True})
+
+
+@app.route('/api/identify/download/<job_id>')
+def identify_download(job_id):
+    job = identify_jobs.get(job_id)
+    if not job or job["status"] != "done":
+        return jsonify({'error': t('not_available')}), 404
+
+    def table(header, rows):
+        buf = io.StringIO()
+        w = csv.writer(buf, lineterminator="\r\n")
+        w.writerow(header)
+        w.writerows(rows)
+        return "﻿" + buf.getvalue()
+
+    pct = lambda x: "" if x is None else f"{100 * x:.2f}"
+    summary = table(
+        ["query", "length", "level", "taxon", "ambiguous_between", "best_identity_pct",
+         "best_overlap", "best_match", "best_bin", "hits"],
+        [[r["id"], r["length"], r["level"], r["taxon"], r.get("note", ""), pct(r.get("best")),
+          r.get("best_overlap") or "", r.get("best_id", ""), r.get("best_bin", ""), len(r["hits"])]
+         for r in job["results"]])
+    hits = table(
+        ["query", "rank", "identity_pct", "overlap", "processid", "species", "genus", "family",
+         "order", "class", "phylum", "bin", "country"],
+        [[r["id"], i + 1, pct(h["identity"]), h["overlap"], h["processid"], h["species"] or "",
+          h["genus"] or "", h["family"] or "", h["order"] or "", h["class"] or "",
+          h["phylum"] or "", h["bin"] or "", h["country"] or ""]
+         for r in job["results"] for i, h in enumerate(r["hits"])])
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("identification_summary.csv", summary)
+        zf.writestr("identification_hits.csv", hits)
+    buf.seek(0)
+    marker = re.sub(r'[^\w.-]+', '_', job["marker"])
+    return send_file(buf, mimetype="application/zip", as_attachment=True,
+                     download_name=f"bold_identification_{marker}_{datetime.now():%Y%m%d_%H%M%S}.zip")
 
 
 SERVER_PORT = 5001

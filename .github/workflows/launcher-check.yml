@@ -39,6 +39,11 @@ jobs:
             bash .program/bootstrap/get_uv.sh "$(pwd)/.runtime"
           fi
           ls .runtime
+      # A desktop Linux has these; the runner's server image doesn't, and
+      # PySide6 can't load without them (libEGL.so.1 first)
+      - name: System libraries Qt needs (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y -q libegl1 libgl1 libxkbcommon0 libfontconfig1 libdbus-1-3
       - name: Install and import the packages
         working-directory: unpacked/BOLD-Local-DB
         env:

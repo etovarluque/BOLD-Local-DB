@@ -2903,6 +2903,69 @@
                 an_qg_next_review_fasta: '<b>Qué hacer ahora:</b> revisa las secuencias señaladas arriba (todas las que tienen alertas están en la tabla «{flagged}»). Las distancias, el árbol y la red ya dejan fuera las que tienen codones de parada o caracteres no válidos; para quitar cualquiera de ellas de todo el análisis, bórrala del archivo FASTA y repite el análisis. Las cortas y las que tienen N pueden quedarse. Después, pasa a {tabs}.',
                 an_qg_next_ok: '<b>Qué hacer ahora:</b> las secuencias se pueden analizar tal como están. Pasa a {tabs}.',
                 an_qg_foot: 'Estas comprobaciones miran cada secuencia por separado y sin alinearla: una secuencia sin alertas aún puede ser de otro organismo o estar mal identificada. Eso solo se ve comparándolas entre sí, en «Distancias» y el árbol.',
+                an_hg_title: 'Qué dicen estos haplotipos',
+                an_hg_sub: 'Lectura automática y orientativa de los haplotipos por especie',
+                an_hg_file: 'interpretacion_haplotipos',
+                an_hg_meta: 'Marcador: {marker} · {n} secuencias · {s} especies con nombre · {date}',
+                an_hg_net: 'Ver la red de {sp}',
+                an_hg_v_all: '<b>Todas las especies tienen mucha diversidad de haplotipos:</b> en las {n} con {min} o más secuencias, casi cada secuencia es distinta ([hd_col] ≥ 0.9).',
+                an_hg_v_most: '<b>La mayoría de las especies tienen mucha diversidad de haplotipos:</b> en {k} de las {n} con {min} o más secuencias, casi cada secuencia es distinta ([hd_col] ≥ 0.9).',
+                an_hg_v_high: '<b>La diversidad de haplotipos es alta en la mayoría de las especies:</b> {k} de las {n} con {min} o más secuencias tienen una [hd_col] de 0.5 o más.',
+                an_hg_v_low: '<b>La mayoría de las especies tienen poca diversidad de haplotipos:</b> solo {k} de las {n} con {min} o más secuencias tienen una [hd_col] de 0.5 o más.',
+                an_hg_v_lowest_top: ' La que menos tiene es {sp} (Hd {hd}): un solo haplotipo reúne {a} de sus {n} secuencias.',
+                an_hg_v_lowest: ' La que menos tiene es {sp} (Hd {hd}).',
+                an_hg_v_one_vhigh: '<b>{sp} tiene mucha diversidad de haplotipos:</b> {h} haplotipos en {n} secuencias y una [hd_col] de {hd}, así que dos secuencias al azar casi siempre son distintas.',
+                an_hg_v_one_high: '<b>{sp} tiene bastante diversidad de haplotipos:</b> {h} haplotipos en {n} secuencias y una [hd_col] de {hd}.',
+                an_hg_v_one_low: '<b>{sp} tiene poca diversidad de haplotipos:</b> {h} haplotipos en {n} secuencias y una [hd_col] de {hd}; el más común reúne el {top} de las secuencias.',
+                an_hg_v_one_none: '<b>{sp} no tiene variación:</b> sus {n} secuencias son el mismo haplotipo ([hd_col] 0).',
+                an_hg_v_trim: ' Pero buena parte de esos haplotipos solo se deben a cómo se recortaron las secuencias.',
+                an_hg_v_few: '<b>Hay pocas secuencias para medir la diversidad:</b> ninguna especie llega a {min} secuencias, y con menos la [hd_col] cambia mucho con cada secuencia que se añade.',
+                an_hg_v_unnamed_all: '<b>Ninguna secuencia tiene nombre de especie:</b> las {n} se cuentan juntas, como si fueran una sola especie, así que su diversidad no se puede leer como la de una especie.',
+                an_hg_v_unnamed_most: ' Pero la mayoría de las secuencias ({n} de {t}) no tienen nombre de especie y quedan fuera de esta comparación.',
+                an_hg_v_unnamed: '<b>La mayoría de las secuencias no tienen nombre de especie:</b> {n} de {t} se cuentan juntas, como si fueran una sola especie, así que su diversidad no se puede leer como la de una especie.',
+                an_hg_how: '<b>Cómo se lee.</b> Un haplotipo es cada secuencia distinta dentro de una especie. [haps] cuenta cuántos hay y [singletons] cuántos aparecen en una sola secuencia. [hd_col] es la probabilidad de que dos secuencias tomadas al azar de la especie sean distintas: 0 si todas son iguales, cerca de 1 si casi todas son diferentes; a partir de 0.5 se considera alta (Grant y Bowen, 1998).',
+                an_hg_bands: '<b>Diversidad por especie</b> (las que tienen {min} o más secuencias):',
+                an_hg_band_vhigh: 'Muy alta ([hd_col] ≥ 0.9):',
+                an_hg_band_high: 'Alta (0.5–0.9):',
+                an_hg_band_low: 'Baja (menos de 0.5):',
+                an_hg_band_none: 'Sin variación (todas iguales):',
+                an_hg_dominant: 'En {list} un haplotipo reúne la mitad o más de las secuencias: puede deberse a una expansión reciente o a un muestreo concentrado en pocos lugares; la red lo aclara.',
+                an_hg_dominant_rest: ' En las demás, el más común no pasa del {p}.',
+                an_hg_no_dominant: 'En ninguna un solo haplotipo reúne la mitad de las secuencias.',
+                an_hg_cov_one: '<b>¿Se han visto ya casi todos?</b> {f1} de las {n} secuencias son [singletons]: la siguiente secuencia tendría alrededor de un {p} de probabilidad de ser un haplotipo nuevo (estimación de Good).',
+                an_hg_cov_many: ' Quedan bastantes haplotipos por encontrar.',
+                an_hg_cov_most: ' Ya se ha visto la mayoría de los haplotipos frecuentes.',
+                an_hg_cov_top: ' El más común reúne el {top} de las secuencias.',
+                an_hg_cov_multi: '<b>¿Se han visto ya casi todos?</b> Los [singletons] lo dicen: cuantos más haya, más haplotipos quedan por encontrar. La probabilidad de que la siguiente secuencia sea un haplotipo nuevo (estimación de Good) va del {a} en {spa} al {b} en {spb}{early}.',
+                an_hg_cov_early: ', que con {n} secuencias apenas empieza a mostrar su diversidad',
+                an_hg_cov_big: ' En {sp} es del {p}, con {n} secuencias.',
+                an_hg_trim_1: '<b>Haplotipos de más por los recortes.</b> En {sp}, unos {d} de sus {h} haplotipos coinciden con otro en todo el tramo que comparten (al menos {bp} pb). Como aquí no se alinea, dos secuencias iguales pero recortadas en extremos distintos cuentan como haplotipos diferentes; pasa sobre todo cuando las longitudes varían mucho. El número real estaría más cerca de {m}, y su [hd_col] algo por debajo.',
+                an_hg_trim: '<b>Haplotipos de más por los recortes.</b> En {k} especies, algunos haplotipos coinciden con otro en todo el tramo que comparten (al menos {bp} pb): {list}. Como aquí no se alinea, dos secuencias iguales pero recortadas en extremos distintos cuentan como haplotipos diferentes; los números reales estarían más cerca de los segundos, y sus [hd_col] algo por debajo.',
+                an_hg_trim_item: ', {h} → unos {m}',
+                an_hg_prov: '{list} son nombres provisionales: se cuentan aparte de {base}, aunque podrían ser la misma especie o no. La pestaña «{conc}» y el árbol ayudan a decidirlo.',
+                an_hg_prov_1: '{list} es un nombre provisional: se cuenta aparte de {base}, aunque podría ser la misma especie o no. La pestaña «{conc}» y el árbol ayudan a decidirlo.',
+                an_hg_few: '<b>Pocas secuencias.</b> Con menos de {min} secuencias la [hd_col] cambia mucho con cada secuencia que se añade: {list}. Tómalas como orientativas.',
+                an_hg_few_unnamed: '{n} secuencias sin nombre',
+                an_hg_single: ' Otras {k} especies tienen una sola secuencia y no tienen Hd.',
+                an_hg_single_1: ' Otra especie tiene una sola secuencia y no tiene Hd.',
+                an_hg_single_only: '<b>Pocas secuencias.</b> {k} especies tienen una sola secuencia y no tienen [hd_col].',
+                an_hg_single_only_1: '<b>Pocas secuencias.</b> Una especie tiene una sola secuencia y no tiene [hd_col].',
+                an_hg_unnamed: '{n} secuencias no tienen nombre de especie y se cuentan juntas, como si fueran una sola: están repartidas en {b} BINs, así que su [hd_col] ({hd}) probablemente mezcla varias especies y no dice nada de ninguna. Para estudiarlas, analiza cada BIN por separado o asígnales nombre.',
+                an_hg_unnamed_1bin: '{n} secuencias no tienen nombre de especie y se cuentan juntas; como están todas en el mismo BIN, pueden leerse como una sola especie ([hd_col] {hd}).',
+                an_hg_unnamed_nobin: '{n} secuencias no tienen nombre de especie y se cuentan juntas, como si fueran una sola: si son de varias especies, su [hd_col] ({hd}) las mezcla y no dice nada de ninguna.',
+                an_hg_excl_heavy_1: '{sp} pierde {e} de sus {t} secuencias por N o bases ambiguas ([excluded]): su [hd_col] se calcula con lo que queda y puede estar sesgada.',
+                an_hg_excl_heavy: '{list} pierden un 20 % o más de sus secuencias por N o bases ambiguas ([excluded]): su [hd_col] se calcula con lo que queda y puede estar sesgada.',
+                an_hg_excl_single: 'Queda fuera una secuencia por tener N o bases ambiguas ([excluded]): no cambia estos números.',
+                an_hg_excl_one: 'Quedan fuera {x} secuencias por tener N o bases ambiguas ([excluded], el {p}): no cambian mucho estos números.',
+                an_hg_excl: 'Quedan fuera {x} secuencias por tener N o bases ambiguas ([excluded]; la que más pierde es {sp}, {e} de {t}): no cambian mucho estos números.',
+                an_hg_next: '<b>Qué hacer ahora:</b> para ver cómo se relacionan los haplotipos de una especie, pulsa [net] en su fila. La red alinea las secuencias y compara solo el tramo común (así no cuenta haplotipos de más), y añade la diversidad nucleotídica y la D de Tajima. Empieza por {sp}, la especie con más secuencias{low}.',
+                an_hg_next_low: ', y compara {sp} con las demás',
+                an_hg_next_one: '<b>Qué hacer ahora:</b> pulsa [net] para ver la red de {sp}: alinea las secuencias, compara solo el tramo común (así no cuenta haplotipos de más) y añade la diversidad nucleotídica y la D de Tajima.',
+                an_hg_next_big: ' Con tantas secuencias, conviene acotar antes la búsqueda (por país o por BIN) para que la red sea legible.',
+                an_hg_next_few: '<b>Qué hacer ahora:</b> amplía la búsqueda para reunir al menos {min} secuencias por especie; mientras, la red de {sp} ([net]) muestra cómo se relacionan las que hay.',
+                an_hg_next_none: '<b>Qué hacer ahora:</b> amplía la búsqueda para reunir al menos {min} secuencias por especie.',
+                an_hg_next_unnamed: '<b>Qué hacer ahora:</b> para estudiar las secuencias sin nombre, busca cada BIN por separado y repite el análisis, o asígnales nombre; la pestaña «{conc}» muestra qué BINs hay.',
+                an_hg_foot: 'Los haplotipos se cuentan sin alinear y solo dentro de cada nombre de especie: dependen de cuántas secuencias haya, de su longitud y de que los nombres sean correctos. Una diversidad alta puede ser variación real, mezcla de linajes o especies crípticas bajo un mismo nombre; la red y el árbol ayudan a distinguirlo.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
                 an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
                 an_g_export_md: 'Descargar la interpretación en Markdown (.md)',
@@ -3680,6 +3743,69 @@
                 an_qg_next_review_fasta: '<b>What to do next:</b> check the sequences pointed out above (all flagged ones are in the "{flagged}" table). Distances, the tree and the network already leave out those with stop codons or invalid characters; to remove any of them from the whole analysis, delete it from the FASTA file and run the analysis again. Short ones and those with Ns can stay. Then go on to {tabs}.',
                 an_qg_next_ok: '<b>What to do next:</b> the sequences can be analysed as they are. Go on to {tabs}.',
                 an_qg_foot: 'These checks look at each sequence on its own and without aligning it: a sequence with no flag may still be of another organism or misidentified. That only shows when they are compared with one another, in "Distances" and the tree.',
+                an_hg_title: 'What these haplotypes say',
+                an_hg_sub: 'An automatic, indicative reading of the haplotypes per species',
+                an_hg_file: 'haplotype_reading',
+                an_hg_meta: 'Marker: {marker} · {n} sequences · {s} named species · {date}',
+                an_hg_net: 'See the network of {sp}',
+                an_hg_v_all: '<b>Every species has high haplotype diversity:</b> in all {n} with {min} or more sequences, nearly every sequence is different ([hd_col] ≥ 0.9).',
+                an_hg_v_most: '<b>Most species have high haplotype diversity:</b> in {k} of the {n} with {min} or more sequences, nearly every sequence is different ([hd_col] ≥ 0.9).',
+                an_hg_v_high: '<b>Haplotype diversity is high in most species:</b> {k} of the {n} with {min} or more sequences have an [hd_col] of 0.5 or more.',
+                an_hg_v_low: '<b>Most species have low haplotype diversity:</b> only {k} of the {n} with {min} or more sequences have an [hd_col] of 0.5 or more.',
+                an_hg_v_lowest_top: ' The one with the least is {sp} (Hd {hd}): a single haplotype holds {a} of its {n} sequences.',
+                an_hg_v_lowest: ' The one with the least is {sp} (Hd {hd}).',
+                an_hg_v_one_vhigh: '<b>{sp} has high haplotype diversity:</b> {h} haplotypes in {n} sequences and an [hd_col] of {hd}, so two sequences taken at random are nearly always different.',
+                an_hg_v_one_high: '<b>{sp} has fairly high haplotype diversity:</b> {h} haplotypes in {n} sequences and an [hd_col] of {hd}.',
+                an_hg_v_one_low: '<b>{sp} has low haplotype diversity:</b> {h} haplotypes in {n} sequences and an [hd_col] of {hd}; the most common one holds {top} of the sequences.',
+                an_hg_v_one_none: '<b>{sp} shows no variation:</b> its {n} sequences are one haplotype ([hd_col] 0).',
+                an_hg_v_trim: ' But a good share of those haplotypes only come from how the sequences were trimmed.',
+                an_hg_v_few: '<b>There are too few sequences to measure diversity:</b> no species reaches {min} sequences, and with fewer the [hd_col] changes a lot with each sequence added.',
+                an_hg_v_unnamed_all: '<b>No sequence has a species name:</b> all {n} are counted together, as if they were one species, so their diversity can\'t be read as a species\' diversity.',
+                an_hg_v_unnamed_most: ' But most sequences ({n} of {t}) have no species name and are left out of this comparison.',
+                an_hg_v_unnamed: '<b>Most sequences have no species name:</b> {n} of {t} are counted together, as if they were one species, so their diversity can\'t be read as a species\' diversity.',
+                an_hg_how: '<b>How to read it.</b> A haplotype is each different sequence within a species. [haps] counts how many there are and [singletons] how many turn up in a single sequence. [hd_col] is the chance that two sequences taken at random from the species are different: 0 when all are the same, close to 1 when nearly all differ; from 0.5 up it counts as high (Grant & Bowen, 1998).',
+                an_hg_bands: '<b>Diversity by species</b> (those with {min} or more sequences):',
+                an_hg_band_vhigh: 'Very high ([hd_col] ≥ 0.9):',
+                an_hg_band_high: 'High (0.5–0.9):',
+                an_hg_band_low: 'Low (under 0.5):',
+                an_hg_band_none: 'No variation (all the same):',
+                an_hg_dominant: 'In {list} one haplotype holds half or more of the sequences: it may come from a recent expansion or from sampling concentrated in a few places; the network will tell.',
+                an_hg_dominant_rest: ' In the rest, the most common one holds no more than {p}.',
+                an_hg_no_dominant: 'In none does a single haplotype hold half of the sequences.',
+                an_hg_cov_one: '<b>Have nearly all been seen?</b> {f1} of the {n} sequences are [singletons]: the next sequence would have about a {p} chance of being a new haplotype (Good\'s estimate).',
+                an_hg_cov_many: ' Quite a few haplotypes remain to be found.',
+                an_hg_cov_most: ' Most of the common haplotypes have been seen.',
+                an_hg_cov_top: ' The most common one holds {top} of the sequences.',
+                an_hg_cov_multi: '<b>Have nearly all been seen?</b> The [singletons] tell: the more there are, the more haplotypes remain to be found. The chance that the next sequence is a new haplotype (Good\'s estimate) ranges from {a} in {spa} to {b} in {spb}{early}.',
+                an_hg_cov_early: ', which with {n} sequences has barely started to show its diversity',
+                an_hg_cov_big: ' In {sp} it is {p}, with {n} sequences.',
+                an_hg_trim_1: '<b>Extra haplotypes from trimming.</b> In {sp}, about {d} of its {h} haplotypes match another over the whole stretch they share (at least {bp} bp). As nothing is aligned here, two identical sequences trimmed at different ends count as different haplotypes; it happens mostly when lengths vary a lot. The real number would be closer to {m}, and its [hd_col] somewhat lower.',
+                an_hg_trim: '<b>Extra haplotypes from trimming.</b> In {k} species, some haplotypes match another over the whole stretch they share (at least {bp} bp): {list}. As nothing is aligned here, two identical sequences trimmed at different ends count as different haplotypes; the real numbers would be closer to the second ones, and their [hd_col] somewhat lower.',
+                an_hg_trim_item: ', {h} → about {m}',
+                an_hg_prov: '{list} are provisional names: they are counted apart from {base}, though they may or may not be the same species. The "{conc}" tab and the tree help to decide.',
+                an_hg_prov_1: '{list} is a provisional name: it is counted apart from {base}, though it may or may not be the same species. The "{conc}" tab and the tree help to decide.',
+                an_hg_few: '<b>Few sequences.</b> With fewer than {min} sequences the [hd_col] changes a lot with each sequence added: {list}. Take them as indicative.',
+                an_hg_few_unnamed: '{n} unnamed sequences',
+                an_hg_single: ' Another {k} species have a single sequence and no Hd.',
+                an_hg_single_1: ' Another species has a single sequence and no Hd.',
+                an_hg_single_only: '<b>Few sequences.</b> {k} species have a single sequence and no [hd_col].',
+                an_hg_single_only_1: '<b>Few sequences.</b> One species has a single sequence and no [hd_col].',
+                an_hg_unnamed: '{n} sequences have no species name and are counted together, as if they were one: they are spread over {b} BINs, so their [hd_col] ({hd}) probably mixes several species and says nothing about any. To study them, analyse each BIN on its own or give them names.',
+                an_hg_unnamed_1bin: '{n} sequences have no species name and are counted together; as they all share one BIN, they can be read as a single species ([hd_col] {hd}).',
+                an_hg_unnamed_nobin: '{n} sequences have no species name and are counted together, as if they were one: if they belong to several species, their [hd_col] ({hd}) mixes them and says nothing about any.',
+                an_hg_excl_heavy_1: '{sp} loses {e} of its {t} sequences to Ns or ambiguous bases ([excluded]): its [hd_col] is computed on what is left and may be biased.',
+                an_hg_excl_heavy: '{list} lose 20% or more of their sequences to Ns or ambiguous bases ([excluded]): their [hd_col] is computed on what is left and may be biased.',
+                an_hg_excl_single: 'One sequence is left out for its Ns or ambiguous bases ([excluded]): it doesn\'t change these numbers.',
+                an_hg_excl_one: '{x} sequences are left out for their Ns or ambiguous bases ([excluded], {p}): they hardly change these numbers.',
+                an_hg_excl: '{x} sequences are left out for their Ns or ambiguous bases ([excluded]; the one losing most is {sp}, {e} of {t}): they hardly change these numbers.',
+                an_hg_next: '<b>What to do next:</b> to see how a species\' haplotypes relate, press [net] on its row. The network aligns the sequences and compares only the shared stretch (so it doesn\'t count extra haplotypes), and adds nucleotide diversity and Tajima\'s D. Start with {sp}, the species with the most sequences{low}.',
+                an_hg_next_low: ', and compare {sp} with the rest',
+                an_hg_next_one: '<b>What to do next:</b> press [net] to see the network of {sp}: it aligns the sequences, compares only the shared stretch (so it doesn\'t count extra haplotypes) and adds nucleotide diversity and Tajima\'s D.',
+                an_hg_next_big: ' With this many sequences, narrow the search first (by country or BIN) so the network stays readable.',
+                an_hg_next_few: '<b>What to do next:</b> widen the search to gather at least {min} sequences per species; meanwhile, the network of {sp} ([net]) shows how those at hand relate.',
+                an_hg_next_none: '<b>What to do next:</b> widen the search to gather at least {min} sequences per species.',
+                an_hg_next_unnamed: '<b>What to do next:</b> to study the unnamed sequences, search each BIN on its own and run the analysis again, or give them names; the "{conc}" tab shows which BINs there are.',
+                an_hg_foot: 'Haplotypes are counted without alignment and only within each species name: they depend on how many sequences there are, on their length and on the names being right. High diversity may be real variation, a mix of lineages or cryptic species under one name; the network and the tree help to tell them apart.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
                 an_g_export_txt: 'Download the reading as text (.txt)',
                 an_g_export_md: 'Download the reading as Markdown (.md)',
@@ -7625,6 +7751,7 @@
 					return b;
 				} },
 			], haps.slice(0, AN_TABLE_ROWS)));
+			anRenderHapGuide(body, r);
 		}
 
 		function anRenderConcordance(body, r) {
@@ -8193,6 +8320,8 @@
 			barcode: 'an_t_barcode', length: 'an_t_length', gc: 'an_t_gc', gc3: 'an_t_gc3',
 			f_short: 'an_f_short', f_stops: 'an_f_stops', f_reversed: 'an_f_reversed', many_n: 'an_f_many_n',
 			ambiguous: 'an_f_ambiguous', invalid: 'an_f_invalid', src_records: 'an_src_records', code_field: 'an_code_field',
+			// The haplotypes table's columns and its button
+			haps: 'an_c_haps', singletons: 'an_c_singletons', hd_col: 'an_c_hd', excluded: 'an_c_excluded', net: 'an_net_btn',
 		};
 		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
 		// Difference between named species above which COI usually tells
@@ -8750,6 +8879,196 @@ li li { display: list-item; margin: 0; }
 					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
 				file: t('an_qg_file'),
 				stem: `${anFileStem()}_${t('an_qg_file')}`,
+			});
+		}
+
+		// ── Reading guide of the haplotypes view ──
+		// The server works out the facts (seq_analysis.haplotype_guide): the
+		// species with enough sequences, the haplotypes left if those trimmed
+		// at different ends were joined, unnamed sequences and their BINs.
+
+		function anRenderHapGuide(body, r) {
+			const G = r.haplotype_guide;
+			if (!G) return;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const pct = x => `${Math.round(100 * x)} %`;
+			const hd = x => x.toFixed(3);
+			const S = G.species, N = S.length, min = num(G.min_n);
+			const band = h => h >= 0.9 ? 'vhigh' : h >= 0.5 ? 'high' : h > 0 ? 'low' : 'none';
+			// Chance that the next sequence is a new haplotype (Good, 1953)
+			const fresh = x => x.singletons / x.n;
+			const trimmed = x => x.joined !== null && x.joined !== undefined &&
+				x.haplotypes - x.joined >= Math.max(3, 0.05 * x.haplotypes);
+			// Names with a genus already named cut to its initial
+			const nameList = (xs, fmt, max = 6) => {
+				let genus = '';
+				const parts = xs.slice(0, max).map(x => {
+					const html = anGuideShort(x.species, genus);
+					genus = genus || (x.species || '').split(' ')[0];
+					return html + fmt(x);
+				});
+				return xs.length > max ? parts.join(', ') + anGuideMore(max, xs.length) : anGuideJoin(parts, ', ');
+			};
+			const conc = escapeHtml(t('an_v_concordance'));
+			const byHd = [...S].sort((a, b) => a.hd - b.hd);
+			const lowest = byHd[0];
+
+			// Verdict
+			let verdict;
+			if (!N) {
+				const total = r.haplotypes.reduce((a, h) => a + h.n, 0);
+				const un = G.unnamed && G.unnamed.n >= G.min_n ? G.unnamed.n : 0;
+				verdict = anGuideText(!un ? 'an_hg_v_few' : un === total ? 'an_hg_v_unnamed_all' : 'an_hg_v_unnamed',
+				                      { n: num(un), min, t: num(total) });
+			} else if (N === 1) {
+				const x = S[0];
+				verdict = anGuideText('an_hg_v_one_' + band(x.hd), { sp: anGuideName(x.species), h: num(x.haplotypes),
+																	  n: num(x.n), hd: hd(x.hd), top: pct(x.top) });
+				if (trimmed(x) && (x.haplotypes - x.joined) / x.haplotypes >= 0.2) verdict += anGuideText('an_hg_v_trim');
+			} else {
+				const k = S.filter(x => x.hd >= 0.9).length, kh = S.filter(x => x.hd >= 0.5).length;
+				const key = k === N ? 'an_hg_v_all' : k >= N / 2 ? 'an_hg_v_most' : kh >= N / 2 ? 'an_hg_v_high' : 'an_hg_v_low';
+				verdict = anGuideText(key, { n: num(N), k: num(key === 'an_hg_v_high' || key === 'an_hg_v_low' ? kh : k), min });
+				if (k !== N) {
+					verdict += anGuideText(lowest.top >= 0.5 ? 'an_hg_v_lowest_top' : 'an_hg_v_lowest', {
+						sp: anGuideName(lowest.species), hd: hd(lowest.hd),
+						a: num(Math.round(lowest.top * lowest.n)), n: num(lowest.n) });
+				}
+			}
+
+			// Named species read, but most sequences have no name
+			if (N && G.unnamed) {
+				const total = r.haplotypes.reduce((a, h) => a + h.n, 0);
+				if (G.unnamed.n >= total / 2) verdict += anGuideText('an_hg_v_unnamed_most', { n: num(G.unnamed.n), t: num(total) });
+			}
+
+			add('info', anGuideText('an_hg_how'));
+
+			// Diversity by species, in Grant & Bowen's bands
+			if (N >= 2) {
+				const lis = ['vhigh', 'high', 'low', 'none'].map(b => {
+					const xs = S.filter(x => band(x.hd) === b).sort((p, q) => q.hd - p.hd);
+					return xs.length ? `<li>${anGuideText('an_hg_band_' + b)} ${nameList(xs, x => b === 'none' ? '' : ' ' + hd(x.hd))}</li>` : '';
+				}).join('');
+				let text = anGuideText('an_hg_bands', { min }) + `<ul class="an-guide-list">${lis}</ul>`;
+				const dom = S.filter(x => x.top >= 0.5);
+				if (dom.length) {
+					text += anGuideText('an_hg_dominant', { list: nameList(dom, x => ` (${pct(x.top)})`) });
+					const rest = S.filter(x => x.top < 0.5);
+					if (rest.length) text += anGuideText('an_hg_dominant_rest', { p: pct(Math.max(...rest.map(x => x.top))) });
+				} else {
+					text += anGuideText('an_hg_no_dominant');
+				}
+				add('info', text);
+			}
+
+			// How much is left to find
+			if (N === 1) {
+				const x = S[0], p = fresh(x);
+				add('info', anGuideText('an_hg_cov_one', { f1: num(x.singletons), n: num(x.n), p: pct(p) }) +
+					(p >= 0.2 ? anGuideText('an_hg_cov_many') : p < 0.1 ? anGuideText('an_hg_cov_most') : '') +
+					(band(x.hd) === 'vhigh' || band(x.hd) === 'high' ? anGuideText('an_hg_cov_top', { top: pct(x.top) }) : ''));
+			} else if (N >= 2) {
+				const byFresh = [...S].sort((a, b) => fresh(a) - fresh(b));
+				const lo = byFresh[0], hi = byFresh[byFresh.length - 1], big = S[0];
+				let text = anGuideText('an_hg_cov_multi', {
+					a: pct(fresh(lo)), spa: anGuideName(lo.species), b: pct(fresh(hi)), spb: anGuideName(hi.species),
+					early: fresh(hi) >= 0.4 ? t('an_hg_cov_early', { n: num(hi.n) }) : '' });
+				if (big !== lo && big !== hi) text += anGuideText('an_hg_cov_big', { sp: anGuideName(big.species), p: pct(fresh(big)), n: num(big.n) });
+				add('info', text);
+			}
+
+			// Haplotypes that are one trimmed at different ends
+			const J = S.filter(trimmed);
+			if (J.length === 1) {
+				const x = J[0];
+				add('warn', anGuideText('an_hg_trim_1', { sp: anGuideName(x.species), d: num(x.haplotypes - x.joined),
+														  h: num(x.haplotypes), m: num(x.joined), bp: num(G.overlap_bp) }));
+			} else if (J.length > 1) {
+				add('warn', anGuideText('an_hg_trim', { k: num(J.length), bp: num(G.overlap_bp),
+					list: nameList(J, x => anGuideText('an_hg_trim_item', { h: num(x.haplotypes), m: num(x.joined) }), 5) }));
+			}
+
+			// Provisional names next to their species ("Carollia brevicauda PS1")
+			const names = [...S.map(x => x.species), ...G.few.map(([sp]) => sp)];
+			const prov = names.filter(sp => {
+				const w = sp.split(/\s+/);
+				return w.length > 2 && AN_PROVISIONAL.test(w.slice(2).join(' ')) && names.includes(anNetBinomial(sp));
+			});
+			if (prov.length) {
+				const base = anNetBinomial(prov[0]);
+				const ps = prov.filter(sp => anNetBinomial(sp) === base);
+				add('info', anGuideText(ps.length === 1 ? 'an_hg_prov_1' : 'an_hg_prov',
+										{ list: anGuideNames(ps, ps.length, base), base: anGuideName(base), conc }));
+			}
+
+			// Too few sequences for Hd
+			const U = G.unnamed;
+			const smallUnnamed = U && U.n >= 2 && U.n < G.min_n;
+			const few = G.few.map(([sp, n]) => ({ species: sp, n }));
+			if (few.length || smallUnnamed) {
+				let genus = '';
+				const parts = smallUnnamed ? [escapeHtml(t('an_hg_few_unnamed', { n: num(U.n) }))] : [];
+				parts.push(...few.map(x => {
+					const html = anGuideShort(x.species, genus);
+					genus = genus || x.species.split(' ')[0];
+					return `${html} (${num(x.n)})`;
+				}));
+				// The server lists the first few: the rest as "and N more"
+				const list = G.few_n > few.length ? parts.join(', ') + anGuideMore(parts.length, G.few_n + (smallUnnamed ? 1 : 0)) : anGuideJoin(parts, ', ');
+				add('warn', anGuideText('an_hg_few', { min, list }) +
+					(G.single_n ? anGuideText(G.single_n === 1 ? 'an_hg_single_1' : 'an_hg_single', { k: num(G.single_n) }) : ''));
+			} else if (G.single_n) {
+				add('warn', anGuideText(G.single_n === 1 ? 'an_hg_single_only_1' : 'an_hg_single_only', { k: num(G.single_n) }));
+			}
+
+			// Sequences with no species name, counted together
+			if (U && U.n >= G.min_n) {
+				const v = { n: num(U.n), b: num(U.bins), hd: U.hd === null ? '—' : hd(U.hd) };
+				if (U.bins >= 2) add('warn', anGuideText('an_hg_unnamed', v));
+				else if (U.bins === 1) add('info', anGuideText('an_hg_unnamed_1bin', v));
+				else add('warn', anGuideText('an_hg_unnamed_nobin', v));
+			}
+
+			// Left out for their Ns
+			const H = G.excluded_heavy;
+			if (H.length === 1) {
+				const x = H[0];
+				add('warn', anGuideText('an_hg_excl_heavy_1', { sp: anGuideName(x.species), e: num(x.excluded), t: num(x.total) }));
+			} else if (H.length > 1) {
+				add('warn', anGuideText('an_hg_excl_heavy', { list: nameList(H, x => ` (${num(x.excluded)}/${num(x.total)})`, 5) }));
+			} else if (G.excluded === 1) {
+				add('ok', anGuideText('an_hg_excl_single'));
+			} else if (G.excluded) {
+				const [sp, e, tot] = G.excluded_most;
+				add('ok', e === G.excluded
+					? anGuideText('an_hg_excl_one', { x: num(G.excluded), p: anPct(e, tot) })
+					: anGuideText('an_hg_excl', { x: num(G.excluded), sp: anGuideName(sp), e: num(e), t: num(tot) }));
+			}
+
+			// What to do next
+			const sp = G.largest ? anGuideName(G.largest) : '';
+			let next;
+			if (!N) {
+				next = U && U.n >= G.min_n ? anGuideText('an_hg_next_unnamed', { conc })
+					: G.largest ? anGuideText('an_hg_next_few', { min, sp }) : anGuideText('an_hg_next_none', { min });
+			} else if (N === 1) {
+				next = anGuideText('an_hg_next_one', { sp }) + (S[0].n > 1000 ? anGuideText('an_hg_next_big') : '');
+			} else {
+				next = anGuideText('an_hg_next', { sp,
+					low: lowest.species !== G.largest && band(lowest.hd) !== 'vhigh' ? anGuideText('an_hg_next_low', { sp: anGuideName(lowest.species) }) : '' });
+			}
+			const action = G.largest && (N || !(U && U.n >= G.min_n))
+				? { label: t('an_hg_net', { sp: G.largest }), run: () => anNetworkOf(G.largest) } : null;
+			anGuideSection(body, {
+				title: t('an_hg_title'), sub: t('an_hg_sub'), verdict, items, action, next, nextFile: next,
+				foot: t('an_hg_foot'),
+				context: [t('an_hg_meta', { marker: r.marker || '—', n: num(r.summary.analysed), s: num(r.taxonomy.species),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_hg_file'),
+				stem: `${anFileStem()}_${t('an_hg_file')}`,
 			});
 		}
 

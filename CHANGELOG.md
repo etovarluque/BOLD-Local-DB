@@ -56,6 +56,16 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   left out of the haplotypes for their Ns, and those whose GC is far from the
   rest (much longer sequences, which span another stretch of the gene, are
   told apart).
+- Haplotypes: a *What these haplotypes say* section after the table reads
+  it the same way: the diversity of each species with 10 or more sequences
+  in Grant & Bowen's classes, those dominated by one haplotype, the chance
+  that the next sequence is a new haplotype (Good's estimate), and an
+  approximate count without the extra haplotypes that come from sequences
+  trimmed at different ends (matched over their whole shared stretch). It
+  also points out provisional names, species with few sequences or many
+  left out, and unnamed sequences counted together (with how many BINs they
+  span), and a button opens the network of the species with the most
+  sequences.
 
 ### Changed
 - Translation check: a stop in the last codon no longer counts. Sequences

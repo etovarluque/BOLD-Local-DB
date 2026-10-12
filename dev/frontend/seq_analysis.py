@@ -59,6 +59,18 @@ GUIDE_CODE_CLEARS = 0.8
 # Items listed by name in each point
 GUIDE_LIST = 5
 
+# Reading guide of the haplotypes view (see `haplotype_guide`): species with
+# at least GUIDE_HAP_MIN sequences are read (fewer make Hd unstable), up to
+# GUIDE_HAP_SPECIES of them. Haplotypes equal over their whole overlap of
+# at least GUIDE_HAP_OVERLAP bp (one starting inside the other) were likely
+# one, trimmed at different ends; species with more than GUIDE_HAP_MAX_REPS
+# haplotypes aren't checked.
+GUIDE_HAP_MIN = 10
+GUIDE_HAP_SPECIES = 100
+GUIDE_HAP_OVERLAP = 200
+GUIDE_HAP_MAX_REPS = 5000
+_HAP_KMER = 30
+
 # ── Genetic codes ─────────────────────────────────────────────────────────────
 
 # NCBI translation tables, as their 64 amino acids in TCAG codon order
@@ -449,13 +461,14 @@ def _summary(rows, skipped, total):
     }
 
 
-def haplotypes(records):
+def haplotypes(records, reps_out=None):
     """Haplotypes per species, comparing sequences without alignment.
 
     Sequences with Ns or ambiguities are left out (one N would make a new
     haplotype). A sequence contained in a longer one counts as that same
     haplotype, since barcodes of one haplotype differ mostly in where they
     were trimmed; it joins the longest one that contains it.
+    `reps_out`, a dict, receives each species' haplotype sequences.
     """
     groups = defaultdict(list)
     excluded = Counter()
@@ -488,6 +501,8 @@ def haplotypes(records):
                 exact[seq] = i
             counts[i] += 1
         n = len(seqs)
+        if reps_out is not None:
+            reps_out[species] = reps
         hd = None
         if n >= 2:
             hd = n / (n - 1) * (1 - sum((c / n) ** 2 for c in counts))
@@ -501,6 +516,77 @@ def haplotypes(records):
             "counts": sorted(counts, reverse=True),
         })
     return result
+
+
+def _joined_haplotypes(reps):
+    """How many haplotypes are left when those equal over their whole
+    overlap (at least GUIDE_HAP_OVERLAP bp, one starting inside the other:
+    trimmed at different ends) are joined. An estimate: a short haplotype
+    that fits two others joins them too. None past GUIDE_HAP_MAX_REPS."""
+    if len(reps) > GUIDE_HAP_MAX_REPS:
+        return None
+    # Where each k-mer starts in each haplotype, but at its very start
+    index = defaultdict(list)
+    for a, s in enumerate(reps):
+        for p in range(1, len(s) - GUIDE_HAP_OVERLAP + 1):
+            index[s[p:p + _HAP_KMER]].append((a, p))
+    parent = list(range(len(reps)))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for b, s in enumerate(reps):
+        for a, p in index.get(s[:_HAP_KMER], ()):
+            overlap = len(reps[a]) - p
+            if a != b and overlap < len(s) and reps[a][p:] == s[:overlap]:
+                parent[find(a)] = find(b)
+    return len({find(i) for i in range(len(reps))})
+
+
+def haplotype_guide(records, haps, reps):
+    """Facts for the reading of the haplotypes view, which the page words.
+
+    `haps` is `haplotypes(records)`, and `reps` the haplotype sequences it
+    put out per species.
+    """
+    named = [h for h in haps if h["species"]]
+    big = sorted((h for h in named if h["n"] >= GUIDE_HAP_MIN), key=lambda h: (-h["n"], h["species"]))
+    few = sorted((h for h in named if 2 <= h["n"] < GUIDE_HAP_MIN), key=lambda h: (-h["n"], h["species"]))
+    species = []
+    for h in big[:GUIDE_HAP_SPECIES]:
+        species.append({k: h[k] for k in ("species", "n", "haplotypes", "singletons", "hd", "excluded")})
+        species[-1]["top"] = round(h["counts"][0] / h["n"], 3)
+        species[-1]["joined"] = _joined_haplotypes(reps.get(h["species"], []))
+
+    unnamed = next((h for h in haps if not h["species"]), None)
+    if unnamed:
+        bins = {r.get("bin") for r in records
+                if not (r.get("species") or r.get("taxon")) and r.get("bin")}
+        unnamed = {"n": unnamed["n"], "haplotypes": unnamed["haplotypes"],
+                   "hd": unnamed["hd"], "bins": len(bins)}
+    heavy = [{"species": h["species"], "excluded": h["excluded"], "total": h["n"] + h["excluded"]}
+             for h in haps
+             if h["excluded"] >= 3 and h["excluded"] >= 0.2 * (h["n"] + h["excluded"])]
+    largest = max((h for h in named if h["n"] >= 2), key=lambda h: h["n"], default=None)
+    worst = max(haps, key=lambda h: h["excluded"], default=None)
+    return {
+        "species": species,
+        "species_n": len(big),
+        "few": [[h["species"], h["n"]] for h in few[:8]],
+        "few_n": len(few),
+        "single_n": sum(1 for h in named if h["n"] == 1),
+        "unnamed": unnamed,
+        "excluded": sum(h["excluded"] for h in haps),
+        "excluded_most": ([worst["species"], worst["excluded"], worst["n"] + worst["excluded"]]
+                          if worst and worst["excluded"] else None),
+        "excluded_heavy": heavy[:GUIDE_LIST],
+        "largest": largest["species"] if largest else None,
+        "min_n": GUIDE_HAP_MIN,
+        "overlap_bp": GUIDE_HAP_OVERLAP,
+    }
 
 
 def concordance(records):
@@ -714,12 +800,15 @@ def run_basic(records, marker, forced_code=None, total=None):
         rec["clean"] = clean_sequence(rec.get("seq"))
     rows, skipped = composition(records, forced_code)
     usable = [r for r in records if len(r["clean"]) >= MIN_LENGTH]
+    reps = {}
+    haps = haplotypes(usable, reps)
     return {
         "marker": marker,
         "summary": _summary(rows, skipped, total if total is not None else len(records)),
         "sequences": rows,
         "guide": guide(usable, rows, forced_code),
-        "haplotypes": haplotypes(usable),
+        "haplotypes": haps,
+        "haplotype_guide": haplotype_guide(usable, haps, reps),
         "concordance": concordance(usable),
         "taxonomy": taxonomy_overview(usable),
     }

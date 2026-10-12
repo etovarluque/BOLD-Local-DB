@@ -2463,7 +2463,7 @@
                 an_code_hint_mito: 'Gen mitocondrial: código según la taxonomía de cada registro.',
                 an_code_hint_plastid: 'Gen de plastos o bacteriano: código 11.',
                 an_code_hint_nuclear: 'Gen nuclear: código estándar (1).',
-                an_translation_note: 'Traducción con el código genético {codes}. Se prueban los 3 marcos de lectura y se usa el de menos codones de parada.',
+                an_translation_note: 'Traducción con el código genético {codes}. Se prueban los 3 marcos de lectura y se usa el de menos codones de parada; una parada en el último codón (el final del gen) no cuenta.',
                 an_not_translated: 'Este marcador no se traduce: no codifica proteínas, abarca varios genes, es un pseudogén o suele incluir intrones.',
                 an_h_flagged: 'Secuencias con alertas',
                 an_more_rows: 'Se muestran {shown} de {n}; el CSV las incluye todas.',
@@ -2816,6 +2816,93 @@
                 an_ng_next_nobin: '<b>Qué hacer ahora:</b> colorea la red por país o por especie para ver los linajes, y compáralos con las pestañas «{motu}» y «{tree}». Para estudiar un linaje, repite la red solo con sus secuencias: así la diversidad y la D de Tajima describen una sola población.',
                 an_ng_next_one: '<b>Qué hacer ahora:</b> colorea la red con [color_country] para ver cómo se reparten los haplotipos, y compara su diversidad con la de otras especies o regiones construyendo sus redes.',
                 an_ng_foot: 'Una red de un solo marcador sugiere linajes y estructura, pero no los demuestra (en COI, además, solo se ve la línea materna): confírmalos con otros marcadores, la morfología y un muestreo más amplio.',
+                an_qg_title: 'Qué dicen estas secuencias',
+                an_qg_sub: 'Lectura automática y orientativa de la composición y la calidad',
+                an_qg_file: 'interpretacion_calidad',
+                an_qg_meta: 'Marcador: {marker} · {n} secuencias · código genético: {code} · {date}',
+                an_qg_v_good_bc: '<b>Las secuencias tienen buena calidad:</b> el {p} ({k} de {n}) [barcode].',
+                an_qg_v_most_bc: '<b>La mayoría de las secuencias se pueden usar:</b> el {p} ({k} de {n}) [barcode].',
+                an_qg_v_many_bc: '<b>Muchas secuencias no llegan al estándar:</b> solo el {p} ({k} de {n}) [barcode].',
+                an_qg_v_none_fl: '<b>Las secuencias tienen buena calidad:</b> ninguna tiene alertas.',
+                an_qg_v_good_fl: '<b>Las secuencias tienen buena calidad:</b> solo {k} de {n} tienen alguna alerta.',
+                an_qg_v_most_fl: '<b>La mayoría de las secuencias se pueden usar:</b> {k} de {n} tienen alguna alerta.',
+                an_qg_v_many_fl: '<b>Muchas secuencias tienen alertas:</b> {k} de {n}.',
+                an_qg_v_review: ' Conviene revisar {list}.',
+                an_qg_v_rev_stops: '<b>{k} con codones de parada internos</b>',
+                an_qg_v_rev_stops_1: '<b>una con codones de parada internos</b>',
+                an_qg_v_rev_project: ' ({m} de ellas del proyecto {p})',
+                an_qg_v_rev_reversed: '{k} que parecen estar en sentido inverso',
+                an_qg_v_rev_reversed_1: 'una que parece estar en sentido inverso',
+                an_qg_v_rev_gc: '{k} con una composición distinta del resto',
+                an_qg_v_rev_gc_1: 'una con una composición distinta del resto',
+                an_qg_v_rev_invalid: '{k} con caracteres no válidos',
+                an_qg_v_rev_invalid_1: 'una con caracteres no válidos',
+                an_qg_v_clean: ' Ninguna tiene codones de parada internos.',
+                an_qg_v_code: '<b>La mayoría de las secuencias tienen codones de parada ({k} de {n}) con el código genético {code}: lo más probable es que ese código no sea el adecuado para este grupo.</b>',
+                an_qg_v_code_all: '<b>Todas las secuencias tienen codones de parada con el código genético {code}: lo más probable es que ese código no sea el adecuado para este grupo.</b>',
+                an_qg_v_code_better: ' Con el código {c} desaparecen en {m} de ellas.',
+                an_qg_v_code_auto: ' Con el código automático (el {c}, según la taxonomía) desaparecen en {m} de ellas.',
+                an_qg_rerun: 'Repetir con el código {c}',
+                an_qg_rerun_auto: 'Repetir con el código automático',
+                an_qg_barcode: '[barcode] cuenta las secuencias que cumplen el estándar de BOLD para COI-5P: al menos 500 pb, menos del 1 % de N y ningún codón de parada. Una secuencia que no lo cumple no es necesariamente mala, pero aporta menos información o merece una revisión.',
+                an_qg_not_translated: 'Este marcador no se traduce (no codifica una proteína, abarca varios genes o suele tener intrones), así que no se buscan codones de parada ni se aplica el estándar barcode: la calidad se juzga por la longitud, las N y la composición.',
+                an_qg_no_marker: 'Sin un marcador conocido las secuencias no se traducen, así que no se buscan codones de parada: elige un código en [code_field] y repite si son de un gen que codifica una proteína.',
+                an_qg_length: '<b>Longitud.</b> La [length] es {med} pb y {range}.',
+                an_qg_len_90: 'el 90 % mide entre {a} y {b} pb',
+                an_qg_len_90_same: 'el 90 % mide {a} pb',
+                an_qg_len_all: 'todas miden entre {a} y {b} pb',
+                an_qg_len_same: 'todas miden {a} pb',
+                an_qg_len_short: ' {k} secuencias ({p}) son [f_short]: siguen siendo útiles, pero las distancias y el árbol las comparan solo en el tramo que comparten con las demás, y la red de haplotipos deja fuera las que acortarían demasiado el tramo común.',
+                an_qg_len_short_1: ' Una secuencia es [f_short]: sigue siendo útil, pero las distancias y el árbol la comparan solo en el tramo que comparte con las demás, y la red de haplotipos la deja fuera si acortara demasiado el tramo común.',
+                an_qg_len_long: ' {k} miden más de 1.5 veces la mediana (hasta {max} pb): probablemente cubren un tramo más largo que el habitual.',
+                an_qg_len_long_1: ' Una mide más de 1.5 veces la mediana ({max} pb): probablemente cubre un tramo más largo que el habitual.',
+                an_qg_two: '<b>Dos longitudes frecuentes:</b> {na} secuencias miden {a} pb y {nb} miden {b} pb. Seguramente se amplificaron con dos pares de cebadores distintos; es normal, pero las comparaciones se limitan al tramo que comparten.',
+                an_qg_stops_code: '<b>Codones de parada.</b> {k} de {n} secuencias tienen [f_stops] con el código {code}. Cuando son tantas, casi nunca es un fallo de las secuencias: el código genético no corresponde a este grupo (por ejemplo, el estándar en un gen mitocondrial).',
+                an_qg_stops_code_none: ' Ningún otro código las elimina en la mayoría: puede que el marcador no sea el indicado o que las secuencias no sean de un gen que codifica una proteína.',
+                an_qg_stops: '<b>Codones de parada.</b> {k} secuencias tienen [f_stops] en mitad de la secuencia en los tres marcos de lectura con el código {code}; un gen que codifica una proteína no debería tenerlos. Las que más tienen: {list}.',
+                an_qg_stops_1: '<b>Codones de parada.</b> Una secuencia, {id}, tiene [f_stops] en mitad de la secuencia en los tres marcos de lectura con el código {code}; un gen que codifica una proteína no debería tenerlos. Puede ser un pseudogén nuclear (NUMT), un error de secuenciación o una secuencia de otro gen; las distancias, el árbol, las especies (MOTU) y la red ya la dejan fuera solas.',
+                an_qg_stops_project: ' {m} de las {k} son del proyecto {p}{gb}: apunta a un problema de ese lote, como pseudogenes nucleares (NUMT) o errores de secuenciación, más que de la especie.',
+                an_qg_stops_project_all: ' Todas son del proyecto {p}{gb}: apunta a un problema de ese lote, como pseudogenes nucleares (NUMT) o errores de secuenciación, más que de la especie.',
+                an_qg_gb: ' (registros importados de GenBank)',
+                an_qg_stops_species: ' La mayoría ({m}) son de {sp}: puede ser un problema de esa especie o de sus registros.',
+                an_qg_stops_causes: ' Pueden ser pseudogenes nucleares (NUMT), errores de secuenciación o secuencias de otro gen.',
+                an_qg_stops_advice: ' Las distancias, el árbol, las especies (MOTU) y la red ya las dejan fuera solas.',
+                an_qg_stops_none: '<b>Codones de parada.</b> Ninguna secuencia tiene [f_stops] con el código {code}: todas se traducen sin interrupciones, como se espera de un gen que codifica una proteína.',
+                an_qg_terminal: '{k} secuencias acaban en un codón de parada en su último codón ({ids}): es el final del gen o un recorte justo ahí, así que no se cuenta como parada ni es un error.',
+                an_qg_terminal_1: '{id} acaba en un codón de parada en su último codón: es el final del gen o un recorte justo ahí, así que no se cuenta como parada ni es un error.',
+                an_qg_default_code: 'Algunas secuencias ({k}) no traen taxonomía, así que se tradujeron con el código 5 (mitocondrial de invertebrados), el que se usa por defecto. Si son vertebrados, elige el código 2 en [code_field] y repite: con el 5 no se detectan las paradas AGA y AGG.',
+                an_qg_default_code_all: 'Las secuencias no traen taxonomía, así que se tradujeron con el código 5 (mitocondrial de invertebrados), el que se usa por defecto. Si son vertebrados, elige el código 2 en [code_field] y repite: con el 5 no se detectan las paradas AGA y AGG.',
+                an_qg_reversed: '{k} secuencias ({ids}) tienen paradas en los tres marcos directos y ninguna en la hebra complementaria: [f_reversed]. El visor ya las lee al derecho en esta pestaña, en «{hap}» y en «{dist}», pero conviene corregirlas en el archivo original.',
+                an_qg_reversed_1: '{id} tiene paradas en los tres marcos directos y ninguna en la hebra complementaria: [f_reversed]. El visor ya la lee al derecho en esta pestaña, en «{hap}» y en «{dist}», pero conviene corregirla en el archivo original.',
+                an_qg_invalid: '{k} secuencias tienen [invalid]: suele ser un fallo del archivo (números, símbolos o texto dentro de la secuencia). Revísalas en el origen; las distancias, el árbol y la red ya las dejan fuera.',
+                an_qg_invalid_1: 'Una secuencia tiene [invalid]: suele ser un fallo del archivo (números, símbolos o texto dentro de la secuencia). Revísala en el origen; las distancias, el árbol y la red ya la dejan fuera.',
+                an_qg_n_head: '<b>N y bases ambiguas.</b> ',
+                an_qg_n_many: '{k} tienen [many_n]',
+                an_qg_n_many_1: 'una tiene [many_n]',
+                an_qg_n_amb: '{k} tienen [ambiguous]',
+                an_qg_n_amb_1: 'una tiene [ambiguous]',
+                an_qg_n_hap: '{k} secuencias tienen alguna N o base ambigua y quedan fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
+                an_qg_n_hap_1: 'Una secuencia tiene alguna N o base ambigua y queda fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
+                an_qg_n_hap_total: 'En total, {k} tienen alguna N o base ambigua y quedan fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
+                an_qg_n_hap_total_1: 'En total, una tiene alguna N o base ambigua y queda fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
+                an_qg_n_none: '<b>N y bases ambiguas.</b> Ninguna secuencia tiene N ni bases ambiguas: todas cuentan en «{hap}».',
+                an_qg_gc: '<b>Composición.</b> El [gc] es {gc} %',
+                an_qg_gc3: ' y el [gc3] {gc3} %',
+                an_qg_gc_ok: ' Cada grupo tiene los suyos; lo que importa es que ninguna secuencia se aparta del resto (todas quedan a menos de {lim} puntos de la mediana), lo que descarta contaminaciones evidentes por organismos de composición muy distinta.',
+                an_qg_gc_out_1: ' Una secuencia se aparta del resto: {id}{sp}, con un {gc} % de GC frente a una mediana de {med} %. Puede ser una contaminación, otro organismo o una secuencia de mala calidad: búscala en el árbol o en «{dist}».',
+                an_qg_gc_long_1: ' Solo se aparta del resto {id} ({gc} % frente a una mediana de {med} %), que mide {len} pb, mucho más que las demás: lo más probable es que la diferencia venga de abarcar otro tramo del gen, no de una contaminación.',
+                an_qg_gc_long: ' Solo se apartan del resto {ids}, mucho más largas que las demás: lo más probable es que la diferencia venga de abarcar otro tramo del gen, no de una contaminación.',
+                an_qg_gc_long_also: ' Además se apartan {ids}, pero son mucho más largas que las demás: la diferencia viene probablemente de abarcar otro tramo del gen.',
+                an_qg_gc_spread: ' La composición varía mucho entre secuencias (lo normal en marcadores no codificantes o en grupos muy diversos), así que aquí no sirve para detectar contaminaciones.',
+                an_qg_gc_out: ' {k} secuencias se apartan del resto (a más de {lim} puntos de la mediana, {med} %): {list}. Pueden ser contaminaciones, otros organismos o secuencias de mala calidad: búscalas en el árbol o en «{dist}».',
+                an_qg_tabs_1: 'la pestaña «{a}»',
+                an_qg_tabs_2: 'las pestañas «{a}» y «{b}»',
+                an_qg_next_code: '<b>Qué hacer ahora:</b> repite el análisis con el código que se propone arriba (con el botón o en [code_field]) antes de seguir; el resto de la lectura cambiará con él.',
+                an_qg_next_code_none: '<b>Qué hacer ahora:</b> comprueba en [code_field] que el código corresponde a tu grupo y que el marcador es el correcto, y repite el análisis.',
+                an_qg_next_review: '<b>Qué hacer ahora:</b> revisa las secuencias señaladas arriba (todas las que tienen alertas están en la tabla «{flagged}»). Las distancias, el árbol y la red ya dejan fuera las que tienen codones de parada o caracteres no válidos; para quitar cualquiera de ellas de todo el análisis, selecciona en los resultados de la búsqueda los registros que quieras conservar y analiza [src_records]. Las cortas y las que tienen N pueden quedarse. Después, pasa a {tabs}.',
+                an_qg_next_review_fasta: '<b>Qué hacer ahora:</b> revisa las secuencias señaladas arriba (todas las que tienen alertas están en la tabla «{flagged}»). Las distancias, el árbol y la red ya dejan fuera las que tienen codones de parada o caracteres no válidos; para quitar cualquiera de ellas de todo el análisis, bórrala del archivo FASTA y repite el análisis. Las cortas y las que tienen N pueden quedarse. Después, pasa a {tabs}.',
+                an_qg_next_ok: '<b>Qué hacer ahora:</b> las secuencias se pueden analizar tal como están. Pasa a {tabs}.',
+                an_qg_foot: 'Estas comprobaciones miran cada secuencia por separado y sin alinearla: una secuencia sin alertas aún puede ser de otro organismo o estar mal identificada. Eso solo se ve comparándolas entre sí, en «Distancias» y el árbol.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
                 an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
                 an_g_export_md: 'Descargar la interpretación en Markdown (.md)',
@@ -3153,7 +3240,7 @@
                 an_code_hint_mito: 'Mitochondrial gene: code from each record\'s taxonomy.',
                 an_code_hint_plastid: 'Plastid or bacterial gene: code 11.',
                 an_code_hint_nuclear: 'Nuclear gene: standard code (1).',
-                an_translation_note: 'Translated with genetic code {codes}. The 3 reading frames are tried and the one with fewest stop codons is used.',
+                an_translation_note: 'Translated with genetic code {codes}. The 3 reading frames are tried and the one with fewest stop codons is used; a stop in the last codon (the end of the gene) doesn\'t count.',
                 an_not_translated: 'This marker is not translated: it doesn\'t code for a protein, spans several genes, is a pseudogene or often includes introns.',
                 an_h_flagged: 'Flagged sequences',
                 an_more_rows: 'Showing {shown} of {n}; the CSV has them all.',
@@ -3506,6 +3593,93 @@
                 an_ng_next_nobin: '<b>What to do next:</b> colour the network by country or by species to see the lineages, and compare them with the "{motu}" and "{tree}" tabs. To study one lineage, build the network again with its sequences only: the diversity and Tajima\'s D then describe a single population.',
                 an_ng_next_one: '<b>What to do next:</b> colour the network with [color_country] to see how the haplotypes spread, and compare its diversity with other species or regions by building their networks.',
                 an_ng_foot: 'A single-marker network suggests lineages and structure but doesn\'t prove them (and COI only shows the maternal line): confirm them with other markers, morphology and wider sampling.',
+                an_qg_title: 'What these sequences say',
+                an_qg_sub: 'An automatic, indicative reading of composition and quality',
+                an_qg_file: 'quality_reading',
+                an_qg_meta: 'Marker: {marker} · {n} sequences · genetic code: {code} · {date}',
+                an_qg_v_good_bc: '<b>The sequences are of good quality:</b> {p} ({k} of {n}) [barcode].',
+                an_qg_v_most_bc: '<b>Most sequences can be used:</b> {p} ({k} of {n}) [barcode].',
+                an_qg_v_many_bc: '<b>Many sequences fall short of the standard:</b> only {p} ({k} of {n}) [barcode].',
+                an_qg_v_none_fl: '<b>The sequences are of good quality:</b> none has any flag.',
+                an_qg_v_good_fl: '<b>The sequences are of good quality:</b> only {k} of {n} have a flag.',
+                an_qg_v_most_fl: '<b>Most sequences can be used:</b> {k} of {n} have a flag.',
+                an_qg_v_many_fl: '<b>Many sequences have flags:</b> {k} of {n}.',
+                an_qg_v_review: ' Worth a look: {list}.',
+                an_qg_v_rev_stops: '<b>{k} with internal stop codons</b>',
+                an_qg_v_rev_stops_1: '<b>one with internal stop codons</b>',
+                an_qg_v_rev_project: ' ({m} of them from project {p})',
+                an_qg_v_rev_reversed: '{k} that seem to be reversed',
+                an_qg_v_rev_reversed_1: 'one that seems to be reversed',
+                an_qg_v_rev_gc: '{k} whose composition differs from the rest',
+                an_qg_v_rev_gc_1: 'one whose composition differs from the rest',
+                an_qg_v_rev_invalid: '{k} with invalid characters',
+                an_qg_v_rev_invalid_1: 'one with invalid characters',
+                an_qg_v_clean: ' None has internal stop codons.',
+                an_qg_v_code: '<b>Most sequences have stop codons ({k} of {n}) with genetic code {code}: most likely that code doesn\'t suit this group.</b>',
+                an_qg_v_code_all: '<b>Every sequence has stop codons with genetic code {code}: most likely that code doesn\'t suit this group.</b>',
+                an_qg_v_code_better: ' With code {c} they disappear in {m} of them.',
+                an_qg_v_code_auto: ' With the automatic code ({c}, from the taxonomy) they disappear in {m} of them.',
+                an_qg_rerun: 'Run again with code {c}',
+                an_qg_rerun_auto: 'Run again with the automatic code',
+                an_qg_barcode: '[barcode] counts the sequences that meet BOLD\'s standard for COI-5P: at least 500 bp, under 1% Ns and no stop codon. A sequence that misses it isn\'t necessarily bad, but it carries less information or deserves a look.',
+                an_qg_not_translated: 'This marker isn\'t translated (it doesn\'t code for a protein, spans several genes or usually has introns), so stop codons aren\'t looked for and the barcode standard doesn\'t apply: quality is judged by length, Ns and composition.',
+                an_qg_no_marker: 'Without a known marker the sequences aren\'t translated, so stop codons aren\'t looked for: choose a code in [code_field] and run again if they are of a protein-coding gene.',
+                an_qg_length: '<b>Length.</b> The [length] is {med} bp and {range}.',
+                an_qg_len_90: '90% are between {a} and {b} bp long',
+                an_qg_len_90_same: '90% are {a} bp long',
+                an_qg_len_all: 'all are between {a} and {b} bp long',
+                an_qg_len_same: 'all are {a} bp long',
+                an_qg_len_short: ' {k} sequences ({p}) are [f_short]: they are still useful, but distances and the tree compare them only over the stretch they share with the rest, and the haplotype network leaves out those that would shorten the shared stretch too much.',
+                an_qg_len_short_1: ' One sequence is [f_short]: it is still useful, but distances and the tree compare it only over the stretch it shares with the rest, and the haplotype network leaves it out if it would shorten the shared stretch too much.',
+                an_qg_len_long: ' {k} are over 1.5 times the median (up to {max} bp): they probably cover a longer stretch than usual.',
+                an_qg_len_long_1: ' One is over 1.5 times the median ({max} bp): it probably covers a longer stretch than usual.',
+                an_qg_two: '<b>Two common lengths:</b> {na} sequences are {a} bp long and {nb} are {b} bp. They were most likely amplified with two different primer pairs; that is normal, but comparisons are limited to the stretch they share.',
+                an_qg_stops_code: '<b>Stop codons.</b> {k} of {n} sequences have [f_stops] with code {code}. When there are this many it is hardly ever the sequences\' fault: the genetic code doesn\'t match this group (for instance, the standard code on a mitochondrial gene).',
+                an_qg_stops_code_none: ' No other code clears them in most: the marker may be the wrong one, or the sequences may not be of a protein-coding gene.',
+                an_qg_stops: '<b>Stop codons.</b> {k} sequences have [f_stops] within the sequence in all three reading frames with code {code}; a protein-coding gene shouldn\'t have any. Those with the most: {list}.',
+                an_qg_stops_1: '<b>Stop codons.</b> One sequence, {id}, has [f_stops] within the sequence in all three reading frames with code {code}; a protein-coding gene shouldn\'t have any. It may be a nuclear pseudogene (NUMT), a sequencing error or a sequence of another gene; distances, the tree, the species (MOTUs) and the network already leave it out on their own.',
+                an_qg_stops_project: ' {m} of the {k} come from project {p}{gb}: this points to a problem of that batch, such as nuclear pseudogenes (NUMTs) or sequencing errors, rather than of the species.',
+                an_qg_stops_project_all: ' All come from project {p}{gb}: this points to a problem of that batch, such as nuclear pseudogenes (NUMTs) or sequencing errors, rather than of the species.',
+                an_qg_gb: ' (records imported from GenBank)',
+                an_qg_stops_species: ' Most ({m}) are of {sp}: it may be a problem of that species or of its records.',
+                an_qg_stops_causes: ' They may be nuclear pseudogenes (NUMTs), sequencing errors or sequences of another gene.',
+                an_qg_stops_advice: ' Distances, the tree, the species (MOTUs) and the network already leave them out on their own.',
+                an_qg_stops_none: '<b>Stop codons.</b> No sequence has [f_stops] with code {code}: all translate without interruption, as expected of a protein-coding gene.',
+                an_qg_terminal: '{k} sequences end on a stop codon in their last codon ({ids}): that is the end of the gene or a trim right there, so it isn\'t counted as a stop and isn\'t an error.',
+                an_qg_terminal_1: '{id} ends on a stop codon in its last codon: that is the end of the gene or a trim right there, so it isn\'t counted as a stop and isn\'t an error.',
+                an_qg_default_code: 'Some sequences ({k}) carry no taxonomy, so they were translated with code 5 (invertebrate mitochondrial), the default. If they are vertebrates, choose code 2 in [code_field] and run again: code 5 doesn\'t detect the AGA and AGG stops.',
+                an_qg_default_code_all: 'The sequences carry no taxonomy, so they were translated with code 5 (invertebrate mitochondrial), the default. If they are vertebrates, choose code 2 in [code_field] and run again: code 5 doesn\'t detect the AGA and AGG stops.',
+                an_qg_reversed: '{k} sequences ({ids}) have stops in all three forward frames and none on the reverse strand: [f_reversed]. The viewer already reads them the right way round in this tab, in "{hap}" and in "{dist}", but they should be fixed in the original file.',
+                an_qg_reversed_1: '{id} has stops in all three forward frames and none on the reverse strand: [f_reversed]. The viewer already reads it the right way round in this tab, in "{hap}" and in "{dist}", but it should be fixed in the original file.',
+                an_qg_invalid: '{k} sequences have [invalid]: usually a fault of the file (numbers, symbols or text inside the sequence). Check them at the source; distances, the tree and the network already leave them out.',
+                an_qg_invalid_1: 'One sequence has [invalid]: usually a fault of the file (numbers, symbols or text inside the sequence). Check it at the source; distances, the tree and the network already leave it out.',
+                an_qg_n_head: '<b>Ns and ambiguous bases.</b> ',
+                an_qg_n_many: '{k} have [many_n]',
+                an_qg_n_many_1: 'one has [many_n]',
+                an_qg_n_amb: '{k} have [ambiguous]',
+                an_qg_n_amb_1: 'one has [ambiguous]',
+                an_qg_n_hap: '{k} sequences have some N or ambiguous base and are left out of the "{hap}" tab (a single N would make a false haplotype); distances do use them.',
+                an_qg_n_hap_1: 'One sequence has some N or ambiguous base and is left out of the "{hap}" tab (a single N would make a false haplotype); distances do use it.',
+                an_qg_n_hap_total: 'In all, {k} have some N or ambiguous base and are left out of the "{hap}" tab (a single N would make a false haplotype); distances do use them.',
+                an_qg_n_hap_total_1: 'In all, one has some N or ambiguous base and is left out of the "{hap}" tab (a single N would make a false haplotype); distances do use it.',
+                an_qg_n_none: '<b>Ns and ambiguous bases.</b> No sequence has Ns or ambiguous bases: all count in "{hap}".',
+                an_qg_gc: '<b>Composition.</b> The [gc] is {gc}%',
+                an_qg_gc3: ' and the [gc3] {gc3}%',
+                an_qg_gc_ok: ' Each group has its own values; what matters is that no sequence stands apart from the rest (all are within {lim} points of the median), which rules out obvious contamination by organisms of very different composition.',
+                an_qg_gc_out_1: ' One sequence stands apart: {id}{sp}, with {gc}% GC against a median of {med}%. It may be contamination, another organism or a poor-quality sequence: look for it in the tree or in "{dist}".',
+                an_qg_gc_long_1: ' Only {id} stands apart ({gc}% against a median of {med}%), and it is {len} bp long, much longer than the rest: the difference most likely comes from spanning another stretch of the gene, not from contamination.',
+                an_qg_gc_long: ' Only {ids} stand apart, all much longer than the rest: the difference most likely comes from spanning another stretch of the gene, not from contamination.',
+                an_qg_gc_long_also: ' {ids} stand apart as well, but they are much longer than the rest: the difference probably comes from spanning another stretch of the gene.',
+                an_qg_gc_spread: ' Composition varies widely between sequences (usual in non-coding markers or very diverse groups), so here it can\'t reveal contamination.',
+                an_qg_gc_out: ' {k} sequences stand apart from the rest (more than {lim} points from the median, {med}%): {list}. They may be contamination, other organisms or poor-quality sequences: look for them in the tree or in "{dist}".',
+                an_qg_tabs_1: 'the "{a}" tab',
+                an_qg_tabs_2: 'the "{a}" and "{b}" tabs',
+                an_qg_next_code: '<b>What to do next:</b> run the analysis again with the code proposed above (with the button or in [code_field]) before going on; the rest of the reading will change with it.',
+                an_qg_next_code_none: '<b>What to do next:</b> check in [code_field] that the code suits your group and that the marker is the right one, and run the analysis again.',
+                an_qg_next_review: '<b>What to do next:</b> check the sequences pointed out above (all flagged ones are in the "{flagged}" table). Distances, the tree and the network already leave out those with stop codons or invalid characters; to remove any of them from the whole analysis, select in the search results the records you want to keep and analyse [src_records]. Short ones and those with Ns can stay. Then go on to {tabs}.',
+                an_qg_next_review_fasta: '<b>What to do next:</b> check the sequences pointed out above (all flagged ones are in the "{flagged}" table). Distances, the tree and the network already leave out those with stop codons or invalid characters; to remove any of them from the whole analysis, delete it from the FASTA file and run the analysis again. Short ones and those with Ns can stay. Then go on to {tabs}.',
+                an_qg_next_ok: '<b>What to do next:</b> the sequences can be analysed as they are. Go on to {tabs}.',
+                an_qg_foot: 'These checks look at each sequence on its own and without aligning it: a sequence with no flag may still be of another organism or misidentified. That only shows when they are compared with one another, in "Distances" and the tree.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
                 an_g_export_txt: 'Download the reading as text (.txt)',
                 an_g_export_md: 'Download the reading as Markdown (.md)',
@@ -7390,6 +7564,7 @@
 			const flags = AN_FLAGS.filter(f => s.flags[f]);
 			if (!flags.length) {
 				body.append(anEl('p', 'an-muted', t('an_no_flags')));
+				anRenderQualityGuide(body, r);
 				return;
 			}
 			body.append(anTable([
@@ -7426,6 +7601,7 @@
 				{ label: t('an_c_stops'), cls: 'num', get: row => row.stops ?? '—' },
 				{ label: t('an_c_flags'), get: flagList },
 			], flagged.slice(0, AN_TABLE_ROWS)));
+			anRenderQualityGuide(body, r);
 		}
 
 		function anRenderHaplotypes(body, r) {
@@ -8013,6 +8189,10 @@
 			color_bin: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_bin')}`,
 			hap: 'an_ng_t_hap', unsampled: 'an_t_intermediates', hd: 'an_t_hd', pi: 'an_t_pi',
 			tajima: 'an_t_tajima', pv: 'an_ng_t_p', bin: 'an_ng_t_bin',
+			// The quality view's figures, flags and controls
+			barcode: 'an_t_barcode', length: 'an_t_length', gc: 'an_t_gc', gc3: 'an_t_gc3',
+			f_short: 'an_f_short', f_stops: 'an_f_stops', f_reversed: 'an_f_reversed', many_n: 'an_f_many_n',
+			ambiguous: 'an_f_ambiguous', invalid: 'an_f_invalid', src_records: 'an_src_records', code_field: 'an_code_field',
 		};
 		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
 		// Difference between named species above which COI usually tells
@@ -8366,6 +8546,211 @@ li li { display: list-item; margin: 0; }
 				// print() returns once the dialog closes; afterprint may not fire everywhere
 				setTimeout(restore, 500);
 			}, 150);
+		}
+
+		// ── Reading guide of the quality view ──
+		// The server works out the facts (seq_analysis.guide): stops and where
+		// they come from, another genetic code that clears them, sequences
+		// ending on the gene's stop codon, composition unlike the rest, length
+		// peaks. The figures of the tiles come from the summary.
+
+		// A GC spread (the server's limit, in points) beyond which composition
+		// can't single out a sequence
+		const AN_QG_GC_SPREAD = 8;
+
+		function anRenderQualityGuide(body, r) {
+			const G = r.guide, s = r.summary;
+			if (!G) return;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
+			const ids = (list, total) => total > list.length
+				? list.map(mono).join(', ') + anGuideMore(list.length, total) : anGuideJoin(list.map(mono), ', ');
+			const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
+			// A share short of all never shows as 100.0 % (it is cut to 99.9 %)
+			const share = (k, n) => k < n && anPct(k, n) === '100.0 %' ? '99.9 %' : anPct(k, n);
+			const one = (k, key, vars = {}) => anGuideText(k === 1 ? key + '_1' : key, { k: num(k), ...vars });
+			const flags = s.flags;
+			const translated = s.translated;
+			const codeText = anGuideJoin(s.codes.map(([c]) => String(c)), ', ');
+			const tab = key => escapeHtml(t(key));
+			const hap = tab('an_v_haplotypes'), dist = tab('an_v_distance');
+			// Stops in most sequences: the code, not the sequences
+			const codeWrong = translated && G.stops_n >= 3 && G.stops_n >= 0.5 * translated;
+			const B = G.better_code;
+			const better = B ? anGuideText(B.auto ? 'an_qg_v_code_auto' : 'an_qg_v_code_better',
+										   { c: B.code, m: num(B.cleared) }) : '';
+			const gcOut = G.gc ? G.gc.outliers_n : 0;
+			const invalid = flags.invalid || 0;
+			const P = G.stops_project;
+			const byProject = P && G.stops_n >= 3 && P[1] >= 3 && P[1] >= 0.5 * G.stops_n;
+			const gb = P && P[0].startsWith('GB') ? t('an_qg_gb') : '';
+
+			// Verdict: the barcode standard (COI-5P) or the share flagged
+			let verdict;
+			if (codeWrong) {
+				verdict = anGuideText(G.stops_n === translated ? 'an_qg_v_code_all' : 'an_qg_v_code',
+									  { k: num(G.stops_n), n: num(translated), code: codeText }) + better;
+			} else {
+				if (s.barcode_applicable) {
+					const f = s.barcode_compliant / s.barcode_applicable;
+					verdict = anGuideText((f >= 0.9 ? 'an_qg_v_good' : f >= 0.7 ? 'an_qg_v_most' : 'an_qg_v_many') + '_bc', {
+						p: share(s.barcode_compliant, s.barcode_applicable),
+						k: num(s.barcode_compliant), n: num(s.barcode_applicable) });
+				} else {
+					const k = r.sequences.filter(x => x.flags.length).length;
+					const f = k / s.analysed;
+					verdict = anGuideText(!k ? 'an_qg_v_none_fl' : f <= 0.1 ? 'an_qg_v_good_fl' : f <= 0.3 ? 'an_qg_v_most_fl' : 'an_qg_v_many_fl',
+										  { k: num(k), n: num(s.analysed) });
+				}
+				const review = [];
+				if (G.stops_n) review.push(one(G.stops_n, 'an_qg_v_rev_stops') +
+					(byProject ? anGuideText('an_qg_v_rev_project', { m: num(P[1]), p: escapeHtml(P[0]) }) : ''));
+				if (G.reversed_n) review.push(one(G.reversed_n, 'an_qg_v_rev_reversed'));
+				if (gcOut) review.push(one(gcOut, 'an_qg_v_rev_gc'));
+				if (invalid) review.push(one(invalid, 'an_qg_v_rev_invalid'));
+				if (review.length) verdict += anGuideText('an_qg_v_review', { list: anGuideJoin(review, ', ') });
+				else if (translated) verdict += anGuideText('an_qg_v_clean');
+			}
+
+			// What the barcode standard asks, and why nothing is translated
+			if (s.barcode_applicable) add('info', anGuideText('an_qg_barcode'));
+			if (!translated) add('info', anGuideText(r.marker ? 'an_qg_not_translated' : 'an_qg_no_marker'));
+
+			// Length
+			const L = G.length;
+			const range = G.n >= 20 ? anGuideText(L.q05 === L.q95 ? 'an_qg_len_90_same' : 'an_qg_len_90', { a: num(L.q05), b: num(L.q95) })
+				: L.min === L.max ? anGuideText('an_qg_len_same', { a: num(L.min) })
+				: anGuideText('an_qg_len_all', { a: num(L.min), b: num(L.max) });
+			let len = anGuideText('an_qg_length', { med: num(L.median), range });
+			if (flags.short) len += one(flags.short, 'an_qg_len_short', { p: anPct(flags.short, s.analysed) });
+			if (L.long_n) len += one(L.long_n, 'an_qg_len_long', { max: num(L.long_max) });
+			add('info', len);
+			if (L.two) {
+				add('info', anGuideText('an_qg_two', { a: num(L.two[0][0]), na: num(L.two[0][1]),
+													   b: num(L.two[1][0]), nb: num(L.two[1][1]) }));
+			}
+
+			// Stop codons
+			if (translated) {
+				if (codeWrong) {
+					add('warn', anGuideText('an_qg_stops_code', { k: num(G.stops_n), n: num(translated), code: codeText }) +
+						(better || anGuideText('an_qg_stops_code_none')));
+				} else if (G.stops_n) {
+					let text;
+					if (G.stops_n === 1) {
+						text = anGuideText('an_qg_stops_1', { id: mono(G.stops[0].id), code: codeText });
+					} else {
+						const worst = G.stops.slice(0, 3).map(x => `${mono(x.id)} (${num(x.stops)})`);
+						text = anGuideText('an_qg_stops', { k: num(G.stops_n), code: codeText, list: anGuideJoin(worst, ', ') });
+						const sp = G.stops_species[0];
+						if (byProject) {
+							text += anGuideText(P[1] === G.stops_n ? 'an_qg_stops_project_all' : 'an_qg_stops_project',
+												{ m: num(P[1]), k: num(G.stops_n), p: escapeHtml(P[0]), gb });
+						} else if (G.species_n > 1 && sp && G.stops_n >= 3 && sp[1] >= 0.5 * G.stops_n) {
+							text += anGuideText('an_qg_stops_species', { m: num(sp[1]), sp: anGuideName(sp[0]) });
+						} else {
+							text += anGuideText('an_qg_stops_causes');
+						}
+						text += anGuideText('an_qg_stops_advice');
+					}
+					add('warn', text);
+				} else {
+					add('ok', anGuideText('an_qg_stops_none', { code: codeText }));
+				}
+				if (G.terminal_n && !codeWrong) {
+					add('ok', G.terminal_n === 1
+						? anGuideText('an_qg_terminal_1', { id: mono(G.terminal[0].id) })
+						: anGuideText('an_qg_terminal', { k: num(G.terminal_n),
+														  ids: ids(G.terminal.map(x => x.id), G.terminal_n) }));
+				}
+				if (G.default_code) {
+					add('info', anGuideText(G.default_code === G.n ? 'an_qg_default_code_all' : 'an_qg_default_code',
+											{ k: num(G.default_code) }));
+				}
+			}
+
+			// Reversed sequences (a wrong code makes them up: not then)
+			if (G.reversed_n && !codeWrong) {
+				add('warn', G.reversed_n === 1
+					? anGuideText('an_qg_reversed_1', { id: mono(G.reversed[0]), hap, dist })
+					: anGuideText('an_qg_reversed', { k: num(G.reversed_n), ids: ids(G.reversed, G.reversed_n), hap, dist }));
+			}
+			if (invalid) add('warn', one(invalid, 'an_qg_invalid'));
+
+			// Ns and ambiguities
+			if (G.with_n) {
+				const parts = [];
+				if (flags.many_n) parts.push(one(flags.many_n, 'an_qg_n_many'));
+				if (flags.ambiguous) parts.push(one(flags.ambiguous, 'an_qg_n_amb'));
+				const lead = parts.length ? cap(anGuideJoin(parts, ', ')) + '. ' : '';
+				add('info', anGuideText('an_qg_n_head') + lead +
+					one(G.with_n, parts.length ? 'an_qg_n_hap_total' : 'an_qg_n_hap', { hap }));
+			} else {
+				add('ok', anGuideText('an_qg_n_none', { hap }));
+			}
+
+			// Composition
+			if (s.gc) {
+				let text = anGuideText('an_qg_gc', { gc: anNum(s.gc.mean, 1) }) +
+					(s.gc3 ? anGuideText('an_qg_gc3', { gc3: anNum(s.gc3.mean, 1) }) : '') + '.';
+				let kind = 'info';
+				const C = G.gc;
+				const med = C ? anNum(C.median, 1) : '';
+				if (C && gcOut === 1) {
+					const x = C.outliers[0];
+					kind = 'warn';
+					text += anGuideText('an_qg_gc_out_1', { id: mono(x.id), sp: x.species ? ` (${anGuideName(x.species)})` : '',
+						gc: anNum(x.gc, 1), med, dist });
+				} else if (C && gcOut > 1) {
+					kind = 'warn';
+					const list = C.outliers.map(x => `${mono(x.id)} (${x.species ? anGuideName(x.species) + ', ' : ''}${anNum(x.gc, 1)} %)`);
+					text += anGuideText('an_qg_gc_out', { k: num(gcOut), lim: anNum(C.limit, 1), med, dist,
+						list: gcOut > list.length ? list.join(', ') + anGuideMore(list.length, gcOut) : anGuideJoin(list, ', ') });
+				} else if (C && C.long_n) {
+					const x = C.long[0];
+					text += C.long_n === 1
+						? anGuideText('an_qg_gc_long_1', { id: mono(x.id), gc: anNum(x.gc, 1), med, len: num(x.length) })
+						: anGuideText('an_qg_gc_long', { ids: ids(C.long.map(y => y.id), C.long_n) });
+				} else if (C && C.limit > AN_QG_GC_SPREAD) {
+					// Too spread to tell anything apart
+					text += anGuideText('an_qg_gc_spread');
+				} else if (C) {
+					kind = 'ok';
+					text += anGuideText('an_qg_gc_ok', { lim: anNum(C.limit, 1) });
+				}
+				// Much longer sequences, as well as the suspects
+				if (C && gcOut && C.long_n) text += anGuideText('an_qg_gc_long_also', { ids: ids(C.long.map(y => y.id), C.long_n) });
+				add(kind, text);
+			}
+
+			// What to do next
+			const tabs = r.concordance.paired_records
+				? anGuideText('an_qg_tabs_2', { a: hap, b: tab('an_v_concordance') })
+				: anGuideText('an_qg_tabs_1', { a: hap });
+			const flagged = tab('an_h_flagged');
+			const next = codeWrong ? anGuideText(B ? 'an_qg_next_code' : 'an_qg_next_code_none')
+				: G.stops_n || G.reversed_n || gcOut || invalid
+					? anGuideText(r.fields ? 'an_qg_next_review_fasta' : 'an_qg_next_review', { flagged, tabs })
+					: anGuideText('an_qg_next_ok', { tabs });
+
+			const action = codeWrong && B ? {
+				label: B.auto ? t('an_qg_rerun_auto') : t('an_qg_rerun', { c: B.code }),
+				run: () => {
+					document.getElementById('anCode').value = B.auto ? 'auto' : String(B.code);
+					anSyncCodeSelect();
+					anRun();
+				},
+			} : null;
+			anGuideSection(body, {
+				title: t('an_qg_title'), sub: t('an_qg_sub'), verdict, items, action, next, nextFile: next,
+				foot: t('an_qg_foot'),
+				context: [t('an_qg_meta', { marker: r.marker || '—', n: num(s.analysed), code: translated ? codeText : '—',
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_qg_file'),
+				stem: `${anFileStem()}_${t('an_qg_file')}`,
+			});
 		}
 
 		// ── Reading guide of the NJ tree ──

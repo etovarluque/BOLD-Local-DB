@@ -1654,7 +1654,7 @@
           <tr><td>Mean GC</td><td>Percentage of G + C. It depends on the group: in insect COI it's usually around 30–35 %, in fish and other vertebrates closer to 40–48 %. What matters is comparing within the set: a sequence far from the mean deserves a look.</td></tr>
           <tr><td rowspan="3"><strong>Quality and translation</strong></td><td>Meet the barcode standard</td><td>Only for COI-5P (or sequences with no marker). BOLD's criterion: at least 500 bp, under 1 % Ns, no stop codons and no invalid characters.</td></tr>
           <tr><td>GC at 3rd position (GC3)</td><td>GC at the third codon position, the one most free to change without altering the protein. It reflects the genome's composition bias (in insects it's usually very low). Only computed for markers that are translated.</td></tr>
-          <tr><td>With stop codons</td><td>Sequences with no reading frame free of stops. Highlighted in orange when there's any. Should be 0 in a coding gene.</td></tr>
+          <tr><td>With stop codons</td><td>Sequences with no reading frame free of stops (a stop in the last codon, the end of the gene, doesn't count). Highlighted in orange when there's any. Should be 0 in a coding gene.</td></tr>
           <tr><td><strong>Taxonomy</strong></td><td>Species and BINs</td><td>How many distinct species and BINs the set holds. If there are many more BINs than species, or the other way round, the <em>Species and BINs</em> view tells you where.</td></tr>
         </tbody>
       </table>
@@ -1685,7 +1685,7 @@
           <tr><td><strong>Over 1% Ns</strong></td><td>Too many undetermined bases: a low-quality read.</td><td>Use with caution; it's left out of haplotypes.</td></tr>
           <tr><td><strong>Ambiguous bases</strong></td><td>IUPAC codes (R, Y, K, M, S, W…): the sequencer saw two signals at that position. Could be heteroplasmy, mixed samples or, in nuclear genes, a heterozygote.</td><td>A few ambiguities are rarely a problem; many suggest contamination.</td></tr>
           <tr><td><strong>Invalid characters</strong></td><td>Symbols that aren't nucleotides.</td><td>Check the source file. Left out of distances.</td></tr>
-          <tr><td><strong>Stop codons</strong></td><td>No reading frame is free of stops. Possible causes: a nuclear pseudogene of mitochondrial origin (<strong>NUMT</strong>), a sequencing error that shifts the frame, the wrong genetic code, or a sequence that isn't actually of that marker.</td><td>Don't use it to delimit species: it's left out of distances and the tree automatically.</td></tr>
+          <tr><td><strong>Stop codons</strong></td><td>No reading frame is free of stops (a stop in the last codon, the end of the gene, doesn't count). Possible causes: a nuclear pseudogene of mitochondrial origin (<strong>NUMT</strong>), a sequencing error that shifts the frame, the wrong genetic code, or a sequence that isn't actually of that marker.</td><td>Don't use it to delimit species: it's left out of distances and the tree automatically.</td></tr>
           <tr><td><strong>Possibly reversed</strong></td><td>Stops in all 3 forward frames but none on the reverse strand: almost certainly submitted reversed.</td><td>Not a serious problem: the program reads it on the reverse strand (negative frame) for GC3, haplotypes and distances.</td></tr>
         </tbody>
       </table>
@@ -1694,6 +1694,24 @@
        length, GC %, GC3 %, N, ambiguities, reading <strong>frame</strong> (1, 2 or 3; −1, −2 or −3 when read on the
        reverse strand), number of <strong>stops</strong> and flags. If there are many, the first ones are shown and the
        CSV holds them all.</p>
+    <h3 class="step-title">What these sequences say</h3>
+    <p>Under the flags, the <strong>What these sequences say</strong> box gives a first automatic reading. It sums up
+       how many meet the barcode standard and explains what it asks; describes the lengths (short ones, much longer
+       ones, and whether two lengths are common, a sign of two primer pairs); tells sequences with internal stop codons
+       apart from those that only end on the gene's stop codon, names those with the most and warns when nearly all
+       come from the same project; when stops affect nearly every sequence, it proposes another genetic code with a
+       button that runs the analysis again; and points out reversed sequences, those left out of the haplotypes for
+       their Ns or ambiguous bases, and those whose GC is far from the rest (possible contamination). The reading
+       downloads on its own with <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> or <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Automatic readings can be wrong.</strong> They apply fixed rules to each sequence on its own,
+        without aligning it and without knowing your taxonomic group or the records' history, so they may contain
+        errors or inaccuracies: a genetic code that doesn't fit, an odd GC that is normal in your group, or a sequence
+        with no flag that actually belongs to another organism. They are guidance to start from, not a result:
+        <strong>confirm every finding</strong> by checking the sequences and comparing them in the distances and the
+        tree before discarding or using any.</div>
+    </div>
     <div class="callout ok">
       <span class="icon">🧪</span>
       <div>

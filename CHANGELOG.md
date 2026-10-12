@@ -47,7 +47,21 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   won't be available without them; a note under the FASTA box lists the
   headers recognised.
 
+- Composition and quality: a *What these sequences say* section after the
+  flags reads them the same way. It sums up the barcode standard, the lengths
+  (short, much longer, two common lengths) and the stop codons, naming the
+  sequences with the most and the project most of them come from; when stops
+  affect nearly every sequence it proposes another genetic code, with a button
+  that runs the analysis again; and it points out reversed sequences, those
+  left out of the haplotypes for their Ns, and those whose GC is far from the
+  rest (much longer sequences, which span another stretch of the gene, are
+  told apart).
+
 ### Changed
+- Translation check: a stop in the last codon no longer counts. Sequences
+  that run to the end of the gene (complete COI genes from GenBank, 1,545 bp)
+  ended on their real stop codon and were flagged, left out of the distances
+  and counted as failing the barcode standard.
 - Export copies in `data/exports/` only last while the viewer is open: the
   folders are emptied when it starts, since files from earlier sessions could
   no longer be downloaded from it anyway (the browser already saved its copy

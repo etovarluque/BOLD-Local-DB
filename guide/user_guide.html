@@ -1767,6 +1767,27 @@
       </div>
     </div>
 
+    <h3 class="step-title">What these haplotypes say</h3>
+    <p>Under the table, the <strong>What these haplotypes say</strong> box gives a first automatic reading. It sums up
+       the diversity of each species with at least 10 sequences in Grant &amp; Bowen's (1998) classes and points out
+       those dominated by a single haplotype; it estimates from the <strong>Singletons</strong> the chance that the
+       next sequence is a new haplotype (Good's estimate), that is, how much is left to sample; it warns about
+       <strong>extra haplotypes from trimming</strong> (as nothing is aligned here, two identical sequences trimmed at
+       different ends count as two: the server looks for those that match over their whole shared stretch and gives an
+       approximate figure); and it points out provisional names, species with few sequences or many left out, and
+       sequences with no species name, which are counted together and mix species. A button opens the network of the
+       species with the most sequences, and the reading downloads on its own with <strong>⤓ PDF</strong>,
+       <strong>⤓ TXT</strong> or <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Automatic readings can be wrong.</strong> They apply fixed rules to the counts of each species name,
+        without aligning the sequences and without knowing your taxonomic group or how it was sampled, so they may
+        contain errors or inaccuracies: haplotypes counted too many or too few times, misassigned names that merge or
+        split species, or too few sequences. They are guidance to start from, not a result: <strong>confirm every
+        finding</strong> with the haplotype network, the tree and other evidence before using it in a publication or a
+        decision.</div>
+    </div>
+
     <!-- Concordance -->
     <h2 class="sub-title" id="an-concordancia">Species and BINs</h2>
     <p>A <strong>BIN</strong> (<em>Barcode Index Number</em>) is the cluster BOLD assigns to closely similar sequences,

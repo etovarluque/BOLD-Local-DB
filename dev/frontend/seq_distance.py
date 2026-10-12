@@ -979,7 +979,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     delimit, delimit_notes = [], []
     if want_delimit:
         bins = [rec.get("bin") or "" for rec in usable]
-        delimit = _delimit(D, blocks, groups, ids, species, bins, several, files, delimit_notes)
+        delimit = _delimit(D, blocks, groups, ids, species, genera, bins, several, files, delimit_notes)
 
     def taxa_of(a, b):
         """The most common classes (or phyla, kingdoms) of a group."""
@@ -1018,7 +1018,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     return result, files
 
 
-def _delimit(D, blocks, groups, ids, species, bins, several, files, notes):
+def _delimit(D, blocks, groups, ids, species, genera, bins, several, files, notes):
     """ASAP and ABGD within each group of sequences that align together.
     Adds the tables to `files` and returns, per group, the partitions the
     page offers: ASAP's best ones and ABGD's for each prior, each as the
@@ -1052,10 +1052,12 @@ def _delimit(D, blocks, groups, ids, species, bins, several, files, notes):
             "motu_initial": seq_delimit.labels_of(x["initial"], nk),
             "motu_recursive": seq_delimit.labels_of(x["recursive"], nk),
         } for x in priors]
+        sp = [species[i] for i in keep]
+        bn = [bins[i] for i in keep]
         out.append({"group": k, "members": [int(i) for i in keep], "dropped": m - len(keep),
-                    "ids": [ids[i] for i in keep], "species": [species[i] for i in keep],
-                    "bins": [bins[i] for i in keep],
-                    "length": length, "asap": asap, "asap_evaluated": evaluated, "abgd": abgd})
+                    "ids": [ids[i] for i in keep], "species": sp, "bins": bn,
+                    "length": length, "asap": asap, "asap_evaluated": evaluated, "abgd": abgd,
+                    "guide": seq_delimit.guide(sub, sp, [genera[i] for i in keep], bn, asap, abgd)})
 
         gname = str(k + 1) if several else ""
         for x in asap:
@@ -1070,8 +1072,6 @@ def _delimit(D, blocks, groups, ids, species, bins, several, files, notes):
         cols += [(f"abgd_P{x['prior']:.4f}", x["motu_recursive"]) for x in abgd]
         motu_cols.append((k, keep, cols))
         if asap:
-            sp = [species[i] for i in keep]
-            bn = [bins[i] for i in keep]
             _, rows = seq_delimit.concordance(asap[0]["motu"], sp, bn)
             for r in rows:
                 conc_rows.append(([gname] if several else []) + [

@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [Unreleased]
+
+### Added
+- Species delimitation: a *What these results say* section after the ASAP
+  and ABGD tables reads the results for users new to them. It proposes the
+  partition to start from (ABGD's when it holds over several consecutive
+  priors, otherwise ASAP's best), explains the prior P, gap, threshold, score
+  and p-value with the analysis' own values, says whether the two methods
+  agree and which named species are lumped or split, and warns about species
+  with a single sequence or too few sequences. The rows it refers to are
+  marked in the tables, and a button shows the proposed partition. The
+  reading downloads on its own as PDF (through the print dialog), TXT or
+  Markdown, for whoever wants it apart from the results. Built
+  from fixed rules, so the same data always get the same reading.
+
+### Changed
+- Creator: *Open the viewer* on Start is green once there is a database to
+  open; the *Completed* badge of a step is as tall as the buttons beside it.
+- Creator: the FTS step's log says the progress bar moves without a
+  percentage, instead of saying it doesn't move.
+- User guide: what the database update needs (the new package's filtered
+  TSV; the previous one isn't needed).
+
 ## [2.2.1]
 
 ### Upgrade notes

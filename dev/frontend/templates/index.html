@@ -1395,6 +1395,35 @@
 		.an-pick:hover { border-color: var(--slate); }
 		.an-pick.active, .an-pick:disabled { opacity: 1; background: var(--slate); border-color: var(--slate); color: #fff; }
 		.an-pick-n { min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+		/* Reading guide of the delimitation, after its tables */
+		.an-guide { margin-top: 1.4rem; border: 1px solid #cfe5df; border-left: 4px solid #2f7d6b; border-radius: 8px; background: #f1f8f6; }
+		.an-guide-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; list-style: none; }
+		.an-guide-head::-webkit-details-marker { display: none; }
+		.an-guide-icon { width: 22px; height: 22px; border-radius: 50%; background: #2f7d6b; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: .8rem; flex: none; }
+		.an-guide-titles { display: flex; flex-direction: column; }
+		.an-guide-title { font-weight: 600; font-size: .95rem; }
+		.an-guide-sub { color: var(--mute); font-size: .8rem; }
+		.an-guide-exports { margin-left: auto; display: inline-flex; gap: 6px; }
+		.an-guide-export { padding: 0 8px; font-size: .74rem; border: 1px solid #cfe5df; background: #fff; color: #2f7d6b; }
+		.an-guide-export:hover { border-color: #2f7d6b; background: #2f7d6b; color: #fff; }
+		.an-guide-toggle { margin-left: 10px; font-size: .78rem; color: #2f7d6b; font-weight: 500; white-space: nowrap; }
+		.an-guide-body { padding: 0 14px 14px 46px; font-size: .88rem; line-height: 1.5; }
+		.an-guide-verdict { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: .7rem; padding: 10px 12px; background: #fff; border: 1px solid #d7ebe5; border-radius: 6px; }
+		.an-guide-verdict > span { flex: 1 1 320px; }
+		.an-guide-verdict b { color: #2f7d6b; }
+		.an-guide-pick { flex: none; background: #2f7d6b; border-color: #2f7d6b; color: #fff; }
+		.an-guide-pick:hover { background: #256454; border-color: #256454; color: #fff; }
+		.an-guide-points { list-style: none; margin: 0 0 .7rem; padding: 0; display: grid; gap: 6px; }
+		.an-guide-points li { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
+		.an-guide-chip { width: 18px; height: 18px; margin-top: 2px; border-radius: 4px; display: grid; place-items: center; font-size: .72rem; font-weight: 600; }
+		.an-guide-chip.ok { background: #d9efe7; color: #1d6150; }
+		.an-guide-chip.warn { background: #fde8d4; color: #8a3f05; }
+		.an-guide-chip.info { background: #e1ecfb; color: #1f4f8f; }
+		.an-guide-next { margin: 0 0 .5rem; }
+		.an-guide-foot { margin: 0; color: var(--mute); font-size: .8rem; }
+		.an-term { display: inline-block; padding: 0 5px; border-radius: 4px; background: var(--tint); color: var(--slate); font-size: .74rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; vertical-align: 1px; }
+		.an-table tr.an-rec td { background: #f1f8f6; }
+		.an-rec-tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: .7rem; font-weight: 600; background: #2f7d6b; color: #fff; white-space: nowrap; }
 		.an-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 6px; font-size: .8rem; color: var(--mute); }
 		.an-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 		.an-legend-item i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
@@ -2590,6 +2619,61 @@
                 an_h_abgd: 'ABGD: particiones por distancia previa',
                 an_abgd_note: 'ABGD busca el primer salto (el barcode gap) en las distancias ordenadas por encima de una distancia intraespecífica máxima previa P, y agrupa las secuencias que están más cerca que ese salto. Se ejecuta para diez valores de P y se detiene en el primero que da un solo grupo. La partición recursiva vuelve a buscar un gap dentro de cada grupo. Una partición que se repite con varios P es la más fiable.',
                 an_c_prior: 'P previa', an_c_abgd_gap: 'Gap encontrado', an_c_abgd_initial: 'MOTU (inicial)', an_c_abgd_recursive: 'MOTU (recursiva)',
+                // Reading guide of the delimitation ([term] = a column header of the tables)
+                an_g_title: 'Qué dicen estos resultados',
+                an_g_sub: 'Lectura automática y orientativa de ASAP y ABGD',
+                an_g_hide: 'Ocultar', an_g_show: 'Mostrar',
+                an_g_verdict_abgd: 'La propuesta más fiable es la de <b>ABGD con {n} MOTU</b> (grupos que podrían ser especies distintas), en la columna [col]: sale igual con {k} valores de [prior] seguidos (de {p1} a {p2}), así que no depende de cómo se configure el método.',
+                an_g_verdict_asap: 'ABGD no da una partición estable (cambia con cada valor de [prior]), así que el mejor punto de partida es la opción de ASAP con mejor [score]: <b>rango 1, {n} MOTU</b> (grupos que podrían ser especies distintas).',
+                an_g_pick: 'Ver esta partición',
+                an_g_abgd_stable: '<b>ABGD da un resultado firme.</b> La [prior] es la diferencia máxima que ABGD supone dentro de una especie; prueba diez valores. Entre P = {p1} y {p2} forma siempre los mismos {n} grupos.',
+                an_g_abgd_ends_both: ' Con P más pequeño separa más ({n} grupos con P = {p0}) y con P = {p} lo junta todo en uno.',
+                an_g_abgd_ends_low: ' Con P más pequeño separa más ({n} grupos con P = {p0}).',
+                an_g_abgd_ends_one: ' Con P = {p} lo junta todo en uno.',
+                an_g_abgd_gap: ' El [gap], {gap}, es el salto entre las diferencias dentro de las especies y entre especies: las secuencias más parecidas que eso tienden a quedar en el mismo grupo.',
+                an_g_asap_mixed: '<b>La primera opción de ASAP junta demasiado.</b> El [rank] 1 ({n} grupos) usa un [threshold] de {thr}: une las secuencias que difieren menos que eso, y {g} de sus grupos mezclan géneros distintos.',
+                an_g_asap_mixed_1: '<b>La primera opción de ASAP junta demasiado.</b> El [rank] 1 ({n} grupos) usa un [threshold] de {thr}: une las secuencias que difieren menos que eso, y uno de sus grupos mezcla géneros distintos.',
+                an_g_asap_fewer: '<b>La primera opción de ASAP es más conservadora.</b> El [rank] 1 forma {n} grupos con un [threshold] de {thr}: une las secuencias que difieren menos que eso, así que junta algunos que ABGD separa.',
+                an_g_asap_more: '<b>La primera opción de ASAP divide más.</b> El [rank] 1 forma {n} grupos con un [threshold] de {thr}: une solo las secuencias que difieren menos que eso, así que separa algunos que ABGD junta.',
+                an_g_asap_rec: '<b>Cómo se elige en ASAP.</b> Cada fila agrupa las secuencias con un [threshold] distinto: une las que difieren menos que él. El rango 1 usa {thr}.',
+                an_g_asap_rec_mixed: ' Ojo: {g} de sus grupos mezclan géneros distintos, señal de que ese umbral es alto.',
+                an_g_asap_tied: '<b>Varias opciones de ASAP empatan.</b> Los rangos {ranks} tienen la misma [score] ({score}; cuanto más baja, mejor): ASAP no prefiere ninguna, así que conviene mirarlas juntas.',
+                an_g_pvalue: '<b>Cómo leer el p-valor de ASAP.</b> El [pvalue] es la probabilidad de que los grupos que la partición separa sean en realidad una sola especie: cuanto menor, más apoyo a separarlos. {list}.',
+                an_g_pvalue_item: 'rango {r}: {p} ({s})',
+                an_g_p_strong: 'apoyo muy fuerte', an_g_p_clear: 'apoyo claro', an_g_p_weak: 'apoyo débil, por encima del 0.05 habitual',
+                an_g_agree_same: '<b>ASAP llega a la misma partición.</b> Su rango {rank} forma exactamente los mismos {n} grupos que ABGD, con un [threshold] de {thr}. Que dos métodos distintos coincidan refuerza el resultado.',
+                an_g_agree_same_weak: ' Aun así, ASAP la sitúa en el rango {rank} y con un p-valor alto ({p}): por sí solo no la apoya con fuerza.',
+                an_g_agree_near: '<b>Los dos métodos se parecen.</b> La opción de ASAP más parecida a la de ABGD es la del rango {rank} ({n} grupos, [threshold] {thr}).',
+                an_g_agree_splits: ' ABGD separa además {list}; quedan por debajo del umbral de ASAP, por eso ASAP los junta.',
+                an_g_agree_joins: ' En cambio, ABGD junta {list}, que ASAP separa.',
+                an_g_pair: '{a} ({d})',
+                an_g_more: ', y {n} más',
+                an_g_merged: '<b>{n} grupos reúnen especies con nombres distintos</b>, cuyas secuencias difieren solo {range}{cmp}: {list}.',
+                an_g_merged_1: '<b>Un grupo reúne especies con nombres distintos</b>, cuyas secuencias difieren solo {range}{cmp}: {list}.',
+                an_g_below_gap: ', por debajo del gap de {gap}',
+                an_g_split_1: '<b>Una especie aparece partida:</b> {sp} forma {m} grupos{bins}; dentro de la especie hay secuencias que difieren hasta un {d}. Podrían ser especies distintas bajo el mismo nombre.',
+                an_g_split_bins_same: ', que coinciden con sus {b} BIN de BOLD',
+                an_g_split_bins: ' y tiene {b} BIN en BOLD',
+                an_g_split_n: '<b>{n} especies aparecen partidas</b> en varios grupos: {list}. Podrían esconder especies distintas bajo un mismo nombre.',
+                an_g_split_item: '{sp} ({m} grupos, hasta {d})',
+                an_g_all_match: '<b>Los grupos coinciden con los nombres.</b> Cada especie con nombre forma su propio grupo, sin mezclarse con otras.',
+                an_g_no_names: '<b>Ninguna secuencia tiene un nombre de especie completo</b>, así que no se pueden comparar los grupos con las especies.',
+                an_g_singletons: '<b>{n} especies tienen una sola secuencia.</b> Con un único ejemplar no se puede saber si la especie está partida; tómalas con cautela.',
+                an_g_singletons_1: '<b>Una especie tiene una sola secuencia.</b> Con un único ejemplar no se puede saber si está partida; tómala con cautela.',
+                an_g_few: '<b>Hay pocas secuencias ({n}).</b> Con tan pocos datos las particiones cambian con facilidad; tómalas como una primera aproximación.',
+                an_g_next_check: '<b>Qué hacer ahora:</b> mira en la tabla «Especies frente a MOTU» las especies marcadas como «Comparte MOTU» o «Dividida». Cuando dos nombres comparten casi la misma secuencia, puede ser un error de identificación o dos especies que este marcador no logra distinguir; cuando una especie se parte, puede esconder especies distintas.',
+                an_g_next_ok: '<b>Qué hacer ahora:</b> pulsa «Ver esta partición» para revisarla en la tabla «Especies frente a MOTU» y colorear el árbol con ella.',
+                an_g_next_shown: '<b>Qué hacer ahora:</b> la partición recomendada es la que muestra ahora la tabla «Especies frente a MOTU»; desde ahí puedes colorear el árbol con ella.',
+                an_g_foot: 'Estos métodos solo miran las diferencias entre secuencias. Úsalos como punto de partida y compáralos con la morfología, la distribución u otros marcadores.',
+                an_g_and: ' y ', an_g_unnamed: 'un grupo sin nombre',
+                an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
+                an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
+                an_g_export_md: 'Descargar la interpretación en Markdown (.md)',
+                an_g_file: 'interpretacion',
+                an_g_meta: 'Marcador: {marker} · {n} secuencias · modelo {model} · {date}',
+                an_g_next_file: '<b>Qué hacer ahora:</b> revisa la partición recomendada en la tabla «Especies frente a MOTU» del visor (botón «Ver esta partición») y colorea el árbol con ella.',
+                an_g_tag_rec: 'recomendada · igual con {k} valores de P', an_g_tag_rec_asap: 'recomendada',
+                an_g_tag_same: 'igual que ABGD', an_g_tag_near: 'más parecida a ABGD',
                 an_tree_by_motu: 'Por MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTU',
                 an_v_network: 'Red de haplotipos',
                 an_net_btn: 'Red', an_net_btn_title: 'Red de haplotipos de esta especie',
@@ -3082,6 +3166,61 @@
                 an_h_abgd: 'ABGD: partitions by prior distance',
                 an_abgd_note: 'ABGD looks for the first jump (the barcode gap) in the sorted distances beyond a prior maximum intraspecific distance P, and groups the sequences closer than that jump. It runs for ten values of P and stops at the first one that gives a single group. The recursive partition looks for a gap again within each group. A partition repeated over several P values is the most reliable.',
                 an_c_prior: 'Prior P', an_c_abgd_gap: 'Gap found', an_c_abgd_initial: 'MOTUs (initial)', an_c_abgd_recursive: 'MOTUs (recursive)',
+                // Reading guide of the delimitation ([term] = a column header of the tables)
+                an_g_title: 'What these results say',
+                an_g_sub: 'Automatic, indicative reading of ASAP and ABGD',
+                an_g_hide: 'Hide', an_g_show: 'Show',
+                an_g_verdict_abgd: 'The most reliable proposal is <b>ABGD with {n} MOTUs</b> (groups that could be different species), in the [col] column: it comes out the same with {k} consecutive [prior] values (from {p1} to {p2}), so it doesn\'t depend on how the method is set.',
+                an_g_verdict_asap: 'ABGD gives no stable partition (it changes with every [prior] value), so the best starting point is the ASAP option with the best [score]: <b>rank 1, {n} MOTUs</b> (groups that could be different species).',
+                an_g_pick: 'Show this partition',
+                an_g_abgd_stable: '<b>ABGD gives a firm result.</b> The [prior] is the largest difference ABGD assumes within a species; it tries ten values. Between P = {p1} and {p2} it always forms the same {n} groups.',
+                an_g_abgd_ends_both: ' With a smaller P it splits more ({n} groups with P = {p0}) and with P = {p} it lumps everything into one.',
+                an_g_abgd_ends_low: ' With a smaller P it splits more ({n} groups with P = {p0}).',
+                an_g_abgd_ends_one: ' With P = {p} it lumps everything into one.',
+                an_g_abgd_gap: ' The [gap], {gap}, is the jump between the differences within species and between species: sequences more alike than that tend to end up in the same group.',
+                an_g_asap_mixed: '<b>ASAP\'s first option lumps too much.</b> [rank] 1 ({n} groups) uses a [threshold] of {thr}: it joins the sequences that differ by less than that, and {g} of its groups mix different genera.',
+                an_g_asap_mixed_1: '<b>ASAP\'s first option lumps too much.</b> [rank] 1 ({n} groups) uses a [threshold] of {thr}: it joins the sequences that differ by less than that, and one of its groups mixes different genera.',
+                an_g_asap_fewer: '<b>ASAP\'s first option is more conservative.</b> [rank] 1 forms {n} groups with a [threshold] of {thr}: it joins the sequences that differ by less than that, so it lumps some that ABGD keeps apart.',
+                an_g_asap_more: '<b>ASAP\'s first option splits more.</b> [rank] 1 forms {n} groups with a [threshold] of {thr}: it only joins the sequences that differ by less than that, so it splits some that ABGD lumps.',
+                an_g_asap_rec: '<b>How ASAP chooses.</b> Each row groups the sequences with a different [threshold]: it joins those that differ by less than it. Rank 1 uses {thr}.',
+                an_g_asap_rec_mixed: ' Note: {g} of its groups mix different genera, a sign that this threshold is high.',
+                an_g_asap_tied: '<b>Several ASAP options are tied.</b> Ranks {ranks} have the same [score] ({score}; the lower, the better): ASAP prefers none of them, so they are worth looking at together.',
+                an_g_pvalue: '<b>How to read ASAP\'s p-value.</b> The [pvalue] is the probability that the groups the partition keeps apart are really a single species: the lower, the more support for splitting them. {list}.',
+                an_g_pvalue_item: 'rank {r}: {p} ({s})',
+                an_g_p_strong: 'very strong support', an_g_p_clear: 'clear support', an_g_p_weak: 'weak support, above the usual 0.05',
+                an_g_agree_same: '<b>ASAP reaches the same partition.</b> Its rank {rank} forms exactly the same {n} groups as ABGD, with a [threshold] of {thr}. Two different methods agreeing strengthens the result.',
+                an_g_agree_same_weak: ' Even so, ASAP places it at rank {rank} with a high p-value ({p}): on its own it doesn\'t support it strongly.',
+                an_g_agree_near: '<b>The two methods are alike.</b> The ASAP option closest to ABGD\'s is rank {rank} ({n} groups, [threshold] {thr}).',
+                an_g_agree_splits: ' ABGD also keeps apart {list}; they fall below ASAP\'s threshold, which is why ASAP joins them.',
+                an_g_agree_joins: ' On the other hand, ABGD lumps {list}, which ASAP keeps apart.',
+                an_g_pair: '{a} ({d})',
+                an_g_more: ', and {n} more',
+                an_g_merged: '<b>{n} groups bring together species with different names</b>, whose sequences differ by only {range}{cmp}: {list}.',
+                an_g_merged_1: '<b>One group brings together species with different names</b>, whose sequences differ by only {range}{cmp}: {list}.',
+                an_g_below_gap: ', below the {gap} gap',
+                an_g_split_1: '<b>One species is split:</b> {sp} forms {m} groups{bins}; within the species some sequences differ by up to {d}. They could be different species under the same name.',
+                an_g_split_bins_same: ', matching its {b} BOLD BINs',
+                an_g_split_bins: ' and has {b} BOLD BINs',
+                an_g_split_n: '<b>{n} species are split</b> over several groups: {list}. They could hide different species under one name.',
+                an_g_split_item: '{sp} ({m} groups, up to {d})',
+                an_g_all_match: '<b>The groups match the names.</b> Each named species forms its own group, without mixing with others.',
+                an_g_no_names: '<b>No sequence has a full species name</b>, so the groups can\'t be compared with the species.',
+                an_g_singletons: '<b>{n} species have a single sequence.</b> With one specimen there is no telling whether the species is split; treat them with caution.',
+                an_g_singletons_1: '<b>One species has a single sequence.</b> With one specimen there is no telling whether it is split; treat it with caution.',
+                an_g_few: '<b>There are few sequences ({n}).</b> With this little data partitions change easily; take them as a first approximation.',
+                an_g_next_check: '<b>What to do next:</b> look in the «Species against MOTUs» table for the species marked «Shares MOTU» or «Split». When two names share almost the same sequence, it may be a misidentification or two species this marker can\'t tell apart; when a species splits, it may hide different species.',
+                an_g_next_ok: '<b>What to do next:</b> click «Show this partition» to review it in the «Species against MOTUs» table and colour the tree with it.',
+                an_g_next_shown: '<b>What to do next:</b> the recommended partition is the one the «Species against MOTUs» table now shows; from there you can colour the tree with it.',
+                an_g_foot: 'These methods only look at the differences between sequences. Use them as a starting point and weigh them against morphology, distribution or other markers.',
+                an_g_and: ' and ', an_g_unnamed: 'an unnamed group',
+                an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
+                an_g_export_txt: 'Download the reading as text (.txt)',
+                an_g_export_md: 'Download the reading as Markdown (.md)',
+                an_g_file: 'interpretation',
+                an_g_meta: 'Marker: {marker} · {n} sequences · {model} model · {date}',
+                an_g_next_file: '<b>What to do next:</b> review the recommended partition in the viewer\'s «Species against MOTUs» table («Show this partition» button) and colour the tree with it.',
+                an_g_tag_rec: 'recommended · same over {k} P values', an_g_tag_rec_asap: 'recommended',
+                an_g_tag_same: 'same as ABGD', an_g_tag_near: 'closest to ABGD',
                 an_tree_by_motu: 'By MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTUs',
                 an_v_network: 'Haplotype network',
                 an_net_btn: 'Network', an_net_btn_title: 'Haplotype network of this species',
@@ -6759,7 +6898,7 @@
 		}
 
 		// cols: [{ label, cls, get(row) → text or Node }]
-		function anTable(cols, rows) {
+		function anTable(cols, rows, rowCls) {
 			const wrap = anEl('div', 'an-table-wrap');
 			const table = anEl('table', 'an-table');
 			const thead = anEl('thead'), hr = anEl('tr');
@@ -6767,7 +6906,7 @@
 			thead.append(hr);
 			const tbody = anEl('tbody');
 			rows.forEach((row, rowIndex) => {
-				const tr = anEl('tr');
+				const tr = anEl('tr', rowCls ? rowCls(row, rowIndex) : '');
 				cols.forEach(c => {
 					const td = anEl('td', c.cls || '');
 					const v = c.get(row, rowIndex);
@@ -7503,6 +7642,15 @@
 				return b;
 			};
 
+			// Rows the reading guide refers to
+			const rec = anGuideRec(g);
+			const near = g.guide && g.guide.asap_closest;
+			const tagged = (node, key, vars) => {
+				const wrap = anEl('span', 'd-inline-flex flex-wrap align-items-center gap-2');
+				wrap.append(node, anEl('span', 'an-rec-tag', t(key, vars)));
+				return wrap;
+			};
+
 			// ASAP: its best partitions
 			body.append(anEl('div', 'an-h', t('an_h_asap')),
 			            anEl('p', 'an-muted', t('an_asap_note', { n: numFmt.format(g.asap_evaluated) })));
@@ -7513,8 +7661,13 @@
 				{ label: t('an_c_pvalue'), cls: 'num', get: x => anPval(x.p) },
 				{ label: t('an_c_gap_width'), cls: 'num', get: x => (100 * x.slope).toPrecision(3) },
 				{ label: t('an_c_threshold'), cls: 'num', get: x => anPctOf(x.threshold) },
-				{ label: '', get: (x, i) => pickBtn(sel.method === 'asap' && sel.index === i, () => choose('asap', i)) },
-			], g.asap));
+				{ label: '', get: (x, i) => {
+					const b = pickBtn(sel.method === 'asap' && sel.index === i, () => choose('asap', i));
+					if (rec && rec.method === 'asap' && rec.index === i) return tagged(b, 'an_g_tag_rec_asap');
+					if (near && near.index === i) return tagged(b, near.identical ? 'an_g_tag_same' : 'an_g_tag_near');
+					return b;
+				} },
+			], g.asap, (x, i) => (rec && rec.method === 'asap' && rec.index === i) || (near && near.index === i) ? 'an-rec' : ''));
 
 			// ABGD: one row per prior, with its initial and recursive partitions
 			body.append(anEl('div', 'an-h', t('an_h_abgd')), anEl('p', 'an-muted', t('an_abgd_note')));
@@ -7522,6 +7675,8 @@
 				const wrap = anEl('span', 'd-inline-flex align-items-center gap-2');
 				wrap.append(anEl('span', 'an-pick-n', numFmt.format(n)),
 				            pickBtn(sel.method === method && sel.index === i, () => choose(method, i)));
+				if (rec && rec.method === method && rec.index === i)
+					wrap.append(anEl('span', 'an-rec-tag', t('an_g_tag_rec', { k: numFmt.format(rec.run.length) })));
 				return wrap;
 			};
 			body.append(anTable([
@@ -7529,7 +7684,332 @@
 				{ label: t('an_c_abgd_gap'), cls: 'num', get: x => x.gap === null ? '—' : anPctOf(x.gap) },
 				{ label: t('an_c_abgd_initial'), get: (x, i) => cell(i, 'abgd_initial', x.initial) },
 				{ label: t('an_c_abgd_recursive'), get: (x, i) => cell(i, 'abgd', x.recursive) },
-			], g.abgd));
+			], g.abgd, (x, i) => rec && rec.method !== 'asap' && rec.run.includes(i) ? 'an-rec' : ''));
+
+			anRenderGuide(body, g, choose);
+		}
+
+		// ── Reading guide of the delimitation ──
+		// Turns the facts the server works out (seq_delimit.guide) into a few
+		// plain sentences for users new to delimitation. Each technical term
+		// is shown as the table header it refers to, so the reading also
+		// teaches where to find it.
+
+		const AN_GUIDE_TERMS = {
+			prior: 'an_c_prior', gap: 'an_c_abgd_gap', rank: 'an_c_rank', threshold: 'an_c_threshold',
+			score: 'an_c_asap_score', pvalue: 'an_c_pvalue',
+		};
+		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
+
+		// A guide sentence: [term] becomes the column header, {var} its value
+		// (values come already escaped)
+		function anGuideText(key, vars = {}) {
+			let s = t(key).replace(/\[(\w+)\]/g, (m, k) =>
+				`<span class="an-term">${escapeHtml(t(k === 'col' ? vars.col : AN_GUIDE_TERMS[k]))}</span>`);
+			for (const k in vars) s = s.split(`{${k}}`).join(vars[k]);
+			return s;
+		}
+
+		const anGuideName = sp => sp ? `<i>${escapeHtml(sp)}</i>` : escapeHtml(t('an_g_unnamed'));
+		// "a; b and c" (or "a, b and c" for the names in one group)
+		function anGuideJoin(items, sep = '; ') {
+			if (items.length < 2) return items.join('');
+			return items.slice(0, -1).join(sep) + t('an_g_and') + items[items.length - 1];
+		}
+		const anGuideMore = (shown, total) => total > shown ? anGuideText('an_g_more', { n: numFmt.format(total - shown) }) : '';
+		// The names of one group: "a, b and c", or "a, b, c, and 5 more" when the server cut the list
+		const anGuideNames = (names, total) => total > names.length
+			? names.map(anGuideName).join(', ') + anGuideMore(names.length, total)
+			: anGuideJoin(names.map(anGuideName), ', ');
+
+		// The partition the guide recommends, as the tables' { method, index }
+		function anGuideRec(g) {
+			const r = g.guide && g.guide.recommended;
+			return r ? { method: r.method, index: r.index, run: r.run } : null;
+		}
+
+		function anRenderGuide(body, g, choose) {
+			const G = g.guide;
+			if (!G || !G.recommended) return;
+			const R = G.recommended;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+
+			let verdict;
+			if (R.method === 'asap') {
+				verdict = anGuideText('an_g_verdict_asap', { n: numFmt.format(R.motus) });
+			} else {
+				verdict = anGuideText('an_g_verdict_abgd', {
+					n: numFmt.format(R.motus), k: numFmt.format(R.run.length),
+					col: R.method === 'abgd' ? 'an_c_abgd_recursive' : 'an_c_abgd_initial',
+					p1: anPrior(R.priors[0]), p2: anPrior(R.priors[1]),
+				});
+				let s = anGuideText('an_g_abgd_stable', {
+					n: numFmt.format(R.motus), p1: anPrior(R.priors[0]), p2: anPrior(R.priors[1]) });
+				const first = G.abgd_first;
+				const low = first && first.motus > R.motus && first.prior < R.priors[0];
+				const one = G.abgd_one !== null && G.abgd_one !== undefined;
+				const ends = { n: low ? numFmt.format(first.motus) : '', p0: low ? anPrior(first.prior) : '',
+				               p: one ? anPrior(G.abgd_one) : '' };
+				if (low && one) s += anGuideText('an_g_abgd_ends_both', ends);
+				else if (low) s += anGuideText('an_g_abgd_ends_low', ends);
+				else if (one) s += anGuideText('an_g_abgd_ends_one', ends);
+				if (R.gap !== null && R.gap !== undefined) s += anGuideText('an_g_abgd_gap', { gap: anPctOf(R.gap) });
+				add('ok', s);
+			}
+
+			// ASAP's first option, the ties and its p-values
+			const B = G.asap_best;
+			if (B) {
+				const v = { n: numFmt.format(B.motus), thr: anPctOf(B.threshold), g: numFmt.format(B.genera_mixed) };
+				if (R.method === 'asap') {
+					add(B.genera_mixed ? 'warn' : 'info',
+					    anGuideText('an_g_asap_rec', v) + (B.genera_mixed ? anGuideText('an_g_asap_rec_mixed', v) : ''));
+				} else if (B.genera_mixed) {
+					add('warn', anGuideText(B.genera_mixed === 1 ? 'an_g_asap_mixed_1' : 'an_g_asap_mixed', v));
+				} else if (B.motus < R.motus) {
+					add('info', anGuideText('an_g_asap_fewer', v));
+				} else if (B.motus > R.motus) {
+					add('info', anGuideText('an_g_asap_more', v));
+				}
+				if (G.asap_tied && G.asap_tied.length > 1) {
+					add('info', anGuideText('an_g_asap_tied', {
+						ranks: anGuideJoin(G.asap_tied.map(String), ', '), score: anNum(B.score, 1) }));
+				}
+				if (G.asap_top && G.asap_top.length) {
+					// "p ≤ 0.0001" at ASAP's floor, "p = 0.011" otherwise
+					const pText = p => { const v = anPval(p); return v.startsWith('≤') ? `p ${v}` : `p = ${v}`; };
+					let list = G.asap_top.map(x => anGuideText('an_g_pvalue_item', {
+						r: x.rank, p: pText(x.p),
+						s: escapeHtml(t(x.p <= 0.001 ? 'an_g_p_strong' : x.p < 0.05 ? 'an_g_p_clear' : 'an_g_p_weak')),
+					})).join('; ');
+					list = list.charAt(0).toUpperCase() + list.slice(1);
+					add('info', anGuideText('an_g_pvalue', { list }));
+				}
+			}
+
+			// How close ASAP gets to the ABGD partition
+			const C = G.asap_closest;
+			if (C) {
+				const v = { rank: C.rank, n: numFmt.format(C.motus), thr: anPctOf(C.threshold), p: anPval(C.p) };
+				if (C.identical) {
+					let s = anGuideText('an_g_agree_same', v);
+					if (C.p >= 0.05 && C.rank > 1) s += anGuideText('an_g_agree_same_weak', v);
+					add('ok', s);
+				} else {
+					const pairs = list => list.map(x => anGuideText('an_g_pair', {
+						a: anGuideNames(x.names, x.names_n), d: anPctOf(x.distance) }));
+					let s = anGuideText('an_g_agree_near', v);
+					if (C.abgd_splits.length) s += anGuideText('an_g_agree_splits', {
+						list: anGuideJoin(pairs(C.abgd_splits)) + anGuideMore(C.abgd_splits.length, C.abgd_splits_n) });
+					if (C.abgd_joins.length) s += anGuideText('an_g_agree_joins', {
+						list: anGuideJoin(pairs(C.abgd_joins)) + anGuideMore(C.abgd_joins.length, C.abgd_joins_n) });
+					add('ok', s);
+				}
+			}
+
+			// The recommended partition against the names
+			if (!G.named) {
+				add('info', anGuideText('an_g_no_names'));
+			} else if (!G.merged_n && !G.split_n) {
+				add('ok', anGuideText('an_g_all_match'));
+			}
+			if (G.merged_n) {
+				const ds = G.merged.map(x => x.distance);
+				const lo = Math.min(...ds), hi = Math.max(...ds);
+				const range = lo === hi ? anPctOf(hi) : `${(100 * lo).toFixed(2)}–${anPctOf(hi)}`;
+				const cmp = R.gap && hi < R.gap ? anGuideText('an_g_below_gap', { gap: anPctOf(R.gap) }) : '';
+				const list = G.merged.map(x => anGuideNames(x.species, x.species_n));
+				add('info', anGuideText(G.merged_n === 1 ? 'an_g_merged_1' : 'an_g_merged', {
+					n: numFmt.format(G.merged_n), range, cmp,
+					list: list.join('; ') + anGuideMore(G.merged.length, G.merged_n) }));
+			}
+			if (G.split_n === 1) {
+				const x = G.split[0];
+				const bins = x.bins === x.motus ? anGuideText('an_g_split_bins_same', { b: x.bins })
+				           : x.bins > 1 ? anGuideText('an_g_split_bins', { b: x.bins }) : '';
+				add('info', anGuideText('an_g_split_1', {
+					sp: anGuideName(x.species), m: x.motus, bins, d: anPctOf(x.max_intra) }));
+			} else if (G.split_n > 1) {
+				const list = G.split.map(x => anGuideText('an_g_split_item', {
+					sp: anGuideName(x.species), m: x.motus, d: anPctOf(x.max_intra) })).join('; ');
+				add('info', anGuideText('an_g_split_n', {
+					n: numFmt.format(G.split_n), list: list + anGuideMore(G.split.length, G.split_n) }));
+			}
+			if (G.singletons) {
+				add('warn', anGuideText(G.singletons === 1 ? 'an_g_singletons_1' : 'an_g_singletons',
+				                        { n: numFmt.format(G.singletons) }));
+			}
+			if (G.n < 10) add('warn', anGuideText('an_g_few', { n: numFmt.format(G.n) }));
+
+			const sel = anMotuSel(g);
+			const shown = sel.method === R.method && sel.index === R.index;
+			const reading = {
+				verdict, items, foot: t('an_g_foot'),
+				next: t(G.merged_n || G.split_n ? 'an_g_next_check' : shown ? 'an_g_next_shown' : 'an_g_next_ok'),
+				// A file can't be clicked: it points to the viewer instead
+				nextFile: t(G.merged_n || G.split_n ? 'an_g_next_check' : 'an_g_next_file'),
+			};
+
+			// The section, open unless the user closed it
+			const box = anEl('details', 'an-guide');
+			let closed = false;
+			try { closed = localStorage.getItem(AN_GUIDE_CLOSED) === '1'; } catch (e) { /* storage blocked */ }
+			box.open = !closed;
+			const head = anEl('summary', 'an-guide-head');
+			const titles = anEl('span', 'an-guide-titles');
+			titles.append(anEl('span', 'an-guide-title', t('an_g_title')), anEl('span', 'an-guide-sub', t('an_g_sub')));
+			// Exports, for whoever wants the reading apart from the results.
+			// Inside the summary: a click on them mustn't fold the section.
+			const exports = anEl('span', 'an-guide-exports');
+			[['pdf', 'PDF'], ['txt', 'TXT'], ['md', 'MD']].forEach(([fmt, label]) => {
+				const b = anEl('button', 'btn btn-sm an-guide-export', '⤓ ' + label);
+				b.type = 'button';
+				b.title = t('an_g_export_' + fmt);
+				b.addEventListener('click', e => {
+					e.preventDefault();
+					e.stopPropagation();
+					anExportGuide(g, reading, fmt);
+				});
+				exports.append(b);
+			});
+			const toggle = anEl('span', 'an-guide-toggle', t(box.open ? 'an_g_hide' : 'an_g_show'));
+			head.append(anEl('span', 'an-guide-icon', '?'), titles, exports, toggle);
+			box.addEventListener('toggle', () => {
+				toggle.textContent = t(box.open ? 'an_g_hide' : 'an_g_show');
+				try { localStorage.setItem(AN_GUIDE_CLOSED, box.open ? '0' : '1'); } catch (e) { /* storage blocked */ }
+			});
+
+			const inner = anEl('div', 'an-guide-body');
+			const v = anEl('div', 'an-guide-verdict');
+			const vt = anEl('span');
+			vt.innerHTML = verdict;
+			v.append(vt);
+			if (!shown) {
+				const pick = anEl('button', 'btn btn-sm an-guide-pick', t('an_g_pick'));
+				pick.type = 'button';
+				pick.addEventListener('click', () => choose(R.method, R.index));
+				v.append(pick);
+			}
+			const ul = anEl('ul', 'an-guide-points');
+			items.forEach(([kind, html]) => {
+				const li = anEl('li');
+				const span = anEl('span');
+				span.innerHTML = html;
+				li.append(anEl('span', 'an-guide-chip ' + kind, AN_GUIDE_MARK[kind]), span);
+				ul.append(li);
+			});
+			const next = anEl('p', 'an-guide-next');
+			next.innerHTML = reading.next;
+			inner.append(v, ul, next, anEl('p', 'an-guide-foot', reading.foot));
+			box.append(head, inner);
+			body.append(box);
+		}
+
+		const AN_GUIDE_MARK = { ok: '✓', warn: '!', info: 'i' };
+
+		// A guide sentence (its HTML) as Markdown or plain text: bold, italic
+		// names and the column headers each in their own way
+		function anGuidePlain(html, md) {
+			const box = document.createElement('div');
+			box.innerHTML = html;
+			const walk = node => [...node.childNodes].map(c => {
+				if (c.nodeType === Node.TEXT_NODE) return md ? c.textContent.replace(/([*_`\\])/g, '\\$1') : c.textContent;
+				if (c.nodeType !== Node.ELEMENT_NODE) return '';
+				const inner = walk(c);
+				if (c.classList.contains('an-term')) return md ? '`' + c.textContent + '`' : `«${c.textContent}»`;
+				if (!md) return inner;
+				if (c.tagName === 'B') return `**${inner}**`;
+				if (c.tagName === 'I') return `*${inner}*`;
+				return inner;
+			}).join('');
+			return walk(box).replace(/\s+/g, ' ').trim();
+		}
+
+		// What the reading is about: marker, sequences, model, group and date
+		function anGuideContext(g) {
+			const d = AnState.dist;
+			const lines = [t('an_g_meta', {
+				marker: d.marker || '—', n: numFmt.format(g.members.length),
+				model: t('an_model_' + d.model), date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB'),
+			})];
+			if (d.groups.length > 1) lines.push(anGroupText(d.groups[g.group], g.group));
+			return lines;
+		}
+
+		function anExportGuide(g, reading, fmt) {
+			const d = AnState.dist;
+			const group = d.groups.length > 1 ? `_group${g.group + 1}` : '';
+			const stem = `bold_analysis_${(d.marker || 'seq').replace(/[^\w.-]+/g, '_')}_${exportStamp()}_${t('an_g_file')}${group}`;
+			const context = anGuideContext(g);
+			if (fmt === 'md' || fmt === 'txt') {
+				const md = fmt === 'md';
+				const out = [];
+				if (md) {
+					out.push(`# ${t('an_g_title')}`, '', ...context.map(l => `*${l}*  `), '',
+					         `> ${anGuidePlain(reading.verdict, true)}`, '');
+					reading.items.forEach(([kind, html]) => out.push(`- ${AN_GUIDE_MARK[kind]} ${anGuidePlain(html, true)}`));
+					out.push('', anGuidePlain(reading.nextFile, true), '', `*${reading.foot}*`, '');
+				} else {
+					const title = t('an_g_title');
+					out.push(title, '='.repeat(title.length), '', ...context, '', anGuidePlain(reading.verdict, false), '');
+					reading.items.forEach(([kind, html]) => out.push(`[${AN_GUIDE_MARK[kind]}] ${anGuidePlain(html, false)}`, ''));
+					out.push(anGuidePlain(reading.nextFile, false), '', reading.foot, '');
+				}
+				downloadText(out.join('\r\n'), `${stem}.${fmt}`, `text/${md ? 'markdown' : 'plain'};charset=utf-8`);
+				return;
+			}
+			// PDF: the browser's print dialog on a clean copy of the reading
+			// ("Save as PDF"), with the file name as the title it offers
+			const points = reading.items.map(([kind, html]) =>
+				`<li><span class="chip ${kind}">${AN_GUIDE_MARK[kind]}</span><span>${html}</span></li>`).join('');
+			const page = `<!doctype html><html lang="${currentLang}"><head><meta charset="utf-8"><title>${escapeHtml(stem)}</title>
+<style>
+@page { margin: 18mm 16mm; }
+body { font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif; color: #18213a; font-size: 10.5pt; line-height: 1.5; margin: 0; }
+h1 { font-size: 15pt; margin: 0 0 4px; color: #2f7d6b; }
+.meta { color: #67718a; font-size: 9pt; margin: 0 0 14px; }
+.verdict { padding: 9px 12px; border: 1px solid #cfe5df; border-left: 4px solid #2f7d6b; border-radius: 6px; background: #f1f8f6; margin-bottom: 12px; }
+.verdict b { color: #2f7d6b; }
+ul { list-style: none; padding: 0; margin: 0 0 12px; }
+li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7px; break-inside: avoid; }
+.chip { width: 16px; height: 16px; margin-top: 2px; border-radius: 4px; display: grid; place-items: center; font-size: 8pt; font-weight: 600; }
+.chip.ok { background: #d9efe7; color: #1d6150; } .chip.warn { background: #fde8d4; color: #8a3f05; } .chip.info { background: #e1ecfb; color: #1f4f8f; }
+.an-term { padding: 0 4px; border-radius: 3px; background: #eef0f3; font-size: 8pt; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+.foot { color: #67718a; font-size: 9pt; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+</style></head><body>
+<h1>${escapeHtml(t('an_g_title'))}</h1>
+<p class="meta">${context.map(escapeHtml).join('<br>')}</p>
+<div class="verdict">${reading.verdict}</div>
+<ul>${points}</ul>
+<p>${reading.nextFile}</p>
+<p class="foot">${escapeHtml(reading.foot)}</p>
+</body></html>`;
+			const frame = document.createElement('iframe');
+			frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+			document.body.append(frame);
+			const doc = frame.contentDocument;
+			doc.open();
+			doc.write(page);
+			doc.close();
+			// Chrome and Edge offer the top page's title as the PDF's name
+			const title = document.title;
+			let restored = false;
+			const restore = () => {
+				if (restored) return;
+				restored = true;
+				document.title = title;
+				frame.remove();
+			};
+			frame.contentWindow.addEventListener('afterprint', () => setTimeout(restore, 0));
+			setTimeout(() => {
+				document.title = stem;
+				frame.contentWindow.focus();
+				frame.contentWindow.print();
+				// print() returns once the dialog closes; afterprint may not fire everywhere
+				setTimeout(restore, 500);
+			}, 150);
 		}
 
 		// The first few items of a list, and how many more (all of them on hover)

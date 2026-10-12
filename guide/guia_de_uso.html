@@ -1658,7 +1658,7 @@
           <tr><td>GC medio</td><td>Porcentaje de G + C. Depende del grupo: en COI de insectos suele estar en torno al 30–35 %, en peces y otros vertebrados más cerca del 40–48 %. Lo útil es comparar dentro del conjunto: una secuencia muy alejada de la media merece una revisión.</td></tr>
           <tr><td rowspan="3"><strong>Calidad y traducción</strong></td><td>Cumplen el estándar barcode</td><td>Solo para COI-5P (o secuencias sin marcador). Criterio de BOLD: al menos 500 pb, menos del 1 % de N, sin codones de parada y sin caracteres no válidos.</td></tr>
           <tr><td>GC en 3.ª posición (GC3)</td><td>GC en la tercera posición de los codones, la más libre de cambiar sin alterar la proteína. Refleja el sesgo de composición del genoma (en insectos suele ser muy bajo). Solo se calcula en marcadores que se traducen.</td></tr>
-          <tr><td>Con codones de parada</td><td>Secuencias que no tienen ningún marco de lectura libre de paradas. Se resalta en naranja si hay alguna. Debería ser 0 en un gen codificante.</td></tr>
+          <tr><td>Con codones de parada</td><td>Secuencias que no tienen ningún marco de lectura libre de paradas (una parada en el último codón, el final del gen, no cuenta). Se resalta en naranja si hay alguna. Debería ser 0 en un gen codificante.</td></tr>
           <tr><td><strong>Taxonomía</strong></td><td>Especies y BINs</td><td>Cuántas especies y cuántos BINs distintos hay en el conjunto. Si hay muchos más BINs que especies, o al revés, la vista <em>Especies y BINs</em> te dirá dónde.</td></tr>
         </tbody>
       </table>
@@ -1690,7 +1690,7 @@
           <tr><td><strong>Más de 1 % de N</strong></td><td>Demasiadas bases indeterminadas: lectura de baja calidad.</td><td>Úsala con cautela; queda fuera de los haplotipos.</td></tr>
           <tr><td><strong>Bases ambiguas</strong></td><td>Códigos IUPAC (R, Y, K, M, S, W…): el secuenciador vio dos señales en esa posición. Puede ser heteroplasmia, una mezcla de muestras o, en genes nucleares, un heterocigoto.</td><td>Pocas ambigüedades no suelen ser un problema; muchas sugieren contaminación.</td></tr>
           <tr><td><strong>Caracteres no válidos</strong></td><td>Símbolos que no son nucleótidos.</td><td>Revisa el archivo de origen. Se excluye de las distancias.</td></tr>
-          <tr><td><strong>Codones de parada</strong></td><td>Ningún marco de lectura está libre de paradas. Causas posibles: pseudogén nuclear de origen mitocondrial (<strong>NUMT</strong>), error de secuenciación que desplaza el marco, código genético equivocado o secuencia que en realidad no es de ese marcador.</td><td>No la uses para delimitar especies: se excluye automáticamente de las distancias y del árbol.</td></tr>
+          <tr><td><strong>Codones de parada</strong></td><td>Ningún marco de lectura está libre de paradas (una parada en el último codón, el final del gen, no cuenta). Causas posibles: pseudogén nuclear de origen mitocondrial (<strong>NUMT</strong>), error de secuenciación que desplaza el marco, código genético equivocado o secuencia que en realidad no es de ese marcador.</td><td>No la uses para delimitar especies: se excluye automáticamente de las distancias y del árbol.</td></tr>
           <tr><td><strong>Posible hebra invertida</strong></td><td>Tiene paradas en los 3 marcos directos pero ninguna en la hebra complementaria: casi seguro se depositó en sentido inverso.</td><td>No es un error grave: el programa la lee en la hebra complementaria (marco negativo) para el GC3, los haplotipos y las distancias.</td></tr>
         </tbody>
       </table>
@@ -1699,6 +1699,24 @@
        BIN, longitud, GC %, GC3 %, N, ambigüedades, <strong>marco</strong> de lectura (1, 2 o 3; −1, −2 o −3 si se leyó en
        la hebra complementaria), número de <strong>paradas</strong> y alertas. Si son muchas, se muestran las primeras y
        el CSV las incluye todas.</p>
+    <h3 class="step-title">Qué dicen estas secuencias</h3>
+    <p>Debajo de las alertas, el recuadro <strong>Qué dicen estas secuencias</strong> hace una primera lectura
+       automática. Resume cuántas cumplen el estándar barcode y explica qué pide; describe las longitudes (las cortas,
+       las mucho más largas y si hay dos longitudes frecuentes, señal de dos pares de cebadores); separa las secuencias
+       con codones de parada internos de las que solo acaban en el codón de parada del gen, nombra las que tienen más
+       y avisa cuando casi todas vienen del mismo proyecto; si las paradas afectan a casi todas, propone otro código
+       genético con un botón que repite el análisis; y señala las secuencias en sentido inverso, las que quedan fuera de
+       los haplotipos por tener N o bases ambiguas y las que tienen un GC muy distinto del resto (posible contaminación).
+       La lectura se descarga aparte con <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> o <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Las lecturas automáticas pueden equivocarse.</strong> Aplican reglas fijas a cada secuencia por
+        separado, sin alinearla y sin conocer tu grupo taxonómico ni la historia de los registros, así que pueden
+        contener errores o imprecisiones: un código genético que no corresponde, un GC raro que es normal en tu grupo o
+        una secuencia sin alertas que en realidad es de otro organismo. Son una orientación para empezar, no un
+        resultado: <strong>confirma cada hallazgo</strong> revisando las secuencias y comparándolas en las distancias y
+        el árbol antes de descartar o de usar ninguna.</div>
+    </div>
     <div class="callout ok">
       <span class="icon">🧪</span>
       <div>

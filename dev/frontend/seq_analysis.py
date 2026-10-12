@@ -41,6 +41,24 @@ BARCODE_MAX_N_FRACTION = 0.01
 # Width of the bars of the length histogram, in bp
 HISTOGRAM_BIN_BP = 25
 
+# Reading guide of the quality view (see `guide`): a sequence whose GC is
+# further from the median than GUIDE_GC_POINTS percentage points, or than
+# GUIDE_GC_SD robust standard deviations, is unlike the rest; one longer
+# than GUIDE_LONG times the median likely spans more of the gene; two
+# lengths each held by GUIDE_TWO_LENGTHS of the sequences point to two
+# primer pairs; stops in GUIDE_CODE_SHARE of the translated sequences point
+# to a wrong genetic code, and another code that clears GUIDE_CODE_CLEARS of
+# them is offered. Sequences much longer than the median aren't flagged for
+# their GC, which may only reflect the stretch they span.
+GUIDE_GC_POINTS = 4.0
+GUIDE_GC_SD = 5
+GUIDE_LONG = 1.5
+GUIDE_TWO_LENGTHS = 0.15
+GUIDE_CODE_SHARE = 0.2
+GUIDE_CODE_CLEARS = 0.8
+# Items listed by name in each point
+GUIDE_LIST = 5
+
 # ── Genetic codes ─────────────────────────────────────────────────────────────
 
 # NCBI translation tables, as their 64 amino acids in TCAG codon order
@@ -154,9 +172,16 @@ def reverse_complement(seq):
     return seq.translate(_COMPLEMENT)[::-1]
 
 
+def _last_codon(seq, frame):
+    """Start of the last whole codon of `seq` read in `frame`."""
+    return frame + (len(seq) - frame) // 3 * 3 - 3
+
+
 def _count_stops(seq, frame, stops):
+    """Stop codons in `frame`, but for one in the last codon: a sequence
+    that runs to the end of the gene ends on its real stop codon."""
     n = 0
-    for i in range(frame, len(seq) - 2, 3):
+    for i in range(frame, _last_codon(seq, frame), 3):
         if seq[i:i + 3] in stops:
             n += 1
     return n
@@ -171,7 +196,8 @@ def check_translation(seq, code):
     none, the sequence was most likely submitted reversed, and that frame is
     the one returned. Taking the best of all six frames every time would let
     a chance stop-free reverse frame hide real stops.
-    Codons with N or ambiguities never count as stops.
+    Codons with N or ambiguities never count as stops, nor does a stop in the
+    last codon (the end of the gene).
     Returns (the sequence as read: `seq` or its reverse complement,
     frame 0-2 on it, stops in that frame, whether it was reversed).
     """
@@ -548,6 +574,138 @@ def same_marker(a, b):
     return (a or "").strip().upper() == (b or "").strip().upper()
 
 
+# ── Reading guide ─────────────────────────────────────────────────────────────
+
+_PROJECT_RE = re.compile(r"^([A-Z]{2,8})\d+-\d{2}$")
+
+
+def _project(rec):
+    """BOLD project code of a record's process ID ("GBAAY" of
+    "GBAAY23973-24"), or ''."""
+    m = _PROJECT_RE.match(rec.get("processid") or rec.get("id") or "")
+    return m.group(1) if m else ""
+
+
+def _better_code(pairs, forced_code):
+    """Another genetic code that clears the stops of most of the sequences
+    in `pairs` ((record, row) with stops), as {code, auto, cleared}, or None.
+    The automatic choice is tried first when a code was forced."""
+    used = {row["code"] for _, row in pairs}
+    candidates = []
+    if forced_code:
+        candidates.append(("auto", genetic_code_for))
+    candidates += [(c, lambda rec, c=c: c) for c in GENETIC_CODES if c not in used]
+    best = None
+    for code, code_of in candidates:
+        codes = [code_of(rec) for rec, _ in pairs]
+        auto = code == "auto"
+        if auto:
+            # The automatic choice helps only where it differs from the forced code
+            if all(c in used for c in codes):
+                continue
+            code = Counter(codes).most_common(1)[0][0]
+        cleared = sum(1 for (rec, _), c in zip(pairs, codes)
+                      if c is not None and check_translation(rec["clean"], c)[2] == 0)
+        if cleared >= GUIDE_CODE_CLEARS * len(pairs) and (not best or cleared > best["cleared"]):
+            best = {"code": code, "auto": auto, "cleared": cleared}
+    return best
+
+
+def guide(records, rows, forced_code=None):
+    """Facts for the reading of the quality view, which the page words.
+
+    `records` are those analysed (as many as `rows`, in the same order:
+    those of at least MIN_LENGTH), with their `clean` sequence as read.
+    """
+    pairs = list(zip(records, rows))
+    n = len(rows)
+    if not n:
+        return None
+    item = lambda rec, row, **kw: {"id": row["id"], "species": row["species"],
+                                   "length": row["length"], **kw}
+
+    lengths = sorted(row["length"] for row in rows)
+    median = statistics.median(lengths)
+    top = Counter(lengths).most_common(2)
+    two = None
+    if (n >= 20 and len(top) == 2 and top[1][1] >= GUIDE_TWO_LENGTHS * n
+            and abs(top[0][0] - top[1][0]) > HISTOGRAM_BIN_BP):
+        two = [list(x) for x in top]
+    long_rows = [row for row in rows if row["length"] > GUIDE_LONG * median]
+
+    # Composition: sequences unlike the rest, by a robust spread (median
+    # absolute deviation) with a floor, so a very uniform set doesn't flag
+    # ordinary variation
+    gcs = [row["gc"] for row in rows if row["gc"] is not None]
+    gc = None
+    if len(gcs) >= 5:
+        gc_median = statistics.median(gcs)
+        mad = statistics.median(abs(g - gc_median) for g in gcs)
+        limit = max(GUIDE_GC_POINTS, GUIDE_GC_SD * 1.4826 * mad)
+        out = sorted(((rec, row) for rec, row in pairs
+                      if row["gc"] is not None and abs(row["gc"] - gc_median) > limit),
+                     key=lambda p: -abs(p[1]["gc"] - gc_median))
+        # Much longer sequences span another stretch of the gene, whose
+        # composition differs: apart, as they aren't suspect
+        longer = [p for p in out if p[1]["length"] > GUIDE_LONG * median]
+        out = [p for p in out if p[1]["length"] <= GUIDE_LONG * median]
+        gc = {"median": round(gc_median, 1), "limit": round(limit, 1),
+              "outliers_n": len(out),
+              "outliers": [item(rec, row, gc=row["gc"]) for rec, row in out[:GUIDE_LIST]],
+              "long_n": len(longer),
+              "long": [item(rec, row, gc=row["gc"]) for rec, row in longer[:GUIDE_LIST]]}
+
+    # Stop codons: where they come from, and whether another code clears them
+    stops = [(rec, row) for rec, row in pairs if row["stops"]]
+    translated = sum(1 for row in rows if row["stops"] is not None)
+    projects = Counter(p for p in (_project(rec) for rec, _ in stops) if p)
+    species = Counter(row["species"] for _, row in stops if row["species"])
+    better = None
+    if len(stops) >= 3 and len(stops) >= GUIDE_CODE_SHARE * translated:
+        better = _better_code(stops, forced_code)
+    # Sequences free of stops that end on one in their frame (not counted)
+    terminal = []
+    for rec, row in pairs:
+        if row["code"] is None or row["stops"]:
+            continue
+        frame = abs(row["frame"]) - 1
+        i = _last_codon(rec["clean"], frame)
+        if i >= frame and rec["clean"][i:i + 3] in _STOPS[row["code"]]:
+            terminal.append((rec, row))
+    # Coding sequences translated with the default code for want of taxonomy
+    default_code = 0
+    if not forced_code:
+        default_code = sum(
+            1 for rec, row in pairs
+            if row["code"] == DEFAULT_MITO_CODE and marker_kind(rec.get("marker")) == "mito"
+            and not any((rec.get(k) or "").strip() for k in ("class", "phylum", "kingdom")))
+
+    reversed_ids = [row["id"] for row in rows if row["reversed"]]
+    return {
+        "n": n,
+        "length": {"median": median, "min": lengths[0], "max": lengths[-1],
+                   "q05": lengths[int(.05 * (n - 1))], "q95": lengths[int(.95 * (n - 1))],
+                   "two": two, "long_n": len(long_rows),
+                   "long_max": lengths[-1] if long_rows else None},
+        "gc": gc,
+        "stops_n": len(stops),
+        "stops": [item(rec, row, stops=row["stops"])
+                  for rec, row in sorted(stops, key=lambda p: -p[1]["stops"])[:GUIDE_LIST]],
+        "stops_project": list(projects.most_common(1)[0]) if projects else None,
+        "stops_species": [list(x) for x in species.most_common(3)],
+        "better_code": better,
+        "forced_code": forced_code,
+        "terminal_n": len(terminal),
+        "terminal": [item(rec, row) for rec, row in terminal[:GUIDE_LIST]],
+        "default_code": default_code,
+        "reversed_n": len(reversed_ids),
+        "reversed": reversed_ids[:GUIDE_LIST],
+        # Left out of the haplotypes: any N or ambiguity
+        "with_n": sum(1 for rec, _ in pairs if set(rec["clean"]) - set("ACGT")),
+        "species_n": len({row["species"] for row in rows if row["species"]}),
+    }
+
+
 def run_basic(records, marker, forced_code=None, total=None):
     """Every phase-1 analysis over `records`, all of them of `marker`
     ("" when unknown), ready to send as JSON."""
@@ -560,6 +718,7 @@ def run_basic(records, marker, forced_code=None, total=None):
         "marker": marker,
         "summary": _summary(rows, skipped, total if total is not None else len(records)),
         "sequences": rows,
+        "guide": guide(usable, rows, forced_code),
         "haplotypes": haplotypes(usable),
         "concordance": concordance(usable),
         "taxonomy": taxonomy_overview(usable),

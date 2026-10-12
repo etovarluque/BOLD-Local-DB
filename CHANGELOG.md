@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
-## [Unreleased]
+## [2.2.0]
 
 ### Upgrade notes
 - Update from Home (*Update*). The database doesn't change: no rebuild needed.

@@ -3,7 +3,7 @@
 # installed by hand. After changing this list, run `uv lock` in this folder.
 [project]
 name = "bold-local-db"
-version = "2.1.0"
+version = "2.2.0"
 requires-python = ">=3.10,<3.14"
 dependencies = [
     "PySide6-Essentials>=6.7",   # QtWidgets, QtGui, QtCore: all the Creator uses

@@ -66,8 +66,19 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   left out, and unnamed sequences counted together (with how many BINs they
   span), and a button opens the network of the species with the most
   sequences.
+- Species and BINs: a *What the species and BINs say* section after the
+  tables reads them the same way. It asks the whole database whose each BIN
+  is (at most 40 BINs, indexed, milliseconds), so it can tell records filed
+  in another species' BIN (probable misidentifications, with their IDs and
+  whether the BIN is of another genus, and pairs of species confused in one
+  country) from species spread over several BINs of their own (with the
+  countries of each) and truly shared BINs, and lists provisional names,
+  species with a BIN of their own and records that can't be compared.
 
 ### Changed
+- Species and BINs: the tile and table title of species spread over
+  several BINs read "Split into several MOTUs" (a key shared with the MOTU
+  view); they now read "Species in several BINs" again.
 - Translation check: a stop in the last codon no longer counts. Sequences
   that run to the end of the gene (complete COI genes from GenBank, 1,545 bp)
   ended on their real stop codon and were flagged, left out of the distances

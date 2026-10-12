@@ -1820,6 +1820,27 @@
       </div>
     </div>
 
+    <h3 class="step-title">What the species and BINs say</h3>
+    <p>Under the tables, the <strong>What the species and BINs say</strong> box gives a first automatic reading. To
+       tell whose each BIN is it looks at <strong>your whole database</strong>, not just the sequences analysed (at
+       most 40 BINs per analysis; the lookup takes milliseconds). With that it tells three cases apart:
+       <strong>records in another species' BIN</strong> (probable misidentifications or contamination, with their IDs,
+       the country and whether the BIN is of another genus; it also warns when two species have records in each
+       other's BIN in the same country), <strong>species spread over several BINs of their own</strong> (with each
+       one's countries: possible geographic lineages or cryptic species) and <strong>truly shared BINs</strong> held
+       by several species with many records each, along with provisional names (sp., PS1…). It also points out the
+       species with a BIN of their own and the records that can't be compared for lacking a species or a BIN. The
+       reading downloads on its own with <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> or <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Automatic readings can be wrong.</strong> They apply fixed rules to the names and BINs stored in
+        your database, which may be out of date with BOLD, without knowing your taxonomic group, so they may contain
+        errors or inaccuracies: a BIN credited to the wrong species because the database holds many misidentified
+        records, species that really do share a BIN, or too few records. They are guidance to start from, not a
+        result: <strong>confirm every finding</strong> by checking the records, the tree and other evidence before
+        correcting an identification or using it in a publication.</div>
+    </div>
+
     <!-- Distances -->
     <!-- Concepts -->
     <h2 class="sub-title" id="an-conceptos">Before you start: distances and the barcode gap</h2>

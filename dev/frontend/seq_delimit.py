@@ -28,8 +28,9 @@ against them. Departures, all to keep the run in seconds: ASAP stops at
 10,000 coalescent replicates per partition (its manual's default; the
 program goes up to 100,000), so its smallest p-value is 1e-4, and partitions
 tied on p-value share their rank instead of being ordered at random; ABGD
-gives up looking for a gap after scanning the distances some 200 million
-times over (the program would go on through every window size).
+stops looking for a gap after scanning the distances some 200 million
+times over, keeping the last window's answer (the program would go on
+through every window size).
 
 The coalescent replicates use a fixed random seed: the same data give the
 same results.
@@ -156,10 +157,11 @@ def _find_gap(values, prior, x=ABGD_X):
             stable, stable_dist = 1, dist
         w += step
         tries += 1
-        # Without any gap, every window would be tried, each one a pass over
-        # all the distances: past a budget, the answer is no gap
-        if stable_dist < 0 and tries * n > ABGD_WINDOW_BUDGET and tries >= 60:
-            found = None
+        # Until three windows agree, every window would be tried, each one a
+        # pass over all the distances: past a budget the search stops with
+        # the last window's answer, as when it runs out of windows (no gap,
+        # if the last one found none)
+        if tries * n > ABGD_WINDOW_BUDGET and tries >= 60:
             break
     return found[0] if found else None
 

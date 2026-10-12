@@ -6505,7 +6505,8 @@
 			lastBody: null,    // request of the results on screen, reused by phase 2
 			dist: null,        // last distance analysis of those results
 			distOpts: { model: 'k2p', per_species: null, tree: true, delimit: false },
-			motuSel: null,     // partition shown: { group, method: 'asap'|'abgd'|'abgd_initial', index }
+			motuGroup: null,   // group shown on the delimitation tab (null: the first)
+			motuSels: {},      // partition chosen in each group: { method: 'asap'|'abgd'|'abgd_initial', index }
 			distRunning: false,
 			showView: null,
 		};
@@ -7127,7 +7128,8 @@
 					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
 				}
 				AnState.dist = data;
-				AnState.motuSel = null;
+				AnState.motuGroup = null;
+				AnState.motuSels = {};
 				AnState.tree = null;
 				AnState.treeCache = {};
 				AnState.treeGroup = data.trees.length ? data.trees[0].group : 0;
@@ -7336,16 +7338,20 @@
 		function anDelimitGroup() {
 			const d = AnState.dist;
 			if (!d || !d.delimit || !d.delimit.length) return null;
-			const sel = AnState.motuSel;
-			return (sel && d.delimit.find(g => g.group === sel.group)) || d.delimit[0];
+			const k = AnState.motuGroup;
+			return (k !== null && d.delimit.find(g => g.group === k)) || d.delimit[0];
 		}
 
-		// The partition chosen in a group (ASAP's best by default):
-		// { motu: [MOTU of each sequence], label }
+		// The partition chosen in a group, { method, index }: ASAP's best until
+		// one is picked. Each group keeps its own, so looking at another group
+		// (here or on the tree) doesn't lose it.
+		function anMotuSel(g) {
+			return AnState.motuSels[g.group] || (AnState.motuSels[g.group] = { method: 'asap', index: 0 });
+		}
+
+		// The partition chosen in a group: { motu: [MOTU of each sequence], label }
 		function anMotuPartition(g) {
-			let sel = AnState.motuSel;
-			if (!sel || sel.group !== g.group) sel = AnState.motuSel = { group: g.group, method: 'asap', index: 0 };
-			return anGroupPartition(g, sel);
+			return anGroupPartition(g, anMotuSel(g));
 		}
 
 		function anGroupPartition(g, sel) {
@@ -7409,8 +7415,8 @@
 			}
 			const g = anDelimitGroup();
 			const part = anMotuPartition(g);
-			const sel = AnState.motuSel;
-			const choose = (method, index) => { AnState.motuSel = { group: g.group, method, index }; anRefreshView(); };
+			const sel = anMotuSel(g);
+			const choose = (method, index) => { AnState.motuSels[g.group] = { method, index }; anRefreshView(); };
 
 			// Sequences that can't be aligned together are delimited apart
 			if (d.groups.length > 1) {
@@ -7423,7 +7429,7 @@
 				});
 				select.value = String(g.group);
 				select.addEventListener('change', () => {
-					AnState.motuSel = { group: +select.value, method: 'asap', index: 0 };
+					AnState.motuGroup = +select.value;
 					anRefreshView();
 				});
 				pick.append(anEl('span', 'text-secondary small text-nowrap', t('an_delimit_group_label')), select);
@@ -7539,7 +7545,7 @@
 			const status = new Map(c.rows.map(r => [r.species, r.status]));
 			const rows = g.ids.map((id, i) => [id, g.species[i], g.bins[i], `MOTU ${part.motu[i]}`,
 				status.has(g.species[i]) ? status.get(g.species[i]) : '']);
-			const sel = AnState.motuSel;
+			const sel = anMotuSel(g);
 			const tag = sel.method === 'asap' ? `asap${g.asap[sel.index].rank}`
 			          : `abgd_${sel.method === 'abgd_initial' ? 'initial' : 'recursive'}_P${g.abgd[sel.index].prior.toFixed(4)}`;
 			const group = AnState.dist.groups.length > 1 ? `_group${g.group + 1}` : '';
@@ -7556,7 +7562,7 @@
 				return false;
 			}
 			const part = anMotuPartition(g);
-			const key = JSON.stringify(AnState.motuSel);
+			const key = JSON.stringify(anMotuSel(g));
 			if (T.motuKey === key) return true;
 			T.motuKey = key;
 			delete T.keys.motu;
@@ -7724,8 +7730,7 @@
 			const out = new Map();
 			if (!d || !d.delimit) return out;
 			d.delimit.forEach(g => {
-				const part = anGroupPartition(g, AnState.motuSel && AnState.motuSel.group === g.group
-					? AnState.motuSel : { method: 'asap', index: 0 });
+				const part = anMotuPartition(g);
 				const prefix = d.groups.length > 1 ? `G${g.group + 1} · ` : '';
 				g.ids.forEach((id, i) => out.set(id, `${prefix}MOTU ${part.motu[i]}`));
 			});
@@ -8080,6 +8085,9 @@
 				const node = e.target.closest('.net-node');
 				if (!node) return;
 				drag = { i: +node.dataset.i };
+				// Captured by the wrapper (the node itself is redrawn): the drag
+				// follows the pointer, and ends, outside the figure too
+				wrap.setPointerCapture(e.pointerId);
 				e.preventDefault();
 			});
 			wrap.addEventListener('pointermove', e => {
@@ -8098,6 +8106,7 @@
 			const end = () => { drag = null; };
 			wrap.addEventListener('pointerup', end);
 			wrap.addEventListener('pointercancel', end);
+			wrap.addEventListener('lostpointercapture', end);
 		}
 
 		// A network of one species, from the haplotype table

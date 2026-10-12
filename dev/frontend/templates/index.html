@@ -1422,6 +1422,8 @@
 		.an-guide-next { margin: 0 0 .5rem; }
 		.an-mono { font-family: var(--f-mono); font-size: .8rem; }
 		.an-guide-foot { margin: 0; color: var(--mute); font-size: .8rem; }
+		.an-guide-points .an-guide-list { display: block; margin: .2rem 0 0; padding-left: 1.1rem; list-style: disc; }
+		.an-guide-points .an-guide-list li { display: list-item; }
 		.an-term { display: inline-block; padding: 0 5px; border-radius: 4px; background: var(--tint); color: var(--slate); font-size: .74rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; vertical-align: 1px; }
 		.an-table tr.an-rec td { background: #f1f8f6; }
 		.an-rec-tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: .7rem; font-weight: 600; background: #2f7d6b; color: #fff; white-space: nowrap; }
@@ -2709,6 +2711,99 @@
                 an_tg_singletons_1: '<b>Una especie tiene una sola secuencia:</b> su posición no se puede comprobar frente a otras de la misma especie.',
                 an_tg_next: '<b>Qué hacer ahora:</b> colorea el árbol por especie o por MOTU para ver estos casos, y con [color_country] comprueba si las especies partidas siguen la geografía (posibles especies crípticas).',
                 an_tg_foot: 'Un árbol de distancias resume parecidos, no reconstruye la historia evolutiva con detalle. Úsalo junto con la delimitación, la morfología y otros marcadores.',
+                // Reading guide of the haplotype network
+                an_ng_title: 'Qué dice esta red',
+                an_ng_sub: 'Lectura automática y orientativa de la red de haplotipos',
+                an_ng_file: 'interpretacion_red',
+                an_ng_meta: 'Marcador: {marker} · red {m} · {what} · {n} secuencias, {h} haplotipos · {date}',
+                an_ng_t_hap: 'haplotipo', an_ng_t_p: 'p', an_ng_t_bin: 'BIN',
+                an_t_tajima_p: 'p {p}',
+                an_ng_color_bin: 'Colorear por BIN', an_ng_color_country: 'Colorear por país',
+                an_ng_v_lineages_1: 'La red se divide en <b>{k} linajes principales</b>, separados por {a} mutaciones ({pa}) como mínimo',
+                an_ng_v_lineages: 'La red se divide en <b>{k} linajes principales</b>, separados por {a} a {b} mutaciones ({pa}–{pb})',
+                an_ng_v_cryptic_both: ', y cada uno coincide con un BIN distinto y predomina en un país distinto: es el patrón de <b>posibles especies crípticas</b> o de poblaciones aisladas desde hace mucho.',
+                an_ng_v_cryptic_bins: ', y cada uno coincide con un BIN distinto: es el patrón de <b>posibles especies crípticas</b> o de poblaciones aisladas desde hace mucho.',
+                an_ng_v_cryptic_places: ', y cada uno predomina en un país distinto: es el patrón de <b>poblaciones aisladas desde hace mucho</b> o de posibles especies crípticas.',
+                an_ng_v_plain: '. Pueden ser especies crípticas, poblaciones aisladas o identificaciones mezcladas; los puntos de abajo ayudan a distinguirlo.',
+                an_ng_v_species_match: ', uno por especie: aquí <b>el marcador separa bien las especies</b>.',
+                an_ng_v_species_mixed: ', que no coinciden del todo con las especies: <b>algunos nombres se mezclan o se reparten</b> entre linajes (ver abajo).',
+                an_ng_v_star: 'Es una <b>red en estrella</b>: un haplotipo dominante ({h1}, el {share} de las secuencias) rodeado de {near} haplotipos a 1–2 mutaciones.',
+                an_ng_v_star_tajima: ' Junto con una D de Tajima negativa y significativa, es el patrón de una <b>expansión reciente</b> de la población o de su área de distribución.',
+                an_ng_v_star_plain: ' Es el patrón típico de una <b>expansión reciente</b>, aunque la D de Tajima no llega a confirmarlo.',
+                an_ng_v_one: 'Las {n} secuencias forman <b>un solo linaje</b>: ningún grupo de haplotipos queda a {cut} mutaciones o más del resto (el 2 % de los sitios comparados).',
+                an_ng_v_one_species: 'Las {n} secuencias, de {s} especies, forman <b>un solo linaje</b>: ningún grupo queda a {cut} mutaciones o más del resto, así que <b>el marcador no separa estas especies</b>.',
+                an_ng_v_foreign_1: ' Otro linaje lleva el BIN de otra especie (ver abajo).',
+                an_ng_v_foreign: ' Otros {k} linajes llevan el BIN de otra especie (ver abajo).',
+                an_ng_v_isolated_1: ' Aparte, 1 secuencia queda a {d} mutaciones ({p}) o más del resto.',
+                an_ng_v_isolated: ' Aparte, {k} secuencias quedan a {d} mutaciones ({p}) o más del resto.',
+                an_ng_how_tcs: '<b>Cómo se lee.</b> Cada círculo es un [hap] (una secuencia distinta) y su tamaño indica cuántas secuencias lo comparten. Cada marca en una línea es una mutación. Los puntos negros son [unsampled]: no aparecen en los datos, pero hacen falta para unir los que sí. H1 es el haplotipo más frecuente, H2 el siguiente, y así.',
+                an_ng_how_msn: '<b>Cómo se lee.</b> Cada círculo es un [hap] (una secuencia distinta) y su tamaño indica cuántas secuencias lo comparten. Cada marca en una línea es una mutación, y los ciclos son caminos alternativos igual de cortos. H1 es el haplotipo más frecuente, H2 el siguiente, y así.',
+                an_ng_lineages: '<b>Linajes.</b> Aquí se llama linaje a un grupo de haplotipos unidos entre sí por menos de {cut} mutaciones (el 2 % de los {sites} sitios comparados), un umbral habitual en COI para la variación dentro de una especie:',
+                an_ng_lineage_item: 'Linaje {i}: {h}, {n}',
+                an_ng_n_haps_1: '1 haplotipo', an_ng_n_haps: '{n} haplotipos',
+                an_ng_n_seqs_1: '1 secuencia', an_ng_n_seqs: '{n} secuencias',
+                an_ng_of_lineage: 'del linaje {i}', an_ng_of_these: 'de estas secuencias', an_ng_lineages_list: 'linajes {ls}',
+                an_ng_lineage_foreign: 'BIN de otra especie',
+                an_ng_bins_match: '<b>Los linajes coinciden con los BIN.</b> Cada linaje tiene su propio [bin] y ningún BIN se reparte entre dos linajes: dos métodos independientes ven la misma división.',
+                an_ng_bins_one: '<b>Todas las secuencias con BIN están en {b}.</b> BOLD también las agrupa en una sola unidad.',
+                an_ng_bins_multi_net: '<b>La red reúne {k} BIN</b> ({list}), aunque sus secuencias forman un continuo, con menos de {cut} mutaciones entre cada una y la más próxima. BOLD agrupa con su propio método (RESL): puede ser un límite poco claro entre poblaciones o entre especies muy próximas; compáralo con los nombres y la geografía.',
+                an_ng_bins_multi: '<b>El linaje {i} reúne {k} BIN</b> ({list}), aunque sus secuencias forman un continuo, con menos de {cut} mutaciones entre cada una y la más próxima. BOLD agrupa con su propio método (RESL): puede ser un límite poco claro entre poblaciones o entre especies muy próximas; compáralo con los nombres y la geografía.',
+                an_ng_bins_split: '<b>Hay BIN repartidos entre linajes:</b> {list}. Esos linajes difieren más de un 2 %, pero BOLD los junta: revisa si los registros están bien asignados.',
+                an_ng_bins_split_item: '{b} ({ls})',
+                an_ng_bin_other: '<b>El BIN {what} es de otra especie:</b> {b} reúne en tu base sobre todo {sp} ({n} registros). Puede ser un error de identificación de estos registros o del propio BIN.',
+                an_ng_bin_shared: '<b>El BIN {what} lo comparte otra especie:</b> {b} reúne en tu base sobre todo {sp} ({n} registros), y después {own} ({m}). El marcador apenas separa estas especies, o hay identificaciones a revisar.',
+                an_ng_iso_1: '<b>Secuencia muy alejada:</b> {ids}{place} está a {d} mutaciones ({p}) de las demás{far}.{bin} {advice}',
+                an_ng_iso: '<b>{k} secuencias muy alejadas:</b> {ids}{place} están a {d} mutaciones ({p}) de las demás{far}.{bin} {advice}',
+                an_ng_iso_far_genus: ', una distancia propia de otra especie o de otro género',
+                an_ng_iso_far_species: ', más de lo habitual dentro de una especie',
+                an_ng_iso_bin_other: ' {id} pertenece a {b}, que en tu base es sobre todo {sp} ({n} registros).',
+                an_ng_iso_bin_same: ' Comparte BIN con el resto.',
+                an_ng_iso_advice_id_1: 'Revisa el registro: lo más probable es un error de identificación.',
+                an_ng_iso_advice_id: 'Revisa estos registros: lo más probable es un error de identificación.',
+                an_ng_iso_advice_seq_1: 'Revisa el registro: podría ser un error de secuenciación o un pseudogén nuclear (NUMT).',
+                an_ng_iso_advice_seq: 'Revisa estos registros: podrían ser errores de secuenciación o pseudogenes nucleares (NUMT).',
+                an_ng_iso_advice_lineage: 'Al ser varias, pueden ser un linaje poco muestreado; si no, revisa los registros (errores de secuenciación o pseudogenes nucleares, NUMT).',
+                an_ng_iso_list: '<b>{k} secuencias aisladas</b>, cada una a {cut} mutaciones o más del resto: {list}. Revisa esos registros: pueden ser errores de identificación, de secuenciación o pseudogenes nucleares (NUMT).',
+                an_ng_iso_item: '{ids} ({d} mutaciones, {p})',
+                an_ng_species_match: '<b>Cada especie forma su propio linaje</b> y ningún haplotipo lo comparten especies distintas.',
+                an_ng_species_shared_1: '<b>Un haplotipo lo comparten especies distintas:</b> {list}. Secuencias idénticas con nombres distintos apuntan a una identificación a revisar, a hibridación o a especies que este marcador no separa.',
+                an_ng_species_shared: '<b>{k} haplotipos los comparten especies distintas:</b> {list}. Secuencias idénticas con nombres distintos apuntan a identificaciones a revisar, a hibridación o a especies que este marcador no separa.',
+                an_ng_species_shared_item: '{h} ({names})',
+                an_ng_species_mixed_1: '<b>Un linaje mezcla especies:</b> {list}. Dentro de un linaje las secuencias difieren menos de un 2 %, poco para especies distintas en COI.',
+                an_ng_species_mixed: '<b>{k} linajes mezclan especies:</b> {list}. Dentro de un linaje las secuencias difieren menos de un 2 %, poco para especies distintas en COI.',
+                an_ng_species_mixed_item: 'linaje {i} ({names})',
+                an_ng_species_split_1: '<b>Una especie se reparte entre varios linajes:</b> {list}. Puede esconder más de una especie.',
+                an_ng_species_split: '<b>{k} especies se reparten entre varios linajes:</b> {list}. Pueden esconder más de una especie.',
+                an_ng_species_split_item: '{sp} ({ls})',
+                an_ng_geo_struct: '<b>Estructura geográfica.</b> Cada linaje predomina en un país distinto, y solo {s} de los {m} haplotipos con más de una secuencia aparecen en más de un país. Indica poco intercambio genético entre regiones.',
+                an_ng_geo_wide: '<b>Sin estructura geográfica clara.</b> {h1} aparece en {k} de los {n} países: el mismo haplotipo se repite por buena parte del área muestreada, lo que indica dispersión reciente o mucho intercambio entre poblaciones.',
+                an_ng_geo_local: '<b>Haplotipos locales.</b> Solo {s} de los {m} haplotipos con más de una secuencia aparecen en más de un país (de {n} países): puede haber estructura geográfica. Con [color_country] se ve en la red.',
+                an_ng_geo_shared: '<b>Haplotipos compartidos entre países.</b> {s} de los {m} haplotipos con más de una secuencia aparecen en más de un país (de {n} países): hay intercambio entre poblaciones o una dispersión reciente.',
+                an_ng_div: '<b>Diversidad.</b> [hd] {hd}: {hd_text} [pi] {pi}: de media, dos secuencias difieren en {k} mutaciones. {gb}',
+                an_ng_hd_vhigh: 'dos secuencias tomadas al azar son casi siempre haplotipos distintos.',
+                an_ng_hd_high: 'dos secuencias tomadas al azar suelen ser haplotipos distintos.',
+                an_ng_hd_low: 'dos secuencias tomadas al azar suelen ser el mismo haplotipo.',
+                an_ng_gb_hh: 'Hd y π altos a la vez (por encima de 0.5 y de 0.5 %; Grant y Bowen, 1998) indican una población grande y estable o una mezcla de linajes distintos.',
+                an_ng_gb_hl: 'Hd alta y π baja (Grant y Bowen, 1998): muchos haplotipos, pero muy parecidos entre sí, lo típico de un crecimiento rápido a partir de una población pequeña.',
+                an_ng_gb_lh: 'Hd baja y π alta (Grant y Bowen, 1998): pocos haplotipos pero muy distintos, como cuando se juntan linajes que estuvieron separados.',
+                an_ng_gb_ll: 'Hd y π bajos (por debajo de 0.5 y de 0.5 %; Grant y Bowen, 1998): poca variación, como tras un cuello de botella reciente o un efecto fundador.',
+                an_ng_gb_mixed: ' Con varios linajes, π mide sobre todo la distancia entre ellos.',
+                an_ng_tajima_neg: '<b>Prueba de neutralidad.</b> [tajima] {d}, con [pv] {p}: hay más haplotipos raros de lo esperado en una población de tamaño constante. Suele indicar una expansión reciente; también puede deberse a selección.',
+                an_ng_tajima_pos: '<b>Prueba de neutralidad.</b> [tajima] {d}, con [pv] {p}: hay menos haplotipos raros de lo esperado en una población de tamaño constante. Suele indicar poblaciones subdivididas, una mezcla de linajes o una reducción reciente de la población.',
+                an_ng_tajima_ns: '<b>Prueba de neutralidad.</b> [tajima] {d}, con [pv] {p}: no se aparta de lo esperado en una población de tamaño constante (para que se aparte haría falta p < 0.05).',
+                an_ng_tajima_mixed: ' Con varios linajes mezclados esta prueba dice poco: es mejor calcularla para cada linaje por separado.',
+                an_ng_tajima_none: '<b>Prueba de neutralidad.</b> La [tajima] no se puede calcular: hacen falta al menos 4 secuencias y algún sitio variable.',
+                an_ng_star: '<b>Forma en estrella.</b> {h1} reúne el {share} de las secuencias, {near} de los otros {others} haplotipos están a 1–2 mutaciones de él y {single} aparecen una sola vez. Es la huella típica de una expansión: muchas mutaciones nuevas, todavía raras.',
+                an_ng_nostar: '<b>No es una red en estrella.</b> {h1} reúne solo el {share} de las secuencias, y {single} de los {nh} haplotipos aparecen una sola vez. En una red en estrella un haplotipo central frecuente está rodeado de muchos otros a 1–2 mutaciones, el patrón de una expansión reciente.',
+                an_ng_unsampled_long: '<b>Faltan haplotipos entre linajes.</b> {k} [unsampled] y ramas de hasta {m} mutaciones: en esas ramas largas TCS solo puede colocar los intermedios de forma aproximada, así que la unión entre linajes es poco precisa.',
+                an_ng_unsampled_branch: '<b>Ramas largas.</b> {k} [unsampled] y ramas de hasta {m} mutaciones: en esas ramas TCS solo puede colocar los intermedios de forma aproximada.',
+                an_ng_unsampled: '<b>{k} [unsampled].</b> Faltan haplotipos por muestrear entre los observados: más muestras rellenarían esos huecos.',
+                an_ng_long_msn: '<b>Ramas largas.</b> Hay uniones de hasta {m} mutaciones: la red de expansión mínima une esos grupos directamente, sin haplotipos intermedios, y su posición relativa es poco precisa.',
+                an_ng_excluded: '<b>Se analizaron {a} de {b} secuencias:</b> {x} quedaron fuera (ver los avisos de arriba). Si las que faltan son de otras regiones o linajes, el patrón podría cambiar.',
+                an_ng_few: '<b>Hay pocas secuencias ({n}).</b> Con tan pocos datos la forma de la red y la D de Tajima cambian con facilidad; tómalas como una primera aproximación.',
+                an_ng_next: '<b>Qué hacer ahora:</b> colorea la red con [color_bin] y [color_country] para ver los linajes, y compáralos con las pestañas «{motu}» y «{tree}». Para estudiar un linaje, busca solo los registros de su BIN y repite la red: así la diversidad y la D de Tajima describen una sola población.',
+                an_ng_next_one: '<b>Qué hacer ahora:</b> colorea la red con [color_country] para ver cómo se reparten los haplotipos, y compara su diversidad con la de otras especies o regiones construyendo sus redes.',
+                an_ng_foot: 'Una red de un solo marcador sugiere linajes y estructura, pero no los demuestra (en COI, además, solo se ve la línea materna): confírmalos con otros marcadores, la morfología y un muestreo más amplio.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
                 an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
                 an_g_export_md: 'Descargar la interpretación en Markdown (.md)',
@@ -3298,6 +3393,99 @@
                 an_tg_singletons_1: '<b>One species has a single sequence:</b> its place can\'t be checked against others of the same species.',
                 an_tg_next: '<b>What to do next:</b> colour the tree by species or by MOTU to see these cases, and with [color_country] check whether split species follow geography (possible cryptic species).',
                 an_tg_foot: 'A distance tree sums up likeness; it doesn\'t reconstruct evolutionary history in detail. Use it together with the delimitation, morphology and other markers.',
+                // Reading guide of the haplotype network
+                an_ng_title: 'What this network says',
+                an_ng_sub: 'An automatic, rough reading of the haplotype network',
+                an_ng_file: 'network_reading',
+                an_ng_meta: 'Marker: {marker} · {m} network · {what} · {n} sequences, {h} haplotypes · {date}',
+                an_ng_t_hap: 'haplotype', an_ng_t_p: 'p', an_ng_t_bin: 'BIN',
+                an_t_tajima_p: 'p {p}',
+                an_ng_color_bin: 'Colour by BIN', an_ng_color_country: 'Colour by country',
+                an_ng_v_lineages_1: 'The network splits into <b>{k} main lineages</b>, at least {a} mutations ({pa}) apart',
+                an_ng_v_lineages: 'The network splits into <b>{k} main lineages</b>, {a} to {b} mutations ({pa}–{pb}) apart',
+                an_ng_v_cryptic_both: ', and each matches its own BIN and prevails in its own country: the pattern of <b>possible cryptic species</b> or of populations isolated for a long time.',
+                an_ng_v_cryptic_bins: ', and each matches its own BIN: the pattern of <b>possible cryptic species</b> or of populations isolated for a long time.',
+                an_ng_v_cryptic_places: ', and each prevails in its own country: the pattern of <b>populations isolated for a long time</b> or of possible cryptic species.',
+                an_ng_v_plain: '. They may be cryptic species, isolated populations or mixed-up identifications; the points below help tell them apart.',
+                an_ng_v_species_match: ', one per species: here <b>the marker tells the species apart</b>.',
+                an_ng_v_species_mixed: ', which don\'t quite match the species: <b>some names mix or spread</b> across lineages (see below).',
+                an_ng_v_star: 'It is a <b>star-shaped network</b>: a dominant haplotype ({h1}, {share} of the sequences) surrounded by {near} haplotypes 1–2 mutations away.',
+                an_ng_v_star_tajima: ' Together with a negative, significant Tajima\'s D, it is the pattern of a <b>recent expansion</b> of the population or of its range.',
+                an_ng_v_star_plain: ' It is the typical pattern of a <b>recent expansion</b>, although Tajima\'s D doesn\'t quite confirm it.',
+                an_ng_v_one: 'The {n} sequences form <b>a single lineage</b>: no group of haplotypes is {cut} mutations or more from the rest (2 % of the sites compared).',
+                an_ng_v_one_species: 'The {n} sequences, of {s} species, form <b>a single lineage</b>: no group is {cut} mutations or more from the rest, so <b>the marker doesn\'t tell these species apart</b>.',
+                an_ng_v_foreign_1: ' Another lineage carries the BIN of another species (see below).',
+                an_ng_v_foreign: ' {k} other lineages carry the BIN of another species (see below).',
+                an_ng_v_isolated_1: ' Besides, 1 sequence is {d} mutations ({p}) or more from the rest.',
+                an_ng_v_isolated: ' Besides, {k} sequences are {d} mutations ({p}) or more from the rest.',
+                an_ng_how_tcs: '<b>How to read it.</b> Each circle is a [hap] (a distinct sequence), sized by how many sequences share it. Each tick on a line is a mutation. The black dots are [unsampled]: they aren\'t in the data, but are needed to join those that are. H1 is the commonest haplotype, H2 the next, and so on.',
+                an_ng_how_msn: '<b>How to read it.</b> Each circle is a [hap] (a distinct sequence), sized by how many sequences share it. Each tick on a line is a mutation, and loops are equally short alternative paths. H1 is the commonest haplotype, H2 the next, and so on.',
+                an_ng_lineages: '<b>Lineages.</b> Here a lineage is a group of haplotypes joined by fewer than {cut} mutations (2 % of the {sites} sites compared), a usual threshold in COI for variation within a species:',
+                an_ng_lineage_item: 'Lineage {i}: {h}, {n}',
+                an_ng_n_haps_1: '1 haplotype', an_ng_n_haps: '{n} haplotypes',
+                an_ng_n_seqs_1: '1 sequence', an_ng_n_seqs: '{n} sequences',
+                an_ng_of_lineage: 'of lineage {i}', an_ng_of_these: 'of these sequences', an_ng_lineages_list: 'lineages {ls}',
+                an_ng_lineage_foreign: 'BIN of another species',
+                an_ng_bins_match: '<b>The lineages match the BINs.</b> Each lineage has its own [bin] and no BIN spreads over two lineages: two independent methods see the same split.',
+                an_ng_bins_one: '<b>Every sequence with a BIN is in {b}.</b> BOLD also groups them as a single unit.',
+                an_ng_bins_multi_net: '<b>The network holds {k} BINs</b> ({list}), although its sequences form a continuum, with fewer than {cut} mutations between each and the closest one. BOLD groups with its own method (RESL): it may be an unclear boundary between populations or between very close species; compare it with the names and the geography.',
+                an_ng_bins_multi: '<b>Lineage {i} holds {k} BINs</b> ({list}), although its sequences form a continuum, with fewer than {cut} mutations between each and the closest one. BOLD groups with its own method (RESL): it may be an unclear boundary between populations or between very close species; compare it with the names and the geography.',
+                an_ng_bins_split: '<b>Some BINs spread over lineages:</b> {list}. Those lineages differ by more than 2 %, but BOLD lumps them: check whether the records are filed correctly.',
+                an_ng_bins_split_item: '{b} ({ls})',
+                an_ng_bin_other: '<b>The BIN {what} belongs to another species:</b> in your database {b} holds mostly {sp} ({n} records). It may be a misidentification of these records or of the BIN itself.',
+                an_ng_bin_shared: '<b>The BIN {what} is shared with another species:</b> in your database {b} holds mostly {sp} ({n} records), then {own} ({m}). The marker barely tells these species apart, or there are identifications to check.',
+                an_ng_iso_1: '<b>A very distant sequence:</b> {ids}{place} is {d} mutations ({p}) from the others{far}.{bin} {advice}',
+                an_ng_iso: '<b>{k} very distant sequences:</b> {ids}{place} are {d} mutations ({p}) from the others{far}.{bin} {advice}',
+                an_ng_iso_far_genus: ', a distance typical of another species or another genus',
+                an_ng_iso_far_species: ', more than usual within a species',
+                an_ng_iso_bin_other: ' {id} is in {b}, which in your database is mostly {sp} ({n} records).',
+                an_ng_iso_bin_same: ' It shares its BIN with the rest.',
+                an_ng_iso_advice_id_1: 'Check the record: most likely it is a misidentification.',
+                an_ng_iso_advice_id: 'Check these records: most likely they are misidentifications.',
+                an_ng_iso_advice_seq_1: 'Check the record: it could be a sequencing error or a nuclear pseudogene (NUMT).',
+                an_ng_iso_advice_seq: 'Check these records: they could be sequencing errors or nuclear pseudogenes (NUMTs).',
+                an_ng_iso_advice_lineage: 'Being several, they may be an undersampled lineage; otherwise, check the records (sequencing errors or nuclear pseudogenes, NUMTs).',
+                an_ng_iso_list: '<b>{k} isolated sequences</b>, each {cut} mutations or more from the rest: {list}. Check those records: they may be misidentifications, sequencing errors or nuclear pseudogenes (NUMTs).',
+                an_ng_iso_item: '{ids} ({d} mutations, {p})',
+                an_ng_species_match: '<b>Each species forms its own lineage</b> and no haplotype is shared by different species.',
+                an_ng_species_shared_1: '<b>One haplotype is shared by different species:</b> {list}. Identical sequences under different names point to an identification to check, to hybridisation or to species this marker doesn\'t separate.',
+                an_ng_species_shared: '<b>{k} haplotypes are shared by different species:</b> {list}. Identical sequences under different names point to identifications to check, to hybridisation or to species this marker doesn\'t separate.',
+                an_ng_species_shared_item: '{h} ({names})',
+                an_ng_species_mixed_1: '<b>One lineage mixes species:</b> {list}. Within a lineage sequences differ by less than 2 %, little for different species in COI.',
+                an_ng_species_mixed: '<b>{k} lineages mix species:</b> {list}. Within a lineage sequences differ by less than 2 %, little for different species in COI.',
+                an_ng_species_mixed_item: 'lineage {i} ({names})',
+                an_ng_species_split_1: '<b>One species spreads over several lineages:</b> {list}. It may hide more than one species.',
+                an_ng_species_split: '<b>{k} species spread over several lineages:</b> {list}. They may hide more than one species.',
+                an_ng_species_split_item: '{sp} ({ls})',
+                an_ng_geo_struct: '<b>Geographic structure.</b> Each lineage prevails in its own country, and only {s} of the {m} haplotypes with more than one sequence occur in more than one country. It points to little gene flow between regions.',
+                an_ng_geo_wide: '<b>No clear geographic structure.</b> {h1} occurs in {k} of the {n} countries: the same haplotype recurs over much of the sampled area, which points to a recent spread or to much exchange between populations.',
+                an_ng_geo_local: '<b>Local haplotypes.</b> Only {s} of the {m} haplotypes with more than one sequence occur in more than one country (of {n} countries): there may be geographic structure. [color_country] shows it on the network.',
+                an_ng_geo_shared: '<b>Haplotypes shared between countries.</b> {s} of the {m} haplotypes with more than one sequence occur in more than one country (of {n} countries): there is exchange between populations or a recent spread.',
+                an_ng_div: '<b>Diversity.</b> [hd] {hd}: {hd_text} [pi] {pi}: on average, two sequences differ by {k} mutations. {gb}',
+                an_ng_hd_vhigh: 'two sequences picked at random are nearly always different haplotypes.',
+                an_ng_hd_high: 'two sequences picked at random are usually different haplotypes.',
+                an_ng_hd_low: 'two sequences picked at random are usually the same haplotype.',
+                an_ng_gb_hh: 'High Hd and π together (above 0.5 and 0.5 %; Grant & Bowen, 1998) point to a large, stable population or to a mix of different lineages.',
+                an_ng_gb_hl: 'High Hd and low π (Grant & Bowen, 1998): many haplotypes, but very alike, typical of fast growth from a small population.',
+                an_ng_gb_lh: 'Low Hd and high π (Grant & Bowen, 1998): few haplotypes but very different, as when lineages that were apart come together.',
+                an_ng_gb_ll: 'Low Hd and π (below 0.5 and 0.5 %; Grant & Bowen, 1998): little variation, as after a recent bottleneck or a founder event.',
+                an_ng_gb_mixed: ' With several lineages, π mostly measures the distance between them.',
+                an_ng_tajima_neg: '<b>Neutrality test.</b> [tajima] {d}, with [pv] {p}: there are more rare haplotypes than expected in a population of constant size. It usually points to a recent expansion; selection can also cause it.',
+                an_ng_tajima_pos: '<b>Neutrality test.</b> [tajima] {d}, with [pv] {p}: there are fewer rare haplotypes than expected in a population of constant size. It usually points to subdivided populations, a mix of lineages or a recent decline.',
+                an_ng_tajima_ns: '<b>Neutrality test.</b> [tajima] {d}, with [pv] {p}: no departure from what a population of constant size would show (that would take p < 0.05).',
+                an_ng_tajima_mixed: ' With several lineages mixed this test says little: better compute it for each lineage on its own.',
+                an_ng_tajima_none: '<b>Neutrality test.</b> [tajima] can\'t be computed: it takes at least 4 sequences and some variable site.',
+                an_ng_star: '<b>Star shape.</b> {h1} holds {share} of the sequences, {near} of the other {others} haplotypes are 1–2 mutations from it, and {single} occur only once. It is the typical mark of an expansion: many new mutations, still rare.',
+                an_ng_nostar: '<b>Not a star-shaped network.</b> {h1} holds only {share} of the sequences, and {single} of the {nh} haplotypes occur only once. In a star-shaped network a common central haplotype is surrounded by many others 1–2 mutations away, the pattern of a recent expansion.',
+                an_ng_unsampled_long: '<b>Haplotypes missing between lineages.</b> {k} [unsampled] and branches of up to {m} mutations: on such long branches TCS can only place the intermediates roughly, so the joins between lineages are imprecise.',
+                an_ng_unsampled_branch: '<b>Long branches.</b> {k} [unsampled] and branches of up to {m} mutations: on such branches TCS can only place the intermediates roughly.',
+                an_ng_unsampled: '<b>{k} [unsampled].</b> Haplotypes between the observed ones remain unsampled: more samples would fill those gaps.',
+                an_ng_long_msn: '<b>Long branches.</b> Some joins span up to {m} mutations: the minimum spanning network joins those groups directly, with no intermediate haplotypes, and their relative position is imprecise.',
+                an_ng_excluded: '<b>{a} of {b} sequences were analysed:</b> {x} were left out (see the warnings above). If the missing ones come from other regions or lineages, the pattern could change.',
+                an_ng_few: '<b>There are few sequences ({n}).</b> With this little data the network\'s shape and Tajima\'s D change easily; take them as a first approximation.',
+                an_ng_next: '<b>What to do next:</b> colour the network with [color_bin] and [color_country] to see the lineages, and compare them with the "{motu}" and "{tree}" tabs. To study one lineage, search only the records of its BIN and build the network again: the diversity and Tajima\'s D then describe a single population.',
+                an_ng_next_one: '<b>What to do next:</b> colour the network with [color_country] to see how the haplotypes spread, and compare its diversity with other species or regions by building their networks.',
+                an_ng_foot: 'A single-marker network suggests lineages and structure but doesn\'t prove them (and COI only shows the maternal line): confirm them with other markers, morphology and wider sampling.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
                 an_g_export_txt: 'Download the reading as text (.txt)',
                 an_g_export_md: 'Download the reading as Markdown (.md)',
@@ -7788,6 +7976,9 @@
 			color_motu: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_motu')}`,
 			color_species: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_species')}`,
 			color_country: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_country')}`,
+			color_bin: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_bin')}`,
+			hap: 'an_ng_t_hap', unsampled: 'an_t_intermediates', hd: 'an_t_hd', pi: 'an_t_pi',
+			tajima: 'an_t_tajima', pv: 'an_ng_t_p', bin: 'an_ng_t_bin',
 		};
 		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
 		// Difference between named species above which COI usually tells
@@ -8045,12 +8236,14 @@
 				if (c.nodeType !== Node.ELEMENT_NODE) return '';
 				const inner = walk(c);
 				if (c.classList.contains('an-term')) return md ? '`' + c.textContent + '`' : `«${c.textContent}»`;
+				if (c.tagName === 'LI') return `\n${md ? '    -' : '   -'} ${inner}`;
 				if (!md) return inner;
 				if (c.tagName === 'B') return `**${inner}**`;
 				if (c.tagName === 'I') return `*${inner}*`;
 				return inner;
 			}).join('');
-			return walk(box).replace(/\s+/g, ' ').trim();
+			// Spaces collapsed line by line: a list's items keep their own lines
+			return walk(box).split('\n').map(l => l.replace(/(\S)\s+/g, '$1 ').replace(/^\s+$/, '')).join('\n').trim();
 		}
 
 		// What a reading is about: marker, sequences, model, group and date
@@ -8066,7 +8259,7 @@
 
 		function anExportGuide(reading, fmt) {
 			const d = AnState.dist;
-			const stem = `bold_analysis_${(d.marker || 'seq').replace(/[^\w.-]+/g, '_')}_${exportStamp()}_${reading.file}`;
+			const stem = reading.stem || `bold_analysis_${(d.marker || 'seq').replace(/[^\w.-]+/g, '_')}_${exportStamp()}_${reading.file}`;
 			const context = reading.context;
 			if (fmt === 'md' || fmt === 'txt') {
 				const md = fmt === 'md';
@@ -8082,7 +8275,7 @@
 					reading.items.forEach(([kind, html]) => out.push(`[${AN_GUIDE_MARK[kind]}] ${anGuidePlain(html, false)}`, ''));
 					out.push(anGuidePlain(reading.nextFile, false), '', reading.foot, '');
 				}
-				downloadText(out.join('\r\n'), `${stem}.${fmt}`, `text/${md ? 'markdown' : 'plain'};charset=utf-8`);
+				downloadText(out.join('\r\n').replace(/\r?\n/g, '\r\n'), `${stem}.${fmt}`, `text/${md ? 'markdown' : 'plain'};charset=utf-8`);
 				return;
 			}
 			// PDF: the browser's print dialog on a clean copy of the reading
@@ -8099,6 +8292,8 @@ h1 { font-size: 15pt; margin: 0 0 4px; color: #2f7d6b; }
 .verdict b { color: #2f7d6b; }
 ul { list-style: none; padding: 0; margin: 0 0 12px; }
 li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7px; break-inside: avoid; }
+li ul { display: block; margin: 3px 0 0; padding-left: 16px; list-style: disc; }
+li li { display: list-item; margin: 0; }
 .chip { width: 16px; height: 16px; margin-top: 2px; border-radius: 4px; display: grid; place-items: center; font-size: 8pt; font-weight: 600; }
 .chip.ok { background: #d9efe7; color: #1d6150; } .chip.warn { background: #fde8d4; color: #8a3f05; } .chip.info { background: #e1ecfb; color: #1f4f8f; }
 .an-term { padding: 0 4px; border-radius: 3px; background: #eef0f3; font-size: 8pt; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
@@ -8282,6 +8477,301 @@ li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7p
 				context: anGuideContext(tree.group, tree.tips.length),
 				file: t('an_tg_file') + (AnState.dist.groups.length > 1 ? `_group${tree.group + 1}` : ''),
 			});
+		}
+
+		// ── Reading guide of the haplotype network ──
+		// The server works out the facts (seq_network.guide): lineages of
+		// haplotypes less than 2 % apart, how they match BINs, species and
+		// countries, the shape around H1, and the species each lineage's BIN
+		// holds in the database. Diversity and Tajima's D come from the tiles.
+
+		// Grant & Bowen (1998): "high" haplotype and nucleotide diversity
+		const AN_NET_HD_HIGH = 0.5, AN_NET_PI_HIGH = 0.005;
+		// A lineage this far from the rest is more like another genus
+		const AN_NET_FAR_GENUS = 0.1;
+		// A small lineage this far from the rest is flagged as isolated
+		const AN_NET_ISOLATED = 0.03;
+		// Fewest records of another species in a BIN to call it theirs
+		const AN_NET_BIN_MIN = 5;
+
+		// A p-value as "= 0.047" or "< 0.001"
+		const anNetP = p => p < 0.001 ? '< 0.001' : `= ${p.toFixed(3)}`;
+
+		// Genus and epithet of a name ("Carollia brevicauda PS1" is Carollia
+		// brevicauda), or '' for one that names no species ("Carollia sp.")
+		function anNetBinomial(sp) {
+			const w = (sp || '').split(/\s+/);
+			return w.length < 2 || AN_PROVISIONAL.test(w[1]) ? '' : `${w[0]} ${w[1]}`;
+		}
+
+		function anRenderNetGuide(body, net) {
+			const G = net.guide;
+			if (!G) return;
+			const st = net.stats;
+			const opts = anNetOpts();
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const pct = x => anPctOf(x, 1);
+			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
+			// "a 3, b 2 and c 1", or "a 3, b 2, c 1, and 4 more" when cut
+			const list = (parts, total) => total > parts.length ? parts.join(', ') + anGuideMore(parts.length, total) : anGuideJoin(parts, ', ');
+			const tally = (pairs, k = 3) => list(pairs.slice(0, k).map(([v, n]) => `${escapeHtml(v)} ${num(n)}`), pairs.length);
+			const names = (pairs, k = 3) => list(pairs.slice(0, k).map(([sp, n]) => `${anGuideName(sp)} ${num(n)}`), pairs.length);
+			const lineageNums = ls => anGuideJoin(ls.map(i => num(i + 1)), ', ');
+			const L = G.lineages;
+			const binSp = G.bin_species || {};
+			const multiSpecies = G.species_n > 1;
+			const species0 = G.species.length ? G.species[0][0] : '';
+			const spOf = i => L[i].species.length ? L[i].species[0][0] : species0;
+			const same = (a, b) => anNetBinomial(a) && anNetBinomial(a) === anNetBinomial(b);
+			// The species the database files a lineage's BIN under, when it is
+			// another one (`own` is the lineage's, when it comes second)
+			const binOther = (i, b) => {
+				const o = b && binSp[b], sp = spOf(i);
+				// Too few records to say whose the BIN is
+				if (!o || !sp || same(o[0][0], sp) || o[0][1] < AN_NET_BIN_MIN) return null;
+				const own = o.find(([q]) => same(q, sp));
+				return own && own[1] >= o[0][1] ? null : { b, o, own };
+			};
+			const main = L.map((x, i) => i).filter(i => L[i].n >= G.min_lineage);
+			// Main lineages whose BIN is another species' (never the largest)
+			const foreign = main.filter(i => i > 0 && L[i].bins.length && (() => {
+				const x = binOther(i, L[i].bins[0][0]);
+				return x && !x.own;
+			})());
+			const core = main.filter(i => !foreign.includes(i));
+
+			// Small lineages that look like errors: far (3 % or more) or in
+			// another species' BIN. With several species, only those of a
+			// species that also has a main lineage (one of its own may just be scarce)
+			const mainSpecies = new Set(main.flatMap(i => L[i].species.map(([sp]) => anNetBinomial(sp))));
+			const isolated = L.map((x, i) => i).filter(i => L[i].n < G.min_lineage && L[i].ids.length &&
+				(L[i].near_frac >= AN_NET_ISOLATED || L[i].bins.some(([b]) => binOther(i, b))) &&
+				(!multiSpecies || L[i].species.some(([sp]) => mainSpecies.has(anNetBinomial(sp)))));
+
+			const bins = G.bins_known >= 0.5;
+			const binsMatch = bins && core.length >= 2 && main.every(i => L[i].bins.length === 1) &&
+				!G.bins_split.some(([, ls]) => ls.filter(i => core.includes(i)).length > 1);
+			const topPlace = i => L[i].countries.length ? L[i].countries[0][0] : '';
+			const distinctPlaces = core.length >= 2 && core.every(i => topPlace(i)) &&
+				new Set(core.map(topPlace)).size === core.length;
+			// Species (binomials) across the main lineages
+			const lineagesOf = new Map();
+			main.forEach(i => new Set(L[i].species.map(([sp]) => anNetBinomial(sp)).filter(Boolean)).forEach(sp => {
+				if (!lineagesOf.has(sp)) lineagesOf.set(sp, []);
+				lineagesOf.get(sp).push(i);
+			}));
+			const mixed = main.filter(i => new Set(L[i].species.map(([sp]) => anNetBinomial(sp)).filter(Boolean)).size > 1);
+			const split = [...lineagesOf.entries()].filter(([, ls]) => ls.length > 1);
+			const tajimaSig = st.tajima_p !== null && st.tajima_p !== undefined && st.tajima_p < 0.05;
+
+			// Verdict
+			let verdict;
+			if (core.length >= 2) {
+				const pairs = G.between.filter(([a, b]) => core.includes(a) && core.includes(b));
+				// Each lineage's nearest other: the range of those distances
+				const nearest = core.map(i => Math.min(...pairs.filter(([a, b]) => a === i || b === i).map(x => x[2])));
+				const a = Math.min(...nearest), b = Math.max(...nearest);
+				verdict = anGuideText(a === b ? 'an_ng_v_lineages_1' : 'an_ng_v_lineages', {
+					k: num(core.length), a: num(a), b: num(b), pa: pct(a / G.sites), pb: pct(b / G.sites) });
+				if (multiSpecies) {
+					verdict += anGuideText(!mixed.length && !split.length && !G.shared_species_n ? 'an_ng_v_species_match' : 'an_ng_v_species_mixed');
+				} else {
+					verdict += anGuideText(binsMatch && distinctPlaces ? 'an_ng_v_cryptic_both' : binsMatch ? 'an_ng_v_cryptic_bins'
+						: distinctPlaces ? 'an_ng_v_cryptic_places' : 'an_ng_v_plain');
+				}
+			} else if (G.star.is_star) {
+				verdict = anGuideText('an_ng_v_star', { h1: escapeHtml(G.star.h1), share: pct(G.star.share), near: num(G.star.near) }) +
+					anGuideText(tajimaSig && st.tajima_d < 0 ? 'an_ng_v_star_tajima' : 'an_ng_v_star_plain');
+			} else if (multiSpecies) {
+				verdict = anGuideText('an_ng_v_one_species', { n: num(G.n), s: num(G.species_n), cut: num(G.cut) });
+			} else {
+				verdict = anGuideText('an_ng_v_one', { n: num(G.n), cut: num(G.cut) });
+			}
+			if (foreign.length) verdict += anGuideText(foreign.length === 1 ? 'an_ng_v_foreign_1' : 'an_ng_v_foreign', { k: num(foreign.length) });
+			if (isolated.length) {
+				const k = isolated.reduce((sum, i) => sum + L[i].n, 0);
+				const d = Math.min(...isolated.map(i => L[i].near_d));
+				verdict += anGuideText(k === 1 ? 'an_ng_v_isolated_1' : 'an_ng_v_isolated', { k: num(k), d: num(d), p: pct(d / G.sites) });
+			}
+
+			add('info', anGuideText(net.method === 'tcs' ? 'an_ng_how_tcs' : 'an_ng_how_msn'));
+
+			// Lineages, one per line
+			if (main.length >= 2) {
+				const shown = main.slice(0, 8);
+				const lis = shown.map(i => {
+					const x = L[i];
+					let text = anGuideText('an_ng_lineage_item', { i: num(i + 1),
+						h: t(x.haps === 1 ? 'an_ng_n_haps_1' : 'an_ng_n_haps', { n: num(x.haps) }),
+						n: t(x.n === 1 ? 'an_ng_n_seqs_1' : 'an_ng_n_seqs', { n: num(x.n) }) });
+					if (multiSpecies && x.species.length) text += ' · ' + names(x.species, 2);
+					if (x.bins.length) text += ' · ' + tally(x.bins, 2);
+					if (foreign.includes(i)) text += ` (${escapeHtml(t('an_ng_lineage_foreign'))})`;
+					if (x.countries.length) text += ' · ' + tally(x.countries, 3);
+					return `<li>${text}</li>`;
+				}).join('');
+				add('info', anGuideText('an_ng_lineages', { cut: num(G.cut), sites: num(G.sites) }) +
+					`<ul class="an-guide-list">${lis}</ul>` + anGuideMore(shown.length, main.length));
+			}
+
+			// BINs
+			if (bins && main.length) {
+				if (binsMatch) add('ok', anGuideText('an_ng_bins_match'));
+				if (main.length === 1 && L[main[0]].bins.length === 1) {
+					add('ok', anGuideText('an_ng_bins_one', { b: escapeHtml(L[main[0]].bins[0][0]) }));
+				}
+				main.filter(i => L[i].bins.length > 1).slice(0, 3).forEach(i => {
+					add('info', anGuideText(main.length === 1 ? 'an_ng_bins_multi_net' : 'an_ng_bins_multi', {
+						i: num(i + 1), k: num(L[i].bins.length), list: tally(L[i].bins, 4), cut: num(G.cut) }));
+				});
+				const splitBins = G.bins_split.filter(([, ls]) => ls.filter(i => core.includes(i)).length > 1);
+				if (splitBins.length) {
+					add('info', anGuideText('an_ng_bins_split', { list: anGuideJoin(splitBins.map(([b, ls]) =>
+						anGuideText('an_ng_bins_split_item', { b: escapeHtml(b), ls: escapeHtml(t('an_ng_lineages_list', { ls: lineageNums(ls) })) }))) }));
+				}
+				// A lineage whose BIN the database files mostly under another species
+				main.map(i => [i, binOther(i, L[i].bins.length ? L[i].bins[0][0] : '')]).filter(([, x]) => x).slice(0, 4).forEach(([i, x]) => {
+					add('warn', anGuideText(x.own ? 'an_ng_bin_shared' : 'an_ng_bin_other', {
+						what: escapeHtml(t(main.length === 1 ? 'an_ng_of_these' : 'an_ng_of_lineage', { i: num(i + 1) })),
+						b: escapeHtml(x.b), sp: anGuideName(x.o[0][0]), n: num(x.o[0][1]),
+						own: x.own ? anGuideName(x.own[0]) : '', m: x.own ? num(x.own[1]) : '' }));
+				});
+			}
+
+			// Isolated sequences: one by one up to three groups, else a list
+			if (isolated.length && isolated.length <= 3) {
+				isolated.forEach(i => {
+					const x = L[i];
+					const far = x.near_frac >= AN_NET_FAR_GENUS;
+					let bin = '', otherBin = false;
+					for (const [b] of x.bins) {
+						const o = binOther(i, b);
+						if (o) {
+							bin = anGuideText('an_ng_iso_bin_other', { id: anNetIdOfBin(net, x, b),
+								b: escapeHtml(b), sp: anGuideName(o.o[0][0]), n: num(o.o[0][1]) });
+							otherBin = true;
+							break;
+						}
+					}
+					const nearBin = L[x.near] && L[x.near].bins.length ? L[x.near].bins[0][0] : '';
+					if (!bin && x.bins.length && x.bins.every(([b]) => b === nearBin)) bin = anGuideText('an_ng_iso_bin_same');
+					const one = x.n === 1;
+					const advice = far || otherBin ? 'an_ng_iso_advice_id' + (one ? '_1' : '')
+						: one ? 'an_ng_iso_advice_seq_1' : 'an_ng_iso_advice_lineage';
+					add('warn', anGuideText(one ? 'an_ng_iso_1' : 'an_ng_iso', {
+						k: num(x.n), ids: anGuideJoin(x.ids.map(mono), ', '),
+						place: x.countries.length ? ` (${x.countries.map(([c]) => escapeHtml(c)).join(', ')})` : '',
+						d: num(x.near_d), p: pct(x.near_frac),
+						far: anGuideText(far ? 'an_ng_iso_far_genus' : 'an_ng_iso_far_species'), bin, advice: t(advice) }));
+				});
+			} else if (isolated.length) {
+				const shown = isolated.slice(0, 6).map(i => anGuideText('an_ng_iso_item', {
+					ids: anGuideJoin(L[i].ids.map(mono), ', '), d: num(L[i].near_d), p: pct(L[i].near_frac) }));
+				add('warn', anGuideText('an_ng_iso_list', { k: num(isolated.reduce((sum, i) => sum + L[i].n, 0)), cut: num(G.cut),
+					list: shown.join('; ') + anGuideMore(shown.length, isolated.length) }));
+			}
+
+			// Species, when the network holds several
+			if (multiSpecies) {
+				if (G.shared_species_n) {
+					const shown = G.shared_species.slice(0, 5).map(x => anGuideText('an_ng_species_shared_item',
+						{ h: escapeHtml(x.hap), names: names(x.species, 3) }));
+					add('warn', anGuideText(G.shared_species_n === 1 ? 'an_ng_species_shared_1' : 'an_ng_species_shared', {
+						k: num(G.shared_species_n), list: shown.join('; ') + anGuideMore(shown.length, G.shared_species_n) }));
+				}
+				if (mixed.length) {
+					const shown = mixed.slice(0, 5).map(i => anGuideText('an_ng_species_mixed_item',
+						{ i: num(i + 1), names: names(L[i].species, 3) }));
+					add('info', anGuideText(mixed.length === 1 ? 'an_ng_species_mixed_1' : 'an_ng_species_mixed', {
+						k: num(mixed.length), list: shown.join('; ') + anGuideMore(shown.length, mixed.length) }));
+				}
+				if (split.length) {
+					const shown = split.slice(0, 5).map(([sp, ls]) => anGuideText('an_ng_species_split_item',
+						{ sp: anGuideName(sp), ls: escapeHtml(t('an_ng_lineages_list', { ls: lineageNums(ls) })) }));
+					add('info', anGuideText(split.length === 1 ? 'an_ng_species_split_1' : 'an_ng_species_split', {
+						k: num(split.length), list: shown.join('; ') + anGuideMore(shown.length, split.length) }));
+				}
+				if (main.length >= 2 && !mixed.length && !split.length && !G.shared_species_n) add('ok', anGuideText('an_ng_species_match'));
+			}
+
+			// Geography (not with a handful of sequences)
+			if (G.places >= 2 && G.n >= 10) {
+				const v = { s: num(G.shared_places), m: num(G.multi_haps), n: num(G.places), h1: escapeHtml(G.star.h1), k: num(G.h1_places) };
+				if (distinctPlaces && !multiSpecies) add('info', anGuideText('an_ng_geo_struct', v));
+				else if (G.places >= 3 && G.h1_places / G.places >= 0.5) add('info', anGuideText('an_ng_geo_wide', v));
+				else if (G.multi_haps) add('info', anGuideText(G.shared_places / G.multi_haps < 0.5 ? 'an_ng_geo_local' : 'an_ng_geo_shared', v));
+			}
+
+			// Diversity, after Grant & Bowen
+			const hdHigh = st.hd >= AN_NET_HD_HIGH, piHigh = st.pi >= AN_NET_PI_HIGH;
+			add('info', anGuideText('an_ng_div', {
+				hd: st.hd.toFixed(3), pi: anPctOf(st.pi, 2), k: st.k.toFixed(1),
+				hd_text: t(st.hd >= 0.9 ? 'an_ng_hd_vhigh' : hdHigh ? 'an_ng_hd_high' : 'an_ng_hd_low'),
+				gb: t(hdHigh ? (piHigh ? 'an_ng_gb_hh' : 'an_ng_gb_hl') : (piHigh ? 'an_ng_gb_lh' : 'an_ng_gb_ll')) +
+					(main.length >= 2 && piHigh ? t('an_ng_gb_mixed') : '') }));
+
+			// Tajima's D
+			if (st.tajima_d === null || st.tajima_p === null || st.tajima_p === undefined) {
+				add('info', anGuideText('an_ng_tajima_none'));
+			} else {
+				const key = !tajimaSig ? 'an_ng_tajima_ns' : st.tajima_d < 0 ? 'an_ng_tajima_neg' : 'an_ng_tajima_pos';
+				add('info', anGuideText(key, { d: st.tajima_d.toFixed(2), p: escapeHtml(anNetP(st.tajima_p)) }) +
+					(main.length >= 2 ? t('an_ng_tajima_mixed') : ''));
+			}
+
+			// Shape
+			const nh = net.haplotypes;
+			if (nh >= 4) {
+				add('info', anGuideText(G.star.is_star ? 'an_ng_star' : 'an_ng_nostar', {
+					h1: escapeHtml(G.star.h1), share: pct(G.star.share), near: num(G.star.near),
+					others: num(G.star.others), single: num(G.star.singletons), nh: num(nh) }));
+			}
+
+			// Unsampled haplotypes and long branches
+			const maxEdge = Math.max(0, ...net.edges.map(e => e.w));
+			if (net.method === 'tcs') {
+				if (maxEdge >= G.cut && net.intermediates) {
+					add('warn', anGuideText(core.length >= 2 ? 'an_ng_unsampled_long' : 'an_ng_unsampled_branch', { k: num(net.intermediates), m: num(maxEdge) }));
+				} else if (net.intermediates >= 10) {
+					add('warn', anGuideText('an_ng_unsampled', { k: num(net.intermediates) }));
+				}
+			} else if (maxEdge >= G.cut) {
+				add('warn', anGuideText('an_ng_long_msn', { m: num(maxEdge) }));
+			}
+			const left = net.received - net.analysed;
+			if (net.received && left / net.received >= 0.1) {
+				add('warn', anGuideText('an_ng_excluded', { a: num(net.analysed), b: num(net.received), x: num(left) }));
+			}
+			if (G.n < 10) add('warn', anGuideText('an_ng_few', { n: num(G.n) }));
+
+			// The colour that shows what the verdict talks about
+			let action = null;
+			const colorTo = (attr, key) => ({ label: t(key), run: () => { opts.color = attr; anRefreshView(); } });
+			if (core.length >= 2 && bins && !multiSpecies) action = opts.color !== 'bin' ? colorTo('bin', 'an_ng_color_bin') : null;
+			else if (multiSpecies) action = opts.color !== 'species' ? colorTo('species', 'an_tg_color_species') : null;
+			else if (G.places >= 2) action = opts.color !== 'country' ? colorTo('country', 'an_ng_color_country') : null;
+
+			const next = anGuideText(main.length >= 2 ? 'an_ng_next' : 'an_ng_next_one',
+				{ motu: escapeHtml(t('an_v_delimit')), tree: escapeHtml(t('an_v_tree')) });
+			const what = net.species || t('an_net_all_short');
+			anGuideSection(body, {
+				title: t('an_ng_title'), sub: t('an_ng_sub'), verdict, items, action, next, nextFile: next,
+				foot: t('an_ng_foot'),
+				context: [t('an_ng_meta', { marker: net.marker || '—', m: net.method.toUpperCase(), what,
+					n: num(net.analysed), h: num(net.haplotypes),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_ng_file'),
+				stem: `${anNetFileStem()}_${t('an_ng_file')}`,
+			});
+		}
+
+		// The ID of the record in lineage `x` filed under BIN `b`
+		function anNetIdOfBin(net, x, b) {
+			const ids = new Set(x.ids);
+			const s = net.seqs.find(y => ids.has(y.id) && y.bin === b);
+			return `<span class="an-mono">${escapeHtml(s ? s.id : x.ids[0])}</span>`;
 		}
 
 		// The first few items of a list, and how many more (all of them on hover)
@@ -8749,7 +9239,8 @@ li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7p
 			             anTile(st.hd.toFixed(3), t('an_t_hd')),
 			             anTile(st.pi.toFixed(4), t('an_t_pi'), t('an_t_k', { k: st.k.toFixed(2) })),
 			             anTile(numFmt.format(st.segregating), t('an_t_seg')),
-			             anTile(st.tajima_d === null ? '—' : st.tajima_d.toFixed(2), t('an_t_tajima')));
+			             anTile(st.tajima_d === null ? '—' : st.tajima_d.toFixed(2), t('an_t_tajima'),
+			                    st.tajima_p === null || st.tajima_p === undefined ? undefined : t('an_t_tajima_p', { p: anNetP(st.tajima_p) })));
 			if (net.method === 'tcs') tiles.append(anTile(numFmt.format(net.intermediates), t('an_t_intermediates')));
 			body.append(tiles);
 			body.append(anEl('p', 'an-muted', t(net.method === 'tcs' ? 'an_net_note_tcs' : 'an_net_note_msn')));
@@ -8830,6 +9321,7 @@ li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7p
 				});
 			}
 			redraw();
+			anRenderNetGuide(body, net);
 
 			// Drag nodes; the layout is kept until the next network
 			let drag = null;

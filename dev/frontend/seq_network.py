@@ -39,6 +39,23 @@ MAX_MSN_HAPLOTYPES = 600
 MIN_CORE_SITES = 100
 MIN_CORE_FRACTION = 0.8
 
+# Reading guide: haplotypes closer than this share of the compared sites
+# form one lineage (the 2 % that usually separates species in COI, as in
+# the other readings); lineages with fewer sequences than GUIDE_MIN_LINEAGE
+# are reported as isolated sequences. A network is star-shaped when its
+# commonest haplotype holds GUIDE_STAR_SHARE of the sequences and
+# GUIDE_STAR_NEAR of the other haplotypes are 1-2 mutations from it.
+GUIDE_LINEAGE_CUT = 0.02
+GUIDE_MIN_LINEAGE = 3
+GUIDE_STAR_SHARE = 0.3
+GUIDE_STAR_NEAR = 0.6
+GUIDE_MAX_LINEAGES = 30
+GUIDE_MAX_ITEMS = 8
+# BOLD's placeholders in the country field, which aren't places
+_NO_PLACE = ("unrecoverable", "exception")
+# Epithets that don't name a species ("Carollia sp.", "Aedes cf. aegypti")
+_NO_EPITHET = {"sp", "sp.", "spp", "spp.", "cf", "cf.", "aff", "aff.", "nr", "nr.", "gr", "gr."}
+
 
 class NetworkLimit(ValueError):
     """The input is too big (or too small) for a network."""
@@ -117,7 +134,59 @@ def diversity(codes, of_row):
         c2 = b2 - (n + 2) / (a1 * n) + a2 / a1 ** 2
         e1, e2 = c1 / a1, c2 / (a1 ** 2 + a2)
         tajima = (k - seg / a1) / math.sqrt(e1 * seg + e2 * seg * (seg - 1))
-    return {"hd": hd, "pi": pi, "k": k, "segregating": seg, "tajima_d": tajima}
+    return {"hd": hd, "pi": pi, "k": k, "segregating": seg, "tajima_d": tajima,
+            "tajima_p": None if tajima is None else tajima_p(tajima, n)}
+
+
+def _betacf(a, b, x):
+    """Continued fraction of the incomplete beta function (Lentz)."""
+    tiny = 1e-30
+    c, d = 1.0, 1 - (a + b) * x / (a + 1)
+    d = 1 / (d if abs(d) > tiny else tiny)
+    h = d
+    for m in range(1, 300):
+        for aa in (m * (b - m) * x / ((a + 2 * m - 1) * (a + 2 * m)),
+                   -(a + m) * (a + b + m) * x / ((a + 2 * m) * (a + 2 * m + 1))):
+            d = 1 + aa * d
+            d = 1 / (d if abs(d) > tiny else tiny)
+            c = 1 + aa / c
+            c = c if abs(c) > tiny else tiny
+            h *= d * c
+        if abs(d * c - 1) < 1e-12:
+            break
+    return h
+
+
+def _betainc(a, b, x):
+    """Regularized incomplete beta function I_x(a, b)."""
+    if x <= 0:
+        return 0.0
+    if x >= 1:
+        return 1.0
+    front = math.exp(math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
+                     + a * math.log(x) + b * math.log(1 - x))
+    if x < (a + 1) / (a + b + 2):
+        return front * _betacf(a, b, x) / a
+    return 1 - front * _betacf(b, a, 1 - x) / b
+
+
+def tajima_p(D, n):
+    """Two-sided p-value of Tajima's D for n sequences, from the beta
+    distribution Tajima (1989) fitted between D's least and greatest
+    values, as DnaSP reports it."""
+    a1 = sum(1.0 / i for i in range(1, n))
+    a2 = sum(1.0 / i ** 2 for i in range(1, n))
+    b2 = 2.0 * (n * n + n + 3) / (9.0 * n * (n - 1))
+    c2 = b2 - (n + 2) / (a1 * n) + a2 / a1 ** 2
+    e2 = c2 / (a1 ** 2 + a2)
+    dmin = (2.0 / n - 1 / a1) / math.sqrt(e2)
+    top = n / (2.0 * (n - 1)) if n % 2 == 0 else (n + 1) / (2.0 * n)
+    dmax = (top - 1 / a1) / math.sqrt(e2)
+    alpha = -(1 + dmin * dmax) * dmax / (dmax - dmin)
+    beta = (1 + dmin * dmax) * dmin / (dmax - dmin)
+    x = min(max((D - dmin) / (dmax - dmin), 0.0), 1.0)
+    cdf = _betainc(beta, alpha, x)
+    return min(1.0, 2 * min(cdf, 1 - cdf))
 
 
 # ── Networks ──────────────────────────────────────────────────────────────────
@@ -281,6 +350,114 @@ def tcs(d):
     return _TCS(d).run()
 
 
+# ── Reading guide ──────────────────────────────────────────────────────────────
+
+def _place(country):
+    return country if country and not country.lower().startswith(_NO_PLACE) else ""
+
+
+def _binomial(species):
+    """Genus and epithet of a name ("Carollia brevicauda PS1" is Carollia
+    brevicauda), or None for one that names no species."""
+    words = (species or "").split()
+    if len(words) < 2 or words[1].lower() in _NO_EPITHET:
+        return None
+    return " ".join(words[:2])
+
+
+def _tally(recs, key):
+    """[[value, count], ...] of a field, commonest first (empty left out)."""
+    values = (_place(r.get(key)) if key == "country" else r.get(key) for r in recs)
+    c = Counter(v for v in values if v)
+    return [[v, k] for v, k in sorted(c.items(), key=lambda x: (-x[1], x[0]))]
+
+
+def guide(d, counts, hap_rows, recs, ids, name, sites):
+    """Facts for the page's reading of a network: lineages (haplotypes
+    closer than GUIDE_LINEAGE_CUT), how they match BINs, species and
+    countries, the shape around the commonest haplotype, and the haplotypes
+    shared between countries or species. `d` holds the differences between
+    haplotypes, `name` their labels (H1 the commonest)."""
+    nh = len(counts)
+    n = len(recs)
+    cut = max(2, math.ceil(GUIDE_LINEAGE_CUT * sites))
+    rank = {h: int(name[h][1:]) for h in range(nh)}
+
+    # Lineages: single linkage below the cut
+    parent = list(range(nh))
+
+    def root(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for i, j in np.argwhere(np.tril(d < cut, -1)).tolist():
+        parent[root(i)] = root(j)
+    groups = {}
+    for h in range(nh):
+        groups.setdefault(root(h), []).append(h)
+    groups = sorted((sorted(g, key=rank.get) for g in groups.values()),
+                    key=lambda g: (-sum(counts[h] for h in g), rank[g[0]]))
+
+    lineages = []
+    for a, g in enumerate(groups[:GUIDE_MAX_LINEAGES]):
+        rows = [i for h in g for i in hap_rows[h]]
+        members = [recs[i] for i in rows]
+        x = {"haps": len(g), "n": len(rows), "top": name[g[0]],
+             "species": _tally(members, "species")[:GUIDE_MAX_ITEMS],
+             "bins": _tally(members, "bin")[:GUIDE_MAX_ITEMS],
+             "countries": _tally(members, "country")[:GUIDE_MAX_ITEMS],
+             "ids": [ids[i] for i in rows] if len(rows) < GUIDE_MIN_LINEAGE else []}
+        # The nearest other lineage, by the fewest differences between them
+        others = [(int(d[np.ix_(g, gb)].min()), b) for b, gb in enumerate(groups) if b != a]
+        if others:
+            m, b = min(others)
+            x.update(near=b, near_d=m, near_frac=m / sites)
+        lineages.append(x)
+    # Fewest differences between every two main lineages (the page leaves out
+    # those whose BIN turns out to be another species')
+    main = [i for i, x in enumerate(lineages) if x["n"] >= GUIDE_MIN_LINEAGE]
+    between = [[a, b, int(d[np.ix_(groups[a], groups[b])].min())] for k, a in enumerate(main) for b in main[k + 1:]]
+
+    # BINs shared by lineages with enough sequences
+    in_lineages = {}
+    for i, x in enumerate(lineages):
+        if x["n"] >= GUIDE_MIN_LINEAGE:
+            for b, _ in x["bins"]:
+                in_lineages.setdefault(b, []).append(i)
+
+    h1 = min(range(nh), key=rank.get)
+    near = int(sum(1 for h in range(nh) if h != h1 and d[h1, h] <= 2))
+    places_of = lambda h: {_place(recs[i].get("country")) for i in hap_rows[h]} - {""}  # noqa: E731
+    # Haplotypes under two species: two binomials, not a name and its
+    # provisional variant ("C. brevicauda" and "C. brevicauda PS1")
+    shared_species = []
+    for h in sorted(range(nh), key=rank.get):
+        members = [recs[i] for i in hap_rows[h]]
+        if len({_binomial(r.get("species")) for r in members} - {None}) > 1:
+            shared_species.append({"hap": name[h], "species": _tally(members, "species")[:GUIDE_MAX_ITEMS]})
+    return {
+        "n": n, "sites": sites, "cut": cut,
+        "lineages": lineages, "lineages_n": len(groups), "between": between,
+        "main": len(main),
+        "min_lineage": GUIDE_MIN_LINEAGE,
+        "bins_known": sum(1 for r in recs if r.get("bin")) / n if n else 0,
+        "bins_split": [[b, ls] for b, ls in in_lineages.items() if len(ls) > 1][:GUIDE_MAX_ITEMS],
+        "star": {"h1": name[h1], "share": counts[h1] / n, "near": near, "others": nh - 1,
+                 "singletons": sum(1 for c in counts if c == 1),
+                 "is_star": bool(nh >= 4 and counts[h1] / n >= GUIDE_STAR_SHARE
+                                 and near >= GUIDE_STAR_NEAR * (nh - 1))},
+        "places": len({_place(r.get("country")) for r in recs} - {""}),
+        "h1_places": len(places_of(h1)),
+        "multi_haps": sum(1 for c in counts if c > 1),
+        "shared_places": sum(1 for h in range(nh) if counts[h] > 1 and len(places_of(h)) > 1),
+        "species": _tally(recs, "species")[:GUIDE_MAX_ITEMS],
+        "species_n": len({_binomial(r.get("species")) for r in recs} - {None}),
+        "shared_species": shared_species[:GUIDE_MAX_ITEMS], "shared_species_n": len(shared_species),
+    }
+
+
 # ── Layout ────────────────────────────────────────────────────────────────────
 
 def layout(nv, edges, radius, unit=1.6, iterations=300):
@@ -408,5 +585,6 @@ def run_network(records, marker, forced_code=None, method="tcs"):
                   "country": r.get("country") or "", "hap": name[of_row[i]]}
                  for i, r in enumerate(recs)],
         "hap_seqs": {name[h]: hap_seqs[h] for h in range(nh)},
+        "guide": guide(d, counts, hap_rows, recs, ids, name, int(codes.shape[1])),
     }
     return result

@@ -38,7 +38,7 @@ same results.
 
 import math
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 
@@ -642,3 +642,172 @@ def labels_of(groups, n):
         for x in groups[i]:
             label[x] = number
     return label
+
+
+# ── Reading guide ─────────────────────────────────────────────────────────────
+# Facts the page turns into its "What these results say" section, for users
+# new to delimitation: which partition to start from and why, and what it
+# says about the names. Plain rules over the partitions already computed, so
+# the same data always get the same reading.
+
+# An ABGD partition is recommended when it comes out the same over at least
+# this many consecutive priors
+GUIDE_MIN_RUN = 2
+# Lists sent to the page, at most (the page says how many more there are)
+GUIDE_MAX_ITEMS = 8
+
+
+def _group_sets(motu):
+    """A partition as a set of groups (frozensets of indices)."""
+    groups = defaultdict(list)
+    for i, m in enumerate(motu):
+        groups[m].append(i)
+    return {frozenset(g) for g in groups.values()}
+
+
+def _longest_run(parts, n):
+    """Indices of the longest run of consecutive equal partitions, leaving
+    out the trivial ones (one group, or every sequence on its own). The
+    first such run wins a tie."""
+    best, run, prev = [], [], None
+    for i, p in enumerate(parts):
+        if len(p) in (1, n):
+            run, prev = [], None
+            continue
+        run = run + [i] if p == prev else [i]
+        prev = p
+        if len(run) > len(best):
+            best = run
+    return best
+
+
+def _name_of(members, species):
+    """The commonest name among some sequences ('' if none has one)."""
+    names = Counter(species[i] for i in members if species[i])
+    return names.most_common(1)[0][0] if names else ""
+
+
+def _joined(fine, coarse, D, species):
+    """Groups of `coarse` that join two or more whole groups of `fine`: the
+    names of the joined groups (largest first) and how far apart they are
+    (the distance at which the last of them joins the rest)."""
+    out = []
+    for g in coarse - fine:
+        parts = [f for f in fine if f & g]
+        if len(parts) < 2 or not all(f <= g for f in parts):
+            continue
+        parts.sort(key=len, reverse=True)
+        gaps = []
+        for f in parts:
+            rest = sorted(g - f)
+            gaps.append(float(np.nanmin(D[np.ix_(sorted(f), rest)])))
+        out.append({"names": [_name_of(f, species) for f in parts[:GUIDE_MAX_ITEMS]],
+                    "names_n": len(parts), "distance": max(gaps)})
+    out.sort(key=lambda x: x["distance"])
+    return out
+
+
+def guide(D, species, genera, bins, asap, abgd):
+    """What the page needs to explain a delimitation. `asap` and `abgd`
+    are the partitions as sent to the page (each with its MOTU of every
+    sequence). Distances are those of `D`, between 0 and 1."""
+    n = D.shape[0]
+    out = {"n": n}
+
+    # ABGD: a partition that holds over several priors doesn't depend on
+    # the prior chosen. The recursive one is preferred unless the initial
+    # one is clearly steadier.
+    rec = [_group_sets(x["motu_recursive"]) for x in abgd]
+    ini = [_group_sets(x["motu_initial"]) for x in abgd]
+    rec_run, ini_run = _longest_run(rec, n), _longest_run(ini, n)
+    stable = None
+    if len(rec_run) >= GUIDE_MIN_RUN and (len(rec_run) >= 3 or len(rec_run) >= len(ini_run)):
+        stable = ("abgd", rec_run, rec)
+    elif len(ini_run) >= GUIDE_MIN_RUN:
+        stable = ("abgd_initial", ini_run, ini)
+    if abgd:
+        first, last = abgd[0], abgd[-1]
+        out["abgd_first"] = {"prior": first["prior"], "motus": first["recursive"]}
+        out["abgd_one"] = last["prior"] if last["recursive"] == 1 else None
+
+    if stable:
+        method, run, parts = stable
+        chosen = parts[run[0]]
+        out["recommended"] = {"method": method, "index": run[0], "run": run,
+                              "motus": len(chosen), "gap": abgd[run[0]]["gap"],
+                              "priors": [abgd[run[0]]["prior"], abgd[run[-1]]["prior"]]}
+    elif asap:
+        chosen = _group_sets(asap[0]["motu"])
+        out["recommended"] = {"method": "asap", "index": 0, "run": [0], "motus": len(chosen),
+                              "threshold": asap[0]["threshold"]}
+    else:
+        return out
+    motu = [0] * n
+    for k, g in enumerate(sorted(chosen, key=lambda g: (-len(g), min(g))), 1):
+        for i in g:
+            motu[i] = k
+
+    # ASAP: its best partition, the ones tied with it and, for an ABGD
+    # recommendation, the ASAP partition closest to it and how they differ
+    if asap:
+        best = asap[0]
+        mixed = 0
+        for g in _group_sets(best["motu"]):
+            if len({genera[i] for i in g if genera[i]}) > 1:
+                mixed += 1
+        out["asap_best"] = {"rank": best["rank"], "motus": best["subsets"], "threshold": best["threshold"],
+                            "p": best["p"], "score": best["score"], "genera_mixed": mixed}
+        out["asap_tied"] = [x["rank"] for x in asap if x["score"] == best["score"]]
+        out["asap_top"] = [{"rank": x["rank"], "p": x["p"], "motus": x["subsets"]} for x in asap[:3]]
+        if out["recommended"]["method"] != "asap":
+            def similarity(x):
+                s = _group_sets(x["motu"])
+                return len(s & chosen) / len(s | chosen)
+            i = max(range(len(asap)), key=lambda i: (similarity(asap[i]), -i))
+            near = _group_sets(asap[i]["motu"])
+            splits = _joined(chosen, near, D, species)    # ASAP joins what ABGD keeps apart
+            joins = _joined(near, chosen, D, species)     # ABGD joins what ASAP keeps apart
+            out["asap_closest"] = {
+                "index": i, "rank": asap[i]["rank"], "motus": asap[i]["subsets"],
+                "threshold": asap[i]["threshold"], "score": asap[i]["score"], "p": asap[i]["p"],
+                "identical": near == chosen,
+                "abgd_splits": splits[:GUIDE_MAX_ITEMS], "abgd_splits_n": len(splits),
+                "abgd_joins": joins[:GUIDE_MAX_ITEMS], "abgd_joins_n": len(joins)}
+
+    # The recommended partition against the names: MOTUs that join named
+    # species (and how alike they are) and species split over MOTUs
+    _, named = concordance(motu, species, bins)
+    names = ["" if not sp or _PROVISIONAL.search(sp) else sp for sp in species]
+    seqs_of = defaultdict(list)
+    for i, sp in enumerate(names):
+        if sp:
+            seqs_of[sp].append(i)
+    species_in = defaultdict(set)
+    for i, sp in enumerate(names):
+        if sp:
+            species_in[motu[i]].add(sp)
+    merged = []
+    for m, sps in species_in.items():
+        if len(sps) < 2:
+            continue
+        idx = [i for i in range(n) if motu[i] == m and names[i]]
+        code = np.unique([names[i] for i in idx], return_inverse=True)[1]
+        other = code[:, None] != code[None, :]
+        sub = D[np.ix_(idx, idx)]
+        merged.append({"species": sorted(sps, key=lambda s: (-len(seqs_of[s]), s))[:GUIDE_MAX_ITEMS],
+                       "species_n": len(sps),
+                       "distance": float(np.nanmin(np.where(other, sub, np.inf)))})
+    merged.sort(key=lambda x: x["distance"])
+    split = []
+    for r in named:
+        if len(r["motus"]) < 2:
+            continue
+        idx = seqs_of[r["species"]]
+        split.append({"species": r["species"], "motus": len(r["motus"]), "bins": len(r["bins"]),
+                      "max_intra": float(np.nanmax(D[np.ix_(idx, idx)]))})
+    split.sort(key=lambda x: -x["max_intra"])
+    out.update(
+        named=len(named), singletons=sum(1 for r in named if r["n"] == 1),
+        merged=merged[:GUIDE_MAX_ITEMS], merged_n=len(merged),
+        split=split[:GUIDE_MAX_ITEMS], split_n=len(split))
+    return out

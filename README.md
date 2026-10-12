@@ -30,8 +30,10 @@ Two programs, used in order:
    The **Sequence analysis** tab checks the sequences of a search, of the
    checked records or of a FASTA file, one marker per run: composition and
    quality, stop codons, haplotypes, species–BIN concordance and, on demand,
-   K2P distances, barcode gap and a neighbour-joining tree. Each panel has a
-   help icon that opens the user guide at its section.
+   K2P distances, barcode gap, a neighbour-joining tree, species
+   delimitation (ASAP and ABGD) compared with the names and BINs, and
+   haplotype networks (TCS and MSN). Each panel
+   has a help icon that opens the user guide at its section.
 
 ### Screenshots
 

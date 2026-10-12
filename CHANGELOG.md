@@ -5,6 +5,38 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [Unreleased]
+
+### Upgrade notes
+- Update from Home (*Update*). The database doesn't change: no rebuild needed.
+
+### Added
+- **Species delimitation (ASAP and ABGD)** in the sequence analysis. With
+  *Delimit species* ticked, computing distances also groups the sequences
+  into MOTUs with ASAP (its 10 best partitions) and ABGD (initial and
+  recursive partitions for ten prior distances), up to 2,000 sequences per
+  alignment group. A new *Species (MOTUs)* tab compares the partition chosen
+  with the names and BINs: species that match one MOTU, are split into
+  several or share one, and MOTUs identical to a BIN. The NJ tree can be
+  coloured and collapsed by MOTU and show it in the labels. Downloads: the
+  MOTU of each sequence (CSV) and, in the results ZIP, the partitions, the
+  MOTUs and the concordance with ASAP's best partition. Both methods are
+  implemented in numpy (no extra programs) and were checked against the
+  original programs; ASAP stops at 10,000 coalescent replicates per
+  partition.
+- The guide has a section on the delimitation and how to read it.
+- **Haplotype networks (TCS and MSN)** in the sequence analysis: a new
+  *Haplotype network* tab builds the network of one species (also from a
+  *Network* button on each row of the Haplotypes tab) or of every sequence,
+  up to 2,000 sequences (300 haplotypes with TCS, 600 with MSN). Haplotypes
+  are compared over the positions every sequence has complete, so missing
+  ends and Ns don't make haplotypes of their own. The page shows Hd, π,
+  segregating sites and Tajima's D, draws the network with pies by country,
+  species, BIN or MOTU and a tick per mutation (circles can be dragged), and
+  exports it as SVG, PNG or PDF, with the haplotypes as CSV or FASTA and a
+  NEXUS for PopART. TCS and MSN follow PopART's algorithms and give the same
+  networks.
+
 ## [2.1.0]
 
 ### Upgrade notes

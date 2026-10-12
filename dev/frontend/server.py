@@ -83,6 +83,7 @@ from datetime import datetime
 import genbank_batch
 import seq_analysis
 import seq_distance
+import seq_network
 import seq_identify
 # What bold_db_creator.py writes and this viewer reads: file and table names,
 # the version and the database layout version
@@ -812,6 +813,12 @@ STRINGS = {
         'analysis_tree_too_many': 'Árbol no calculado: hay {n} secuencias y el máximo es {limit}. Limita las secuencias por especie.',
         'analysis_tree_too_few': 'Árbol no calculado: solo {n} secuencias tienen distancias con todas las demás.',
         'analysis_tree_group': 'Grupo {k}: ',
+        'analysis_delimit_too_few': 'Delimitación no calculada: solo {n} secuencias tienen distancias con todas las demás.',
+        'analysis_network_too_many': 'Hay {n} secuencias y una red admite {limit}. Elige una especie o limita la búsqueda.',
+        'analysis_network_too_few': 'Hacen falta al menos {limit} secuencias alineables para una red (hay {n}).',
+        'analysis_network_too_many_haplotypes': 'Hay {n} haplotipos y este método admite {limit}. Elige una especie o usa MSN, que admite más.',
+        'analysis_network_short_core': 'Las secuencias solo comparten {n} posiciones completas (mínimo {limit}): son de regiones distintas del marcador o tienen muchas N.',
+        'analysis_delimit_too_many': 'Delimitación no calculada: hay {n} secuencias y el máximo es {limit}. Limita las secuencias por especie.',
         'identify_index_failed': 'No se pudo crear el índice: {error}',
         'identify_index_busy': 'Ya se está creando un índice. Espera a que termine.',
         'identify_bad_thresholds': 'Los umbrales deben estar entre 50 y 100 % y cumplir especie ≥ género ≥ familia.',
@@ -904,6 +911,12 @@ STRINGS = {
         'analysis_tree_too_many': 'No tree: there are {n} sequences and the most is {limit}. Limit the sequences per species.',
         'analysis_tree_too_few': 'No tree: only {n} sequences have distances to all the others.',
         'analysis_tree_group': 'Group {k}: ',
+        'analysis_delimit_too_few': 'No delimitation: only {n} sequences have distances to all the others.',
+        'analysis_network_too_many': 'There are {n} sequences and a network takes {limit}. Choose a species or narrow the search.',
+        'analysis_network_too_few': 'A network needs at least {limit} sequences that align (there are {n}).',
+        'analysis_network_too_many_haplotypes': 'There are {n} haplotypes and this method takes {limit}. Choose a species or use MSN, which takes more.',
+        'analysis_network_short_core': 'The sequences only share {n} complete positions (minimum {limit}): they cover different regions of the marker or have many Ns.',
+        'analysis_delimit_too_many': 'No delimitation: there are {n} sequences and the most is {limit}. Limit the sequences per species.',
         'identify_index_failed': 'The index could not be built: {error}',
         'identify_index_busy': 'An index is already being built. Wait for it to finish.',
         'identify_bad_thresholds': 'Thresholds must be between 50 and 100 % with species ≥ genus ≥ family.',
@@ -1102,6 +1115,10 @@ def index():
         analysis_marker_kinds=seq_analysis.MARKER_KINDS,
         analysis_distance_limit=seq_distance.MAX_DISTANCE_SEQUENCES,
         analysis_tree_limit=seq_distance.MAX_TREE_SEQUENCES,
+        analysis_delimit_limit=seq_distance.MAX_DELIMIT_SEQUENCES,
+        analysis_network_limits={'seqs': seq_network.MAX_NETWORK_SEQUENCES,
+                                 'tcs': seq_network.MAX_TCS_HAPLOTYPES,
+                                 'msn': seq_network.MAX_MSN_HAPLOTYPES},
         analysis_per_species=ANALYSIS_PER_SPECIES,
         identify_enabled=IDENTIFY_ENABLED,
     )
@@ -3852,8 +3869,8 @@ def analysis_distance():
     """Alignment, distances (K2P, Jukes-Cantor or p), barcode gap and NJ tree.
 
     Body: as /api/analysis/basic, plus model ('k2p'|'jc'|'p'), per_species
-    (keep at most that many sequences per species; null for all) and tree
-    (bool). The alignment, matrix, tree and tables go into a ZIP, downloaded
+    (keep at most that many sequences per species; null for all), tree
+    (bool) and delimit (bool: species delimitation with ASAP and ABGD). The alignment, matrix, tree and tables go into a ZIP, downloaded
     from /api/analysis/download/<id>.
     """
     data = request.get_json(silent=True) or {}
@@ -3874,7 +3891,8 @@ def analysis_distance():
             raise _analysis_error('analysis_distance_input_too_big',
                                   limit=f'{seq_distance.MAX_INPUT_SEQUENCES:,}')
         result, files = seq_distance.run_distance(
-            records, marker, forced_code, model, per_species, bool(data.get('tree', True)))
+            records, marker, forced_code, model, per_species, bool(data.get('tree', True)),
+            bool(data.get('delimit', False)))
     except _AnalysisReply as reply:
         return jsonify(reply.body), reply.status
     except seq_distance.AnalysisLimit as e:
@@ -3905,11 +3923,61 @@ def analysis_distance():
             note = t('analysis_tree_group', k=group + 1) + note
         notes.append(note)
     result['tree_notes'] = notes
+    notes = []
+    for group, kind, n, limit in result['delimit_notes']:
+        key = 'analysis_delimit_too_few' if kind == 'too_few' else 'analysis_delimit_too_many'
+        note = t(key, n=f'{n:,}', limit=f'{limit:,}')
+        if len(result['groups']) > 1:
+            note = t('analysis_tree_group', k=group + 1) + note
+        notes.append(note)
+    result['delimit_notes'] = notes
     result.update(download_id=export_id, files=sorted(files),
                   seconds=round(time.time() - start, 2))
     print(f"Distance analysis OK — {data.get('source')} | {marker or '?'} | "
           f"{result['analysed']:,} seqs | {len(result['groups'])} group(s) | "
-          f"trees: {len(result['trees'])} | {result['seconds']}s")
+          f"trees: {len(result['trees'])} | delimitations: {len(result['delimit'])} | "
+          f"{result['seconds']}s")
+    return jsonify(result)
+
+
+@app.route('/api/analysis/network', methods=['POST'])
+def analysis_network():
+    """Haplotype network (TCS or MSN) of the analysis input, or of one
+    species in it.
+
+    Body: as /api/analysis/basic, plus method ('tcs'|'msn') and species
+    (a name, or null for every sequence).
+    """
+    data = request.get_json(silent=True) or {}
+    method = data.get('method', 'tcs')
+    species = data.get('species')
+    if method not in ('tcs', 'msn') or (species is not None and not isinstance(species, str)):
+        return jsonify({'error': t('analysis_invalid_request')}), 400
+
+    start = time.time()
+    try:
+        forced_code = _analysis_genetic_code(data)
+        records, marker, truncated, _ = _analysis_input(
+            data, seq_distance.MAX_INPUT_SEQUENCES)
+        if truncated:
+            raise _analysis_error('analysis_distance_input_too_big',
+                                  limit=f'{seq_distance.MAX_INPUT_SEQUENCES:,}')
+        if species is not None:
+            # As the haplotype table names them
+            records = [r for r in records if (r.get('species') or r.get('taxon') or '') == species]
+        result = seq_network.run_network(records, marker, forced_code, method)
+    except _AnalysisReply as reply:
+        return jsonify(reply.body), reply.status
+    except seq_network.NetworkLimit as e:
+        return jsonify({'error': t('analysis_network_' + e.kind, n=f'{e.n:,}', limit=f'{e.limit:,}')}), 400
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except sqlite3.Error as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    result.update(species=species, seconds=round(time.time() - start, 2))
+    print(f"Network OK — {data.get('source')} | {marker or '?'} | {species or 'all'} | {method} | "
+          f"{result['analysed']:,} seqs, {result['haplotypes']} haplotypes | {result['seconds']}s")
     return jsonify(result)
 
 

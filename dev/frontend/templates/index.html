@@ -1385,6 +1385,16 @@
 		.an-check-head .btn { margin-left: auto; }
 		.an-reason { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: .75rem; white-space: nowrap; background: var(--tint); }
 		.an-reason.other_genus { background: #fde8d4; color: #8a3f05; }
+		.an-check-head > .d-flex { margin-left: auto; }
+		.an-check-head > .d-flex .btn { margin-left: 0; }
+		.an-motu-st { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: .75rem; white-space: nowrap; background: var(--tint); }
+		.an-motu-st.split { background: #e1ecfb; color: #1f4f8f; }
+		.an-motu-st.merged { background: #fde8d4; color: #8a3f05; }
+		.an-motu-st.split_merged { background: #fbe0e0; color: #8f1f1f; }
+		.an-pick { padding: 0 8px; font-size: .75rem; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+		.an-pick:hover { border-color: var(--slate); }
+		.an-pick.active, .an-pick:disabled { opacity: 1; background: var(--slate); border-color: var(--slate); color: #fff; }
+		.an-pick-n { min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
 		.an-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 6px; font-size: .8rem; color: var(--mute); }
 		.an-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 		.an-legend-item i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
@@ -1396,6 +1406,12 @@
 		   looks like the screen): no CSS styles its marks, except hover */
 		.an-tree { max-height: 760px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 		.an-tree svg { display: block; }
+		.an-net { max-height: none; overflow: hidden; }
+		.an-net svg { max-width: 100%; height: auto; }
+		.an-net .net-node { cursor: grab; }
+		.an-net-legend .an-legend { margin-bottom: 6px; }
+		.an-net-legend.italic .an-legend-item { font-style: italic; }
+		.an-net-species { max-width: 420px; }
 		.an-tree .node-hit { cursor: pointer; }
 		.an-tree .node-hit:hover { fill: rgba(232, 131, 26, .55); }
 		.an-tree .group { cursor: pointer; }
@@ -2535,6 +2551,73 @@
                 an_c_max_intra: 'Intra máx.', an_c_mean_intra: 'Intra media', an_c_nn: 'Vecino',
                 an_c_nn_species: 'Especie vecina', an_c_gap: 'Gap',
                 an_tree_off: 'Marca «Construir árbol NJ» y pulsa «Calcular».',
+                an_v_delimit: 'Especies (MOTU)',
+                an_delimit_option: 'Delimitar especies: ASAP y ABGD (hasta {n} secuencias)',
+                an_dist_running_delimit: 'Alineando, calculando y delimitando especies (puede tardar un minuto)…',
+                an_delimit_off: 'Marca «Delimitar especies» y pulsa «Calcular».',
+                an_delimit_group_label: 'Delimitación del grupo:',
+                an_delimit_title: 'Delimitación de especies · {n} secuencias',
+                an_delimit_note: 'ASAP y ABGD agrupan las secuencias en MOTU (unidades taxonómicas operativas moleculares) solo por sus distancias, sin mirar los nombres. Al compararlos con los nombres se ve qué especies separa el marcador, cuáles divide y cuáles junta. Son hipótesis que hay que contrastar con la morfología, la distribución u otros marcadores.',
+                an_h_motu_conc: 'Especies frente a MOTU · {part}',
+                an_motu_part_asap: 'ASAP, partición {k} ({n} MOTU)',
+                an_motu_part_abgd_rec: 'ABGD recursiva, P = {p} ({n} MOTU)',
+                an_motu_part_abgd_init: 'ABGD inicial, P = {p} ({n} MOTU)',
+                an_dl_motus: '⤓ MOTU (CSV)',
+                an_motu_to_tree: 'Ver en el árbol',
+                an_t_motus: 'MOTU',
+                an_t_named_species: 'Especies con nombre',
+                an_t_match: 'Coinciden con un MOTU',
+                an_t_split: 'Divididas en varios MOTU',
+                an_t_merged: 'Comparten MOTU',
+                an_t_split_merged: 'Divididas y comparten',
+                an_t_motu_bin: 'MOTU idénticos a un BIN',
+                an_motu_conc_note: 'Primero las especies que no coinciden con un MOTU. Los nombres provisionales («sp.», «cf.», «aff.», con números) no cuentan como especies.',
+                an_motu_no_names: 'Ninguna secuencia tiene un nombre de especie con el que comparar los MOTU.',
+                an_c_motus: 'MOTU', an_c_shares_with: 'Comparte MOTU con', an_c_status: 'Estado',
+                an_st_match: 'Coincide',
+                an_st_split: 'Dividida',
+                an_st_merged: 'Comparte MOTU',
+                an_st_split_merged: 'Dividida y comparte',
+                an_st_match_d: 'Todas sus secuencias forman un MOTU, sin otras especies.',
+                an_st_split_d: 'Sus secuencias se reparten en varios MOTU: puede haber especies crípticas, linajes muy divergentes o identificaciones a revisar.',
+                an_st_merged_d: 'Su MOTU incluye otras especies: el marcador no las separa (especies recientes, hibridación, sinonimias o identificaciones a revisar).',
+                an_st_split_merged_d: 'Se reparte en varios MOTU y alguno incluye otras especies.',
+                an_motu_show: 'Ver', an_motu_shown: 'Viendo',
+                an_h_asap: 'ASAP: mejores particiones',
+                an_asap_note: 'ASAP agrupa las secuencias con umbrales de distancia crecientes ({n} particiones evaluadas) y las ordena por la puntuación ASAP: la más baja es la mejor. La puntuación combina dos rangos: el del p-valor (la probabilidad, según un modelo coalescente, de que los grupos que la partición separa sean una sola especie; cuanto menor, más apoyo a separarlos) y el del ancho relativo del gap en su umbral. Los grupos formados con p ≤ 0,001 se vuelven a dividir.',
+                an_c_rank: 'Rango', an_c_asap_score: 'Puntuación ASAP', an_c_motus_n: 'MOTU', an_c_pvalue: 'p-valor',
+                an_c_gap_width: 'Ancho del gap (×100)', an_c_threshold: 'Umbral',
+                an_h_abgd: 'ABGD: particiones por distancia previa',
+                an_abgd_note: 'ABGD busca el primer salto (el barcode gap) en las distancias ordenadas por encima de una distancia intraespecífica máxima previa P, y agrupa las secuencias que están más cerca que ese salto. Se ejecuta para diez valores de P y se detiene en el primero que da un solo grupo. La partición recursiva vuelve a buscar un gap dentro de cada grupo. Una partición que se repite con varios P es la más fiable.',
+                an_c_prior: 'P previa', an_c_abgd_gap: 'Gap encontrado', an_c_abgd_initial: 'MOTU (inicial)', an_c_abgd_recursive: 'MOTU (recursiva)',
+                an_tree_by_motu: 'Por MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTU',
+                an_v_network: 'Red de haplotipos',
+                an_net_btn: 'Red', an_net_btn_title: 'Red de haplotipos de esta especie',
+                an_net_seqs_label: 'Secuencias:', an_net_method_label: 'Método:',
+                an_net_all: 'Todas las del análisis ({n})', an_net_all_short: 'todas las secuencias',
+                an_net_species_opt: '{sp} · {n} secuencias, {h} haplotipos',
+                an_net_tcs: 'TCS (parsimonia estadística)', an_net_msn: 'MSN (red de expansión mínima)',
+                an_net_run: 'Construir red', an_net_running: 'Construyendo la red…',
+                an_net_intro: 'Une los haplotipos por las mutaciones que los separan. Lo habitual es una red por especie (también con el botón «Red» de la pestaña Haplotipos). Hasta {n} secuencias; TCS admite {tcs} haplotipos y MSN {msn}.',
+                an_net_off: 'Elige las secuencias y pulsa «Construir red».',
+                an_net_title: 'Red {m} · {what} · {n} secuencias, {h} haplotipos',
+                an_net_ex_unaligned: '{n} secuencia(s) que no se alinean con el resto, excluidas.',
+                an_net_ex_incomplete: '{n} secuencia(s) excluidas por cubrir menos región que las demás (reducían las posiciones comparadas).',
+                an_net_sites: 'Se comparan las {n} posiciones que todas las secuencias tienen completas (de {m} del alineamiento): un extremo que falta o una N no crea un haplotipo nuevo.',
+                an_t_seqs: 'Secuencias', an_t_haps: 'Haplotipos', an_t_hd: 'Diversidad haplotípica (Hd)',
+                an_t_pi: 'Diversidad nucleotídica (π)', an_t_k: 'k = {k} diferencias', an_t_seg: 'Sitios segregantes',
+                an_t_tajima: 'D de Tajima', an_t_intermediates: 'Haplotipos no muestreados',
+                an_net_note_tcs: 'TCS une los grupos de haplotipos de menor a mayor distancia, a través de haplotipos intermedios no muestreados (puntos negros) colocados para que los caminos de la red reproduzcan las diferencias observadas, como PopART. Cada marca en una línea es una mutación; el tamaño de cada círculo, el número de secuencias.',
+                an_net_note_msn: 'La red de expansión mínima (MSN) une los haplotipos directamente con el menor número total de mutaciones, incluyendo todas las alternativas igual de cortas (de ahí los ciclos). Cada marca en una línea es una mutación; el tamaño de cada círculo, el número de secuencias.',
+                an_net_size: 'Tamaño', an_net_ticks: 'Marcas de mutación',
+                an_net_lbl_none: 'Ninguna', an_net_lbl_hap: 'Haplotipo', an_net_lbl_hap_n: 'Haplotipo y secuencias',
+                an_net_data: 'Datos:', an_net_dl_csv: 'Haplotipos (CSV)', an_net_dl_fasta: 'Haplotipos (FASTA)', an_net_dl_nexus: 'NEXUS (PopART)',
+                an_net_reset: 'Restablecer disposición',
+                an_net_drag: 'Arrastra los círculos para ordenar la figura; las exportaciones la guardan tal como se ve. El NEXUS lleva una secuencia por registro y como rasgos el color elegido (país si no hay color), para seguir en PopART.',
+                an_net_tip: '{h} · {n} secuencia(s)', an_net_tip_intermediate: 'Haplotipo intermedio no muestreado',
+                an_net_unknown: 'Sin dato',
+                an_tree_motu_part: 'MOTU: {part}. Se elige otra partición en la pestaña «Especies (MOTU)».',
+                an_more_items: 'y {n} más',
                 an_tree_title: 'Árbol NJ · {n} secuencias',
                 an_tree_dropped: '{n} excluida(s) por no tener distancia con todas las demás',
                 an_tree_find: 'Resaltar especie o ID…',
@@ -2960,6 +3043,73 @@
                 an_c_max_intra: 'Max intra', an_c_mean_intra: 'Mean intra', an_c_nn: 'Neighbour',
                 an_c_nn_species: 'Neighbour species', an_c_gap: 'Gap',
                 an_tree_off: 'Tick "Build NJ tree" and press "Compute".',
+                an_v_delimit: 'Species (MOTUs)',
+                an_delimit_option: 'Delimit species: ASAP and ABGD (up to {n} sequences)',
+                an_dist_running_delimit: 'Aligning, computing and delimiting species (may take a minute)…',
+                an_delimit_off: 'Tick "Delimit species" and press "Compute".',
+                an_delimit_group_label: 'Delimitation of group:',
+                an_delimit_title: 'Species delimitation · {n} sequences',
+                an_delimit_note: 'ASAP and ABGD group the sequences into MOTUs (molecular operational taxonomic units) by their distances alone, without looking at the names. Comparing them with the names shows which species the marker separates, which ones it splits and which ones it lumps. They are hypotheses, to be weighed against morphology, distribution or other markers.',
+                an_h_motu_conc: 'Species against MOTUs · {part}',
+                an_motu_part_asap: 'ASAP, partition {k} ({n} MOTUs)',
+                an_motu_part_abgd_rec: 'ABGD recursive, P = {p} ({n} MOTUs)',
+                an_motu_part_abgd_init: 'ABGD initial, P = {p} ({n} MOTUs)',
+                an_dl_motus: '⤓ MOTUs (CSV)',
+                an_motu_to_tree: 'Show on the tree',
+                an_t_motus: 'MOTUs',
+                an_t_named_species: 'Named species',
+                an_t_match: 'Match one MOTU',
+                an_t_split: 'Split into several MOTUs',
+                an_t_merged: 'Share a MOTU',
+                an_t_split_merged: 'Split and share',
+                an_t_motu_bin: 'MOTUs identical to a BIN',
+                an_motu_conc_note: 'Species that don\'t match a MOTU first. Provisional names ("sp.", "cf.", "aff.", with numbers) don\'t count as species.',
+                an_motu_no_names: 'No sequence has a species name to compare the MOTUs with.',
+                an_c_motus: 'MOTUs', an_c_shares_with: 'Shares MOTU with', an_c_status: 'Status',
+                an_st_match: 'Match',
+                an_st_split: 'Split',
+                an_st_merged: 'Shares MOTU',
+                an_st_split_merged: 'Split and shares',
+                an_st_match_d: 'All its sequences form one MOTU, with no other species.',
+                an_st_split_d: 'Its sequences fall into several MOTUs: there may be cryptic species, deeply divergent lineages or identifications to check.',
+                an_st_merged_d: 'Its MOTU holds other species: the marker doesn\'t separate them (recent species, hybridisation, synonyms or identifications to check).',
+                an_st_split_merged_d: 'It falls into several MOTUs and one of them holds other species.',
+                an_motu_show: 'Show', an_motu_shown: 'Shown',
+                an_h_asap: 'ASAP: best partitions',
+                an_asap_note: 'ASAP groups the sequences at increasing distance thresholds ({n} partitions evaluated) and ranks the partitions by their ASAP score: the lowest is the best. The score combines two ranks: the p-value\'s (the probability, under a coalescent model, that the groups the partition keeps apart are one species; the lower, the more support for splitting them) and that of the relative gap width at its threshold. Groups formed with p ≤ 0.001 are split again.',
+                an_c_rank: 'Rank', an_c_asap_score: 'ASAP score', an_c_motus_n: 'MOTUs', an_c_pvalue: 'p-value',
+                an_c_gap_width: 'Gap width (×100)', an_c_threshold: 'Threshold',
+                an_h_abgd: 'ABGD: partitions by prior distance',
+                an_abgd_note: 'ABGD looks for the first jump (the barcode gap) in the sorted distances beyond a prior maximum intraspecific distance P, and groups the sequences closer than that jump. It runs for ten values of P and stops at the first one that gives a single group. The recursive partition looks for a gap again within each group. A partition repeated over several P values is the most reliable.',
+                an_c_prior: 'Prior P', an_c_abgd_gap: 'Gap found', an_c_abgd_initial: 'MOTUs (initial)', an_c_abgd_recursive: 'MOTUs (recursive)',
+                an_tree_by_motu: 'By MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTUs',
+                an_v_network: 'Haplotype network',
+                an_net_btn: 'Network', an_net_btn_title: 'Haplotype network of this species',
+                an_net_seqs_label: 'Sequences:', an_net_method_label: 'Method:',
+                an_net_all: 'All in the analysis ({n})', an_net_all_short: 'all sequences',
+                an_net_species_opt: '{sp} · {n} sequences, {h} haplotypes',
+                an_net_tcs: 'TCS (statistical parsimony)', an_net_msn: 'MSN (minimum spanning network)',
+                an_net_run: 'Build network', an_net_running: 'Building the network…',
+                an_net_intro: 'Joins the haplotypes by the mutations between them. Usually one network per species (also with the "Network" button on the Haplotypes tab). Up to {n} sequences; TCS takes {tcs} haplotypes and MSN {msn}.',
+                an_net_off: 'Choose the sequences and press "Build network".',
+                an_net_title: '{m} network · {what} · {n} sequences, {h} haplotypes',
+                an_net_ex_unaligned: '{n} sequence(s) that don\'t align with the rest left out.',
+                an_net_ex_incomplete: '{n} sequence(s) left out for covering less of the region than the others (they shortened the positions compared).',
+                an_net_sites: 'The {n} positions every sequence has complete are compared (of {m} in the alignment): a missing end or an N doesn\'t make a new haplotype.',
+                an_t_seqs: 'Sequences', an_t_haps: 'Haplotypes', an_t_hd: 'Haplotype diversity (Hd)',
+                an_t_pi: 'Nucleotide diversity (π)', an_t_k: 'k = {k} differences', an_t_seg: 'Segregating sites',
+                an_t_tajima: 'Tajima\'s D', an_t_intermediates: 'Unsampled haplotypes',
+                an_net_note_tcs: 'TCS joins groups of haplotypes from the closest to the farthest, through unsampled intermediate haplotypes (black dots) placed so that the network\'s paths match the observed differences, as PopART does. Each tick on a line is a mutation; the size of each circle, the number of sequences.',
+                an_net_note_msn: 'The minimum spanning network (MSN) joins the haplotypes directly with the fewest mutations overall, keeping every equally short alternative (hence the loops). Each tick on a line is a mutation; the size of each circle, the number of sequences.',
+                an_net_size: 'Size', an_net_ticks: 'Mutation ticks',
+                an_net_lbl_none: 'None', an_net_lbl_hap: 'Haplotype', an_net_lbl_hap_n: 'Haplotype and sequences',
+                an_net_data: 'Data:', an_net_dl_csv: 'Haplotypes (CSV)', an_net_dl_fasta: 'Haplotypes (FASTA)', an_net_dl_nexus: 'NEXUS (PopART)',
+                an_net_reset: 'Reset layout',
+                an_net_drag: 'Drag the circles to arrange the figure; the exports keep it as shown. The NEXUS has one sequence per record and the colour chosen as traits (country when there is none), to go on in PopART.',
+                an_net_tip: '{h} · {n} sequence(s)', an_net_tip_intermediate: 'Unsampled intermediate haplotype',
+                an_net_unknown: 'Unknown',
+                an_tree_motu_part: 'MOTUs: {part}. Another partition can be chosen on the "Species (MOTUs)" tab.',
+                an_more_items: 'and {n} more',
                 an_tree_title: 'NJ tree · {n} sequences',
                 an_tree_dropped: '{n} left out for lacking a distance to some other sequence',
                 an_tree_find: 'Highlight species or ID…',
@@ -6354,7 +6504,8 @@
 			running: false,
 			lastBody: null,    // request of the results on screen, reused by phase 2
 			dist: null,        // last distance analysis of those results
-			distOpts: { model: 'k2p', per_species: null, tree: true },
+			distOpts: { model: 'k2p', per_species: null, tree: true, delimit: false },
+			motuSel: null,     // partition shown: { group, method: 'asap'|'abgd'|'abgd_initial', index }
 			distRunning: false,
 			showView: null,
 		};
@@ -6526,6 +6677,7 @@
 				AnState.result = data;
 				AnState.lastBody = Object.assign({}, body, { marker: data.marker });
 				AnState.dist = null;
+				AnState.net = null;
 				anRender();
 				anSummariseInput(data);
 				anSetInputOpen(false);
@@ -6613,11 +6765,11 @@
 			cols.forEach(c => hr.append(anEl('th', c.cls || '', c.label)));
 			thead.append(hr);
 			const tbody = anEl('tbody');
-			rows.forEach(row => {
+			rows.forEach((row, rowIndex) => {
 				const tr = anEl('tr');
 				cols.forEach(c => {
 					const td = anEl('td', c.cls || '');
-					const v = c.get(row);
+					const v = c.get(row, rowIndex);
 					if (v instanceof Node) td.append(v); else td.textContent = (v === null || v === undefined) ? '' : v;
 					tr.append(td);
 				});
@@ -6747,9 +6899,11 @@
 			views.setAttribute('role', 'tablist');
 			const body = anEl('div', 'an-view-body');
 			const renderers = { quality: anRenderQuality, haplotypes: anRenderHaplotypes,
-			                    concordance: anRenderConcordance, distance: anRenderDistance, tree: anRenderTree };
+			                    concordance: anRenderConcordance, distance: anRenderDistance,
+			                    delimit: anRenderDelimit, tree: anRenderTree, network: anRenderNetwork };
 			const labels = { quality: 'an_v_quality', haplotypes: 'an_v_haplotypes',
-			                 concordance: 'an_v_concordance', distance: 'an_v_distance', tree: 'an_v_tree' };
+			                 concordance: 'an_v_concordance', distance: 'an_v_distance',
+			                 delimit: 'an_v_delimit', tree: 'an_v_tree', network: 'an_v_network' };
 			const show = view => {
 				AnState.view = view;
 				views.querySelectorAll('button').forEach(b => {
@@ -6839,6 +6993,14 @@
 				{ label: t('an_c_singletons'), cls: 'num', get: h => numFmt.format(h.singletons) },
 				{ label: t('an_c_hd'), cls: 'num', get: h => h.hd === null ? '—' : h.hd.toFixed(3) },
 				{ label: t('an_c_excluded'), cls: 'num', get: h => h.excluded ? numFmt.format(h.excluded) : '' },
+				{ label: '', get: h => {
+					if (!h.species || h.n < 2) return '';
+					const b = anEl('button', 'btn btn-sm an-pick', t('an_net_btn'));
+					b.type = 'button';
+					b.title = t('an_net_btn_title');
+					b.addEventListener('click', () => anNetworkOf(h.species));
+					return b;
+				} },
 			], haps.slice(0, AN_TABLE_ROWS)));
 		}
 
@@ -6888,6 +7050,7 @@
 
 		const AN_DIST_LIMIT = {{ analysis_distance_limit | tojson }};
 		const AN_TREE_LIMIT = {{ analysis_tree_limit | tojson }};
+		const AN_DELIMIT_LIMIT = {{ analysis_delimit_limit | tojson }};
 		const AN_PER_SPECIES = {{ analysis_per_species | tojson }};
 		// Two series: intra in the structural slate, inter in BOLD's orange
 		const AN_SERIES = { intra: '#2e3846', inter: '#e8831a' };
@@ -6922,6 +7085,12 @@
 			tree.id = 'anDistTree';
 			tree.checked = opts.tree;
 			treeWrap.append(tree, anEl('span', 'text-secondary small', t('an_tree_option', { n: numFmt.format(AN_TREE_LIMIT) })));
+			const delimitWrap = anEl('label', 'form-check d-flex align-items-center gap-2 mb-0');
+			const delimit = anEl('input', 'form-check-input mt-0');
+			delimit.type = 'checkbox';
+			delimit.id = 'anDistDelimit';
+			delimit.checked = opts.delimit;
+			delimitWrap.append(delimit, anEl('span', 'text-secondary small', t('an_delimit_option', { n: numFmt.format(AN_DELIMIT_LIMIT) })));
 			const run = anEl('button', 'btn btn-primary btn-sm px-4', t('an_dist_run'));
 			run.type = 'button';
 			run.disabled = AnState.distRunning;
@@ -6930,12 +7099,14 @@
 					model: model.value,
 					per_species: per.value ? Number(per.value) : null,
 					tree: tree.checked,
+					delimit: delimit.checked,
 				};
 				anRunDistance();
 			});
-			const status = anEl('span', 'an-muted ms-auto', AnState.distRunning ? t('an_dist_running') : '');
+			const status = anEl('span', 'an-muted ms-auto', !AnState.distRunning ? ''
+				: t(opts.delimit ? 'an_dist_running_delimit' : 'an_dist_running'));
 			const row = anEl('div', 'an-options');
-			row.append(field('an_model_label', model), field('an_per_label', per), treeWrap, status, run);
+			row.append(field('an_model_label', model), field('an_per_label', per), treeWrap, delimitWrap, status, run);
 			box.append(row, anEl('p', 'an-muted mt-2 mb-0', t('an_dist_intro', { n: numFmt.format(AN_DIST_LIMIT) })));
 			body.append(box);
 		}
@@ -6956,6 +7127,7 @@
 					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
 				}
 				AnState.dist = data;
+				AnState.motuSel = null;
 				AnState.tree = null;
 				AnState.treeCache = {};
 				AnState.treeGroup = data.trees.length ? data.trees[0].group : 0;
@@ -7148,6 +7320,255 @@
 			             `${anFileStem()}_identification_check.csv`, 'text/csv;charset=utf-8');
 		}
 
+		// ── Species delimitation (ASAP and ABGD) ──
+		// Computed with the distances (seq_delimit.py); the page lists the
+		// partitions and compares the one chosen with the names and BINs.
+
+		// Names that don't identify a species, as on the server
+		const AN_PROVISIONAL = /\b(sp|spp|cf|aff|nr|gr|complex)\b\.?|\d/i;
+		// Species statuses, in the order the table lists them
+		const AN_MOTU_STATUS = ['split_merged', 'merged', 'split', 'match'];
+
+		const anPrior = p => (100 * p).toLocaleString('en-US', { maximumSignificantDigits: 2 }) + ' %';
+		// ASAP stops at 10,000 replicates: its smallest p-value is 1/10,001
+		const anPval = p => p >= 0.001 ? p.toFixed(3) : p <= 1.0001e-4 ? '≤ 0.0001' : p.toExponential(1);
+
+		function anDelimitGroup() {
+			const d = AnState.dist;
+			if (!d || !d.delimit || !d.delimit.length) return null;
+			const sel = AnState.motuSel;
+			return (sel && d.delimit.find(g => g.group === sel.group)) || d.delimit[0];
+		}
+
+		// The partition chosen in a group (ASAP's best by default):
+		// { motu: [MOTU of each sequence], label }
+		function anMotuPartition(g) {
+			let sel = AnState.motuSel;
+			if (!sel || sel.group !== g.group) sel = AnState.motuSel = { group: g.group, method: 'asap', index: 0 };
+			return anGroupPartition(g, sel);
+		}
+
+		function anGroupPartition(g, sel) {
+			if (sel.method === 'asap' && g.asap[sel.index]) {
+				const x = g.asap[sel.index];
+				return { motu: x.motu, label: t('an_motu_part_asap', { k: x.rank, n: numFmt.format(x.subsets) }) };
+			}
+			const x = g.abgd[sel.index] || g.abgd[0];
+			const rec = sel.method !== 'abgd_initial';
+			const n = rec ? x.recursive : x.initial;
+			return { motu: rec ? x.motu_recursive : x.motu_initial,
+			         label: t(rec ? 'an_motu_part_abgd_rec' : 'an_motu_part_abgd_init', { p: anPrior(x.prior), n: numFmt.format(n) }) };
+		}
+
+		// Each named species against the MOTUs, as seq_delimit.concordance:
+		// one MOTU of its own ('match'), several ('split'), shared with
+		// other species ('merged') or both
+		function anConcordance(motu, species, bins) {
+			const add = (map, key, value) => { if (!map.has(key)) map.set(key, new Set()); map.get(key).add(value); };
+			const motusOf = new Map(), speciesOf = new Map(), binsOf = new Map(), count = new Map();
+			const binMotus = new Map(), motuBins = new Map();
+			species.forEach((sp, i) => {
+				const m = motu[i], b = bins[i];
+				if (b) { add(binMotus, b, m); add(motuBins, m, b); }
+				if (!sp || AN_PROVISIONAL.test(sp)) return;
+				add(motusOf, sp, m);
+				add(speciesOf, m, sp);
+				count.set(sp, (count.get(sp) || 0) + 1);
+				if (b) add(binsOf, sp, b);
+			});
+			const rows = [...motusOf.entries()].map(([sp, ms]) => {
+				const split = ms.size > 1;
+				const merged = [...ms].some(m => speciesOf.get(m).size > 1);
+				const others = new Set();
+				ms.forEach(m => speciesOf.get(m).forEach(o => { if (o !== sp) others.add(o); }));
+				return {
+					species: sp, n: count.get(sp), motus: [...ms].sort((a, b) => a - b),
+					bins: [...(binsOf.get(sp) || [])].sort(), with: [...others].sort(),
+					status: split && merged ? 'split_merged' : split ? 'split' : merged ? 'merged' : 'match',
+				};
+			});
+			rows.sort((a, b) => AN_MOTU_STATUS.indexOf(a.status) - AN_MOTU_STATUS.indexOf(b.status)
+			                    || a.species.localeCompare(b.species));
+			// MOTU = BIN: its records with a BIN share one, and that BIN's
+			// records are all in the MOTU
+			let sameBin = 0;
+			motuBins.forEach(bs => { if (bs.size === 1 && binMotus.get([...bs][0]).size === 1) sameBin++; });
+			const summary = { species: rows.length, motus: new Set(motu).size, motusWithBin: motuBins.size, sameBin };
+			AN_MOTU_STATUS.forEach(st => { summary[st] = rows.filter(r => r.status === st).length; });
+			return { summary, rows };
+		}
+
+		function anRenderDelimit(body) {
+			anDistanceControls(body);
+			const d = AnState.dist;
+			if (!d) return;
+			(d.delimit_notes || []).forEach(note => body.append(anEl('div', 'an-warn mt-2', '⚠ ' + note)));
+			if (!d.delimit || !d.delimit.length) {
+				if (!(d.delimit_notes || []).length) body.append(anEl('p', 'an-muted mt-3', t('an_delimit_off')));
+				return;
+			}
+			const g = anDelimitGroup();
+			const part = anMotuPartition(g);
+			const sel = AnState.motuSel;
+			const choose = (method, index) => { AnState.motuSel = { group: g.group, method, index }; anRefreshView(); };
+
+			// Sequences that can't be aligned together are delimited apart
+			if (d.groups.length > 1) {
+				const pick = anEl('label', 'd-flex align-items-center gap-2 mt-3');
+				const select = anEl('select', 'form-select form-select-sm an-group-select');
+				d.delimit.forEach(x => {
+					const o = anEl('option', '', anGroupText(d.groups[x.group], x.group));
+					o.value = x.group;
+					select.append(o);
+				});
+				select.value = String(g.group);
+				select.addEventListener('change', () => {
+					AnState.motuSel = { group: +select.value, method: 'asap', index: 0 };
+					anRefreshView();
+				});
+				pick.append(anEl('span', 'text-secondary small text-nowrap', t('an_delimit_group_label')), select);
+				body.append(pick);
+			}
+
+			const head = anEl('div', 'an-head mt-3');
+			head.append(anEl('span', 'an-title', t('an_delimit_title', { n: numFmt.format(g.members.length) })));
+			if (g.dropped) head.append(anEl('span', 'an-muted', t('an_tree_dropped', { n: numFmt.format(g.dropped) })));
+			body.append(head, anEl('p', 'an-muted', t('an_delimit_note')));
+
+			// The partition chosen, against the names and BINs
+			const c = anConcordance(part.motu, g.species, g.bins);
+			const box = anEl('div', 'an-check');
+			const boxHead = anEl('div', 'an-check-head');
+			boxHead.append(anEl('div', 'an-h', t('an_h_motu_conc', { part: part.label })));
+			const actions = anEl('div', 'd-flex flex-wrap gap-2');
+			const dl = anEl('button', 'btn btn-sm btn-emerald', t('an_dl_motus'));
+			dl.type = 'button';
+			dl.addEventListener('click', () => anDownloadMotus(g, part, c));
+			actions.append(dl);
+			if (d.trees.some(x => x.group === g.group)) {
+				const toTree = anEl('button', 'btn btn-sm btn-outline-secondary', t('an_motu_to_tree'));
+				toTree.type = 'button';
+				toTree.addEventListener('click', () => {
+					anTreeOpts().color = 'motu';
+					AnState.treeGroup = g.group;
+					AnState.showView('tree');
+				});
+				actions.append(toTree);
+			}
+			boxHead.append(actions);
+			box.append(boxHead);
+			const s = c.summary;
+			const tiles = anEl('div', 'an-tiles');
+			tiles.append(anTile(numFmt.format(s.motus), t('an_t_motus')),
+			             anTile(numFmt.format(s.species), t('an_t_named_species')),
+			             anTile(numFmt.format(s.match), t('an_t_match'), anPct(s.match, s.species)),
+			             anTile(numFmt.format(s.split), t('an_t_split')),
+			             anTile(numFmt.format(s.merged), t('an_t_merged')),
+			             anTile(numFmt.format(s.split_merged), t('an_t_split_merged')));
+			if (s.motusWithBin) tiles.append(anTile(numFmt.format(s.sameBin), t('an_t_motu_bin'),
+				t('an_t_of', { n: numFmt.format(s.motusWithBin) })));
+			box.append(tiles);
+			if (c.rows.length) {
+				box.append(anEl('p', 'an-muted', t('an_motu_conc_note')));
+				if (c.rows.length > AN_TABLE_ROWS) box.append(anEl('p', 'an-muted',
+					t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(c.rows.length) })));
+				box.append(anTable([
+					{ label: t('an_c_species'), cls: 'sp', get: r => r.species },
+					{ label: t('an_c_seqs'), cls: 'num', get: r => numFmt.format(r.n) },
+					{ label: t('an_c_motus'), cls: 'list', get: r => anShortList(r.motus) },
+					{ label: t('an_c_bin'), cls: 'list', get: r => anShortList(r.bins) },
+					{ label: t('an_c_shares_with'), cls: 'sp', get: r => anShortList(r.with) },
+					{ label: t('an_c_status'), get: r => {
+						const b = anEl('span', 'an-motu-st ' + r.status, t('an_st_' + r.status));
+						b.title = t('an_st_' + r.status + '_d');
+						return b;
+					} },
+				], c.rows.slice(0, AN_TABLE_ROWS)));
+			} else {
+				box.append(anEl('p', 'an-muted mb-0', t('an_motu_no_names')));
+			}
+			body.append(box);
+
+			const pickBtn = (active, onClick) => {
+				const b = anEl('button', 'btn btn-sm an-pick' + (active ? ' active' : ''), t(active ? 'an_motu_shown' : 'an_motu_show'));
+				b.type = 'button';
+				b.disabled = active;
+				b.addEventListener('click', onClick);
+				return b;
+			};
+
+			// ASAP: its best partitions
+			body.append(anEl('div', 'an-h', t('an_h_asap')),
+			            anEl('p', 'an-muted', t('an_asap_note', { n: numFmt.format(g.asap_evaluated) })));
+			body.append(anTable([
+				{ label: t('an_c_rank'), cls: 'num', get: x => x.rank },
+				{ label: t('an_c_asap_score'), cls: 'num', get: x => anNum(x.score, 1) },
+				{ label: t('an_c_motus_n'), cls: 'num', get: x => numFmt.format(x.subsets) },
+				{ label: t('an_c_pvalue'), cls: 'num', get: x => anPval(x.p) },
+				{ label: t('an_c_gap_width'), cls: 'num', get: x => (100 * x.slope).toPrecision(3) },
+				{ label: t('an_c_threshold'), cls: 'num', get: x => anPctOf(x.threshold) },
+				{ label: '', get: (x, i) => pickBtn(sel.method === 'asap' && sel.index === i, () => choose('asap', i)) },
+			], g.asap));
+
+			// ABGD: one row per prior, with its initial and recursive partitions
+			body.append(anEl('div', 'an-h', t('an_h_abgd')), anEl('p', 'an-muted', t('an_abgd_note')));
+			const cell = (i, method, n) => {
+				const wrap = anEl('span', 'd-inline-flex align-items-center gap-2');
+				wrap.append(anEl('span', 'an-pick-n', numFmt.format(n)),
+				            pickBtn(sel.method === method && sel.index === i, () => choose(method, i)));
+				return wrap;
+			};
+			body.append(anTable([
+				{ label: t('an_c_prior'), cls: 'num', get: x => anPrior(x.prior) },
+				{ label: t('an_c_abgd_gap'), cls: 'num', get: x => x.gap === null ? '—' : anPctOf(x.gap) },
+				{ label: t('an_c_abgd_initial'), get: (x, i) => cell(i, 'abgd_initial', x.initial) },
+				{ label: t('an_c_abgd_recursive'), get: (x, i) => cell(i, 'abgd', x.recursive) },
+			], g.abgd));
+		}
+
+		// The first few items of a list, and how many more (all of them on hover)
+		function anShortList(items, k = 3) {
+			if (items.length <= k + 1) return items.join(', ');
+			const span = anEl('span', '', items.slice(0, k).join(', ') + ' ');
+			span.append(anEl('span', 'an-muted', t('an_more_items', { n: numFmt.format(items.length - k) })));
+			span.title = items.join(', ');
+			return span;
+		}
+
+		function anDownloadMotus(g, part, c) {
+			const status = new Map(c.rows.map(r => [r.species, r.status]));
+			const rows = g.ids.map((id, i) => [id, g.species[i], g.bins[i], `MOTU ${part.motu[i]}`,
+				status.has(g.species[i]) ? status.get(g.species[i]) : '']);
+			const sel = AnState.motuSel;
+			const tag = sel.method === 'asap' ? `asap${g.asap[sel.index].rank}`
+			          : `abgd_${sel.method === 'abgd_initial' ? 'initial' : 'recursive'}_P${g.abgd[sel.index].prior.toFixed(4)}`;
+			const group = AnState.dist.groups.length > 1 ? `_group${g.group + 1}` : '';
+			downloadText(anCsv(['processid', 'species', 'bin', 'motu', 'species_status'], rows),
+			             `${anFileStem()}_motus_${tag}${group}.csv`, 'text/csv;charset=utf-8');
+		}
+
+		// MOTUs of a tree's tips, from the partition chosen. Returns whether
+		// the tree's group has a delimitation.
+		function anTreeMotu(T, tree) {
+			const g = (AnState.dist.delimit || []).find(x => x.group === tree.group);
+			if (!g) {
+				T.meta.forEach(m => { m.motu = ''; });
+				return false;
+			}
+			const part = anMotuPartition(g);
+			const key = JSON.stringify(AnState.motuSel);
+			if (T.motuKey === key) return true;
+			T.motuKey = key;
+			delete T.keys.motu;
+			T.manual.clear();
+			const pos = new Map(g.members.map((x, j) => [x, j]));
+			T.meta.forEach(m => {
+				const j = pos.get(m.i);
+				m.motu = j === undefined ? '' : `MOTU ${part.motu[j]}`;
+			});
+			return true;
+		}
+
 		// A round step that splits 0..max into about `parts` steps
 		function anStep(max, parts = 4) {
 			const raw = (max || 1) / parts;
@@ -7282,6 +7703,410 @@
 			return wrap;
 		}
 
+		// ── Haplotype network (TCS or MSN) ──
+		// Computed on demand by /api/analysis/network (seq_network.py) for
+		// every sequence of the input or one species; the server sends the
+		// network with a layout, the page draws it and builds the downloads.
+
+		const AN_NET_LIMITS = {{ analysis_network_limits | tojson }};
+		// Pixels per layout unit at scale 1
+		const AN_NET_UNIT = 16;
+
+		function anNetOpts() {
+			if (!AnState.netOpts) AnState.netOpts = { species: '', method: 'tcs', color: 'country', labels: 'hap', ticks: true, scale: 1 };
+			return AnState.netOpts;
+		}
+
+		// MOTU of each sequence ID, from the partition chosen in each
+		// delimited group ("MOTU 3", or "G2 · MOTU 3" with several groups)
+		function anMotuById() {
+			const d = AnState.dist;
+			const out = new Map();
+			if (!d || !d.delimit) return out;
+			d.delimit.forEach(g => {
+				const part = anGroupPartition(g, AnState.motuSel && AnState.motuSel.group === g.group
+					? AnState.motuSel : { method: 'asap', index: 0 });
+				const prefix = d.groups.length > 1 ? `G${g.group + 1} · ` : '';
+				g.ids.forEach((id, i) => out.set(id, `${prefix}MOTU ${part.motu[i]}`));
+			});
+			return out;
+		}
+
+		async function anRunNetwork() {
+			if (AnState.netRunning || !AnState.lastBody) return;
+			const opts = anNetOpts();
+			AnState.netRunning = true;
+			anRefreshView();
+			const body = Object.assign({}, AnState.lastBody, { method: opts.method, species: opts.species || null });
+			try {
+				const response = await fetch('/api/analysis/network', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(body),
+				});
+				const data = await response.json().catch(() => ({}));
+				if (!response.ok || data.error) throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				AnState.net = data;
+				AnState.netPos = data.vertices.map(v => [v.x, v.y]);
+				// Without countries (a plain FASTA), species say more
+				if (opts.color === 'country' && !data.seqs.some(x => x.country)) opts.color = 'species';
+			} catch (e) {
+				showBatchDialog(escapeHtml(e.message));
+			} finally {
+				AnState.netRunning = false;
+				anRefreshView();
+			}
+		}
+
+		function anNetControls(body, r) {
+			const opts = anNetOpts();
+			const box = anEl('div', 'an-dist-controls');
+			const row = anEl('div', 'an-options');
+			const field = (labelKey, control) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), control);
+				return l;
+			};
+			const sp = anEl('select', 'form-select form-select-sm an-net-species');
+			const all = anEl('option', '', t('an_net_all', { n: numFmt.format(r.summary.analysed) }));
+			all.value = '';
+			sp.append(all);
+			[...r.haplotypes].filter(h => h.species && h.n >= 2)
+				.sort((a, b) => b.n - a.n || a.species.localeCompare(b.species))
+				.forEach(h => {
+					const o = anEl('option', '', t('an_net_species_opt', { sp: h.species, n: numFmt.format(h.n), h: numFmt.format(h.haplotypes) }));
+					o.value = h.species;
+					sp.append(o);
+				});
+			sp.value = opts.species;
+			if (sp.value !== opts.species) sp.value = '';
+			const method = anEl('select', 'form-select form-select-sm');
+			[['tcs', 'an_net_tcs'], ['msn', 'an_net_msn']].forEach(([v, k]) => {
+				const o = anEl('option', '', t(k));
+				o.value = v;
+				method.append(o);
+			});
+			method.value = opts.method;
+			const run = anEl('button', 'btn btn-primary btn-sm px-4', t('an_net_run'));
+			run.type = 'button';
+			run.disabled = AnState.netRunning;
+			run.addEventListener('click', () => {
+				opts.species = sp.value;
+				opts.method = method.value;
+				anRunNetwork();
+			});
+			const status = anEl('span', 'an-muted ms-auto', AnState.netRunning ? t('an_net_running') : '');
+			row.append(field('an_net_seqs_label', sp), field('an_net_method_label', method), status, run);
+			box.append(row, anEl('p', 'an-muted mt-2 mb-0', t('an_net_intro', {
+				n: numFmt.format(AN_NET_LIMITS.seqs), tcs: numFmt.format(AN_NET_LIMITS.tcs), msn: numFmt.format(AN_NET_LIMITS.msn) })));
+			body.append(box);
+		}
+
+		// Category of each sequence for the colour chosen
+		function anNetCategory(net, attr) {
+			if (attr === 'none') return () => '';
+			if (attr === 'motu') {
+				const motus = anMotuById();
+				return i => motus.get(net.seqs[i].id) || '';
+			}
+			return i => net.seqs[i][attr] || '';
+		}
+
+		function anNetColors(net, attr) {
+			if (attr === 'none') return { of: () => null, legend: [], italic: false };
+			const cat = anNetCategory(net, attr);
+			const counts = new Map();
+			net.seqs.forEach((s, i) => { const k = cat(i) || t('an_net_unknown'); counts.set(k, (counts.get(k) || 0) + 1); });
+			const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+			const slots = ranked.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
+			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, AN_PALETTE[i]]));
+			const legend = ranked.slice(0, slots).map(([k, n]) => [colorOf.get(k), `${k} (${numFmt.format(n)})`]);
+			if (ranked.length > slots) legend.push([AN_OTHER, t('an_tree_other', { n: numFmt.format(ranked.length - slots) })]);
+			return { of: i => colorOf.get(cat(i) || t('an_net_unknown')) || AN_OTHER, cat, legend, italic: attr === 'species' };
+		}
+
+		// The network as SVG text; `forExport` leaves out the drag targets
+		function anNetSvg(net, opts, forExport) {
+			const pos = AnState.netPos;
+			const S = AN_NET_UNIT * opts.scale;
+			const colors = anNetColors(net, opts.color);
+			const xs = pos.map(p => p[0]), ys = pos.map(p => p[1]);
+			const pad = 3;
+			const minX = Math.min(...xs.map((x, i) => x - net.vertices[i].r)) - pad;
+			const maxX = Math.max(...xs.map((x, i) => x + net.vertices[i].r)) + pad;
+			const minY = Math.min(...ys.map((y, i) => y - net.vertices[i].r)) - pad;
+			const maxY = Math.max(...ys.map((y, i) => y + net.vertices[i].r)) + pad;
+
+			// Legend on top, wrapped to the width
+			let W = Math.max(480, Math.ceil((maxX - minX) * S));
+			const legendParts = [];
+			let top = 10;
+			// On screen the legend goes above the figure, readable at any size
+			if (forExport && colors.legend.length) {
+				let lx = 12, ly = top + 6;
+				colors.legend.forEach(([c, label]) => {
+					const w = 18 + label.length * 6.4 + 18;
+					if (lx + w > W - 12 && lx > 12) { lx = 12; ly += 18; }
+					legendParts.push(`<rect x="${lx}" y="${ly - 5}" width="10" height="10" rx="2" fill="${c}"/>`,
+					                 `<text x="${lx + 15}" y="${ly + 4}" font-size="11" fill="${AN_MUTE}"${colors.italic && c !== AN_OTHER ? ' font-style="italic"' : ''}>${anSvgEsc(label)}</text>`);
+					lx += w;
+				});
+				top = ly + 18;
+			}
+			const X = x => (x - minX) * S + Math.max(0, (W - (maxX - minX) * S) / 2);
+			const Y = y => (y - minY) * S + top;
+			const H = Math.ceil((maxY - minY) * S + top + 8);
+			const R = v => v.r * S;
+
+			// Edges, with a tick per mutation (a number past ten)
+			const lines = [], ticks = [], counts = [];
+			net.edges.forEach(e => {
+				const a = net.vertices[e.a], b = net.vertices[e.b];
+				const x1 = X(pos[e.a][0]), y1 = Y(pos[e.a][1]), x2 = X(pos[e.b][0]), y2 = Y(pos[e.b][1]);
+				lines.push(`M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`);
+				const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+				const ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+				const free0 = R(a), free1 = len - R(b);
+				const mid = (free0 + free1) / 2;
+				if (opts.ticks && e.w <= 10 && free1 - free0 > 4) {
+					const step = Math.min(5, (free1 - free0) / (e.w + 1));
+					for (let k = 0; k < e.w; k++) {
+						const at = mid + (k - (e.w - 1) / 2) * step;
+						const cx = x1 + ux * at, cy = y1 + uy * at;
+						ticks.push(`M${(cx - uy * 4).toFixed(1)},${(cy + ux * 4).toFixed(1)}L${(cx + uy * 4).toFixed(1)},${(cy - ux * 4).toFixed(1)}`);
+					}
+				} else if (e.w > 1 || !opts.ticks) {
+					const cx = x1 + ux * mid, cy = y1 + uy * mid;
+					counts.push(`<text x="${cx.toFixed(1)}" y="${(cy + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="${AN_INK}" stroke="#fff" stroke-width="3" paint-order="stroke">${e.w}</text>`);
+				}
+			});
+
+			// Nodes: pies by category, intermediates as small dots
+			const nodes = [], labels = [];
+			net.vertices.forEach((v, i) => {
+				const cx = X(pos[i][0]), cy = Y(pos[i][1]), r = R(v);
+				const hit = forExport ? '' : ` class="net-node" data-i="${i}"`;
+				if (!v.n) {
+					nodes.push(`<circle${hit} cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${Math.max(2, r).toFixed(1)}" fill="${AN_INK}"/>`);
+					return;
+				}
+				const slices = new Map();
+				v.seqs.forEach(s => { const c = colors.of(s) || '#ffffff'; slices.set(c, (slices.get(c) || 0) + 1); });
+				const parts = [];
+				if (slices.size === 1) {
+					parts.push(`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${[...slices.keys()][0]}"/>`);
+				} else {
+					let angle = -Math.PI / 2;
+					slices.forEach((n, c) => {
+						const a2 = angle + 2 * Math.PI * n / v.n;
+						const large = a2 - angle > Math.PI ? 1 : 0;
+						parts.push(`<path d="M${cx.toFixed(1)},${cy.toFixed(1)}L${(cx + r * Math.cos(angle)).toFixed(1)},${(cy + r * Math.sin(angle)).toFixed(1)}` +
+						           `A${r.toFixed(1)},${r.toFixed(1)} 0 ${large} 1 ${(cx + r * Math.cos(a2)).toFixed(1)},${(cy + r * Math.sin(a2)).toFixed(1)}Z" fill="${c}"/>`);
+						angle = a2;
+					});
+				}
+				parts.push(`<circle${hit} cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${forExport ? 'none' : 'transparent'}" stroke="${AN_INK}" stroke-width="1"/>`);
+				nodes.push(parts.join(''));
+				if (opts.labels !== 'none') {
+					const text = opts.labels === 'hap_n' ? `${v.hap} (${v.n})` : v.hap;
+					labels.push(`<text x="${(cx + r + 2).toFixed(1)}" y="${(cy - r * 0.6).toFixed(1)}" font-size="10" fill="${AN_INK}" stroke="#fff" stroke-width="3" paint-order="stroke">${anSvgEsc(text)}</text>`);
+				}
+			});
+
+			const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${AN_FONT}">` +
+				`<rect width="${W}" height="${H}" fill="#ffffff"/>` + legendParts.join('') +
+				`<path d="${lines.join('')}" stroke="${AN_MUTE}" stroke-width="1.2" fill="none"/>` +
+				(ticks.length ? `<path d="${ticks.join('')}" stroke="${AN_INK}" stroke-width="1" fill="none"/>` : '') +
+				counts.join('') + nodes.join('') + labels.join('') + `</svg>`;
+			return { svg, W, H, X, Y, S, minX, minY, top, legend: colors.legend, italic: colors.italic };
+		}
+
+		function anNetFileStem() {
+			const n = AnState.net;
+			const what = (n.species || 'all').replace(/[^\w.-]+/g, '_');
+			return `bold_network_${n.method}_${what}_${exportStamp()}`;
+		}
+
+		function anNetDownloads(net, opts) {
+			const stem = anNetFileStem();
+			const byHap = new Map();
+			net.seqs.forEach((s, i) => { if (!byHap.has(s.hap)) byHap.set(s.hap, []); byHap.get(s.hap).push(i); });
+			const tally = (idx, key) => {
+				const c = new Map();
+				idx.forEach(i => { const k = net.seqs[i][key] || '—'; c.set(k, (c.get(k) || 0) + 1); });
+				return [...c.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} (${n})`).join('; ');
+			};
+			const haps = Object.keys(net.hap_seqs).sort((a, b) => +a.slice(1) - +b.slice(1));
+			return {
+				csv: () => downloadText(anCsv(['haplotype', 'sequences', 'species', 'countries', 'bins', 'processids'],
+					haps.map(h => { const idx = byHap.get(h); return [h, idx.length, tally(idx, 'species'), tally(idx, 'country'),
+						tally(idx, 'bin'), idx.map(i => net.seqs[i].id).join('; ')]; })),
+					`${stem}_haplotypes.csv`, 'text/csv;charset=utf-8'),
+				fasta: () => downloadText(haps.map(h => `>${h} n=${byHap.get(h).length}\n${net.hap_seqs[h]}\n`).join(''),
+					`${stem}_haplotypes.fasta`, 'text/plain;charset=utf-8'),
+				nexus: () => {
+					// One sequence per record, with the colour chosen as PopART traits
+					const safe = s => s.replace(/[^\w.-]+/g, '_');
+					const cat = anNetCategory(net, opts.color === 'none' ? 'country' : opts.color);
+					const traits = [...new Set(net.seqs.map((s, i) => safe(cat(i) || 'unknown')))].sort();
+					const names = net.seqs.map((s, i) => `${safe(s.id)}_${i + 1}`);
+					const lines = ['#NEXUS', '', 'BEGIN TAXA;', `  DIMENSIONS NTAX=${net.seqs.length};`, '  TAXLABELS',
+						...names.map(n => `    ${n}`), '  ;', 'END;', '',
+						'BEGIN CHARACTERS;', `  DIMENSIONS NCHAR=${net.sites};`, '  FORMAT DATATYPE=DNA MISSING=? GAP=-;', '  MATRIX',
+						...net.seqs.map((s, i) => `    ${names[i]} ${net.hap_seqs[s.hap]}`), '  ;', 'END;', '',
+						'BEGIN TRAITS;', `  DIMENSIONS NTRAITS=${traits.length};`, '  FORMAT LABELS=YES MISSING=? SEPARATOR=COMMA;',
+						`  TRAITLABELS ${traits.join(' ')};`, '  MATRIX',
+						...net.seqs.map((s, i) => { const k = safe(cat(i) || 'unknown'); return `    ${names[i]} ${traits.map(x => x === k ? 1 : 0).join(',')}`; }),
+						'  ;', 'END;', ''];
+					downloadText(lines.join('\n'), `${stem}.nex`, 'text/plain;charset=utf-8');
+				},
+			};
+		}
+
+		function anRenderNetwork(body, r) {
+			anNetControls(body, r);
+			const net = AnState.net;
+			if (!net) {
+				body.append(anEl('p', 'an-muted mt-3', t('an_net_off')));
+				return;
+			}
+			const opts = anNetOpts();
+			const head = anEl('div', 'an-head mt-3');
+			head.append(anEl('span', 'an-title', t('an_net_title', {
+				m: net.method.toUpperCase(), what: net.species || t('an_net_all_short'),
+				n: numFmt.format(net.analysed), h: numFmt.format(net.haplotypes) })));
+			head.append(anEl('span', 'an-muted', t('an_result_time', { s: net.seconds })));
+			body.append(head);
+			const warn = text => body.append(anEl('div', 'an-warn', '⚠ ' + text));
+			const ex = net.excluded || {};
+			if (ex.stops) warn(t('an_dist_ex_stops', { n: numFmt.format(ex.stops) }));
+			if (ex.short) warn(t('an_dist_ex_short', { n: numFmt.format(ex.short) }));
+			if (ex.unplaced || ex.other_group) warn(t('an_net_ex_unaligned', { n: numFmt.format((ex.unplaced || 0) + (ex.other_group || 0)) }));
+			if (ex.incomplete) warn(t('an_net_ex_incomplete', { n: numFmt.format(ex.incomplete) }));
+			body.append(anEl('p', 'an-muted mb-1', t('an_net_sites', { n: numFmt.format(net.sites), m: numFmt.format(net.alignment_columns) })));
+
+			const st = net.stats;
+			const tiles = anEl('div', 'an-tiles');
+			tiles.append(anTile(numFmt.format(net.analysed), t('an_t_seqs')),
+			             anTile(numFmt.format(net.haplotypes), t('an_t_haps')),
+			             anTile(st.hd.toFixed(3), t('an_t_hd')),
+			             anTile(st.pi.toFixed(4), t('an_t_pi'), t('an_t_k', { k: st.k.toFixed(2) })),
+			             anTile(numFmt.format(st.segregating), t('an_t_seg')),
+			             anTile(st.tajima_d === null ? '—' : st.tajima_d.toFixed(2), t('an_t_tajima')));
+			if (net.method === 'tcs') tiles.append(anTile(numFmt.format(net.intermediates), t('an_t_intermediates')));
+			body.append(tiles);
+			body.append(anEl('p', 'an-muted', t(net.method === 'tcs' ? 'an_net_note_tcs' : 'an_net_note_msn')));
+
+			// Toolbar
+			const tools = anEl('div', 'an-tree-tools');
+			const sel = (labelKey, value, options, onChange) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				const s = anEl('select', 'form-select form-select-sm');
+				options.forEach(([v, k]) => { const o = anEl('option', '', t(k)); o.value = v; s.append(o); });
+				s.value = value;
+				s.addEventListener('change', () => onChange(s.value));
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), s);
+				return l;
+			};
+			const hasMotu = anMotuById().size > 0;
+			if (opts.color === 'motu' && !hasMotu) opts.color = 'country';
+			const row1 = anEl('div', 'an-options');
+			const range = anEl('input', 'form-range');
+			range.type = 'range'; range.min = 0.5; range.max = 3; range.step = 0.1; range.value = opts.scale;
+			const rangeOut = anEl('span', 'an-muted an-range-v', `${opts.scale.toFixed(1)}×`);
+			range.addEventListener('input', () => { opts.scale = +range.value; rangeOut.textContent = `${opts.scale.toFixed(1)}×`; redraw(); });
+			const sizeLbl = anEl('label', 'd-flex align-items-center gap-2');
+			sizeLbl.append(anEl('span', 'text-secondary small text-nowrap', t('an_net_size')), range, rangeOut);
+			const tickLbl = anEl('label', 'form-check d-inline-flex align-items-center gap-1 mb-0');
+			const tick = anEl('input', 'form-check-input mt-0');
+			tick.type = 'checkbox'; tick.checked = opts.ticks;
+			tick.addEventListener('change', () => { opts.ticks = tick.checked; redraw(); });
+			tickLbl.append(tick, anEl('span', 'small', t('an_net_ticks')));
+			row1.append(
+				sel('an_tree_color', opts.color, [['none', 'an_tree_color_none'], ['country', 'an_tree_by_country'],
+					['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'], ...(hasMotu ? [['motu', 'an_tree_by_motu']] : [])],
+					v => { opts.color = v; redraw(); }),
+				sel('an_tree_labels', opts.labels, [['none', 'an_net_lbl_none'], ['hap', 'an_net_lbl_hap'], ['hap_n', 'an_net_lbl_hap_n']],
+					v => { opts.labels = v; redraw(); }),
+				sizeLbl, tickLbl);
+			const button = (label, fn, cls = 'btn-emerald') => {
+				const b = anEl('button', 'btn btn-sm ' + cls, label);
+				b.type = 'button';
+				b.addEventListener('click', fn);
+				return b;
+			};
+			const dls = anNetDownloads(net, opts);
+			const exportFig = (format, scale) => anExportFigure(anNetSvg(net, opts, true), anNetFileStem(), format, scale);
+			const row2 = anEl('div', 'an-options mt-2');
+			row2.append(anEl('span', 'text-secondary small', t('an_tree_export')),
+			            button('SVG', () => exportFig('svg')), button('PNG 2×', () => exportFig('png', 2)),
+			            button('PNG 4×', () => exportFig('png', 4)), button('PDF', () => exportFig('pdf')),
+			            anEl('span', 'text-secondary small ms-3', t('an_net_data')),
+			            button(t('an_net_dl_csv'), dls.csv), button(t('an_net_dl_fasta'), dls.fasta),
+			            button(t('an_net_dl_nexus'), dls.nexus),
+			            button(t('an_net_reset'), () => { AnState.netPos = net.vertices.map(v => [v.x, v.y]); redraw(); },
+			                   'btn-link text-muted p-0 ms-auto'));
+			tools.append(row1, row2);
+			body.append(tools, anEl('p', 'an-muted', t('an_net_drag')));
+
+			const legendBox = anEl('div', 'an-net-legend');
+			const wrap = anEl('div', 'an-tree an-net');
+			body.append(legendBox, wrap);
+			let fig;
+			function redraw() {
+				fig = anNetSvg(net, opts, false);
+				legendBox.replaceChildren(...(fig.legend.length ? [anLegend(fig.legend)] : []));
+				legendBox.classList.toggle('italic', fig.italic);
+				wrap.innerHTML = fig.svg;
+				const svg = wrap.querySelector('svg');
+				anAttachTip(wrap, svg, i => {
+					const v = net.vertices[i];
+					if (!v.n) return { text: t('an_net_tip_intermediate') };
+					const cat = opts.color === 'none' ? null : anNetCategory(net, opts.color);
+					let detail = '';
+					if (cat) {
+						const c = new Map();
+						v.seqs.forEach(s => { const k = cat(s) || t('an_net_unknown'); c.set(k, (c.get(k) || 0) + 1); });
+						detail = ' — ' + [...c.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, n]) => `${k} ${n}`).join(', ');
+					}
+					return { text: t('an_net_tip', { h: v.hap, n: numFmt.format(v.n) }) + detail };
+				});
+			}
+			redraw();
+
+			// Drag nodes; the layout is kept until the next network
+			let drag = null;
+			wrap.addEventListener('pointerdown', e => {
+				const node = e.target.closest('.net-node');
+				if (!node) return;
+				drag = { i: +node.dataset.i };
+				e.preventDefault();
+			});
+			wrap.addEventListener('pointermove', e => {
+				if (!drag) return;
+				const svg = wrap.querySelector('svg');
+				const pt = svg.createSVGPoint();
+				pt.x = e.clientX; pt.y = e.clientY;
+				const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+				const nx = (p.x - fig.X(fig.minX)) / fig.S + fig.minX, ny = (p.y - fig.top) / fig.S + fig.minY;
+				AnState.netPos[drag.i] = [nx, ny];
+				if (!drag.pending) {
+					drag.pending = true;
+					requestAnimationFrame(() => { if (drag) { drag.pending = false; redraw(); } });
+				}
+			});
+			const end = () => { drag = null; };
+			wrap.addEventListener('pointerup', end);
+			wrap.addEventListener('pointercancel', end);
+		}
+
+		// A network of one species, from the haplotype table
+		function anNetworkOf(species) {
+			anNetOpts().species = species;
+			AnState.showView('network');
+			anRunNetwork();
+		}
+
 		// ── Tree ──
 
 		function anParseNewick(s) {
@@ -7331,7 +8156,7 @@
 			if (!AnState.treeOpts) {
 				AnState.treeOpts = {
 					collapse: 'none', color: 'none', mode: 'phylo', row: 15, font: 11, query: '',
-					labels: { species: true, id: true, bin: true, country: false },
+					labels: { species: true, id: true, bin: true, country: false, motu: false },
 					colorLabels: false,
 					touched: false,
 				};
@@ -7460,7 +8285,7 @@
 		function anTipLabel(m, labels) {
 			const parts = [];
 			if (labels.species && m.species) parts.push([m.species, true]);
-			const rest = [labels.id && m.id, labels.bin && m.bin, labels.country && m.country].filter(Boolean);
+			const rest = [labels.id && m.id, labels.bin && m.bin, labels.motu && m.motu, labels.country && m.country].filter(Boolean);
 			if (rest.length) parts.push([rest.join(' · '), false]);
 			return parts;
 		}
@@ -7483,6 +8308,7 @@
 				else if (v.length > 1) parts.push([t('an_tree_group_species', { n: numFmt.format(v.length) }), false]);
 			}
 			const rest = [labels.bin && field('bin', 'an_tree_group_bins'),
+			              labels.motu && field('motu', 'an_tree_group_motus'),
 			              labels.country && field('country', 'an_tree_group_countries')].filter(Boolean);
 			rest.push(`(${numFmt.format(tips.length)})`);
 			parts.push([rest.join(' · '), false]);
@@ -7630,17 +8456,20 @@
 		}
 
 		function anExportTree(format, scale) {
-			const T = AnState.tree, opts = anTreeOpts();
-			const fig = anTreeSvg(T, opts, true);
+			anExportFigure(anTreeSvg(AnState.tree, anTreeOpts(), true), anTreeFileStem(), format, scale);
+		}
+
+		// A figure ({svg, W, H}) as SVG, PNG at `scale` or PDF (print dialog)
+		function anExportFigure(fig, stem, format, scale) {
 			if (format === 'svg') {
-				anDownloadBlob(new Blob([fig.svg], { type: 'image/svg+xml' }), anTreeFileStem() + '.svg');
+				anDownloadBlob(new Blob([fig.svg], { type: 'image/svg+xml' }), stem + '.svg');
 				return;
 			}
 			if (format === 'pdf') {
 				// The browser's print dialog saves it as PDF (vector)
 				const w = window.open('', '_blank');
 				if (!w) { showBatchDialog(escapeHtml(t('an_tree_popup_blocked'))); return; }
-				w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${anSvgEsc(anTreeFileStem())}</title>` +
+				w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${anSvgEsc(stem)}</title>` +
 					`<style>@page{margin:10mm}html,body{margin:0;background:#fff}svg{display:block;width:100%;height:auto}</style>` +
 					`</head><body>${fig.svg}</body></html>`);
 				w.document.close();
@@ -7661,7 +8490,7 @@
 				URL.revokeObjectURL(url);
 				canvas.toBlob(blob => {
 					if (!blob) { showBatchDialog(escapeHtml(t('an_tree_png_failed'))); return; }
-					anDownloadBlob(blob, `${anTreeFileStem()}_${scale}x.png`);
+					anDownloadBlob(blob, `${stem}_${scale}x.png`);
 				}, 'image/png');
 				if (s < scale - 0.01) showBatchDialog(escapeHtml(t('an_tree_png_reduced', { s: s.toFixed(2) })));
 			};
@@ -7669,7 +8498,7 @@
 			img.src = url;
 		}
 
-		function anTreeToolbar(redraw) {
+		function anTreeToolbar(redraw, hasMotu) {
 			const opts = anTreeOpts();
 			const box = anEl('div', 'an-tree-tools');
 			const sel = (labelKey, value, options, onChange) => {
@@ -7707,12 +8536,13 @@
 			};
 
 			const row1 = anEl('div', 'an-options');
+			const motuOpt = hasMotu ? [['motu', 'an_tree_by_motu']] : [];
 			row1.append(
 				sel('an_tree_collapse', opts.collapse,
-				    [['none', 'an_tree_collapse_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin']],
+				    [['none', 'an_tree_collapse_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'], ...motuOpt],
 				    v => { opts.collapse = v; opts.touched = true; AnState.tree.manual.clear(); redraw(); }),
 				sel('an_tree_color', opts.color,
-				    [['none', 'an_tree_color_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'],
+				    [['none', 'an_tree_color_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'], ...motuOpt,
 				     ['genus', 'an_tree_by_genus'], ['country', 'an_tree_by_country'], ['discordance', 'an_tree_by_discordance']],
 				    v => { opts.color = v; redraw(); }),
 				sel('an_tree_mode', opts.mode, [['phylo', 'an_tree_phylo'], ['clado', 'an_tree_clado']],
@@ -7723,7 +8553,8 @@
 			const row2 = anEl('div', 'an-options mt-2');
 			const labels = anEl('div', 'd-flex flex-wrap align-items-center gap-3');
 			labels.append(anEl('span', 'text-secondary small', t('an_tree_labels')));
-			[['species', 'an_c_species'], ['id', 'an_c_id'], ['bin', 'an_c_bin'], ['country', 'an_tree_country']]
+			[['species', 'an_c_species'], ['id', 'an_c_id'], ['bin', 'an_c_bin'], ...(hasMotu ? [['motu', 'an_tree_motu']] : []),
+			 ['country', 'an_tree_country']]
 				.forEach(([k, key]) => labels.append(check(key, opts.labels[k], v => { opts.labels[k] = v; redraw(); })));
 			labels.append(check('an_tree_color_labels', opts.colorLabels, v => { opts.colorLabels = v; redraw(); }));
 			const find = anEl('input', 'form-control form-control-sm an-tree-find');
@@ -7765,6 +8596,11 @@
 			if (!AnState.treeCache[tree.group]) AnState.treeCache[tree.group] = anPrepareTree(tree);
 			const T = AnState.tree = AnState.treeCache[tree.group];
 			const opts = anTreeOpts();
+			const hasMotu = anTreeMotu(T, tree);
+			if (!hasMotu) {
+				if (opts.color === 'motu') opts.color = 'none';
+				if (opts.collapse === 'motu') opts.collapse = 'none';
+			}
 			if (!opts.touched) opts.collapse = tree.tips.length > AN_TREE_AUTO_COLLAPSE ? 'species' : 'none';
 
 			if (d.groups.length > 1) {
@@ -7787,6 +8623,10 @@
 			const rowsInfo = anEl('span', 'an-muted');
 			head.append(rowsInfo);
 			body.append(head, anEl('p', 'an-muted', t('an_tree_note')));
+			if (hasMotu) {
+				const g = AnState.dist.delimit.find(x => x.group === tree.group);
+				body.append(anEl('p', 'an-muted', t('an_tree_motu_part', { part: anMotuPartition(g).label })));
+			}
 
 			const wrap = anEl('div', 'an-tree');
 			let tools;
@@ -7797,7 +8637,7 @@
 				tools.found.textContent = opts.query.trim() ? t('an_tree_found', { n: numFmt.format(fig.matches) }) : '';
 				if (scrollToMatch && fig.firstHit !== null) wrap.scrollTop = fig.firstHit - wrap.clientHeight / 2;
 			};
-			tools = anTreeToolbar(redraw);
+			tools = anTreeToolbar(redraw, hasMotu);
 			// Rebuilding the toolbar too (its selects change with "expand all")
 			AnState.treeRebuild = () => anRefreshView();
 			body.append(tools.box, wrap);

@@ -561,7 +561,9 @@
           <li><a href="#an-conceptos">Before you start: distances and the barcode gap</a></li>
           <li><a href="#an-distancias">Distances and barcode gap</a></li>
           <li><a href="#an-revision">Automatic identification check</a></li>
+          <li><a href="#an-delimitacion">Species delimitation (MOTUs)</a></li>
           <li><a href="#an-arbol">NJ tree</a></li>
+          <li><a href="#an-red">Haplotype network</a></li>
           <li><a href="#an-descargas">Downloads and limits</a></li>
           <li><a href="#an-ejemplo">Worked example</a></li>
         </ol>
@@ -1572,7 +1574,10 @@
       <li><strong>Basic analysis</strong> (no alignment, seconds even for thousands of sequences): composition and
           quality, a translation check (stop codons), haplotypes per species and species–BIN concordance.</li>
       <li><strong>Distances and tree</strong> (on demand, on the same sequences): alignment, BOLD-style genetic
-          distances, <em>barcode gap</em> per species and a neighbour-joining tree.</li>
+          distances, <em>barcode gap</em> per species, a neighbour-joining tree and, on request, species
+          delimitation with ASAP and ABGD.</li>
+      <li><strong>Haplotype network</strong> (on demand, of one species or every sequence): TCS or MSN networks
+          with diversity statistics.</li>
     </ul>
     <div class="callout warn">
       <span class="icon">⚠️</span>
@@ -1706,7 +1711,7 @@
     <h2 class="sub-title" id="an-haplotipos">Haplotypes</h2>
     <p>Groups identical sequences by species, without aligning. Since barcodes of one haplotype mostly differ in where
        they were trimmed, a sequence <strong>contained</strong> in a longer one counts as that same haplotype. Sequences
-       with Ns or ambiguous bases are left out (a single N would create a false haplotype).</p>
+       with Ns or ambiguous bases are left out (a single N would create a false haplotype). Each species' <strong>Network</strong> button builds its <a href="#an-red">haplotype network</a>.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
@@ -1846,7 +1851,7 @@ Sequence B:  A C G T C A G C G T ...
     </div>
 
     <h2 class="sub-title" id="an-distancias">Distances and barcode gap</h2>
-    <p>The <strong>Distances</strong> and <strong>NJ tree</strong> tabs are computed on demand from the same input as
+    <p>The <strong>Distances</strong>, <strong>Species (MOTUs)</strong> and <strong>NJ tree</strong> tabs are computed on demand from the same input as
        the basic analysis. Choose the options and press <strong>Compute</strong>:</p>
     <div class="table-wrap">
       <table>
@@ -1857,6 +1862,7 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td></td><td><em>p-distance</em></td><td>Proportion of differing sites, uncorrected. Easy to read ("3 % of positions differ"); underestimates large distances.</td></tr>
           <tr><td><strong>Max. per species</strong></td><td>All, 1, 2, 3, 5, 10, 20 or 50</td><td>Subsamples before computing, keeping the longest sequences of each species (or of each BIN when there's no species). Useful when a few species have hundreds of sequences and dominate the result, or to get within the limits. With 1 there are no intraspecific distances.</td></tr>
           <tr><td><strong>Build NJ tree</strong></td><td>On by default</td><td>Turn it off if you only want the distances: with many sequences the tree is the slowest part.</td></tr>
+          <tr><td><strong>Delimit species</strong></td><td>Off by default</td><td>Runs ASAP and ABGD on the distances (up to 2,000 sequences per group). See <a href="#an-delimitacion">Species delimitation</a>.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1997,6 +2003,91 @@ Sequence B:  A C G T C A G C G T ...
         other's species) point to <strong>labels swapped</strong> between neighbouring samples.</div>
     </div>
 
+    <!-- Delimitation -->
+    <h2 class="sub-title" id="an-delimitacion">Species delimitation (MOTUs)</h2>
+    <p>With <strong>Delimit species</strong> ticked, the distance analysis also runs two species delimitation
+       methods: <strong>ASAP</strong> and <strong>ABGD</strong>. Both group the sequences into <strong>MOTUs</strong>
+       (molecular operational taxonomic units) from the distances alone, without looking at the names. The
+       <strong>Species (MOTUs)</strong> tab compares those groups with the records' species and BINs. When there are
+       several alignment groups, each one is delimited apart and chosen in <em>Delimitation of group</em>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>How it groups</th><th>What the page shows</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ASAP</strong><br><small>Puillandre, Brouillet &amp; Achaz 2021</small></td>
+              <td>Joins the sequences at increasing distance thresholds (hierarchical clustering) and scores every
+                  resulting partition on two criteria: the <strong>p-value</strong>, the probability under a coalescent
+                  model that the groups the partition keeps apart are really one species, and the <strong>relative gap
+                  width</strong> at its threshold. The <strong>ASAP score</strong> is the mean of the two ranks: the
+                  lowest is the best. Groups formed with a p-value ≤ 0.001 are split again.</td>
+              <td>The 10 best partitions, with their score, number of MOTUs, p-value, gap width and distance
+                  threshold.</td></tr>
+          <tr><td><strong>ABGD</strong><br><small>Puillandre et al. 2012</small></td>
+              <td>Looks for the first jump (the <strong>barcode gap</strong>) in the sorted distances beyond a
+                  <em>prior</em> maximum intraspecific distance P, and groups the sequences closer than that jump
+                  (<em>initial</em> partition). Then it looks for a gap again within each group (<em>recursive</em>
+                  partition). It runs for ten values of P, from 0.1 % to 10 %, and stops at the first one that gives a
+                  single group.</td>
+              <td>One row per value of P, with the gap found and the number of MOTUs of the initial and recursive
+                  partitions.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Show</strong> picks the partition compared with the names; the tab opens on ASAP's best. Each
+       <strong>named species</strong> (provisional names such as "sp.", "cf.", "aff." or with numbers don't count) gets a
+       status:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Means</th><th>What it may be</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Match</strong></td><td>All its sequences form one MOTU, with no other species</td><td>The marker delimits the species as taxonomy does.</td></tr>
+          <tr><td><strong>Split</strong></td><td>Its sequences fall into several MOTUs</td><td>Cryptic species, deeply divergent geographic lineages or identifications to check.</td></tr>
+          <tr><td><strong>Shares MOTU</strong></td><td>Its MOTU holds sequences of other species</td><td>Recent species, hybridisation, synonyms or identifications to check.</td></tr>
+          <tr><td><strong>Split and shares</strong></td><td>Both at once</td><td>Complex cases: look at the tree.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The tiles count the species in each status and the MOTUs <strong>identical to a BIN</strong> (their records
+       with a BIN share one, and all of that BIN's records are in the MOTU): a quick measure of how far the partition
+       agrees with BOLD's BIN system. <strong>⤓ MOTUs (CSV)</strong> downloads each sequence's MOTU in the partition
+       chosen, and <strong>Show on the tree</strong> opens the tree coloured by MOTU (it can also be collapsed by MOTU
+       and show it in the labels).</p>
+    <h3 class="step-title">How to read it</h3>
+    <ul class="bullet">
+      <li>There is no "right" partition: they are <strong>hypotheses</strong>. The soundest is the one both methods
+          agree on: compare ASAP's best with the ABGD partitions that stay the same over several values of P.</li>
+      <li>In ABGD, low values of P and the recursive partition tend to <strong>over-split</strong> (they separate
+          populations or haplotypes), and high ones to <strong>lump</strong>.</li>
+      <li>A species <strong>split</strong> into MOTUs that follow geography (check with the tree coloured by country)
+          is a cryptic species candidate; if the separate MOTU is a single sequence, look first at the
+          <a href="#an-revision">identification check</a> and the record's card.</li>
+      <li>With a very low <strong>Max. per species</strong> (1 or 2) there is hardly any variation within species and
+          the methods see the gap less well: use 5 or more, or every sequence if they fit.</li>
+      <li>MOTUs are numbered by size (MOTU 1 is the largest) within each partition: the same number in two partitions
+          is not the same group.</li>
+    </ul>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Example.</strong> You delimit 464 COI-5P sequences of poison frogs (Dendrobatidae, at most 10 per
+        species). ASAP's best partition gives 114 MOTUs at a 4.1 % threshold, and ABGD gives 120 initial MOTUs at most
+        values of P: the two broadly agree. Against the names, 40 of 84 species match a MOTU; among those that share a
+        MOTU are several <em>Andinobates</em> species nearly identical in COI. <em>Colostethus panamansis</em> comes out
+        <em>split and shares</em>: its sequences fall into three MOTUs, each with its own BIN, and one of them is shared
+        with <em>Colostethus panamensis</em>, the same name spelt differently. <em>Show on the tree</em> shows where
+        those MOTUs fall before you check the specimens.
+      </div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>ASAP and ABGD are implemented in the program itself and were checked against the original programs: they
+        give the same partitions, and ASAP's p-values agree within the variation of its simulations. There are two
+        differences, so that the run takes seconds: ASAP runs at most 10,000 simulations per partition (the smallest
+        possible p-value is 0.0001), and partitions with the same p-value share their rank. The simulations use a fixed
+        seed: the same data always give the same result. With 2,000 sequences the delimitation may take about a
+        minute.</div>
+    </div>
+
     <h2 class="sub-title" id="an-arbol">NJ tree</h2>
     <p>A <strong>neighbour-joining</strong> tree built on the computed distances and rooted at the <strong>midpoint</strong>
        (halfway along the path between the two most distant sequences). With several alignment groups, pick the group in
@@ -2006,11 +2097,11 @@ Sequence B:  A C G T C A G C G T ...
       <table>
         <thead><tr><th>Control</th><th>What it does</th></tr></thead>
         <tbody>
-          <tr><td><strong>Collapse</strong></td><td><em>Nothing</em>, <em>By species</em> or <em>By BIN</em>: folds clades made only of one species (or BIN) into a triangle. With more than 300 sequences the tree opens collapsed by species. You can also click any node to collapse or expand its clade.</td></tr>
-          <tr><td><strong>Colour</strong></td><td>Colours the tips by <em>species</em>, <em>BIN</em>, <em>genus</em>, <em>country</em> or <em>species–BIN discordances</em> (BIN with several species, species in several BINs, or both). There are eight colours; the remaining values show in grey as "Other".</td></tr>
+          <tr><td><strong>Collapse</strong></td><td><em>Nothing</em>, <em>By species</em>, <em>By BIN</em> or <em>By MOTU</em> (when species were delimited): folds clades made only of one species (or BIN) into a triangle. With more than 300 sequences the tree opens collapsed by species. You can also click any node to collapse or expand its clade.</td></tr>
+          <tr><td><strong>Colour</strong></td><td>Colours the tips by <em>species</em>, <em>BIN</em>, <em>MOTU</em> (when species were delimited), <em>genus</em>, <em>country</em> or <em>species–BIN discordances</em> (BIN with several species, species in several BINs, or both). There are eight colours; the remaining values show in grey as "Other".</td></tr>
           <tr><td><strong>Branches</strong></td><td><em>Phylogram</em>: branch length is proportional to distance. <em>Cladogram</em>: only the tree's shape, with tips aligned, easier to read when branches are very short.</td></tr>
           <tr><td><strong>Row / Font</strong></td><td>Height of each row and font size. Below 5 px rows the labels are hidden.</td></tr>
-          <tr><td><strong>Labels</strong></td><td>What to show at each tip: species, ID, BIN, country. <em>Coloured labels</em> paints them in their group's colour (darkened where needed to stay readable).</td></tr>
+          <tr><td><strong>Labels</strong></td><td>What to show at each tip: species, ID, BIN, MOTU (when species were delimited), country. <em>Coloured labels</em> paints them in their group's colour (darkened where needed to stay readable).</td></tr>
           <tr><td><strong>Highlight species or ID…</strong></td><td>Highlights the tips matching the text and says how many there are.</td></tr>
           <tr><td><strong>Expand all</strong></td><td>Undoes every collapse.</td></tr>
           <tr><td><strong>Export figure</strong></td><td>As shown (collapses, colours, labels): <em>SVG</em> (editable in Inkscape or Illustrator), <em>PNG 2×</em> or <em>4×</em> (if the image would be too large it's made at a smaller scale and a notice says so) and <em>PDF</em> (the print dialog opens: choose "Save as PDF"; the browser must allow pop-ups).</td></tr>
@@ -2043,6 +2134,69 @@ Sequence B:  A C G T C A G C G T ...
     <p>The results ZIP holds the tree in <strong>Newick</strong> format (<code>tree.nwk</code>) to open and edit in
        FigTree, iTOL or MEGA. Labels are <code>processid|species|BIN</code>.</p>
 
+    <!-- Haplotype network -->
+    <h2 class="sub-title" id="an-red">Haplotype network</h2>
+    <p>The <strong>Haplotype network</strong> tab draws how the haplotypes relate: each circle is a haplotype, its
+       size the number of sequences, and each tick on a line one mutation. It is built on demand: choose a species
+       (or every sequence in the analysis) in <em>Sequences</em>, the method, and press <strong>Build
+       network</strong>. The <strong>Network</strong> button on each row of the <a href="#an-haplotipos">Haplotypes</a>
+       tab builds it straight away for that species.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>How it joins the haplotypes</th><th>When to use it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>TCS</strong> (default)<br><small>Clement, Posada &amp; Crandall 2000</small></td>
+              <td>Statistical parsimony, as PopART computes it: joins groups of haplotypes from the closest to the
+                  farthest through <strong>unsampled intermediate haplotypes</strong> (black dots), placed so that the
+                  network's paths match the observed differences as well as possible. Like PopART, it joins every
+                  group, without the 95 % connection limit.</td>
+              <td>The usual network in barcoding and within-species phylogeography.</td></tr>
+          <tr><td><strong>MSN</strong><br><small>Bandelt, Forster &amp; Röhl 1999</small></td>
+              <td>Minimum spanning network: joins the haplotypes directly with the fewest mutations overall and keeps
+                  every equally short alternative, hence its loops. It adds no intermediates.</td>
+              <td>Sets with many haplotypes (it takes more than TCS) or very divergent ones.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The sequences are aligned as for the distances and compared only over the <strong>positions every one of
+       them has complete</strong> (A, C, G or T), so a shorter end or an N doesn't make a new haplotype. Those that
+       would cover a much shorter region than the rest are left out, with a notice. That is why the number of
+       haplotypes may differ from the <em>Haplotypes</em> tab, which doesn't align.</p>
+    <p>Above the network are the diversity statistics of those sequences: <strong>Hd</strong> (haplotype
+       diversity), <strong>π</strong> (nucleotide diversity: the mean proportion of positions that differ between two
+       sequences; <em>k</em> is the same as a number of differences), the <strong>segregating sites</strong> and
+       <strong>Tajima's D</strong>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Colour</strong></td><td>Splits each circle by <em>country</em>, <em>species</em>, <em>BIN</em> or <em>MOTU</em> (when <a href="#an-delimitacion">species were delimited</a>, with the partition chosen there). Eight colours; the rest in grey as "Other".</td></tr>
+          <tr><td><strong>Labels</strong></td><td>The haplotype's name (H1 is the commonest) and, optionally, its number of sequences.</td></tr>
+          <tr><td><strong>Size / Mutation ticks</strong></td><td>The figure's scale; without ticks each line shows its number of mutations (past 10 the number is always shown).</td></tr>
+          <tr><td><strong>Drag</strong></td><td>Circles can be dragged to arrange the figure; <em>Reset layout</em> goes back to the first one.</td></tr>
+          <tr><td><strong>Export figure</strong></td><td>SVG, PNG 2× or 4× and PDF, as shown.</td></tr>
+          <tr><td><strong>Data</strong></td><td><em>Haplotypes (CSV)</em>: each haplotype with its sequences, species, countries and BINs. <em>Haplotypes (FASTA)</em>: one sequence per haplotype (the positions compared). <em>NEXUS (PopART)</em>: one sequence per record with the colour chosen as traits (country when there is none), to go on in PopART.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 class="step-title">How to read it</h3>
+    <ul class="bullet">
+      <li>A large central haplotype with many rare ones one or two mutations away (a <strong>star</strong>) usually
+          points to a recent population expansion, often with a negative Tajima's D.</li>
+      <li>Groups of haplotypes separated by <strong>many mutations</strong> (a number on the line) are divergent
+          lineages: compare them with the <a href="#an-delimitacion">MOTUs</a> and the country to tell cryptic species
+          from geographic lineages.</li>
+      <li>A haplotype shared by two species (a two-coloured circle when colouring by species) points to species the
+          marker doesn't separate or an identification to check.</li>
+      <li>Read Tajima's D with great caution with few sequences (under 10) or samples from several populations.</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>TCS and MSN are implemented in the program itself and were checked against PopART: from the same
+        sequences they give the same networks (same intermediate haplotypes and same connections). A network takes up
+        to 2,000 sequences; TCS up to 300 haplotypes and MSN up to 600.</div>
+    </div>
+
     <!-- Downloads -->
     <h2 class="sub-title" id="an-descargas">Downloads and limits</h2>
     <div class="table-wrap">
@@ -2053,7 +2207,9 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td><strong>⤓ Haplotypes (CSV)</strong></td><td>Per species: sequences, haplotypes, singletons, Hd, left out for Ns/ambiguities and the size of each haplotype (<code>6;3;1</code>)</td></tr>
           <tr><td><strong>⤓ Species and BINs (CSV)</strong></td><td>Each BIN with several species and each species in several BINs, with its records and the detail</td></tr>
           <tr><td><strong>⤓ Check (CSV)</strong> (Distances)</td><td>The three lists of the <a href="#an-revision">automatic identification check</a>, with distances in percent</td></tr>
-          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> and <code>identification_check.csv</code> (the automatic check, with distances as fractions). With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). A copy stays in <code>data/exports/analysis_exports/</code></td></tr>
+          <tr><td><strong>⤓ MOTUs (CSV)</strong> (Species)</td><td>Each sequence's MOTU in the partition chosen, with its species, BIN and the species' status</td></tr>
+          <tr><td><strong>Haplotypes (CSV / FASTA)</strong>, <strong>NEXUS (PopART)</strong> (Haplotype network)</td><td>The network's haplotypes with their sequences, species, countries and BINs; one sequence per haplotype; and the NEXUS with one sequence per record and traits for PopART. See <a href="#an-red">Haplotype network</a></td></tr>
+          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> and <code>identification_check.csv</code> (the automatic check, with distances as fractions). With species delimitation, also: <code>delimitation_asap.csv</code> and <code>delimitation_abgd.csv</code> (the partitions), <code>delimitation_motus.csv</code> (each sequence's MOTU in ASAP's three best partitions and in ABGD's recursive one for each P) and <code>delimitation_concordance_asap.csv</code> (each species against ASAP's best partition). With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). A copy stays in <code>data/exports/analysis_exports/</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -2072,6 +2228,8 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td>Sequences read for distances</td><td>100,000 (before the per-species subsample; above that, narrow the search)</td></tr>
           <tr><td>Sequences in distances</td><td>5,000 (1,000 for non-coding markers), after the subsample</td></tr>
           <tr><td>Sequences in the tree</td><td>2,000 per group</td></tr>
+          <tr><td>Sequences in species delimitation</td><td>2,000 per group</td></tr>
+          <tr><td>Haplotype network</td><td>2,000 sequences; 300 haplotypes with TCS and 600 with MSN</td></tr>
           <tr><td>Comparable positions for a distance</td><td>100</td></tr>
         </tbody>
       </table>

@@ -23,6 +23,7 @@ from collections import Counter, defaultdict
 import numpy as np
 
 import seq_analysis
+import seq_delimit
 
 # ── Limits ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,8 @@ MAX_NONCODING_SEQUENCES = 1000
 MIN_ALIGN_LENGTH = 100
 # Fewest comparable sites (both sequences with A, C, G or T) for a distance
 MIN_OVERLAP = 100
+# Most sequences in a species delimitation (ASAP and ABGD), per group
+MAX_DELIMIT_SEQUENCES = 2000
 # The full distance matrix goes into the ZIP up to this many sequences
 # (beyond it the CSV would weigh hundreds of MB)
 MAX_MATRIX_EXPORT = 2000
@@ -827,9 +830,31 @@ def _tip_label(rec):
     return text or "seq"
 
 
+def usable_records(records, forced_code=None):
+    """The records fit for alignment (cleaned beforehand), oriented as
+    in phase 1 (sequences submitted reversed are read on the reverse
+    strand), and how many were left out and why."""
+    rows, _ = seq_analysis.composition(records, forced_code)
+    flags = {id(rec): row["flags"] for rec, row in
+             zip([r for r in records if len(r["clean"]) >= seq_analysis.MIN_LENGTH], rows)}
+    excluded = Counter()
+    usable = []
+    for rec in records:
+        f = flags.get(id(rec))
+        if f is None or len(rec["clean"]) < MIN_ALIGN_LENGTH:
+            excluded["short"] += 1
+        elif "stops" in f or "invalid" in f:
+            # Probable pseudogenes or contamination: they distort distances
+            excluded["stops"] += 1
+        else:
+            usable.append(rec)
+    return usable, excluded
+
+
 def run_distance(records, marker, forced_code=None, model="k2p",
-                 per_species=None, want_tree=True):
-    """Alignment, distances, barcode gap and (optionally) NJ tree.
+                 per_species=None, want_tree=True, want_delimit=False):
+    """Alignment, distances, barcode gap and (optionally) NJ tree and
+    species delimitation.
 
     Returns (result for the page, {file name: text} for the ZIP).
     Raises AnalysisLimit when the input is too big or too small.
@@ -847,23 +872,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     if len(records) > limit:
         raise AnalysisLimit("too_many", len(records), limit)
 
-    # Orient (sequences submitted reversed are read on the reverse strand)
-    # and flag, as in phase 1
-    rows, _ = seq_analysis.composition(records, forced_code)
-    flags = {id(rec): row["flags"] for rec, row in
-             zip([r for r in records if len(r["clean"]) >= seq_analysis.MIN_LENGTH], rows)}
-
-    excluded = Counter()
-    usable = []
-    for rec in records:
-        f = flags.get(id(rec))
-        if f is None or len(rec["clean"]) < MIN_ALIGN_LENGTH:
-            excluded["short"] += 1
-        elif "stops" in f or "invalid" in f:
-            # Probable pseudogenes or contamination: they distort distances
-            excluded["stops"] += 1
-        else:
-            usable.append(rec)
+    usable, excluded = usable_records(records, forced_code)
 
     if len(usable) < 3:
         raise AnalysisLimit("too_few", len(usable), 3)
@@ -958,7 +967,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
                 "group": k,
                 # Tips by their position in `tips`, for the page
                 "newick": to_newick(children, root, str),
-                "tips": [{"id": ids[i], "species": species[i], "genus": genera[i],
+                "tips": [{"i": int(i), "id": ids[i], "species": species[i], "genus": genera[i],
                           "bin": usable[i].get("bin") or "",
                           "country": usable[i].get("country") or ""}
                          for i in keep],
@@ -966,6 +975,11 @@ def run_distance(records, marker, forced_code=None, model="k2p",
             })
             name = f"tree_group{k + 1}.nwk" if several else "tree.nwk"
             files[name] = to_newick(children, root, lambda t, keep=keep: labels[keep[t]]) + "\n"
+
+    delimit, delimit_notes = [], []
+    if want_delimit:
+        bins = [rec.get("bin") or "" for rec in usable]
+        delimit = _delimit(D, blocks, groups, ids, species, bins, several, files, delimit_notes)
 
     def taxa_of(a, b):
         """The most common classes (or phyla, kingdoms) of a group."""
@@ -997,8 +1011,93 @@ def run_distance(records, marker, forced_code=None, model="k2p",
         "trees": trees,
         "tree_notes": tree_notes,
         "matrix_exported": n <= MAX_MATRIX_EXPORT,
+        "delimit": delimit,
+        "delimit_notes": delimit_notes,
+        "delimit_requested": bool(want_delimit),
     }
     return result, files
+
+
+def _delimit(D, blocks, groups, ids, species, bins, several, files, notes):
+    """ASAP and ABGD within each group of sequences that align together.
+    Adds the tables to `files` and returns, per group, the partitions the
+    page offers: ASAP's best ones and ABGD's for each prior, each as the
+    MOTU number of every sequence."""
+    out = []
+    asap_rows, abgd_rows, motu_cols, conc_rows = [], [], [], []
+    for k, (a, b) in enumerate(blocks):
+        m = b - a
+        if m > MAX_DELIMIT_SEQUENCES:
+            notes.append((k, "too_many", m, MAX_DELIMIT_SEQUENCES))
+            continue
+        keep = a + drop_incomplete(D[a:b, a:b])
+        if len(keep) < 3:
+            notes.append((k, "too_few", len(keep), 3))
+            continue
+        # As ASAP and ABGD read a matrix: doubles with six decimals
+        sub = np.round(D[np.ix_(keep, keep)].astype(np.float64), 6)
+        length = len(groups[k]["ref"])
+        best, evaluated = seq_delimit.asap(sub, length)
+        priors = seq_delimit.abgd(sub)
+        nk = len(keep)
+        asap = [{
+            "rank": x["rank"], "score": x["score"], "p": x["p"], "slope": x["slope"],
+            "threshold": x["threshold"], "subsets": len(x["groups"]),
+            "subsets_simple": x["groups_simple"],
+            "motu": seq_delimit.labels_of(x["groups"], nk),
+        } for x in best]
+        abgd = [{
+            "prior": x["prior"], "gap": x["gap"],
+            "initial": len(x["initial"]), "recursive": len(x["recursive"]),
+            "motu_initial": seq_delimit.labels_of(x["initial"], nk),
+            "motu_recursive": seq_delimit.labels_of(x["recursive"], nk),
+        } for x in priors]
+        out.append({"group": k, "members": [int(i) for i in keep], "dropped": m - len(keep),
+                    "ids": [ids[i] for i in keep], "species": [species[i] for i in keep],
+                    "bins": [bins[i] for i in keep],
+                    "length": length, "asap": asap, "asap_evaluated": evaluated, "abgd": abgd})
+
+        gname = str(k + 1) if several else ""
+        for x in asap:
+            asap_rows.append(([gname] if several else []) + [
+                x["rank"], f"{x['score']:g}", f"{x['p']:.3e}", f"{x['slope']:.6e}",
+                _f(x["threshold"]), x["subsets"], x["subsets_simple"]])
+        for x in abgd:
+            abgd_rows.append(([gname] if several else []) + [
+                f"{x['prior']:.6f}", _f(x["gap"]), x["initial"], x["recursive"]])
+        cols = [("asap_rank1", asap[0]["motu"])] if asap else []
+        cols += [(f"asap_rank{x['rank']}", x["motu"]) for x in asap[1:3]]
+        cols += [(f"abgd_P{x['prior']:.4f}", x["motu_recursive"]) for x in abgd]
+        motu_cols.append((k, keep, cols))
+        if asap:
+            sp = [species[i] for i in keep]
+            bn = [bins[i] for i in keep]
+            _, rows = seq_delimit.concordance(asap[0]["motu"], sp, bn)
+            for r in rows:
+                conc_rows.append(([gname] if several else []) + [
+                    r["species"], r["n"], len(r["motus"]), "; ".join(f"MOTU {x}" for x in r["motus"]),
+                    "; ".join(r["bins"]), "; ".join(r["with"]), r["status"]])
+
+    if not out:
+        return out
+    g = ["group"] if several else []
+    files["delimitation_asap.csv"] = _csv(
+        g + ["rank", "asap_score", "p_value", "gap_width", "threshold_distance",
+             "motus", "motus_without_recursion"], asap_rows)
+    files["delimitation_abgd.csv"] = _csv(
+        g + ["prior_p", "barcode_gap_distance", "motus_initial", "motus_recursive"], abgd_rows)
+    files["delimitation_concordance_asap.csv"] = _csv(
+        g + ["species", "sequences", "motus", "motu_list", "bins", "shares_motu_with", "status"],
+        conc_rows)
+    # One table per group: the partitions of different groups have
+    # different columns
+    for k, keep, cols in motu_cols:
+        name = f"delimitation_motus_group{k + 1}.csv" if several else "delimitation_motus.csv"
+        files[name] = _csv(
+            ["processid", "species", "bin"] + [c for c, _ in cols],
+            [[ids[i], species[i], bins[i]] + [v[j] for _, v in cols]
+             for j, i in enumerate(keep)])
+    return out
 
 
 def _f(x):

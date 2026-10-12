@@ -74,6 +74,14 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   country) from species spread over several BINs of their own (with the
   countries of each) and truly shared BINs, and lists provisional names,
   species with a BIN of their own and records that can't be compared.
+- Distances: a *What the distances say* section at the end of the tab reads
+  them the same way. It checks whether each sequence's nearest neighbour is
+  of its own species, explains why each species lacks a barcode gap (shared
+  sequences, isolated records stretching its largest distance, extremes
+  that touch, provisional names), and points out lineages within species
+  (sequences chained less than 2 % apart, with their countries, BINs and
+  distance to the largest) and isolated records. With a single species it
+  reads how much it varies.
 
 ### Changed
 - Species and BINs: the tile and table title of species spread over

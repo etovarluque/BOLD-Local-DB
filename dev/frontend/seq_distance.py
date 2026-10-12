@@ -646,6 +646,185 @@ def _merge_histogram(a, b):
     return {"width": width * _FINE_BIN, "bins": bars}
 
 
+# ── Reading guide of the distances ────────────────────────────────────────────
+
+# Lineages within a species: sequences chained less than GUIDE_LINEAGE apart
+# (about the threshold BOLD forms BINs with, and the haplotype network's);
+# smaller groups than GUIDE_LINEAGE_MIN are isolated records. Farther than
+# GUIDE_FAR from the rest is more than congeneric species usually differ.
+GUIDE_LINEAGE = 0.02
+GUIDE_LINEAGE_MIN = 3
+GUIDE_FAR = 0.1
+# Lists sent to the page, at most
+GUIDE_SPECIES = 8
+GUIDE_LINEAGES = 8
+
+
+def _linkage(close):
+    """Groups of rows joined by a chain of True cells in the square boolean
+    matrix `close`, as lists of row positions (breadth-first: no Python loop
+    over the pairs, which can be millions)."""
+    seen = np.zeros(close.shape[0], dtype=bool)
+    groups = []
+    for start in range(close.shape[0]):
+        if seen[start]:
+            continue
+        seen[start] = True
+        group, frontier = [start], np.array([start])
+        while frontier.size:
+            frontier = np.flatnonzero(close[frontier].any(axis=0) & ~seen)
+            seen[frontier] = True
+            group.extend(frontier.tolist())
+        groups.append(group)
+    return groups
+
+
+def _top(values, k=2):
+    """The k commonest values, as [value, count]."""
+    return [[v, c] for v, c in Counter(x for x in values if x).most_common(k)]
+
+
+def distance_guide(D, species, ids, bins, countries, gap):
+    """Facts for the page's reading of the distances (the page words them).
+
+    - Nearest neighbour: for each sequence with a species name, whether the
+      closest other named sequence is of its species ('ok'), ties with
+      another species ('tie') or is of another species ('wrong').
+    - Barcode gap: why each species without one lacks it ('shared'
+      sequences with another species, 'isolated' records stretching its
+      largest distance, an 'overlap' of the extremes, or a 'provisional'
+      name), and the species with one.
+    - Lineages within each species (GUIDE_LINEAGE), with their countries,
+      BINs and distance to the largest, and isolated records.
+    Provisional names ("sp.", "PS1"...) don't count as species here, as in
+    identification_check.
+    """
+    n = len(species)
+    names = ["" if not sp or _PROVISIONAL.search(sp) else sp for sp in species]
+    codes = _codes_of(names)
+    named = codes >= 0
+    places = [c if c and c.strip().lower() not in seq_analysis._NO_PLACE else "" for c in countries]
+
+    nn = defaultdict(lambda: {"ok": 0, "tie": 0, "wrong": 0, "with": Counter()})
+    alone = 0
+    for i in np.flatnonzero(named):
+        row = D[i]
+        cand = named & ~np.isnan(row)
+        cand[i] = False
+        if not (cand & (codes != codes[i])).any():
+            continue
+        if not (cand & (codes == codes[i])).any():
+            alone += 1
+            continue
+        at = np.flatnonzero(cand & (row <= row[cand].min()))
+        own = codes[at] == codes[i]
+        x = nn[names[i]]
+        if own.all():
+            x["ok"] += 1
+        else:
+            x["tie" if own.any() else "wrong"] += 1
+            x["with"].update({names[j] for j in at if codes[j] != codes[i]})
+
+    members = defaultdict(list)
+    for i, sp in enumerate(names):
+        if sp:
+            members[sp].append(i)
+    per, isolated = {}, []
+    for sp, idx in members.items():
+        if len(idx) < 2:
+            continue
+        sub = D[np.ix_(idx, idx)]
+        vals = sub[np.triu_indices(len(idx), 1)]
+        vals = vals[~np.isnan(vals)]
+        groups = [[idx[k] for k in g] for g in _linkage(np.nan_to_num(sub, nan=np.inf) < GUIDE_LINEAGE)]
+        big = sorted((g for g in groups if len(g) >= GUIDE_LINEAGE_MIN), key=len, reverse=True)
+        alone_idx = [i for g in groups if len(g) < GUIDE_LINEAGE_MIN for i in g] if big else []
+        for g in groups:
+            # Without a lineage (two records far apart, say) there is
+            # nothing to be isolated from
+            if len(g) >= GUIDE_LINEAGE_MIN or not big:
+                continue
+            rest = np.setdiff1d(idx, g)
+            for i in g:
+                row = D[i, rest]
+                row = row[~np.isnan(row)]
+                if row.size:
+                    isolated.append({"id": ids[i], "species": sp, "d": float(row.min()),
+                                     "bin": bins[i], "country": places[i]})
+
+        def apart(g):
+            sub2 = D[np.ix_(g, big[0])]
+            return None if np.isnan(sub2).all() else float(np.nanmin(sub2))
+        core = [i for g in big for i in g]
+        core_max = None
+        if len(core) >= 2:
+            cv = D[np.ix_(core, core)][np.triu_indices(len(core), 1)]
+            cv = cv[~np.isnan(cv)]
+            core_max = float(cv.max()) if cv.size else None
+        x = nn.get(sp)
+        per[sp] = {
+            "species": sp, "n": len(idx),
+            "median": float(np.median(vals)) if vals.size else None,
+            "max": float(vals.max()) if vals.size else None,
+            "lineages": [{"n": len(g), "countries": _top([places[i] for i in g]),
+                          "bins": _top([bins[i] for i in g]),
+                          "apart": apart(g) if k else None}
+                         for k, g in enumerate(big[:GUIDE_LINEAGES])],
+            "lineages_n": len(big),
+            "isolated_n": len(alone_idx), "core_max": core_max,
+            "bin": (_top([bins[i] for i in idx], 1) or [[""]])[0][0],
+            "nn_ok": x["ok"] if x else 0, "nn_tie": x["tie"] if x else 0, "nn_wrong": x["wrong"] if x else 0,
+            "nn_with": [[s, c] for s, c in x["with"].most_common(3)] if x else [],
+        }
+
+    nogap, with_gap, tested = [], [], 0
+    for g in gap:
+        if g["nn"] is None or g["max_intra"] is None:
+            continue
+        tested += 1
+        sp = g["species"]
+        entry = {"species": sp, "n": g["n"], "max_intra": g["max_intra"], "nn": g["nn"],
+                 "nn_species": g["nn_species"]}
+        if g["nn"] > g["max_intra"]:
+            with_gap.append(entry)
+            continue
+        p = per.get(sp)
+        if not p:
+            entry["cause"] = "provisional"
+        else:
+            mixed = p["nn_tie"] + p["nn_wrong"]
+            stretched = p["isolated_n"] and p["core_max"] is not None and g["nn"] > p["core_max"]
+            entry["cause"] = ("shared" if mixed >= 0.1 * p["n"] else "isolated" if stretched
+                              else "shared" if mixed else "overlap")
+            entry.update({k: p[k] for k in ("nn_ok", "nn_tie", "nn_wrong", "nn_with",
+                                            "isolated_n", "core_max", "bin")})
+        nogap.append(entry)
+    order = {"shared": 0, "isolated": 1, "overlap": 2, "provisional": 3}
+    nogap.sort(key=lambda e: (order[e["cause"]], -e["n"]))
+    with_gap.sort(key=lambda e: -e["n"])
+    # The main BIN of the species the shared ones are mixed with
+    partners = {s for e in nogap for s, _ in e.get("nn_with", [])}
+    split = sorted((p for p in per.values() if p["lineages_n"] > 1), key=lambda p: -p["n"])
+    isolated.sort(key=lambda x: -x["d"])
+    tot = Counter()
+    for x in nn.values():
+        tot.update(ok=x["ok"], tie=x["tie"], wrong=x["wrong"])
+    one = next(iter(per.values())) if len(members) == 1 and per else None
+    return {
+        "n": n, "species_n": len(members), "named": int(named.sum()), "unnamed": n - int(named.sum()),
+        "singles": sum(1 for v in members.values() if len(v) == 1),
+        "nn_ok": tot["ok"], "nn_tie": tot["tie"], "nn_wrong": tot["wrong"], "nn_alone": alone,
+        "tested": tested, "nogap_n": len(nogap), "nogap": nogap[:GUIDE_SPECIES],
+        "gap_n": len(with_gap), "gap": with_gap[:GUIDE_SPECIES],
+        "partner_bins": {s: per[s]["bin"] for s in partners if s in per},
+        "split_n": len(split), "split": split[:GUIDE_SPECIES],
+        "isolated_n": len(isolated), "isolated_far": sum(1 for x in isolated if x["d"] > GUIDE_FAR),
+        "isolated": isolated[:GUIDE_SPECIES],
+        "one": one,
+        "lineage": GUIDE_LINEAGE, "far": GUIDE_FAR,
+    }
+
+
 # ── Neighbour-joining tree ────────────────────────────────────────────────────
 
 def drop_incomplete(D):
@@ -1049,6 +1228,8 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     gap = barcode_gap(D, species, ids)
     check = identification_check(D, species, genera, ids, [rec.get("bin") or "" for rec in usable])
     summary, histogram, other = distance_summary(D, species, genera, families)
+    guide = distance_guide(D, species, ids, [rec.get("bin") or "" for rec in usable],
+                           [rec.get("country") or "" for rec in usable], gap)
     # Missing distances within a group (between groups they are all missing)
     no_overlap = int(sum(np.isnan(D[a:b, a:b]).sum() for a, b in blocks) // 2)
 
@@ -1148,6 +1329,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
         "histogram_other": other,
         "gap": gap,
         "check": check,
+        "guide": guide,
         "trees": trees,
         "tree_notes": tree_notes,
         "matrix_exported": n <= MAX_MATRIX_EXPORT,

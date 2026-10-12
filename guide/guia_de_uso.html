@@ -2034,6 +2034,29 @@ Secuencia B:  A C G T C A G C G T ...
         quién lo identificó).</div>
     </div>
 
+    <h3 class="step-title">Qué dicen las distancias</h3>
+    <p>Al final de la pestaña, el recuadro <strong>Qué dicen las distancias</strong> hace una primera lectura
+       automática. Para cada secuencia mira si la más parecida es de su misma especie (el
+       <strong>vecino más cercano</strong>): es más informativo que el barcode gap, que se rompe con un solo registro mal
+       identificado. Para cada especie sin gap explica la causa: comparte secuencias con otra especie, unos pocos
+       registros aislados le inflan la <strong>Intra máx.</strong>, sus extremos se tocan con los de otra especie o es un
+       nombre provisional (sp., PS1…). Además señala los <strong>linajes dentro de cada especie</strong> (secuencias
+       encadenadas a menos de un 2 %, cerca del umbral con que BOLD forma los BIN), con sus países, sus BIN y su distancia
+       al linaje mayor, y los <strong>registros aislados</strong> a más de un 2 % del resto de su especie; a más de un
+       10 % lo probable es un error de identificación, una contaminación o una secuencia defectuosa. Con una sola especie
+       no hay gap que medir y la lectura se centra en cuánto varía y si forma linajes. La lectura se descarga aparte con
+       <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> o <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Las lecturas automáticas pueden equivocarse.</strong> Aplican reglas fijas a las distancias, sin
+        conocer tu grupo taxonómico, así que pueden contener errores o imprecisiones: las distancias dependen de qué
+        secuencias entren en el análisis (si falta una especie cercana, otra puede parecer bien separada), el 2 % de los
+        linajes es orientativo y varía entre grupos, y la alineación contra una secuencia de referencia es aproximada.
+        Son una orientación para empezar, no un resultado: <strong>confirma cada hallazgo</strong> revisando las fichas
+        de los registros, el árbol y otras evidencias antes de corregir una identificación o usarlo en una
+        publicación.</div>
+    </div>
+
     <!-- Revisión automática -->
     <h2 class="sub-title" id="an-revision">Revisión automática de identificaciones</h2>
     <p>Al calcular las distancias, el visor compara cada registro con la secuencia más parecida de <em>otra</em>

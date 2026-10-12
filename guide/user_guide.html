@@ -2026,6 +2026,28 @@ Sequence B:  A C G T C A G C G T ...
         it).</div>
     </div>
 
+    <h3 class="step-title">What the distances say</h3>
+    <p>At the end of the tab, the <strong>What the distances say</strong> box gives a first automatic reading. For
+       each sequence it checks whether the most similar one is of its own species (the <strong>nearest
+       neighbour</strong>): more telling than the barcode gap, which a single misidentified record breaks. For each
+       species without a gap it explains why: it shares sequences with another species, a few isolated records stretch
+       its <strong>Max intra</strong>, its extremes touch another species' or it is a provisional name (sp., PS1…). It
+       also points out <strong>lineages within each species</strong> (sequences chained less than 2 % apart, close to
+       the threshold BOLD forms BINs with), with their countries, BINs and distance to the largest lineage, and the
+       <strong>isolated records</strong> more than 2 % from the rest of their species; beyond 10 % a misidentification,
+       contamination or a faulty sequence is more likely. With a single species there is no gap to measure, and the
+       reading looks at how much it varies and whether it forms lineages. The reading downloads on its own with
+       <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> or <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Automatic readings can be wrong.</strong> They apply fixed rules to the distances without knowing
+        your taxonomic group, so they may contain errors or inaccuracies: distances depend on which sequences go into
+        the analysis (if a close species is missing, another may look well apart), the 2 % for lineages is indicative
+        and varies between groups, and the alignment against a reference sequence is approximate. They are guidance to
+        start from, not a result: <strong>confirm every finding</strong> by checking the records, the tree and other
+        evidence before correcting an identification or using it in a publication.</div>
+    </div>
+
     <!-- Tree -->
     <!-- Automatic check -->
     <h2 class="sub-title" id="an-revision">Automatic identification check</h2>

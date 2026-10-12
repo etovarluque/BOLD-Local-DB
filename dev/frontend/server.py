@@ -101,13 +101,11 @@ CSV_EXPORTS_DIR   = os.path.join(_EXPORTS_ROOT, 'csv_exports')
 FASTA_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'fasta_exports')
 BATCH_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'batch_exports')
 GENBANK_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'genbank_exports')
-ANALYSIS_EXPORTS_DIR = os.path.join(_EXPORTS_ROOT, 'analysis_exports')
 
 os.makedirs(CSV_EXPORTS_DIR,   exist_ok=True)
 os.makedirs(FASTA_EXPORTS_DIR, exist_ok=True)
 os.makedirs(BATCH_EXPORTS_DIR, exist_ok=True)
 os.makedirs(GENBANK_EXPORTS_DIR, exist_ok=True)
-os.makedirs(ANALYSIS_EXPORTS_DIR, exist_ok=True)
 
 # File retention in export folders:
 # after generating a new file, only the EXPORT_KEEP most recent files per
@@ -2278,19 +2276,20 @@ def total_records():
     
 
 def clear_export_folders():
-    """On server startup, keeps only the EXPORT_KEEP most recent files per
-    export folder (rolling retention), instead of deleting them entirely."""
-    folders = [CSV_EXPORTS_DIR, FASTA_EXPORTS_DIR, BATCH_EXPORTS_DIR, GENBANK_EXPORTS_DIR,
-               ANALYSIS_EXPORTS_DIR]
+    """Empties the export folders on startup. The viewer only serves the files
+    it registered in memory during the session, so those of earlier sessions
+    can't be downloaded any more: the browser already left its copy in the
+    downloads folder."""
+    folders = [CSV_EXPORTS_DIR, FASTA_EXPORTS_DIR, BATCH_EXPORTS_DIR, GENBANK_EXPORTS_DIR]
     for folder in folders:
-        _prune_export_dir(folder)
+        _prune_export_dir(folder, keep=0)
+    # Analysis ZIPs were stored here before they were built in memory
+    shutil.rmtree(os.path.join(_EXPORTS_ROOT, 'analysis_exports'), ignore_errors=True)
     # Scratch folders of GenBank searches cut short by a server stop
     for name in os.listdir(GENBANK_EXPORTS_DIR):
         if name.startswith('_work_'):
             shutil.rmtree(os.path.join(GENBANK_EXPORTS_DIR, name), ignore_errors=True)
 
-# Run on server startup
-clear_export_folders()
 
 
 def _report_fts_availability():
@@ -3860,7 +3859,10 @@ def analysis_basic():
 # Per-species subsample sizes the distance analysis accepts
 ANALYSIS_PER_SPECIES = (1, 2, 3, 5, 10, 20, 50)
 
-# Runs of the distance analysis whose ZIP can still be downloaded
+# Runs of the distance analysis whose ZIP can still be downloaded: the
+# compressed ZIP in memory, nothing on disk (the full distance matrix of
+# 2,000 sequences alone takes several MB, hence only the latest few)
+ANALYSIS_EXPORTS_KEEP = 5
 analysis_exports = {}
 
 
@@ -3906,13 +3908,12 @@ def analysis_distance():
     export_id = uuid.uuid4().hex
     safe_marker = re.sub(r'[^\w.-]+', '_', marker or 'seq')
     filename = f"bold_analysis_{safe_marker}_{datetime.now():%Y%m%d_%H%M%S}.zip"
-    with zipfile.ZipFile(os.path.join(ANALYSIS_EXPORTS_DIR, f'{export_id}.zip'), 'w',
-                         zipfile.ZIP_DEFLATED) as zf:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
         for name, text in files.items():
             zf.writestr(name, text)
-    analysis_exports[export_id] = filename
-    _prune_export_dir(ANALYSIS_EXPORTS_DIR)
-    if len(analysis_exports) > EXPORT_KEEP * 5:
+    analysis_exports[export_id] = (filename, buf.getvalue())
+    while len(analysis_exports) > ANALYSIS_EXPORTS_KEEP:
         analysis_exports.pop(next(iter(analysis_exports)))
 
     notes = []
@@ -3983,11 +3984,11 @@ def analysis_network():
 
 @app.route('/api/analysis/download/<export_id>')
 def analysis_download(export_id):
-    filename = analysis_exports.get(export_id)
-    path = os.path.join(ANALYSIS_EXPORTS_DIR, f'{export_id}.zip')
-    if not filename or not os.path.exists(path):
+    entry = analysis_exports.get(export_id)
+    if not entry:
         return jsonify({'error': t('file_not_found')}), 404
-    return send_file(path, mimetype='application/zip', as_attachment=True,
+    filename, data = entry
+    return send_file(io.BytesIO(data), mimetype='application/zip', as_attachment=True,
                      download_name=filename)
 
 
@@ -4295,6 +4296,10 @@ if __name__ == '__main__':
             import webbrowser
             webbrowser.open(SERVER_URL)
         sys.exit(0)
+    # On startup rather than on exit: the idle shutdown (see
+    # _lifetime_watchdog) ends with os._exit, which skips atexit. After the
+    # check above, so a second launch doesn't empty the running viewer's.
+    clear_export_folders()
     if open_browser:
         threading.Thread(target=_open_browser_when_ready, daemon=True).start()
     threading.Thread(target=_lifetime_watchdog, daemon=True).start()

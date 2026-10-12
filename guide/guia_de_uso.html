@@ -677,7 +677,7 @@
 └── <span class="path">data/</span>             <span class="comment">← todo lo tuyo; las actualizaciones no lo tocan</span>
     ├── <span class="path">raw/</span>          <span class="pin">← el .tar.gz de BOLD que arrastres o selecciones</span>
     ├── <span class="path">processed/</span>    <span class="comment">← archivos intermedios (TSV filtrado)</span>
-    ├── <span class="path">exports/</span>      <span class="comment">← copia de todo lo que exportas</span>
+    ├── <span class="path">exports/</span>      <span class="comment">← copia de lo exportado (se vacía al abrir el visor)</span>
     ├── <span class="path">database/</span>     <span class="comment">← bold_db.db, la base de datos terminada</span>
     └── <span class="path">state/</span>        <span class="comment">← ajustes, selección de campos y registros (logs/)</span></pre>
     <p>Hay además dos carpetas ocultas: <code>.program/</code>, con el programa (la sustituyen las actualizaciones),
@@ -717,7 +717,7 @@
           <tr><td><strong>Descargar datos de BOLD</strong></td><td>Abre en el navegador la página de descarga del paquete público de BOLD.</td></tr>
           <tr><td><strong>Abrir carpeta data/raw</strong></td><td>Abre la carpeta donde debe estar el <code>.tar.gz</code>.</td></tr>
           <tr><td><strong>Liberar espacio</strong></td><td>Borra los archivos de trabajo del Paso 1 (TSV, y el <code>.tar.gz</code> si lo conservaste) e indica cuánto ocupan. La base de datos no se toca, pero para reconstruirla tendrías que volver a descargar el paquete. Solo se habilita cuando la base ya está construida.</td></tr>
-          <tr><td><strong>📁 Carpeta de exportaciones</strong></td><td>Abre <code>data/exports/</code>, donde se guarda una copia de todo lo que exporta el visor.</td></tr>
+          <tr><td><strong>📁 Carpeta de exportaciones</strong></td><td>Abre <code>data/exports/</code>, con una copia de lo exportado desde que se abrió el visor por última vez.</td></tr>
           <tr><td><strong>Accesos directos</strong></td><td>Marca <em>Escritorio</em> y/o <em>Menú</em> (Menú Inicio en Windows, Aplicaciones/Launchpad en macOS, menú de aplicaciones en Linux) y pulsa <em>Crear accesos directos</em>. Crea «BOLD-Local-DB» y «Visor BOLD-Local-DB». <em>Volver a crear</em> los rehace y <em>Quitar</em> borra exactamente los que se crearon.</td></tr>
           <tr><td><strong>Aviso de versión nueva</strong></td><td>Cuando hay una versión nueva del programa: <em>Ver cambios</em> abre las notas, <em>Actualizar</em> la descarga y <em>Reiniciar ahora</em> la instala.</td></tr>
           <tr><td><strong>Desinstalar…</strong></td><td>Quita los accesos directos y abre la carpeta del programa para que la borres.</td></tr>
@@ -1564,9 +1564,10 @@
       <div>
         Para archivos grandes la exportación se procesa en segundo plano con una barra de progreso; cuando termina
         aparece un botón de descarga. Si ningún registro tiene una secuencia utilizable, el diálogo lo indica en
-        lugar de ofrecer un archivo vacío. Una copia queda guardada en <code>data/exports/</code>
-        (subcarpetas <code>csv_exports</code>, <code>fasta_exports</code> y <code>batch_exports</code>); en cada una se
-        conservan los <strong>20 archivos más recientes</strong> y los anteriores se borran solos.
+        lugar de ofrecer un archivo vacío. Mientras se genera, el archivo se guarda en <code>data/exports/</code>
+        (subcarpetas <code>csv_exports</code>, <code>fasta_exports</code> y <code>batch_exports</code>), donde sigue
+        disponible para volver a descargarlo mientras el visor esté abierto: en cada una se conservan los
+        <strong>20 archivos más recientes</strong>, y al abrir el visor de nuevo se vacían.
       </div>
     </div>
   </section>
@@ -2264,7 +2265,7 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td><strong>⤓ Revisión (CSV)</strong> (Distancias)</td><td>Las tres listas de la <a href="#an-revision">revisión automática de identificaciones</a>, con las distancias en porcentaje</td></tr>
           <tr><td><strong>⤓ MOTU (CSV)</strong> (Especies)</td><td>El MOTU de cada secuencia en la partición elegida, con su especie, BIN y el estado de la especie</td></tr>
           <tr><td><strong>Haplotipos (CSV / FASTA)</strong>, <strong>NEXUS (PopART)</strong> (Red de haplotipos)</td><td>Los haplotipos de la red con sus secuencias, especies, países y BINs; una secuencia por haplotipo; y el NEXUS con una secuencia por registro y rasgos para PopART. Ver <a href="#an-red">Red de haplotipos</a></td></tr>
-          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> e <code>identification_check.csv</code> (la revisión automática, con las distancias como fracción). Con la delimitación de especies, además: <code>delimitation_asap.csv</code> y <code>delimitation_abgd.csv</code> (las particiones), <code>delimitation_motus.csv</code> (el MOTU de cada secuencia en las tres mejores particiones de ASAP y en la recursiva de ABGD para cada P) y <code>delimitation_concordance_asap.csv</code> (cada especie frente a la mejor partición de ASAP). Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Una copia queda en <code>data/exports/analysis_exports/</code></td></tr>
+          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> e <code>identification_check.csv</code> (la revisión automática, con las distancias como fracción). Con la delimitación de especies, además: <code>delimitation_asap.csv</code> y <code>delimitation_abgd.csv</code> (las particiones), <code>delimitation_motus.csv</code> (el MOTU de cada secuencia en las tres mejores particiones de ASAP y en la recursiva de ABGD para cada P) y <code>delimitation_concordance_asap.csv</code> (cada especie frente a la mejor partición de ASAP). Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Se pueden descargar los de los 5 últimos análisis</td></tr>
         </tbody>
       </table>
     </div>
@@ -2389,7 +2390,7 @@ Secuencia B:  A C G T C A G C G T ...
 
     <div class="faq-item">
       <div class="q">¿Dónde quedan los archivos que exporto?</div>
-      <div class="a">Se descargan por el navegador a tu carpeta de descargas habitual, y además se guarda una copia en <code>data/exports/</code>. De cada tipo de exportación se conservan los 20 archivos más recientes.</div>
+      <div class="a">Se descargan por el navegador a tu carpeta de descargas habitual. Mientras el visor está abierto queda además una copia en <code>data/exports/</code> (los 20 archivos más recientes de cada tipo), que se borra la próxima vez que lo abres: guarda lo que necesites desde tu carpeta de descargas. Los ZIP de resultados de los análisis no se guardan en disco: se generan al pulsar el botón.</div>
     </div>
 
     <div class="faq-item">

@@ -677,7 +677,7 @@
 └── <span class="path">data/</span>             <span class="comment">← everything that's yours; updates never touch it</span>
     ├── <span class="path">raw/</span>          <span class="pin">← BOLD's .tar.gz, dropped or selected</span>
     ├── <span class="path">processed/</span>    <span class="comment">← intermediate files (filtered TSV)</span>
-    ├── <span class="path">exports/</span>      <span class="comment">← a copy of everything you export</span>
+    ├── <span class="path">exports/</span>      <span class="comment">← a copy of what you export (emptied when the viewer opens)</span>
     ├── <span class="path">database/</span>     <span class="comment">← bold_db.db, the finished database</span>
     └── <span class="path">state/</span>        <span class="comment">← settings, field selection and logs (logs/)</span></pre>
     <p>There are also two hidden folders: <code>.program/</code>, with the program (updates replace it), and
@@ -718,7 +718,7 @@
           <tr><td><strong>Download data from BOLD</strong></td><td>Opens BOLD's public data package page in the browser.</td></tr>
           <tr><td><strong>Open data/raw folder</strong></td><td>Opens the folder where the <code>.tar.gz</code> must be.</td></tr>
           <tr><td><strong>Free up space</strong></td><td>Deletes Step 1's working files (TSV, and the <code>.tar.gz</code> if you kept it) and shows how much they take. The database isn't touched, but rebuilding it would need the package downloaded again. Enabled only once the database is built.</td></tr>
-          <tr><td><strong>📁 Exports folder</strong></td><td>Opens <code>data/exports/</code>, where a copy of everything the viewer exports is kept.</td></tr>
+          <tr><td><strong>📁 Exports folder</strong></td><td>Opens <code>data/exports/</code>, with a copy of what was exported since the viewer was last opened.</td></tr>
           <tr><td><strong>Shortcuts</strong></td><td>Tick <em>Desktop</em> and/or the menu (Start menu on Windows, Applications/Launchpad on macOS, applications menu on Linux) and press <em>Create shortcuts</em>. It makes "BOLD-Local-DB" and "BOLD-Local-DB Viewer". <em>Create again</em> remakes them and <em>Remove</em> deletes exactly the ones that were made.</td></tr>
           <tr><td><strong>New version notice</strong></td><td>When a new version of the program is out: <em>See changes</em> opens the notes, <em>Update</em> downloads it and <em>Restart now</em> installs it.</td></tr>
           <tr><td><strong>Uninstall…</strong></td><td>Removes the shortcuts and opens the program folder for you to delete.</td></tr>
@@ -1561,9 +1561,10 @@
       <div>
         For large files the export is processed in the background with a progress bar; a download button appears
         when it finishes. If no record has a usable sequence, the dialog says so instead of offering an empty
-        file. A copy is saved in <code>data/exports/</code>
-        (subfolders <code>csv_exports</code>, <code>fasta_exports</code>, and <code>batch_exports</code>); each one
-        keeps the <strong>20 most recent files</strong> and older ones are deleted automatically.
+        file. While it is generated, the file is saved in <code>data/exports/</code>
+        (subfolders <code>csv_exports</code>, <code>fasta_exports</code>, and <code>batch_exports</code>), where it
+        stays available to download again while the viewer is open: each one keeps the <strong>20 most recent
+        files</strong>, and they are emptied when the viewer opens again.
       </div>
     </div>
   </section>
@@ -2248,7 +2249,7 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td><strong>⤓ Check (CSV)</strong> (Distances)</td><td>The three lists of the <a href="#an-revision">automatic identification check</a>, with distances in percent</td></tr>
           <tr><td><strong>⤓ MOTUs (CSV)</strong> (Species)</td><td>Each sequence's MOTU in the partition chosen, with its species, BIN and the species' status</td></tr>
           <tr><td><strong>Haplotypes (CSV / FASTA)</strong>, <strong>NEXUS (PopART)</strong> (Haplotype network)</td><td>The network's haplotypes with their sequences, species, countries and BINs; one sequence per haplotype; and the NEXUS with one sequence per record and traits for PopART. See <a href="#an-red">Haplotype network</a></td></tr>
-          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> and <code>identification_check.csv</code> (the automatic check, with distances as fractions). With species delimitation, also: <code>delimitation_asap.csv</code> and <code>delimitation_abgd.csv</code> (the partitions), <code>delimitation_motus.csv</code> (each sequence's MOTU in ASAP's three best partitions and in ABGD's recursive one for each P) and <code>delimitation_concordance_asap.csv</code> (each species against ASAP's best partition). With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). A copy stays in <code>data/exports/analysis_exports/</code></td></tr>
+          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> and <code>identification_check.csv</code> (the automatic check, with distances as fractions). With species delimitation, also: <code>delimitation_asap.csv</code> and <code>delimitation_abgd.csv</code> (the partitions), <code>delimitation_motus.csv</code> (each sequence's MOTU in ASAP's three best partitions and in ABGD's recursive one for each P) and <code>delimitation_concordance_asap.csv</code> (each species against ASAP's best partition). With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Those of the last 5 analyses can be downloaded</td></tr>
         </tbody>
       </table>
     </div>
@@ -2372,7 +2373,7 @@ Sequence B:  A C G T C A G C G T ...
 
     <div class="faq-item">
       <div class="q">Where do the files I export end up?</div>
-      <div class="a">Your browser downloads them to your usual downloads folder, and a copy is also saved in <code>data/exports/</code>. For each export type, the 20 most recent files are kept.</div>
+      <div class="a">Your browser downloads them to your usual downloads folder. While the viewer is open, a copy also stays in <code>data/exports/</code> (the 20 most recent files of each type), which is deleted the next time you open it: keep what you need from your downloads folder. The analyses' results ZIPs aren't stored on disk: they are built when you press the button.</div>
     </div>
 
     <div class="faq-item">

@@ -31,6 +31,15 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   2 % apart.
 
 ### Changed
+- Export copies in `data/exports/` only last while the viewer is open: the
+  folders are emptied when it starts, since files from earlier sessions could
+  no longer be downloaded from it anyway (the browser already saved its copy
+  to the downloads folder). Within a session they still keep the 20 most
+  recent files. The cleanup now runs after the "already running" check, so a
+  second launch doesn't empty the running viewer's.
+- The analyses' results ZIP is no longer written to disk: it is kept
+  compressed in memory for the last 5 analyses and sent when you press the
+  button (`data/exports/analysis_exports/` is removed).
 - Creator: *Open the viewer* on Start is green once there is a database to
   open; the *Completed* badge of a step is as tall as the buttons beside it.
 - Creator: the FTS step's log says the progress bar moves without a

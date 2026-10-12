@@ -17,6 +17,7 @@ Uses numpy (installed by server.py like its other dependencies).
 """
 
 import math
+import re
 from collections import Counter, defaultdict
 
 import numpy as np
@@ -452,6 +453,95 @@ def barcode_gap(D, species, ids):
     return result
 
 
+# Identification check: a record this close to another species...
+SUSPECT_NEAR = 0.01
+# ...and this far from every record of its own species
+SUSPECT_FAR = 0.03
+# Names that don't identify a species
+_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex)\b\.?|\d", re.IGNORECASE)
+
+
+def identification_check(D, species, genera, ids, bins):
+    """Records that look like misidentifications or mixed-up samples.
+
+    For each record with a species, its nearest record of another species.
+    When that one is within SUSPECT_NEAR, the record is a suspect if nothing
+    of its own species backs it (none within SUSPECT_FAR) and either the
+    neighbour is of another genus or its own species is far away. A record
+    with close conspecifics is not suspect: when a misidentified sequence
+    sits next to it, that one is.
+    The rest are species that share sequences, unless one of the two records
+    is a suspect: the same epithet in two genera ('renamed': the species was
+    moved to another genus and the records use both names), or a pair of
+    congeneric species the marker doesn't tell apart ('congeneric':
+    hybridisation, recent species, synonyms).
+    Provisional names ("Genus sp.", "cf.", "aff.", interim names with
+    numbers) are no species identification: they are left out.
+    """
+    species = ["" if _PROVISIONAL.search(sp) else sp for sp in species]
+    codes = _codes_of(species)
+    n = len(species)
+    near = []
+    for i in range(n):
+        if codes[i] < 0:
+            continue
+        row = D[i]
+        het = (codes >= 0) & (codes != codes[i]) & ~np.isnan(row)
+        if not het.any():
+            continue
+        j = int(np.flatnonzero(het)[np.argmin(row[het])])
+        if row[j] > SUSPECT_NEAR:
+            continue
+        con = (codes == codes[i]) & ~np.isnan(row)
+        con[i] = False
+        own = float(row[con].min()) if con.any() else None
+        near.append((i, j, float(row[j]), own))
+
+    def genus(k):
+        return genera[k] or (species[k].split()[0] if species[k] else "")
+
+    def epithet(k):
+        words = species[k].split()
+        return words[1] if len(words) > 1 and words[1].isalpha() and words[1].islower() else ""
+
+    def renamed(i, j):
+        return bool(epithet(i)) and epithet(i) == epithet(j) and genus(i) != genus(j)
+
+    suspects, flagged = [], set()
+    for i, j, dist, own in near:
+        other_genus = bool(genus(i) and genus(j) and genus(i) != genus(j))
+        unsupported = own is None or own > SUSPECT_FAR
+        if renamed(i, j):
+            continue
+        if unsupported and (other_genus or own is not None):
+            flagged.add(i)
+            suspects.append({
+                "id": ids[i], "species": species[i], "bin": bins[i],
+                "own": own, "own_n": int((codes == codes[i]).sum()) - 1,
+                "nn": dist, "nn_species": species[j], "nn_id": ids[j], "nn_bin": bins[j],
+                "reason": "other_genus" if other_genus else "far_from_own",
+            })
+    pairs = {}
+    for i, j, dist, own in near:
+        if i in flagged or j in flagged:
+            continue
+        kind = "renamed" if renamed(i, j) else "congeneric" if genus(i) == genus(j) else None
+        if kind is None:
+            # A record of another genus next to one backed by its own
+            # species: the suspect is the other one, if anything
+            continue
+        key = tuple(sorted((species[i], species[j])))
+        p = pairs.setdefault(key, {"species": list(key), "kind": kind, "min": dist,
+                                   "records": set(), "shared_bin": False})
+        p["min"] = min(p["min"], dist)
+        p["records"].update((ids[i], ids[j]))
+        p["shared_bin"] = p["shared_bin"] or (bool(bins[i]) and bins[i] == bins[j])
+    shared = [{**p, "records": sorted(p["records"])} for p in pairs.values()]
+    suspects.sort(key=lambda s: (s["reason"] != "other_genus", -(s["own"] or 0), s["species"]))
+    shared.sort(key=lambda p: (p["kind"] != "renamed", p["min"], p["species"]))
+    return {"near": SUSPECT_NEAR, "far": SUSPECT_FAR, "suspects": suspects, "shared": shared}
+
+
 # Fine histogram of distances, merged into wider bars at the end
 _FINE_BIN = 0.001        # 0.1 %
 _FINE_BINS = 1000        # up to 100 %
@@ -810,6 +900,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     families = [rec.get("family") or "" for rec in usable]
 
     gap = barcode_gap(D, species, ids)
+    check = identification_check(D, species, genera, ids, [rec.get("bin") or "" for rec in usable])
     summary, histogram, other = distance_summary(D, species, genera, families)
     # Missing distances within a group (between groups they are all missing)
     no_overlap = int(sum(np.isnan(D[a:b, a:b]).sum() for a, b in blocks) // 2)
@@ -828,6 +919,14 @@ def run_distance(records, marker, forced_code=None, model="k2p",
             ["level", "taxa", "comparisons", "min", "mean", "max"],
             [[s["level"], s["taxa"], s["comparisons"], _f(s["min"]), _f(s["mean"]), _f(s["max"])]
              for s in summary]),
+        "identification_check.csv": _csv(
+            ["type", "processid", "species", "bin", "nearest_own_species", "nearest_other_species",
+             "other_species", "other_processid", "other_bin", "reason"],
+            [["suspect", s["id"], s["species"], s["bin"], _f(s["own"]), _f(s["nn"]),
+              s["nn_species"], s["nn_id"], s["nn_bin"], s["reason"]] for s in check["suspects"]]
+            + [["shared", "; ".join(p["records"]), p["species"][0], "", "", _f(p["min"]),
+                p["species"][1], "", "yes" if p["shared_bin"] else "no", p["kind"]]
+               for p in check["shared"]]),
     }
     # One alignment per group: each has its own reference's columns
     for k, (a, b) in enumerate(blocks):
@@ -894,6 +993,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
         "histogram": histogram,
         "histogram_other": other,
         "gap": gap,
+        "check": check,
         "trees": trees,
         "tree_notes": tree_notes,
         "matrix_exported": n <= MAX_MATRIX_EXPORT,

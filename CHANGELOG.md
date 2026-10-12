@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [Unreleased]
+
+### Added
+- **Automatic identification check** in the sequence analysis. Computing
+  distances now flags, at the top of the Distances tab, the records nearly
+  identical (≤1 %) to another species with no sequence of their own species
+  within 3 %: likely misidentifications or swapped tubes. It also lists
+  species filed under the same epithet in two genera (renamed species) and
+  pairs of congeneric species that share sequences. Interim names (sp., cf.,
+  aff., with numbers) are left out. Downloadable as CSV and in the results
+  ZIP (`identification_check.csv`).
+- The guide explains, step by step, what a distance is and how to read the
+  barcode gap, with a section on the new check and an FAQ entry.
+
 ## [2.0.0]
 
 ### Upgrade notes

@@ -558,7 +558,9 @@
           <li><a href="#an-calidad">Composition and quality</a></li>
           <li><a href="#an-haplotipos">Haplotypes</a></li>
           <li><a href="#an-concordancia">Species and BINs</a></li>
+          <li><a href="#an-conceptos">Before you start: distances and the barcode gap</a></li>
           <li><a href="#an-distancias">Distances and barcode gap</a></li>
+          <li><a href="#an-revision">Automatic identification check</a></li>
           <li><a href="#an-arbol">NJ tree</a></li>
           <li><a href="#an-descargas">Downloads and limits</a></li>
           <li><a href="#an-ejemplo">Worked example</a></li>
@@ -1769,6 +1771,80 @@
     </div>
 
     <!-- Distances -->
+    <!-- Concepts -->
+    <h2 class="sub-title" id="an-conceptos">Before you start: distances and the barcode gap</h2>
+    <p>The distance analysis answers one question: <strong>does the barcode tell apart the species in this
+       set?</strong> This section explains the ideas; the next ones, each part of the result.</p>
+
+    <h3 class="step-title">What a distance is</h3>
+    <p>Take two aligned sequences and count the share of positions where they differ:</p>
+<pre>Sequence A:  A C G T T A G C A T ...
+Sequence B:  A C G T C A G C G T ...
+                     ↑       ↑
+             2 differences in 10 positions = 20 %</pre>
+    <ul class="bullet">
+      <li><strong>0 %</strong>: the two sequences are identical.</li>
+      <li><strong>2 %</strong>: they differ at about 13 of COI's 658 bases.</li>
+      <li><strong>25 %</strong>: they differ at one base in four, typical between genera or families.</li>
+    </ul>
+    <p>The <strong>K2P</strong> model (the default) adjusts that percentage a little: over time a position can change
+       more than once, and those changes can't be seen, so K2P makes up for them. In practice you can read it as
+       "percentage of different bases".</p>
+
+    <h3 class="step-title">The core idea: within against between species</h3>
+    <p>When the barcode works, two individuals of the <strong>same species</strong> usually differ by <strong>less than
+       1–2 %</strong>, and two of <strong>different species</strong> by <strong>more than 3–5 %</strong>:</p>
+<pre> Same species           Different species
+ ███████                            ████████████
+ 0%  1%  2%  3%  4%  5% ...    10%     20%     30%
+        ↑──────── gap ────────↑
+          = "barcode gap"</pre>
+    <p>That empty stretch between the two clouds is the <strong>barcode gap</strong>. When it exists, an unknown
+       sequence can be assigned to its species without doubt. Thresholds such as "2 %" are rough guides: they vary
+       between groups.</p>
+
+    <h3 class="step-title">A species' barcode gap</h3>
+    <p>Two figures are worked out for each species:</p>
+    <ul class="bullet">
+      <li><strong>Max intra</strong>: how much the two most different sequences of the species differ.</li>
+      <li><strong>Neighbour</strong>: how much the closest sequence of <em>another</em> species differs.</li>
+    </ul>
+    <p><strong>Gap = Neighbour − Max intra.</strong> When it is <strong>positive</strong>, even the species' most
+       different sequences are closer to each other than to any other species: it is well separated. When it is
+       <strong>zero or negative</strong>, something is mixed up.</p>
+
+    <h3 class="step-title">Example: a misidentified record</h3>
+    <p><em>Species X</em> has 6 sequences. Five are identical to each other and share a BIN; the sixth is ~30 % away
+       from them, in another BIN, and <strong>identical</strong> to a sequence of <em>Species Y</em>, of another
+       genus:</p>
+    <ul class="bullet">
+      <li><strong>Max intra = 30 %</strong>: the sixth sequence against its "fellow" sequences.</li>
+      <li><strong>Neighbour = 0 %</strong>: the sixth sequence is identical to <em>Species Y</em>.</li>
+      <li><strong>Gap = 0 − 30 = −30 %.</strong></li>
+    </ul>
+    <p>The species is not badly delimited: that sixth sequence is almost surely a <em>Species Y</em> filed as
+       <em>Species X</em> (a misidentification or a swapped tube). BOLD placing it in <em>Species Y</em>'s BIN confirms
+       it.</p>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div><strong>Rule of thumb:</strong> a very negative gap with the neighbour at ~0 % is nearly always <strong>one
+        misidentified record</strong>, not a real problem with the species. One such record is enough to inflate its
+        species' largest intraspecific distance and sink the smallest distance between species in the summary. The
+        <a href="#an-revision">automatic identification check</a> finds these records for you.</div>
+    </div>
+
+    <h3 class="step-title">Reading species with no gap</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pattern</th><th>What it usually means</th></tr></thead>
+        <tbody>
+          <tr><td>Very high max intra (20–30 %) and neighbour ~0 %</td><td><strong>One misidentified record</strong> or a swapped tube. It shows in the automatic check.</td></tr>
+          <tr><td>Low max intra and neighbour ~0 %, species of one genus</td><td>Species the marker doesn't tell apart: hybridisation, very recent species or names that may be synonyms.</td></tr>
+          <tr><td>Max intra of ~3–10 % and a distant neighbour</td><td>Possible <strong>cryptic species</strong> or deeply divergent geographic lineages within a species.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <h2 class="sub-title" id="an-distancias">Distances and barcode gap</h2>
     <p>The <strong>Distances</strong> and <strong>NJ tree</strong> tabs are computed on demand from the same input as
        the basic analysis. Choose the options and press <strong>Compute</strong>:</p>
@@ -1872,13 +1948,55 @@
     </div>
     <div class="callout tip">
       <span class="icon">💡</span>
-      <div>For a species with no gap, open the <strong>NJ tree</strong>, type its name in <em>Highlight species or
+      <div>For a species with no gap, look first at the <a href="#an-revision">automatic check</a>: when the problem is a misidentified record, it is listed there next to the record it is mistaken for. To see it, open the <strong>NJ tree</strong>, type its name in <em>Highlight species or
         ID…</em> and check whether its sequences form a group of their own or mix with the neighbour species'. Then look
         up the suspect record in the results table and click it to see its card (country, identifier, who identified
         it).</div>
     </div>
 
     <!-- Tree -->
+    <!-- Automatic check -->
+    <h2 class="sub-title" id="an-revision">Automatic identification check</h2>
+    <p>When computing distances, the viewer compares each record with the closest sequence of <em>another</em>
+       species. The result shows at the top of the <strong>Distances</strong> tab, before the summary, in three
+       lists:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>List</th><th>Criterion</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Records that may be misidentified</strong></td>
+              <td>Its sequence is within <strong>1 %</strong> of another species and <strong>none of its own species</strong>
+                  is within <strong>3 %</strong>. The reason says whether it matches <em>another genus</em> (the
+                  clearest case) or another species of the same genus while <em>far from its own</em>.</td>
+              <td>Open the record card (identifier, locality, photos on BOLD) and, if needed, check the
+                  specimen.</td></tr>
+          <tr><td><strong>Same epithet in another genus</strong></td>
+              <td>Nearly identical sequences under the same species name in two genera (e.g. <em>Amazilia
+                  fimbriata</em> and <em>Chionomesa fimbriata</em>).</td>
+              <td>Not a misidentification: the species moved to another genus and the records use both names.</td></tr>
+          <tr><td><strong>Species of a genus that share sequences</strong></td>
+              <td>Pairs of species with sequences within 1 %, each backed by sequences of its own.</td>
+              <td>Judge whether the marker can't tell them apart (hybridisation, recent species), they are synonyms
+                  or the identifications need checking.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="bullet">
+      <li>A record with close sequences of its own species is <strong>not</strong> flagged even when a misidentified
+          record sits next to it: the one that doesn't fit is.</li>
+      <li>When both records in a row are the only ones of their species, there's no telling which is wrong: both
+          are listed.</li>
+      <li>Sequences with stop codons are left out of the distances, and so of the check.</li>
+      <li>Interim names (<em>Genus</em> sp., cf., aff. or with numbers) don't identify a species and are left out of the check.</li>
+    </ul>
+    <p><strong>⤓ Check (CSV)</strong> downloads the three lists; the results ZIP holds them too
+       (<code>identification_check.csv</code>).</p>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div>Two records with consecutive sample numbers and crossed identifications (each nearly identical to the
+        other's species) point to <strong>labels swapped</strong> between neighbouring samples.</div>
+    </div>
+
     <h2 class="sub-title" id="an-arbol">NJ tree</h2>
     <p>A <strong>neighbour-joining</strong> tree built on the computed distances and rooted at the <strong>midpoint</strong>
        (halfway along the path between the two most distant sequences). With several alignment groups, pick the group in
@@ -1934,7 +2052,8 @@
           <tr><td><strong>⤓ Sequences (CSV)</strong></td><td>One row per sequence: id, species, BIN, marker, length, counts of A, C, G, T, N, ambiguous and invalid, GC %, GC3 %, genetic code, frame, stop codons, whether it meets the barcode standard (<code>yes</code>/<code>no</code>) and flags</td></tr>
           <tr><td><strong>⤓ Haplotypes (CSV)</strong></td><td>Per species: sequences, haplotypes, singletons, Hd, left out for Ns/ambiguities and the size of each haplotype (<code>6;3;1</code>)</td></tr>
           <tr><td><strong>⤓ Species and BINs (CSV)</strong></td><td>Each BIN with several species and each species in several BINs, with its records and the detail</td></tr>
-          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code> and <code>distance_summary.csv</code>. With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). A copy stays in <code>data/exports/analysis_exports/</code></td></tr>
+          <tr><td><strong>⤓ Check (CSV)</strong> (Distances)</td><td>The three lists of the <a href="#an-revision">automatic identification check</a>, with distances in percent</td></tr>
+          <tr><td><strong>⤓ Results (ZIP)</strong> (Distances)</td><td><code>alignment.fasta</code> (the alignment), <code>distances.csv</code> (full matrix; only up to 2,000 sequences), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> and <code>identification_check.csv</code> (the automatic check, with distances as fractions). With several alignment groups, one alignment and one tree per group (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). A copy stays in <code>data/exports/analysis_exports/</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -1972,7 +2091,8 @@
           stop codons</em> is 0. In <strong>Composition and quality</strong>, review the flagged sequences.</li>
       <li>In <strong>Species and BINs</strong>, note the shared BINs and split species.</li>
       <li>In <strong>Distances</strong>, keep K2P, set <em>Max. per species: 20</em> if a species has hundreds of
-          sequences, and press <strong>Compute</strong>. See which species have no barcode gap.</li>
+          sequences, and press <strong>Compute</strong>. Go through the <strong>automatic identification
+          check</strong> first, then see which species have no barcode gap.</li>
       <li>In <strong>NJ tree</strong>, colour by species, find the problem species with <em>Highlight</em> and export
           the figure as SVG or PDF.</li>
       <li>Download the <strong>ZIP</strong> to keep the alignment, distances and Newick tree.</li>
@@ -2091,6 +2211,11 @@
     <div class="faq-item">
       <div class="q">Pressing "Analyse" asks me to choose a marker.</div>
       <div class="a">The input holds sequences of several markers (or a FASTA whose headers don't name it), and each analysis covers one. Pick the marker in the list, which shows how many sequences each has, and press <strong>Analyse</strong> again; those of other markers are left out. See <a href="#an-entrada">Input and options</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">The distance summary shows a huge largest distance within species (20–30 %) or 0 % between genera.</div>
+      <div class="a">It is nearly always one or a few misidentified records: a sequence of another species under the wrong name inflates its species' largest distance and sinks the smallest one between species. The <a href="#an-revision">automatic identification check</a>, at the top of the Distances tab, lists them with the species each is mistaken for. See also <a href="#an-conceptos">Before you start: distances and the barcode gap</a>.</div>
     </div>
 
     <div class="faq-item">

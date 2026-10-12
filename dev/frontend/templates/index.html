@@ -1379,6 +1379,12 @@
 		.an-dist-controls { margin-bottom: 1rem; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--tint); }
 		.an-dist-controls select { min-width: 0; }
 		.an-nogap { color: #b4570b; font-weight: 600; }
+		.an-check { margin-bottom: 1rem; padding: 14px 16px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; background: #fff; }
+		.an-check-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+		.an-check-head .an-h { margin: 0; }
+		.an-check-head .btn { margin-left: auto; }
+		.an-reason { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: .75rem; white-space: nowrap; background: var(--tint); }
+		.an-reason.other_genus { background: #fde8d4; color: #8a3f05; }
 		.an-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 6px; font-size: .8rem; color: var(--mute); }
 		.an-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 		.an-legend-item i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
@@ -2496,6 +2502,27 @@
                 an_series_inter: 'Entre especies',
                 an_axis_distance: 'Distancia (%)',
                 an_hist2_tip: '{from}–{to} %: {a} {na} · {b} {nb}',
+                an_h_check: 'Revisión automática de identificaciones',
+                an_check_note: 'Busca registros cuya secuencia está a {near} o menos de la de otra especie. Es sospechoso el registro que además no tiene ninguna secuencia de su propia especie a menos de {far}: es la señal típica de un error de identificación, un tubo cambiado o una contaminación. Confírmalo en la ficha del registro y, si hace falta, con el espécimen.',
+                an_check_none: 'Ningún registro está a {near} o menos de otra especie: no hay identificaciones que revisar con este criterio.',
+                an_t_suspects: 'Registros sospechosos',
+                an_t_renamed: 'Mismo epíteto en otro género',
+                an_t_congeneric: 'Especies que comparten secuencia',
+                an_h_suspects: 'Registros sospechosos de error de identificación',
+                an_suspects_note: 'Primero los más claros. Si los dos registros de una fila son los únicos de su especie, cualquiera de los dos puede ser el equivocado.',
+                an_c_own: 'Su especie más cercana', an_c_identical_to: 'Casi idéntico a', an_c_other_id: 'Registro', an_c_reason: 'Motivo',
+                an_reason_other_genus: 'Idéntico a otro género',
+                an_reason_far_from_own: 'Lejos de su especie',
+                an_reason_other_genus_d: 'La secuencia coincide con la de otro género y ninguna de su propia especie está cerca.',
+                an_reason_far_from_own_d: 'La secuencia coincide con la de otra especie del mismo género y está lejos del resto de la suya.',
+                an_own_none: 'sin otras',
+                an_h_renamed: 'Mismo epíteto en otro género (probable cambio de nombre)',
+                an_renamed_note: 'Secuencias casi idénticas registradas con el mismo epíteto bajo dos géneros: la especie se trasladó de género y los registros usan los dos nombres. No es un error de identificación.',
+                an_h_congeneric: 'Especies del mismo género que comparten secuencia',
+                an_congeneric_note: 'Pares de especies con secuencias casi idénticas. El marcador no las separa: pueden ser especies muy recientes, hibridación, sinónimos o identificaciones a revisar.',
+                an_c_pair: 'Especies', an_c_min_dist: 'Distancia mínima', an_c_same_bin: 'Mismo BIN', an_c_records_list: 'Registros',
+                an_yes: 'Sí', an_no: 'No',
+                an_dl_check: '⤓ Revisión (CSV)',
                 an_h_gap: 'Barcode gap',
                 an_gap_note: 'Para cada especie, la distancia máxima entre sus secuencias frente a la distancia a la secuencia más cercana de otra especie (su vecino más cercano). Las especies sobre la diagonal o por debajo no tienen gap: el barcode no las separa de su vecina.',
                 an_t_gap_species: 'Especies evaluadas',
@@ -2900,6 +2927,27 @@
                 an_series_inter: 'Between species',
                 an_axis_distance: 'Distance (%)',
                 an_hist2_tip: '{from}–{to} %: {a} {na} · {b} {nb}',
+                an_h_check: 'Automatic identification check',
+                an_check_note: 'Looks for records whose sequence is within {near} of another species. A record is a suspect when, besides, no sequence of its own species is within {far}: the usual sign of a misidentification, a swapped tube or a contamination. Confirm it on the record card and, if needed, against the specimen.',
+                an_check_none: 'No record is within {near} of another species: nothing to check by this criterion.',
+                an_t_suspects: 'Suspect records',
+                an_t_renamed: 'Same epithet in another genus',
+                an_t_congeneric: 'Species that share sequences',
+                an_h_suspects: 'Records that may be misidentified',
+                an_suspects_note: 'Clearest first. When both records in a row are the only ones of their species, either may be the wrong one.',
+                an_c_own: 'Nearest of its species', an_c_identical_to: 'Nearly identical to', an_c_other_id: 'Record', an_c_reason: 'Reason',
+                an_reason_other_genus: 'Matches another genus',
+                an_reason_far_from_own: 'Far from its species',
+                an_reason_other_genus_d: 'The sequence matches another genus and none of its own species is close.',
+                an_reason_far_from_own_d: 'The sequence matches another species of the same genus and is far from the rest of its own.',
+                an_own_none: 'no others',
+                an_h_renamed: 'Same epithet in another genus (likely renamed)',
+                an_renamed_note: 'Nearly identical sequences filed under the same epithet in two genera: the species moved to another genus and the records use both names. Not a misidentification.',
+                an_h_congeneric: 'Species of a genus that share sequences',
+                an_congeneric_note: 'Pairs of species with nearly identical sequences. The marker does not tell them apart: very recent species, hybridisation, synonyms or identifications to check.',
+                an_c_pair: 'Species', an_c_min_dist: 'Smallest distance', an_c_same_bin: 'Same BIN', an_c_records_list: 'Records',
+                an_yes: 'Yes', an_no: 'No',
+                an_dl_check: '⤓ Check (CSV)',
                 an_h_gap: 'Barcode gap',
                 an_gap_note: 'For each species, the largest distance between its sequences against the distance to the closest sequence of another species (its nearest neighbour). Species on or under the diagonal have no gap: the barcode doesn\'t tell them from their neighbour.',
                 an_t_gap_species: 'Species assessed',
@@ -6969,6 +7017,7 @@
 			const res = anEl('div', 'an-dist-results');
 			body.append(res);
 			anDistanceHeader(res, d);
+			if (d.check) anRenderCheck(res, d.check);
 
 			res.append(anEl('div', 'an-h', t('an_h_summary')));
 			res.append(anTable([
@@ -7016,6 +7065,87 @@
 					return span;
 				} },
 			], rows.slice(0, AN_TABLE_ROWS)));
+		}
+
+		// Records closer to another species than to their own: likely
+		// misidentifications, renamed species and species that share sequences
+		function anRenderCheck(res, c) {
+			const box = anEl('div', 'an-check');
+			const near = anPctOf(c.near, 0), far = anPctOf(c.far, 0);
+			const head = anEl('div', 'an-check-head');
+			head.append(anEl('div', 'an-h', t('an_h_check')));
+			const renamed = c.shared.filter(p => p.kind === 'renamed');
+			const congeneric = c.shared.filter(p => p.kind === 'congeneric');
+			if (c.suspects.length || c.shared.length) {
+				const dl = anEl('button', 'btn btn-sm btn-emerald', t('an_dl_check'));
+				dl.type = 'button';
+				dl.addEventListener('click', () => anDownloadCheck(c));
+				head.append(dl);
+			}
+			box.append(head, anEl('p', 'an-muted', t('an_check_note', { near, far })));
+			res.append(box);
+			if (!c.suspects.length && !c.shared.length) {
+				box.append(anEl('p', 'an-muted mb-0', t('an_check_none', { near })));
+				return;
+			}
+			const tiles = anEl('div', 'an-tiles');
+			tiles.append(anTile(numFmt.format(c.suspects.length), t('an_t_suspects')),
+			             anTile(numFmt.format(renamed.length), t('an_t_renamed')),
+			             anTile(numFmt.format(congeneric.length), t('an_t_congeneric')));
+			box.append(tiles);
+			const more = rows => {
+				if (rows.length > AN_TABLE_ROWS) box.append(anEl('p', 'an-muted',
+					t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(rows.length) })));
+			};
+			if (c.suspects.length) {
+				box.append(anEl('div', 'an-h', t('an_h_suspects')), anEl('p', 'an-muted', t('an_suspects_note')));
+				more(c.suspects);
+				box.append(anTable([
+					{ label: t('an_c_id'), cls: 'mono', get: s => s.id },
+					{ label: t('an_c_species'), cls: 'sp', get: s => s.species },
+					{ label: t('an_c_bin'), cls: 'mono', get: s => s.bin },
+					{ label: t('an_c_own'), cls: 'num', get: s => s.own === null ? t('an_own_none') : anPctOf(s.own) },
+					{ label: t('an_c_identical_to'), cls: 'sp', get: s => s.nn_species },
+					{ label: t('an_c_other_id'), cls: 'mono', get: s => s.nn_id },
+					{ label: t('an_c_bin'), cls: 'mono', get: s => s.nn_bin },
+					{ label: t('an_c_nn'), cls: 'num', get: s => anPctOf(s.nn) },
+					{ label: t('an_c_reason'), get: s => {
+						const b = anEl('span', 'an-reason ' + s.reason, t('an_reason_' + s.reason));
+						b.title = t('an_reason_' + s.reason + '_d');
+						return b;
+					} },
+				], c.suspects.slice(0, AN_TABLE_ROWS)));
+			}
+			const pairTable = rows => anTable([
+				{ label: t('an_c_pair'), cls: 'sp', get: p => p.species.join(' · ') },
+				{ label: t('an_c_min_dist'), cls: 'num', get: p => anPctOf(p.min) },
+				{ label: t('an_c_same_bin'), get: p => p.shared_bin ? t('an_yes') : t('an_no') },
+				{ label: t('an_c_records_list'), cls: 'list', get: p => p.records.join(', ') },
+			], rows.slice(0, AN_TABLE_ROWS));
+			if (renamed.length) {
+				box.append(anEl('div', 'an-h', t('an_h_renamed')), anEl('p', 'an-muted', t('an_renamed_note')));
+				more(renamed);
+				box.append(pairTable(renamed));
+			}
+			if (congeneric.length) {
+				box.append(anEl('div', 'an-h', t('an_h_congeneric')), anEl('p', 'an-muted', t('an_congeneric_note')));
+				more(congeneric);
+				box.append(pairTable(congeneric));
+			}
+		}
+
+		function anDownloadCheck(c) {
+			const pct = x => x === null ? '' : (100 * x).toFixed(2);
+			const rows = [
+				...c.suspects.map(s => [t('an_t_suspects'), s.id, s.species, s.bin, pct(s.own), s.nn_species,
+				                        s.nn_id, s.nn_bin, pct(s.nn), t('an_reason_' + s.reason)]),
+				...c.shared.map(p => [t(p.kind === 'renamed' ? 'an_t_renamed' : 'an_t_congeneric'),
+				                      p.records.join('; '), p.species[0], '', '', p.species[1], '',
+				                      p.shared_bin ? t('an_yes') : t('an_no'), pct(p.min), '']),
+			];
+			downloadText(anCsv(['type', 'processid', 'species', 'bin', 'nearest_own_species_pct', 'other_species',
+			                    'other_processid', 'other_bin_or_same_bin', 'distance_pct', 'reason'], rows),
+			             `${anFileStem()}_identification_check.csv`, 'text/csv;charset=utf-8');
 		}
 
 		// A round step that splits 0..max into about `parts` steps

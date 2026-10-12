@@ -558,7 +558,9 @@
           <li><a href="#an-calidad">Composición y calidad</a></li>
           <li><a href="#an-haplotipos">Haplotipos</a></li>
           <li><a href="#an-concordancia">Especies y BINs</a></li>
+          <li><a href="#an-conceptos">Antes de empezar: distancias y barcode gap</a></li>
           <li><a href="#an-distancias">Distancias y barcode gap</a></li>
+          <li><a href="#an-revision">Revisión automática de identificaciones</a></li>
           <li><a href="#an-arbol">Árbol NJ</a></li>
           <li><a href="#an-descargas">Descargas y límites</a></li>
           <li><a href="#an-ejemplo">Ejemplo completo</a></li>
@@ -1776,6 +1778,79 @@
       </div>
     </div>
 
+    <!-- Conceptos -->
+    <h2 class="sub-title" id="an-conceptos">Antes de empezar: distancias y barcode gap</h2>
+    <p>El análisis de distancias responde a una pregunta: <strong>¿el código de barras separa bien las especies de
+       este conjunto?</strong> Esta sección explica los conceptos; las siguientes, cada parte del resultado.</p>
+
+    <h3 class="step-title">Qué es una distancia</h3>
+    <p>Se toman dos secuencias alineadas y se cuenta en qué porcentaje de posiciones difieren:</p>
+<pre>Secuencia A:  A C G T T A G C A T ...
+Secuencia B:  A C G T C A G C G T ...
+                      ↑       ↑
+              2 diferencias en 10 posiciones = 20 %</pre>
+    <ul class="bullet">
+      <li><strong>0 %</strong>: las dos secuencias son idénticas.</li>
+      <li><strong>2 %</strong>: difieren en unas 13 de las 658 bases del COI.</li>
+      <li><strong>25 %</strong>: difieren en una de cada cuatro bases, lo típico entre géneros o familias distintos.</li>
+    </ul>
+    <p>El modelo <strong>K2P</strong> (el predeterminado) ajusta un poco ese porcentaje: con el tiempo una misma
+       posición puede cambiar más de una vez y esos cambios no se ven, así que K2P los compensa. En la práctica puedes
+       leerlo como «porcentaje de bases distintas».</p>
+
+    <h3 class="step-title">La idea central: dentro frente a entre especies</h3>
+    <p>Si el barcode funciona, dos individuos de la <strong>misma especie</strong> suelen diferir <strong>menos de un
+       1–2 %</strong>, y dos de <strong>especies distintas</strong>, <strong>más de un 3–5 %</strong>:</p>
+<pre> Misma especie          Especies distintas
+ ███████                            ████████████
+ 0%  1%  2%  3%  4%  5% ...    10%     20%     30%
+        ↑─────── hueco ───────↑
+          = "barcode gap"</pre>
+    <p>Ese hueco entre las dos nubes es el <strong>barcode gap</strong>. Si existe, una secuencia desconocida se puede
+       asignar a su especie sin dudas. Los umbrales del tipo «2 %» son orientativos: varían entre grupos.</p>
+
+    <h3 class="step-title">El barcode gap de una especie</h3>
+    <p>Para cada especie se calculan dos números:</p>
+    <ul class="bullet">
+      <li><strong>Intra máx.</strong>: cuánto difieren las dos secuencias más distintas de esa especie.</li>
+      <li><strong>Vecino</strong>: cuánto difiere la secuencia más parecida de <em>otra</em> especie.</li>
+    </ul>
+    <p><strong>Gap = Vecino − Intra máx.</strong> Si es <strong>positivo</strong>, hasta las secuencias más distintas
+       de la especie se parecen más entre sí que a cualquier otra especie: está bien separada. Si es <strong>cero o
+       negativo</strong>, algo se mezcla.</p>
+
+    <h3 class="step-title">Ejemplo: un registro mal identificado</h3>
+    <p>Una <em>Especie X</em> tiene 6 secuencias. Cinco son idénticas entre sí y están en un BIN; la sexta está a un
+       ~30 % de ellas, en otro BIN, y es <strong>idéntica</strong> a una secuencia de una <em>Especie Y</em> de otro
+       género:</p>
+    <ul class="bullet">
+      <li><strong>Intra máx. = 30 %</strong>: la sexta secuencia frente a sus «compañeras» de especie.</li>
+      <li><strong>Vecino = 0 %</strong>: la sexta secuencia es idéntica a la <em>Especie Y</em>.</li>
+      <li><strong>Gap = 0 − 30 = −30 %.</strong></li>
+    </ul>
+    <p>La especie no está mal delimitada: esa sexta secuencia es casi seguro una <em>Especie Y</em> etiquetada como
+       <em>Especie X</em> (error de identificación o tubo cambiado). Que BOLD la haya puesto en el BIN de la
+       <em>Especie Y</em> lo confirma.</p>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div><strong>Regla práctica:</strong> un gap muy negativo con el vecino a ~0 % casi siempre es <strong>un registro
+        mal identificado</strong>, no un problema real de la especie. Basta un registro así para disparar el máximo
+        intraespecífico de su especie y hundir el mínimo entre especies del resumen. La
+        <a href="#an-revision">revisión automática de identificaciones</a> encuentra estos registros por ti.</div>
+    </div>
+
+    <h3 class="step-title">Cómo leer las especies sin gap</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Patrón</th><th>Qué suele significar</th></tr></thead>
+        <tbody>
+          <tr><td>Intra máx. muy alto (20–30 %) y vecino ~0 %</td><td><strong>Un registro mal identificado</strong> o un tubo cambiado. Aparece en la revisión automática.</td></tr>
+          <tr><td>Intra máx. bajo y vecino ~0 %, especies del mismo género</td><td>Especies que el marcador no separa: hibridación, especies muy recientes o nombres que quizá son sinónimos.</td></tr>
+          <tr><td>Intra máx. de ~3–10 % y vecino lejano</td><td>Posibles <strong>especies crípticas</strong> o linajes geográficos muy divergentes dentro de una especie.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- Distancias -->
     <h2 class="sub-title" id="an-distancias">Distancias y barcode gap</h2>
     <p>Las pestañas <strong>Distancias</strong> y <strong>Árbol NJ</strong> se calculan bajo demanda sobre la misma
@@ -1882,10 +1957,52 @@
     </div>
     <div class="callout tip">
       <span class="icon">💡</span>
-      <div>Ante una especie sin gap, abre el <strong>Árbol NJ</strong>, escribe su nombre en <em>Resaltar especie o
+      <div>Ante una especie sin gap, mira primero la <a href="#an-revision">revisión automática</a>: si el problema es un registro mal identificado, aparece allí junto al registro con el que se confunde. Para verlo, abre el <strong>Árbol NJ</strong>, escribe su nombre en <em>Resaltar especie o
         ID…</em> y comprueba si sus secuencias forman un grupo propio o se mezclan con las de la especie vecina. Después
         busca el registro sospechoso en la tabla de resultados y haz clic en él para ver su ficha (país, identificador,
         quién lo identificó).</div>
+    </div>
+
+    <!-- Revisión automática -->
+    <h2 class="sub-title" id="an-revision">Revisión automática de identificaciones</h2>
+    <p>Al calcular las distancias, el visor compara cada registro con la secuencia más parecida de <em>otra</em>
+       especie. El resultado aparece al principio de la pestaña <strong>Distancias</strong>, antes del resumen, en tres
+       listas:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Lista</th><th>Criterio</th><th>Qué hacer</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Registros sospechosos de error de identificación</strong></td>
+              <td>Su secuencia está a <strong>1 % o menos</strong> de otra especie y <strong>ninguna de su propia especie</strong>
+                  está a menos de un <strong>3 %</strong>. El motivo dice si coincide con <em>otro género</em> (lo más
+                  claro) o con otra especie del mismo género estando <em>lejos de la suya</em>.</td>
+              <td>Abrir la ficha del registro (identificador, localidad, fotos en BOLD) y, si hace falta, revisar el
+                  espécimen.</td></tr>
+          <tr><td><strong>Mismo epíteto en otro género</strong></td>
+              <td>Secuencias casi idénticas con el mismo nombre de especie bajo dos géneros (p. ej. <em>Amazilia
+                  fimbriata</em> y <em>Chionomesa fimbriata</em>).</td>
+              <td>No es un error de identificación: la especie cambió de género y los registros usan los dos nombres.</td></tr>
+          <tr><td><strong>Especies del mismo género que comparten secuencia</strong></td>
+              <td>Pares de especies con secuencias a 1 % o menos, cada una con secuencias propias que la respaldan.</td>
+              <td>Valorar si son especies que el marcador no separa (hibridación, especies recientes), sinónimos o
+                  identificaciones a revisar.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="bullet">
+      <li>Un registro con secuencias cercanas de su propia especie <strong>no</strong> se marca aunque tenga al lado un
+          registro mal identificado: se marca el que no encaja.</li>
+      <li>Si los dos registros de una fila son los únicos de su especie, no se puede saber cuál es el equivocado:
+          aparecen los dos.</li>
+      <li>Las secuencias con codones de parada no entran en las distancias, así que tampoco en la revisión.</li>
+      <li>Los nombres provisionales (<em>Género</em> sp., cf., aff. o con números) no identifican una especie y no entran en la revisión.</li>
+    </ul>
+    <p><strong>⤓ Revisión (CSV)</strong> descarga las tres listas; el ZIP de resultados las incluye también
+       (<code>identification_check.csv</code>).</p>
+    <div class="callout tip">
+      <span class="icon">💡</span>
+      <div>Dos registros con números de muestra consecutivos e identificaciones cruzadas (cada uno casi idéntico a la
+        especie del otro) son la señal de <strong>etiquetas intercambiadas</strong> entre muestras vecinas.</div>
     </div>
 
     <!-- Árbol -->
@@ -1946,7 +2063,8 @@
           <tr><td><strong>⤓ Secuencias (CSV)</strong></td><td>Una fila por secuencia: id, especie, BIN, marcador, longitud, recuento de A, C, G, T, N, ambiguas y no válidas, GC %, GC3 %, código genético, marco, codones de parada, si cumple el estándar barcode (<code>yes</code>/<code>no</code>) y alertas</td></tr>
           <tr><td><strong>⤓ Haplotipos (CSV)</strong></td><td>Por especie: secuencias, haplotipos, únicos, Hd, excluidas por N/ambigüedades y el tamaño de cada haplotipo (<code>6;3;1</code>)</td></tr>
           <tr><td><strong>⤓ Especies y BINs (CSV)</strong></td><td>Cada BIN con varias especies y cada especie en varios BINs, con sus registros y el detalle</td></tr>
-          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code> y <code>distance_summary.csv</code>. Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Una copia queda en <code>data/exports/analysis_exports/</code></td></tr>
+          <tr><td><strong>⤓ Revisión (CSV)</strong> (Distancias)</td><td>Las tres listas de la <a href="#an-revision">revisión automática de identificaciones</a>, con las distancias en porcentaje</td></tr>
+          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> e <code>identification_check.csv</code> (la revisión automática, con las distancias como fracción). Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Una copia queda en <code>data/exports/analysis_exports/</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -1985,7 +2103,8 @@
           alertas.</li>
       <li>En <strong>Especies y BINs</strong> anota los BINs compartidos y las especies divididas.</li>
       <li>En <strong>Distancias</strong> deja K2P, pon <em>Máx. por especie: 20</em> si alguna especie tiene cientos de
-          secuencias, y pulsa <strong>Calcular</strong>. Mira qué especies no tienen barcode gap.</li>
+          secuencias, y pulsa <strong>Calcular</strong>. Revisa primero la <strong>revisión automática de
+          identificaciones</strong> y después qué especies no tienen barcode gap.</li>
       <li>En <strong>Árbol NJ</strong> colorea por especie, busca las especies problemáticas con <em>Resaltar</em> y
           exporta la figura en SVG o PDF.</li>
       <li>Descarga el <strong>ZIP</strong> para tener el alineamiento, las distancias y el árbol en Newick.</li>
@@ -2104,6 +2223,11 @@
     <div class="faq-item">
       <div class="q">Al pulsar «Analizar» me pide elegir un marcador.</div>
       <div class="a">La entrada tiene secuencias de varios marcadores (o un FASTA cuyas cabeceras no lo indican) y cada análisis usa uno solo. Elige el marcador en la lista, que muestra cuántas secuencias hay de cada uno, y pulsa <strong>Analizar</strong> de nuevo; las de otros marcadores quedan fuera. Ver <a href="#an-entrada">Entrada y opciones</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="q">El resumen de distancias da un máximo dentro de especie altísimo (20–30 %) o un mínimo de 0 % entre géneros.</div>
+      <div class="a">Casi siempre es uno o pocos registros mal identificados: una secuencia de otra especie con el nombre equivocado infla el máximo de su especie y hunde el mínimo entre especies. La <a href="#an-revision">revisión automática de identificaciones</a>, al principio de la pestaña Distancias, los lista con la especie con la que se confunden. Ver también <a href="#an-conceptos">Antes de empezar: distancias y barcode gap</a>.</div>
     </div>
 
     <div class="faq-item">

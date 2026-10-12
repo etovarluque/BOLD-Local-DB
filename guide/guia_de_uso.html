@@ -561,7 +561,9 @@
           <li><a href="#an-conceptos">Antes de empezar: distancias y barcode gap</a></li>
           <li><a href="#an-distancias">Distancias y barcode gap</a></li>
           <li><a href="#an-revision">Revisión automática de identificaciones</a></li>
+          <li><a href="#an-delimitacion">Delimitación de especies (MOTU)</a></li>
           <li><a href="#an-arbol">Árbol NJ</a></li>
+          <li><a href="#an-red">Red de haplotipos</a></li>
           <li><a href="#an-descargas">Descargas y límites</a></li>
           <li><a href="#an-ejemplo">Ejemplo completo</a></li>
         </ol>
@@ -1577,7 +1579,10 @@
           calidad, revisión de la traducción (codones de parada), haplotipos por especie y concordancia
           especie–BIN.</li>
       <li><strong>Distancias y árbol</strong> (bajo demanda, sobre las mismas secuencias): alineamiento, distancias
-          genéticas al estilo de BOLD, <em>barcode gap</em> por especie y árbol neighbour-joining.</li>
+          genéticas al estilo de BOLD, <em>barcode gap</em> por especie, árbol neighbour-joining y, si se pide,
+          delimitación de especies con ASAP y ABGD.</li>
+      <li><strong>Red de haplotipos</strong> (bajo demanda, de una especie o de todas las secuencias): redes TCS o MSN
+          con estadísticos de diversidad.</li>
     </ul>
     <div class="callout warn">
       <span class="icon">⚠️</span>
@@ -1714,7 +1719,7 @@
     <p>Agrupa por especie las secuencias idénticas, sin alinear. Como los barcodes de un mismo haplotipo suelen
        diferir solo en dónde se recortaron, una secuencia <strong>contenida</strong> en otra más larga cuenta como el
        mismo haplotipo. Las secuencias con N o bases ambiguas se excluyen (una sola N crearía un haplotipo
-       falso).</p>
+       falso). El botón <strong>Red</strong> de cada especie construye su <a href="#an-red">red de haplotipos</a>.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Columna</th><th>Significado</th></tr></thead>
@@ -1853,7 +1858,7 @@ Secuencia B:  A C G T C A G C G T ...
 
     <!-- Distancias -->
     <h2 class="sub-title" id="an-distancias">Distancias y barcode gap</h2>
-    <p>Las pestañas <strong>Distancias</strong> y <strong>Árbol NJ</strong> se calculan bajo demanda sobre la misma
+    <p>Las pestañas <strong>Distancias</strong>, <strong>Especies (MOTU)</strong> y <strong>Árbol NJ</strong> se calculan bajo demanda sobre la misma
        entrada del análisis básico. Elige las opciones y pulsa <strong>Calcular</strong>:</p>
     <div class="table-wrap">
       <table>
@@ -1864,6 +1869,7 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td></td><td><em>Distancia p</em></td><td>Proporción de sitios distintos, sin corrección. Fácil de interpretar («3 % de las posiciones difieren»); subestima las distancias grandes.</td></tr>
           <tr><td><strong>Máx. por especie</strong></td><td>Todas, 1, 2, 3, 5, 10, 20 o 50</td><td>Submuestrea antes de calcular, quedándose con las secuencias más largas de cada especie (o de cada BIN si no hay especie). Útil cuando unas pocas especies tienen cientos de secuencias y dominan el resultado, o para entrar en los límites. Con 1 no hay distancias intraespecíficas.</td></tr>
           <tr><td><strong>Construir árbol NJ</strong></td><td>Activado por defecto</td><td>Desactívalo si solo quieres las distancias: el árbol es lo más lento con muchas secuencias.</td></tr>
+          <tr><td><strong>Delimitar especies</strong></td><td>Desactivado por defecto</td><td>Ejecuta ASAP y ABGD sobre las distancias (hasta 2.000 secuencias por grupo). Ver <a href="#an-delimitacion">Delimitación de especies</a>.</td></tr>
         </tbody>
       </table>
     </div>
@@ -2006,6 +2012,93 @@ Secuencia B:  A C G T C A G C G T ...
     </div>
 
     <!-- Árbol -->
+    <!-- Delimitación -->
+    <h2 class="sub-title" id="an-delimitacion">Delimitación de especies (MOTU)</h2>
+    <p>Con <strong>Delimitar especies</strong> marcado, el cálculo de distancias ejecuta además dos métodos de
+       delimitación de especies: <strong>ASAP</strong> y <strong>ABGD</strong>. Los dos agrupan las secuencias en
+       <strong>MOTU</strong> (unidades taxonómicas operativas moleculares) usando solo las distancias, sin mirar los
+       nombres. La pestaña <strong>Especies (MOTU)</strong> compara esos grupos con las especies y los BINs de los
+       registros. Si hay varios grupos de alineamiento, cada uno se delimita por separado y se elige en
+       <em>Delimitación del grupo</em>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>Cómo agrupa</th><th>Qué muestra la página</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ASAP</strong><br><small>Puillandre, Brouillet y Achaz 2021</small></td>
+              <td>Une las secuencias con umbrales de distancia crecientes (agrupamiento jerárquico) y evalúa cada
+                  partición que resulta con dos criterios: el <strong>p-valor</strong>, la probabilidad, según un modelo
+                  coalescente, de que los grupos que la partición mantiene separados sean en realidad una sola especie,
+                  y el <strong>ancho relativo del gap</strong> en su umbral. La <strong>puntuación ASAP</strong> es la
+                  media de los dos rangos: la más baja es la mejor. Los grupos que se formaron con un p-valor ≤ 0,001
+                  se vuelven a dividir.</td>
+              <td>Las 10 mejores particiones, con su puntuación, número de MOTU, p-valor, ancho del gap y umbral de
+                  distancia.</td></tr>
+          <tr><td><strong>ABGD</strong><br><small>Puillandre et al. 2012</small></td>
+              <td>Busca el primer salto (el <strong>barcode gap</strong>) en las distancias ordenadas, por encima de
+                  una distancia intraespecífica máxima <em>previa</em> P, y agrupa las secuencias que están más cerca
+                  que ese salto (partición <em>inicial</em>). Después vuelve a buscar un gap dentro de cada grupo
+                  (partición <em>recursiva</em>). Se ejecuta para diez valores de P, de 0,1 % a 10 %, y se detiene en
+                  el primero que da un solo grupo.</td>
+              <td>Una fila por valor de P, con el gap encontrado y el número de MOTU de las particiones inicial y
+                  recursiva.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Con <strong>Ver</strong> eliges la partición que se compara con los nombres; al abrir la pestaña se muestra la
+       mejor de ASAP. Para cada <strong>especie con nombre</strong> (los nombres provisionales como «sp.», «cf.»,
+       «aff.» o con números no cuentan) se indica su estado:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Estado</th><th>Significa</th><th>Qué puede ser</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Coincide</strong></td><td>Todas sus secuencias forman un MOTU, sin otras especies</td><td>El marcador delimita la especie igual que la taxonomía.</td></tr>
+          <tr><td><strong>Dividida</strong></td><td>Sus secuencias se reparten en varios MOTU</td><td>Especies crípticas, linajes geográficos muy divergentes o identificaciones a revisar.</td></tr>
+          <tr><td><strong>Comparte MOTU</strong></td><td>Su MOTU incluye secuencias de otras especies</td><td>Especies recientes, hibridación, sinonimias o identificaciones a revisar.</td></tr>
+          <tr><td><strong>Dividida y comparte</strong></td><td>Las dos cosas a la vez</td><td>Casos complejos: revisa el árbol.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Los recuadros resumen cuántas especies hay en cada estado y cuántos MOTU son <strong>idénticos a un BIN</strong>
+       (sus registros con BIN comparten uno, y todos los registros de ese BIN están en el MOTU): una forma rápida de ver
+       cuánto coincide la partición con el sistema BIN de BOLD. <strong>⤓ MOTU (CSV)</strong> descarga el MOTU de cada
+       secuencia en la partición elegida, y <strong>Ver en el árbol</strong> abre el árbol coloreado por MOTU (también
+       se puede colapsar por MOTU y mostrarlo en las etiquetas).</p>
+    <h3 class="step-title">Cómo interpretarlo</h3>
+    <ul class="bullet">
+      <li>No hay una partición «correcta»: son <strong>hipótesis</strong>. La más sólida es la que se repite en los dos
+          métodos: compara la mejor de ASAP con las de ABGD que se mantienen iguales en varios valores de P.</li>
+      <li>En ABGD, los valores de P más bajos y la partición recursiva tienden a <strong>dividir de más</strong>
+          (separan poblaciones o haplotipos), y los más altos a <strong>juntar de más</strong>.</li>
+      <li>Una especie <strong>dividida</strong> en MOTU que siguen la geografía (compruébalo con el árbol coloreado por
+          país) es una candidata a especie críptica; si el MOTU aparte es una sola secuencia, revisa antes la
+          <a href="#an-revision">revisión automática</a> y la ficha del registro.</li>
+      <li>Con <strong>Máx. por especie</strong> muy bajo (1 o 2) apenas hay variación dentro de especie y los métodos
+          ven peor el gap: usa 5 o más, o todas las secuencias si caben.</li>
+      <li>Los MOTU se numeran por tamaño (MOTU 1 es el más grande) dentro de cada partición: el mismo número en dos
+          particiones no es el mismo grupo.</li>
+    </ul>
+    <div class="callout ok">
+      <span class="icon">🧪</span>
+      <div>
+        <strong>Ejemplo.</strong> Delimitas 464 secuencias COI-5P de ranas venenosas (Dendrobatidae, máximo 10 por
+        especie). La mejor partición de ASAP da 114 MOTU con un umbral de 4,1 %, y ABGD da 120 MOTU iniciales en la
+        mayoría de los valores de P: las dos coinciden a grandes rasgos. Frente a los nombres, 40 de 84 especies
+        coinciden con un MOTU; entre las que comparten MOTU hay varias especies de <em>Andinobates</em> casi idénticas
+        en COI. <em>Colostethus panamansis</em> aparece <em>dividida y compartida</em>: sus secuencias caen en tres MOTU,
+        cada uno con su BIN, y uno de ellos lo comparte con <em>Colostethus panamensis</em>, el mismo nombre escrito de
+        otra forma. Con <em>Ver en el árbol</em> ves dónde caen esos MOTU antes de revisar los especímenes.
+      </div>
+    </div>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>ASAP y ABGD están implementados en el propio programa y se comprobaron contra los programas originales: dan
+        las mismas particiones, y los p-valores de ASAP coinciden dentro de la variación de sus simulaciones. Hay dos
+        diferencias, para que el cálculo tarde segundos: ASAP hace como máximo 10.000 simulaciones por partición (el
+        p-valor más pequeño posible es 0,0001), y las particiones con el mismo p-valor comparten rango. Las simulaciones
+        usan una semilla fija: los mismos datos dan siempre el mismo resultado. Con 2.000 secuencias la delimitación
+        puede tardar alrededor de un minuto.</div>
+    </div>
+
     <h2 class="sub-title" id="an-arbol">Árbol NJ</h2>
     <p>Árbol <strong>neighbour-joining</strong> construido sobre las distancias calculadas y enraizado en el
        <strong>punto medio</strong> (la mitad del camino entre las dos secuencias más alejadas). Si hay varios grupos de
@@ -2015,11 +2108,11 @@ Secuencia B:  A C G T C A G C G T ...
       <table>
         <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
         <tbody>
-          <tr><td><strong>Colapsar</strong></td><td><em>Nada</em>, <em>Por especie</em> o <em>Por BIN</em>: reúne en un triángulo los clados formados solo por una especie (o un BIN). Con más de 300 secuencias el árbol se abre colapsado por especie. También puedes hacer clic en cualquier nodo para colapsar o expandir su clado.</td></tr>
-          <tr><td><strong>Color</strong></td><td>Colorea las puntas por <em>especie</em>, <em>BIN</em>, <em>género</em>, <em>país</em> o <em>discordancias especie–BIN</em> (BIN con varias especies, especie en varios BINs, o ambas). Hay ocho colores; el resto de valores aparecen en gris como «Otros».</td></tr>
+          <tr><td><strong>Colapsar</strong></td><td><em>Nada</em>, <em>Por especie</em>, <em>Por BIN</em> o <em>Por MOTU</em> (si se delimitaron especies): reúne en un triángulo los clados formados solo por una especie (o un BIN). Con más de 300 secuencias el árbol se abre colapsado por especie. También puedes hacer clic en cualquier nodo para colapsar o expandir su clado.</td></tr>
+          <tr><td><strong>Color</strong></td><td>Colorea las puntas por <em>especie</em>, <em>BIN</em>, <em>MOTU</em> (si se delimitaron especies), <em>género</em>, <em>país</em> o <em>discordancias especie–BIN</em> (BIN con varias especies, especie en varios BINs, o ambas). Hay ocho colores; el resto de valores aparecen en gris como «Otros».</td></tr>
           <tr><td><strong>Ramas</strong></td><td><em>Filograma</em>: la longitud de las ramas es proporcional a la distancia. <em>Cladograma</em>: solo la forma del árbol, con las puntas alineadas, más fácil de leer cuando hay ramas muy cortas.</td></tr>
           <tr><td><strong>Fila / Letra</strong></td><td>Alto de cada fila y tamaño de letra. Por debajo de 5 px de fila las etiquetas se ocultan.</td></tr>
-          <tr><td><strong>Etiquetas</strong></td><td>Qué mostrar en cada punta: especie, ID, BIN, país. <em>Etiquetas en color</em> las pinta con el color de su grupo (oscurecido si hace falta para que se lean).</td></tr>
+          <tr><td><strong>Etiquetas</strong></td><td>Qué mostrar en cada punta: especie, ID, BIN, MOTU (si se delimitaron especies), país. <em>Etiquetas en color</em> las pinta con el color de su grupo (oscurecido si hace falta para que se lean).</td></tr>
           <tr><td><strong>Resaltar especie o ID…</strong></td><td>Resalta las puntas que coinciden con el texto e indica cuántas hay.</td></tr>
           <tr><td><strong>Expandir todo</strong></td><td>Deshace todos los colapsos.</td></tr>
           <tr><td><strong>Exportar figura</strong></td><td>Tal como se ve (colapsos, colores, etiquetas): <em>SVG</em> (editable en Inkscape o Illustrator), <em>PNG 2×</em> o <em>4×</em> (si la imagen es demasiado grande se genera a menor escala y se avisa) y <em>PDF</em> (se abre el diálogo de impresión: elige «Guardar como PDF»; el navegador debe permitir ventanas emergentes).</td></tr>
@@ -2054,6 +2147,71 @@ Secuencia B:  A C G T C A G C G T ...
     <p>El ZIP de resultados incluye el árbol en formato <strong>Newick</strong> (<code>tree.nwk</code>) para abrirlo
        y editarlo en FigTree, iTOL o MEGA. Las etiquetas son <code>processid|especie|BIN</code>.</p>
 
+    <!-- Red de haplotipos -->
+    <h2 class="sub-title" id="an-red">Red de haplotipos</h2>
+    <p>La pestaña <strong>Red de haplotipos</strong> dibuja cómo se relacionan los haplotipos: cada círculo es un
+       haplotipo, su tamaño es el número de secuencias y cada marca en una línea es una mutación. Se construye bajo
+       demanda: elige en <em>Secuencias</em> una especie (o todas las del análisis), el método y pulsa
+       <strong>Construir red</strong>. El botón <strong>Red</strong> de cada fila de la pestaña
+       <a href="#an-haplotipos">Haplotipos</a> la construye directamente para esa especie.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>Cómo une los haplotipos</th><th>Cuándo usarlo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>TCS</strong> (por defecto)<br><small>Clement, Posada y Crandall 2000</small></td>
+              <td>Parsimonia estadística, tal como la calcula PopART: une los grupos de haplotipos de menor a mayor
+                  distancia a través de <strong>haplotipos intermedios no muestreados</strong> (puntos negros), colocados
+                  para que los caminos de la red reproduzcan lo mejor posible las diferencias observadas. Como PopART,
+                  une todos los grupos, sin el límite de conexión del 95 %.</td>
+              <td>La red habitual en estudios de barcoding y filogeografía dentro de una especie.</td></tr>
+          <tr><td><strong>MSN</strong><br><small>Bandelt, Forster y Röhl 1999</small></td>
+              <td>Red de expansión mínima: une los haplotipos directamente con el menor número total de mutaciones e
+                  incluye todas las alternativas igual de cortas, por eso puede tener ciclos. No añade intermedios.</td>
+              <td>Conjuntos con muchos haplotipos (admite más que TCS) o muy divergentes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Las secuencias se alinean como para las distancias y se comparan solo en las <strong>posiciones que todas
+       tienen completas</strong> (A, C, G o T): así un extremo más corto o una N no crea un haplotipo nuevo. Las que
+       cubrirían una región mucho más corta que las demás se excluyen y se avisa. Por eso el número de haplotipos
+       puede no coincidir con el de la pestaña <em>Haplotipos</em>, que no alinea.</p>
+    <p>Encima de la red aparecen los estadísticos de diversidad de esas secuencias: <strong>Hd</strong> (diversidad
+       haplotípica), <strong>π</strong> (diversidad nucleotídica: proporción media de posiciones distintas entre dos
+       secuencias; <em>k</em> es el mismo valor en número de diferencias), los <strong>sitios segregantes</strong> y la
+       <strong>D de Tajima</strong>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Color</strong></td><td>Reparte cada círculo por <em>país</em>, <em>especie</em>, <em>BIN</em> o <em>MOTU</em> (si se <a href="#an-delimitacion">delimitaron especies</a>, con la partición elegida allí). Ocho colores; el resto en gris como «Otros».</td></tr>
+          <tr><td><strong>Etiquetas</strong></td><td>Nombre del haplotipo (H1 es el más frecuente) y, si se quiere, su número de secuencias.</td></tr>
+          <tr><td><strong>Tamaño / Marcas de mutación</strong></td><td>Escala de la figura; sin marcas, cada línea muestra su número de mutaciones (con más de 10 siempre se muestra el número).</td></tr>
+          <tr><td><strong>Arrastrar</strong></td><td>Los círculos se pueden arrastrar para ordenar la figura; <em>Restablecer disposición</em> vuelve a la inicial.</td></tr>
+          <tr><td><strong>Exportar figura</strong></td><td>SVG, PNG 2× o 4× y PDF, tal como se ve.</td></tr>
+          <tr><td><strong>Datos</strong></td><td><em>Haplotipos (CSV)</em>: cada haplotipo con sus secuencias, especies, países y BINs. <em>Haplotipos (FASTA)</em>: una secuencia por haplotipo (las posiciones comparadas). <em>NEXUS (PopART)</em>: una secuencia por registro con el color elegido como rasgos (país si no hay color), para seguir trabajando en PopART.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 class="step-title">Cómo interpretarla</h3>
+    <ul class="bullet">
+      <li>Un haplotipo grande y central con muchos haplotipos raros a una o dos mutaciones (forma de
+          <strong>estrella</strong>) suele indicar una expansión poblacional reciente; suele ir con una D de Tajima
+          negativa.</li>
+      <li>Grupos de haplotipos separados por <strong>muchas mutaciones</strong> (un número en la línea) son linajes
+          divergentes: compáralos con los <a href="#an-delimitacion">MOTU</a> y con el país para ver si son especies
+          crípticas o linajes geográficos.</li>
+      <li>Un haplotipo compartido por dos especies (círculo con dos colores al colorear por especie) señala especies
+          que el marcador no separa o una identificación a revisar.</li>
+      <li>La D de Tajima con pocas secuencias (menos de 10) o con muestreos de varias poblaciones se interpreta con
+          mucha cautela.</li>
+    </ul>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div>TCS y MSN están implementados en el propio programa y se comprobaron contra PopART: con las mismas
+        secuencias dan las mismas redes (mismos haplotipos intermedios y mismas conexiones). Una red admite hasta
+        2.000 secuencias; TCS hasta 300 haplotipos y MSN hasta 600.</div>
+    </div>
+
     <!-- Descargas -->
     <h2 class="sub-title" id="an-descargas">Descargas y límites</h2>
     <div class="table-wrap">
@@ -2064,7 +2222,9 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td><strong>⤓ Haplotipos (CSV)</strong></td><td>Por especie: secuencias, haplotipos, únicos, Hd, excluidas por N/ambigüedades y el tamaño de cada haplotipo (<code>6;3;1</code>)</td></tr>
           <tr><td><strong>⤓ Especies y BINs (CSV)</strong></td><td>Cada BIN con varias especies y cada especie en varios BINs, con sus registros y el detalle</td></tr>
           <tr><td><strong>⤓ Revisión (CSV)</strong> (Distancias)</td><td>Las tres listas de la <a href="#an-revision">revisión automática de identificaciones</a>, con las distancias en porcentaje</td></tr>
-          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> e <code>identification_check.csv</code> (la revisión automática, con las distancias como fracción). Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Una copia queda en <code>data/exports/analysis_exports/</code></td></tr>
+          <tr><td><strong>⤓ MOTU (CSV)</strong> (Especies)</td><td>El MOTU de cada secuencia en la partición elegida, con su especie, BIN y el estado de la especie</td></tr>
+          <tr><td><strong>Haplotipos (CSV / FASTA)</strong>, <strong>NEXUS (PopART)</strong> (Red de haplotipos)</td><td>Los haplotipos de la red con sus secuencias, especies, países y BINs; una secuencia por haplotipo; y el NEXUS con una secuencia por registro y rasgos para PopART. Ver <a href="#an-red">Red de haplotipos</a></td></tr>
+          <tr><td><strong>⤓ Resultados (ZIP)</strong> (Distancias)</td><td><code>alignment.fasta</code> (el alineamiento), <code>distances.csv</code> (matriz completa; solo hasta 2.000 secuencias), <code>tree.nwk</code>, <code>barcode_gap.csv</code>, <code>distance_summary.csv</code> e <code>identification_check.csv</code> (la revisión automática, con las distancias como fracción). Con la delimitación de especies, además: <code>delimitation_asap.csv</code> y <code>delimitation_abgd.csv</code> (las particiones), <code>delimitation_motus.csv</code> (el MOTU de cada secuencia en las tres mejores particiones de ASAP y en la recursiva de ABGD para cada P) y <code>delimitation_concordance_asap.csv</code> (cada especie frente a la mejor partición de ASAP). Con varios grupos de alineamiento, un alineamiento y un árbol por grupo (<code>alignment_group1.fasta</code>, <code>tree_group1.nwk</code>…). Una copia queda en <code>data/exports/analysis_exports/</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -2083,6 +2243,8 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td>Secuencias leídas para distancias</td><td>100.000 (antes del submuestreo por especie; por encima, acota la búsqueda)</td></tr>
           <tr><td>Secuencias en distancias</td><td>5.000 (1.000 si el marcador no es codificante), después del submuestreo</td></tr>
           <tr><td>Secuencias en el árbol</td><td>2.000 por grupo</td></tr>
+          <tr><td>Secuencias en la delimitación de especies</td><td>2.000 por grupo</td></tr>
+          <tr><td>Red de haplotipos</td><td>2.000 secuencias; 300 haplotipos con TCS y 600 con MSN</td></tr>
           <tr><td>Posiciones comparables para una distancia</td><td>100</td></tr>
         </tbody>
       </table>

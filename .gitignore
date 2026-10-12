@@ -38,3 +38,6 @@ Thumbs.db
 
 # Release zips (dev/tools/build_release.py)
 /dist/
+
+# Local shortcuts to the launcher (absolute paths of this machine)
+/*.lnk

@@ -3408,6 +3408,7 @@ P = {
     "blue_mid":      "#669AEE",
     # States
     "ok":          "#7fe0a0",
+    "ok_hover":    "#a6ebbd",
     "running":     "#fab387",
     "yellow":      "#c09b07",
     "yellow_light": "#e0b520",
@@ -3594,6 +3595,19 @@ QPushButton#cardBtn {
 }
 QPushButton#cardBtn:hover    { background-color: %(surface)s; color: %(on_btn)s; }
 QPushButton#cardBtn:disabled { background-color: %(disabled_bg)s; color: %(muted)s; }
+/* "Open the viewer": green once there is a database to open, so it stands
+   out from the blue buttons as the place to go next. */
+QPushButton#viewerBtn {
+    background-color: %(ok)s;
+    color: %(on_light)s;
+    border: none;
+    padding: 4px 12px;
+    font-size: %(fs12)s;
+    font-weight: bold;
+    border-radius: 6px;
+}
+QPushButton#viewerBtn:hover    { background-color: %(ok_hover)s; color: %(on_light)s; }
+QPushButton#viewerBtn:disabled { background-color: %(disabled_bg)s; color: %(muted)s; font-weight: normal; }
 /* Destructive action: distinguished from the rest without drawing attention. */
 QPushButton#dangerBtn {
     background-color: transparent;
@@ -5056,7 +5070,7 @@ class PrepPanel(QWidget):
             row2._n += 1
 
         self.viewer_btn = QPushButton(t('btn_open_viewer'))
-        self.viewer_btn.setObjectName("cardBtn")
+        self.viewer_btn.setObjectName("viewerBtn")
         self.viewer_btn.setToolTip(t('tip_open_viewer', port=VIEWER_PORT))
         self.viewer_btn.clicked.connect(self.app.open_viewer)
         _add(self.viewer_btn)

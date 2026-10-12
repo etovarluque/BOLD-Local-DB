@@ -19,6 +19,16 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reading downloads on its own as PDF (through the print dialog), TXT or
   Markdown, for whoever wants it apart from the results. Built
   from fixed rules, so the same data always get the same reading.
+- NJ tree: a *What this tree says* section under the tree reads it the same
+  way: which named species and genera form their own clade and which don't
+  (with whom they mix, and how far apart), whether the chosen MOTUs are
+  clades, sequences far from the rest of their species (and species that
+  only fail to be a clade because of one), and the lack of support values.
+  The server works out the facts with the real distances; the MOTU check
+  follows the partition chosen.
+- Both readings abbreviate repeated genera in lists, group unnamed groups,
+  and, for COI, warn when the chosen partition lumps named species more than
+  2 % apart.
 
 ### Changed
 - Creator: *Open the viewer* on Start is green once there is a database to

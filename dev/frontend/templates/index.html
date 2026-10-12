@@ -1299,6 +1299,8 @@
 		.an-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 		.an-chip { display: inline-flex; gap: 6px; padding: 2px 10px; border: 1px solid #c3c9d4; border-radius: 14px; background: #fff; font-size: .82rem; color: var(--ink); }
 		.an-chip em { font-style: normal; color: var(--mute); }
+		.an-fasta-help { font-size: .78rem; line-height: 1.4; }
+		.an-fields-note { margin: .5rem 0 0; }
 		.an-input-toggle { margin-left: auto; background: #fff; }
 		.an-input-form { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px 24px; padding: 14px; border-top: 1px solid #d8dde5; }
 		.an-input-form[hidden] { display: none; }
@@ -1937,6 +1939,7 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary an-input-toggle" id="anInputToggle"
                                 aria-controls="anInputForm" aria-expanded="true" hidden></button>
                     </div>
+                    <p class="an-note an-fields-note" id="anInputFields" hidden></p>
                     <div class="an-input-form" id="anInputForm">
                         <fieldset>
                             <legend class="an-label" data-i18n="an_source_label">Secuencias</legend>
@@ -1963,6 +1966,7 @@
                                 </div>
                                 <textarea id="anFastaText" class="form-control an-fasta-text" rows="5" spellcheck="false"
                                           data-i18n-placeholder="an_fasta_placeholder"></textarea>
+                                <p class="an-muted an-fasta-help mt-1 mb-0" data-i18n="an_fasta_help"></p>
                             </div>
                         </fieldset>
                         <fieldset>
@@ -2373,7 +2377,14 @@
                 an_src_search: 'Resultados de la búsqueda mostrada',
                 an_src_fasta: 'Archivo FASTA',
                 an_fasta_clear: '✕ Quitar archivo',
-                an_fasta_placeholder: 'O pega aquí las secuencias en formato FASTA. Se reconocen las cabeceras que exporta este visor (processid|sampleid|BIN|taxón|marcador) y las de BOLD (processid|taxón|marcador|accesión).',
+                an_fasta_placeholder: 'O pega aquí las secuencias en formato FASTA.',
+                an_fasta_help: 'Del FASTA se leen el nombre de especie y el BIN si la cabecera los trae: la de este visor (processid|sampleid|BIN|taxón|marcador), la de BOLD (processid|taxón|marcador|accesión), «>id Género especie…» (GenBank y la mayoría de fuentes) o «>Género_especie_id». El nombre permite comparar con las especies y el BIN con los BIN; sin ellos esas partes quedan vacías. El país no viaja en ningún FASTA: para la geografía, analiza desde la búsqueda.',
+                an_fields_read: 'Del FASTA se leyeron {n} secuencias: {sp} con nombre de especie, {bin} con BIN y {c} con país.',
+                an_fields_partial_species: ' Las que no traen nombre quedan fuera de las comparaciones con las especies.',
+                an_fields_partial_bin: ' Las que no traen BIN quedan fuera de las comparaciones con los BIN.',
+                an_fields_missing_species: ' Sin nombre de especie no estarán disponibles el barcode gap, la revisión de identificaciones, la comparación de especies frente a MOTU ni las partes de las lecturas que comparan con los nombres.',
+                an_fields_missing_bin: ' Sin BIN no estará disponible la comparación con los BIN (pestaña «Especies y BINs» y linajes frente a BIN en la red).',
+                an_fields_missing_country: ' Sin país no estarán disponibles el color por país ni la estructura geográfica de la red; para tenerlos, analiza desde la búsqueda.',
                 an_options_label: 'Opciones',
                 an_input_label: 'Entrada',
                 an_input_change: '▾ Cambiar',
@@ -3056,7 +3067,14 @@
                 an_src_search: 'Results of the search on screen',
                 an_src_fasta: 'FASTA file',
                 an_fasta_clear: '✕ Remove file',
-                an_fasta_placeholder: 'Or paste sequences in FASTA format here. Headers exported by this viewer (processid|sampleid|BIN|taxon|marker) and by BOLD (processid|taxon|marker|accession) are recognised.',
+                an_fasta_placeholder: 'Or paste sequences in FASTA format here.',
+                an_fasta_help: 'The species name and the BIN are read from the FASTA when the header carries them: this viewer\'s (processid|sampleid|BIN|taxon|marker), BOLD\'s (processid|taxon|marker|accession), ">id Genus species…" (GenBank and most sources) or ">Genus_species_id". The name allows comparing with species and the BIN with BINs; without them those parts stay empty. No FASTA carries the country: for geography, analyse from the search.',
+                an_fields_read: '{n} sequences read from the FASTA: {sp} with a species name, {bin} with a BIN and {c} with a country.',
+                an_fields_partial_species: ' Those without a name are left out of the comparisons with species.',
+                an_fields_partial_bin: ' Those without a BIN are left out of the comparisons with BINs.',
+                an_fields_missing_species: ' Without species names, the barcode gap, the identification check, species against MOTUs and the parts of the readings that compare with the names won\'t be available.',
+                an_fields_missing_bin: ' Without BINs, the comparison with BINs (the "Species and BINs" tab and lineages against BINs in the network) won\'t be available.',
+                an_fields_missing_country: ' Without countries, the colour by country and the network\'s geographic structure won\'t be available; to have them, analyse from the search.',
                 an_options_label: 'Options',
                 an_input_label: 'Input',
                 an_input_change: '▾ Change',
@@ -7150,6 +7168,20 @@
 				chip('an_marker_field', data.marker || t('an_no_marker')),
 				chip('an_code_field', code.disabled ? '—' : code.options[code.selectedIndex].textContent));
 			document.getElementById('anInputToggle').hidden = false;
+			anFieldsNote(data.fields);
+		}
+
+		// What a FASTA's headers gave (species, BIN, country) and what can't
+		// be done without it
+		function anFieldsNote(f) {
+			const box = document.getElementById('anInputFields');
+			box.hidden = !f;
+			if (!f) return;
+			const num = n => numFmt.format(n);
+			let text = t('an_fields_read', { n: num(f.n), sp: num(f.species), bin: num(f.bin), c: num(f.country) });
+			['species', 'bin'].filter(k => f[k] && f[k] < f.n).forEach(k => { text += t('an_fields_partial_' + k); });
+			['species', 'bin', 'country'].filter(k => !f[k]).forEach(k => { text += t('an_fields_missing_' + k); });
+			box.textContent = text;
 		}
 
 		// ── Results ──

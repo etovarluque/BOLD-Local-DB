@@ -1608,7 +1608,7 @@
         <tbody>
           <tr><td><strong>Registros seleccionados</strong></td><td>Los registros marcados con las casillas de la tabla de resultados (el número aparece al lado). Es lo que usa el botón <em>Analizar</em> de la <a href="#seleccion">barra de selección</a>.</td></tr>
           <tr><td><strong>Resultados de la búsqueda mostrada</strong></td><td>Todos los registros de la búsqueda que hay en pantalla, no solo la página visible.</td></tr>
-          <tr><td><strong>Archivo FASTA</strong></td><td>Un archivo <code>.fasta</code>, <code>.fas</code>, <code>.fa</code>, <code>.fna</code>, <code>.ffn</code> o <code>.txt</code> (hasta 50 MB), o secuencias pegadas en el cuadro. Se reconocen las cabeceras que exporta este visor (<code>processid|sampleid|BIN|taxón|marcador</code>) y las de BOLD (<code>processid|taxón|marcador|accesión</code>); de ellas se sacan la especie, el BIN y el marcador. Con cualquier otra cabecera solo se usa la primera palabra como identificador.</td></tr>
+          <tr><td><strong>Archivo FASTA</strong></td><td>Un archivo <code>.fasta</code>, <code>.fas</code>, <code>.fa</code>, <code>.fna</code>, <code>.ffn</code> o <code>.txt</code> (hasta 50 MB), o secuencias pegadas en el cuadro. De la cabecera se leen el identificador y, si los trae, el nombre de especie, el BIN y el marcador. Se reconocen la que exporta este visor (<code>processid|sampleid|BIN|taxón|marcador</code>), la de BOLD (<code>processid|taxón|marcador|accesión</code>), un identificador seguido del nombre (<code>&gt;MN123456.1 Carollia perspicillata voucher…</code>, como en GenBank y la mayoría de fuentes) y el nombre unido al identificador (<code>&gt;Carollia_perspicillata_ABC123</code>); con cualquier otra solo se usa la primera palabra como identificador. El <strong>nombre de especie</strong> activa todo lo que compara con las especies (barcode gap, revisión de identificaciones, especies frente a MOTU, monofilia en el árbol) y el <strong>BIN</strong> la comparación con los BIN; sin ellos esas partes quedan vacías. El <strong>país</strong> no viaja en ningún FASTA: para el color por país y la geografía de la red, analiza desde la búsqueda. Tras analizar, un aviso bajo la línea <em>Entrada</em> dice cuántas secuencias traían cada dato y qué no estará disponible.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1761,7 +1761,7 @@
     <p>Un <strong>BIN</strong> (<em>Barcode Index Number</em>) es el grupo que asigna BOLD a secuencias muy parecidas
        entre sí, de forma independiente de la identificación taxonómica. Lo esperable es que cada especie tenga su
        propio BIN. Esta vista compara las dos clasificaciones usando solo los registros que tienen <strong>a la vez
-       especie y BIN</strong> (un FASTA sin cabeceras de BOLD no tendrá ninguno).</p>
+       especie y BIN</strong> (en un FASTA, solo la cabecera que exporta este visor trae el BIN).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Cifra / tabla</th><th>Qué significa</th><th>Causas habituales</th></tr></thead>

@@ -1604,7 +1604,7 @@
         <tbody>
           <tr><td><strong>Selected records</strong></td><td>The records ticked in the results table (the count is shown next to it). This is what the <em>Analyse</em> button of the <a href="#seleccion">selection bar</a> uses.</td></tr>
           <tr><td><strong>Results of the search on screen</strong></td><td>Every record of the search on screen, not just the visible page.</td></tr>
-          <tr><td><strong>FASTA file</strong></td><td>A <code>.fasta</code>, <code>.fas</code>, <code>.fa</code>, <code>.fna</code>, <code>.ffn</code> or <code>.txt</code> file (up to 50 MB), or sequences pasted into the box. The headers this viewer exports (<code>processid|sampleid|BIN|taxon|marker</code>) and BOLD's (<code>processid|taxon|marker|accession</code>) are recognised, and species, BIN and marker are taken from them. With any other header only its first word is used, as the identifier.</td></tr>
+          <tr><td><strong>FASTA file</strong></td><td>A <code>.fasta</code>, <code>.fas</code>, <code>.fa</code>, <code>.fna</code>, <code>.ffn</code> or <code>.txt</code> file (up to 50 MB), or sequences pasted into the box. The header gives the identifier and, when it carries them, the species name, the BIN and the marker. Recognised are the one this viewer exports (<code>processid|sampleid|BIN|taxon|marker</code>), BOLD's (<code>processid|taxon|marker|accession</code>), an identifier followed by the name (<code>&gt;MN123456.1 Carollia perspicillata voucher…</code>, as in GenBank and most sources) and the name joined to the identifier (<code>&gt;Carollia_perspicillata_ABC123</code>); with any other only the first word is used, as the identifier. The <strong>species name</strong> enables everything that compares with species (barcode gap, identification check, species against MOTUs, monophyly in the tree) and the <strong>BIN</strong> the comparison with BINs; without them those parts stay empty. No FASTA carries the <strong>country</strong>: for the colour by country and the network's geography, analyse from the search. After the analysis, a notice under the <em>Input</em> line says how many sequences carried each field and what won't be available.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1754,7 +1754,7 @@
     <p>A <strong>BIN</strong> (<em>Barcode Index Number</em>) is the cluster BOLD assigns to closely similar sequences,
        independently of the taxonomic identification. Each species would be expected to have a BIN of its own. This
        view compares the two classifications using only records that have <strong>both a species and a BIN</strong> (a
-       FASTA without BOLD headers has none).</p>
+       FASTA, only the header this viewer exports carries the BIN).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Figure / table</th><th>What it means</th><th>Usual causes</th></tr></thead>

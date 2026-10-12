@@ -71,6 +71,16 @@ GUIDE_HAP_OVERLAP = 200
 GUIDE_HAP_MAX_REPS = 5000
 _HAP_KMER = 30
 
+# Reading guide of the species & BINs view (see `concordance_guide`): whose
+# a BIN is comes from the whole database, asked for at most
+# GUIDE_CONC_LOOKUP BINs. A species' BIN with GUIDE_CONC_OWN or more of its
+# records is a lineage of its own; another species holding GUIDE_CONC_SHARED
+# of a BIN's records (and at least 3) shares it.
+GUIDE_CONC_LOOKUP = 40
+GUIDE_CONC_OWN = 5
+GUIDE_CONC_SHARED = 0.1
+GUIDE_CONC_SPECIES = 8
+
 # ── Genetic codes ─────────────────────────────────────────────────────────────
 
 # NCBI translation tables, as their 64 amino acids in TCAG codon order
@@ -638,6 +648,191 @@ def concordance(records):
     }
 
 
+_PROVISIONAL_WORDS = {"sp", "spp", "cf", "aff", "nr", "gr"}
+# Country values that name no place
+_NO_PLACE = {"unrecoverable", "exception", "?"}
+
+
+def _binomial(species):
+    """Genus and epithet of a name ("Carollia brevicauda PS1" is Carollia
+    brevicauda)."""
+    words = species.split()
+    return " ".join(words[:2]) if len(words) >= 2 else species
+
+
+def _provisional(species):
+    """A name that doesn't settle a species: "Aedes sp.", "Carollia cf.
+    sowelli", "Carollia brevicauda PS1"."""
+    words = species.split()
+    return (len(words) < 2 or words[1].rstrip(".").lower() in _PROVISIONAL_WORDS
+            or any(c.isdigit() for c in species) or (len(words) > 2 and words[2][:1].isupper()))
+
+
+def _species_bins(records):
+    """{species: Counter(BIN)} and {(species, BIN): [records]} of the
+    records with both."""
+    bins, members = defaultdict(Counter), defaultdict(list)
+    for rec in records:
+        sp, b = rec.get("species") or "", rec.get("bin") or ""
+        if sp and b and len(rec["clean"]) >= MIN_LENGTH:
+            bins[sp][b] += 1
+            members[(sp, b)].append(rec)
+    return bins, members
+
+
+def concordance_bins(records):
+    """The BINs whose species the database should be asked for, most
+    telling first: those outside a species' main BIN (where a misidentified
+    record would sit), then the main ones (to tell a shared BIN)."""
+    bins, _ = _species_bins(records)
+    minor, main = Counter(), Counter()
+    for counts in bins.values():
+        (top, n), *rest = counts.most_common()
+        main[top] += n
+        for b, k in rest:
+            minor[b] += k
+    order = [b for b, _ in minor.most_common()] + [b for b, _ in main.most_common() if b not in minor]
+    return order[:GUIDE_CONC_LOOKUP], len(order) > GUIDE_CONC_LOOKUP
+
+
+def concordance_guide(records, conc, bin_species=None, capped=False):
+    """Facts for the reading of the species & BINs view, which the page
+    words.
+
+    `bin_species` holds, for some BINs, the species the whole database files
+    under them ({bin: {species: [[name, n]], total: n}}); other BINs are
+    judged by these records alone.
+    """
+    bin_species = bin_species or {}
+    bins, members = _species_bins(records)
+    in_data = defaultdict(Counter)
+    for sp, counts in bins.items():
+        for b, n in counts.items():
+            in_data[b][sp] = n
+
+    def holders(b):
+        """[[species, n]] of a BIN, its total and where they come from.
+        Records analysed but missing from the database (a FASTA) count too:
+        each species takes the larger of both counts."""
+        if b in bin_species:
+            counts = {sp: n for sp, n in bin_species[b]["species"]}
+            extra = 0
+            for sp, n in in_data[b].items():
+                if n > counts.get(sp, 0):
+                    extra += n - counts.get(sp, 0)
+                    counts[sp] = n
+            listed = sorted(([sp, n] for sp, n in counts.items()), key=lambda x: -x[1])
+            return listed, bin_species[b]["total"] + extra, "db"
+        listed = [[s, n] for s, n in in_data[b].most_common()]
+        return listed, sum(n for _, n in listed), "data"
+
+    def owner(b):
+        listed, total, src = holders(b)
+        named = [x for x in listed if not _provisional(x[0])] or listed
+        return (named[0][0], named[0][1], total, src) if named else (None, 0, total, src)
+
+    def countries(sp, b):
+        # BOLD fills unknown places with "Unrecoverable"
+        return [c for c, _ in Counter(r["country"] for r in members[(sp, b)] if r.get("country")
+                                      and r["country"].strip().lower() not in _NO_PLACE).most_common(2)]
+
+    def ids(sp, b, n):
+        return [r.get("processid") or r.get("id") for r in members[(sp, b)]][:3] if n <= 3 else []
+
+    strays, own_split, own_small, shared, provisional = [], [], [], {}, {}
+    stray_bins, overview = set(), []
+    for sp, counts in sorted(bins.items(), key=lambda x: (-sum(x[1].values()), x[0])):
+        total = sum(counts.values())
+        main = counts.most_common(1)[0][0]
+        overview.append([sp, total, main, counts[main], len(counts)])
+        if _provisional(sp):
+            o = owner(main)[0]
+            if o and _binomial(o) != _binomial(sp):
+                provisional.setdefault(main, {"bin": main, "owner": o, "names": []})["names"].append([sp, counts[main]])
+            continue
+        items, own = [], []
+        for b, n in counts.most_common():
+            o, o_n, b_total, src = owner(b)
+            entry = {"bin": b, "n": n, "countries": countries(sp, b)}
+            mine = not o or _binomial(o) == _binomial(sp)
+            if not mine and b == main and n >= max(3, GUIDE_CONC_SHARED * b_total):
+                mine = True
+            if mine:
+                own.append(entry)
+                if b == main:
+                    listed, b_total, src = holders(b)
+                    others = [x for x in listed if not _provisional(x[0]) and _binomial(x[0]) != _binomial(sp)
+                              and x[1] >= max(3, GUIDE_CONC_SHARED * b_total)]
+                    if others:
+                        s = shared.setdefault(b, {"bin": b, "species": [], "others": others, "src": src,
+                                                  "genera": set()})
+                        s["species"].append([sp, n])
+                        s["genera"].update(_binomial(x[0]).split()[0] for x in others + [[sp]])
+            else:
+                entry.update(owner=o, owner_n=o_n, src=src, ids=ids(sp, b, n),
+                             other_genus=o.split()[0] != sp.split()[0])
+                items.append(entry)
+        if items:
+            stray_bins.update(x["bin"] for x in items)
+            strays.append({"species": sp, "n": total, "records": sum(x["n"] for x in items),
+                           "bins_n": len(items), "items": items[:GUIDE_LIST]})
+        big = [x for x in own if x["n"] >= GUIDE_CONC_OWN]
+        small = [x for x in own if x["n"] < GUIDE_CONC_OWN and x["bin"] != main]
+        if len(big) >= 2:
+            own_split.append({"species": sp, "n": total, "bins_n": len(big), "bins": big[:GUIDE_CONC_SPECIES],
+                              "small": [x["n"] for x in small], "top": round(own[0]["n"] / total, 3) if own else 0})
+        elif small:
+            own_small.append({"species": sp, "n": total, "bins_n": len(small), "bins": small[:GUIDE_LIST]})
+
+    # Two species with records in each other's BIN, in one country
+    reciprocal = []
+    by_sp = {x["species"]: x for x in strays}
+    for x in strays:
+        for it in x["items"]:
+            y = next((by_sp[s] for s in by_sp if _binomial(s) == _binomial(it["owner"])), None)
+            if not y or x["species"] >= y["species"]:
+                continue
+            back = [j for j in y["items"] if _binomial(j["owner"]) == _binomial(x["species"])]
+            places = set(it["countries"]) & {c for j in back for c in j["countries"]}
+            if back and places:
+                reciprocal.append([x["species"], y["species"], sorted(places)[0]])
+
+    named_bins = {b for (sp, b) in members if not _provisional(sp)}
+    bin_only = [r for r in records if r.get("bin") and not r.get("species") and len(r["clean"]) >= MIN_LENGTH]
+    # One BIN of its own here, and not shared in the database either
+    in_shared = {sp for s in shared.values() for sp, _ in s["species"]}
+    concordant = sorted(sp for sp, counts in bins.items()
+                        if len(counts) == 1 and len(in_data[next(iter(counts))]) == 1 and sp not in in_shared)
+    for s in shared.values():
+        s["genera"] = len(s["genera"])
+        s["provisional"] = provisional.pop(s["bin"], {"names": []})["names"]
+    return {
+        "species_n": conc["species"],
+        "paired": conc["paired_records"],
+        # [species, records, main BIN, its records, BINs], most records first
+        "overview": overview[:GUIDE_CONC_SPECIES],
+        "concordant_n": len(concordant),
+        "concordant": concordant[:GUIDE_CONC_SPECIES],
+        "strays": strays[:GUIDE_CONC_SPECIES],
+        "strays_n": len(strays),
+        "stray_records": sum(x["records"] for x in strays),
+        "stray_bins": len(stray_bins),
+        "reciprocal": reciprocal[:3],
+        "own_split": own_split[:GUIDE_CONC_SPECIES],
+        "own_split_n": len(own_split),
+        "own_small": own_small[:GUIDE_LIST],
+        "shared": sorted(shared.values(), key=lambda s: -sum(n for _, n in s["species"]))[:GUIDE_CONC_SPECIES],
+        "shared_n": len(shared),
+        "provisional": list(provisional.values())[:GUIDE_LIST],
+        "species_only": conc["species_only"],
+        "bin_only": len(bin_only),
+        "bin_only_named": sum(1 for r in bin_only if r["bin"] in named_bins),
+        "looked_up": len(bin_species),
+        "capped": capped,
+        "min_own": GUIDE_CONC_OWN,
+    }
+
+
 def taxonomy_overview(records):
     """How many distinct taxa per rank the records hold."""
     ranks = ("kingdom", "phylum", "class", "order", "family", "genus", "species", "bin")
@@ -792,9 +987,13 @@ def guide(records, rows, forced_code=None):
     }
 
 
-def run_basic(records, marker, forced_code=None, total=None):
+def run_basic(records, marker, forced_code=None, total=None, bin_lookup=None):
     """Every phase-1 analysis over `records`, all of them of `marker`
-    ("" when unknown), ready to send as JSON."""
+    ("" when unknown), ready to send as JSON.
+
+    `bin_lookup`, given a list of BINs, returns the species the database
+    files under each ({bin: {species: [[name, n]], total: n}}).
+    """
     for rec in records:
         rec["marker"] = marker
         rec["clean"] = clean_sequence(rec.get("seq"))
@@ -802,6 +1001,9 @@ def run_basic(records, marker, forced_code=None, total=None):
     usable = [r for r in records if len(r["clean"]) >= MIN_LENGTH]
     reps = {}
     haps = haplotypes(usable, reps)
+    conc = concordance(usable)
+    lookup, capped = concordance_bins(usable)
+    bin_species = bin_lookup(lookup) if bin_lookup and lookup else {}
     return {
         "marker": marker,
         "summary": _summary(rows, skipped, total if total is not None else len(records)),
@@ -809,6 +1011,7 @@ def run_basic(records, marker, forced_code=None, total=None):
         "guide": guide(usable, rows, forced_code),
         "haplotypes": haps,
         "haplotype_guide": haplotype_guide(usable, haps, reps),
-        "concordance": concordance(usable),
+        "concordance": conc,
+        "concordance_guide": concordance_guide(usable, conc, bin_species, capped),
         "taxonomy": taxonomy_overview(usable),
     }

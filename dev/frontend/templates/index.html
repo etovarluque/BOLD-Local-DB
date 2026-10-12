@@ -2478,7 +2478,7 @@
                 an_conc_note: 'Solo cuentan los {n} registros con especie y BIN. Un BIN con varias especies, o una especie repartida en varios BINs, señala una identificación o un BIN que conviene revisar.',
                 an_t_concordant: 'Especies con un BIN exclusivo',
                 an_t_shared: 'BINs con varias especies',
-                an_t_split: 'Especies en varios BINs',
+                an_t_split_bins: 'Especies en varios BINs',
                 an_c_records: 'Registros', an_c_species_list: 'Especies', an_c_bins_list: 'BINs',
                 an_conc_ok: 'Sin discordancias.',
                 // Identification tab
@@ -2966,6 +2966,83 @@
                 an_hg_next_none: '<b>Qué hacer ahora:</b> amplía la búsqueda para reunir al menos {min} secuencias por especie.',
                 an_hg_next_unnamed: '<b>Qué hacer ahora:</b> para estudiar las secuencias sin nombre, busca cada BIN por separado y repite el análisis, o asígnales nombre; la pestaña «{conc}» muestra qué BINs hay.',
                 an_hg_foot: 'Los haplotipos se cuentan sin alinear y solo dentro de cada nombre de especie: dependen de cuántas secuencias haya, de su longitud y de que los nombres sean correctos. Una diversidad alta puede ser variación real, mezcla de linajes o especies crípticas bajo un mismo nombre; la red y el árbol ayudan a distinguirlo.',
+                an_cg_title: 'Qué dicen las especies y los BINs',
+                an_cg_sub: 'Lectura automática y orientativa de la concordancia entre nombres y BINs',
+                an_cg_file: 'interpretacion_especies_bins',
+                an_cg_meta: 'Marcador: {marker} · {n} registros con especie y BIN · {date}',
+                an_cg_v_none: '<b>No se puede comparar:</b> ningún registro tiene a la vez nombre de especie y BIN.',
+                an_cg_v_one_bin: '<b>Todos los registros de {sp} ({n}) están en un mismo BIN, {bin}:</b> COI y la identificación coinciden.',
+                an_cg_v_one_shared: '<b>Todos los registros de {sp} ({n}) están en un mismo BIN, {bin},</b> pero en tu base ese BIN también es de {others}: COI no las separa bien.',
+                an_cg_v_main_most: '<b>Casi todos los registros de {sp} ({p}, {a} de {n}) están en un mismo BIN, {bin}:</b> COI y la identificación coinciden. Los demás se reparten en otros {k}.',
+                an_cg_v_main: '<b>{sp} tiene la mayoría de sus registros ({p}, {a} de {n}) en el BIN {bin},</b> y el resto repartido en otros {k}.',
+                an_cg_v_main_1: '<b>{sp} tiene la mayoría de sus registros ({p}, {a} de {n}) en el BIN {bin},</b> y el resto en otro BIN.',
+                an_cg_v_main_most_1: '<b>Casi todos los registros de {sp} ({p}, {a} de {n}) están en un mismo BIN, {bin}:</b> COI y la identificación coinciden. Los demás están en otro BIN.',
+                an_cg_v_strays: ' {k} registros están en BINs que en tu base son de otras especies: probablemente están mal identificados.',
+                an_cg_v_strays_1: ' Un registro está en un BIN que en tu base es de otra especie: probablemente está mal identificado.',
+                an_cg_v_own_more: ' Además tiene otros {k} BINs propios con varios registros: posibles linajes.',
+                an_cg_v_own_more_1: ' Además tiene otro BIN propio con varios registros: un posible linaje.',
+                an_cg_v_shared_one: ' Su BIN principal también es, en tu base, de {others}.',
+                an_cg_v_split_own: '<b>{sp} se reparte en {k} BINs,</b> {m} de ellos propios con {min} o más registros y ninguno con la mitad{places}. Es el patrón de un complejo de especies crípticas o de linajes geográficos muy separados.',
+                an_cg_v_places: ', en su mayoría en países distintos',
+                an_cg_v_all: '<b>Todas las especies tienen un BIN exclusivo:</b> en las {n}, nombre y BIN coinciden.',
+                an_cg_v_multi: '<b>{c} de las {n} especies tienen un BIN exclusivo.</b>',
+                an_cg_v_multi_1: '<b>Solo 1 de las {n} especies tiene un BIN exclusivo</b> ({sp}).',
+                an_cg_v_multi_0: '<b>Ninguna de las {n} especies tiene un BIN exclusivo.</b>',
+                an_cg_v_review: ' Conviene revisar {list}.',
+                an_cg_rev_strays: '<b>{k} registros en el BIN de otra especie</b>',
+                an_cg_rev_strays_1: '<b>un registro en el BIN de otra especie</b>',
+                an_cg_rev_shared_1: 'un BIN compartido por {list}',
+                an_cg_rev_shared: '{k} BINs compartidos por varias especies',
+                an_cg_rev_split: '{k} especies repartidas en varios BINs propios',
+                an_cg_rev_split_1: 'una especie repartida en varios BINs propios',
+                an_cg_how: '<b>Cómo se lee.</b> Un [bin_c] es un grupo de secuencias muy parecidas que BOLD forma automáticamente, sin mirar el nombre. Lo esperable es que cada especie tenga el suyo: [t_concordant]. Las [t_split_bins] y los [t_shared] son los casos a revisar. Para saber de qué especie es cada BIN se mira toda tu base, no solo estas secuencias.',
+                an_cg_where_db: 'que en tu base es de',
+                an_cg_where_data: 'que en estos datos es de',
+                an_cg_strays_1: '<b>Registros en el BIN de otra especie</b> ({k}, en un BIN). Son probablemente errores de identificación o contaminaciones:',
+                an_cg_strays: '<b>Registros en el BIN de otra especie</b> ({k}, en {b} BINs). Son probablemente errores de identificación o contaminaciones:',
+                an_cg_stray_n: '{n} en {bin}, {where} {owner} ({on})',
+                an_cg_stray_ids: '{ids} en {bin}, {where} {owner} ({on})',
+                an_cg_other_genus: ', <b>otro género</b>',
+                an_cg_place_all: ', todos de {c}',
+                an_cg_place_one: ', de {c}',
+                an_cg_more_bins: 'y otros {k} BINs',
+                an_cg_more_bins_1: 'y otro BIN más',
+                an_cg_reciprocal: ' {a} y {b} tienen registros cruzados en los BINs de la otra en {c}: allí se confunden las dos especies.',
+                an_cg_bin_place: '{bin} ({n}, {c})',
+                an_cg_bin_n: '{bin} ({n})',
+                an_cg_own_one: '<b>BINs propios de {sp}</b> (con {min} o más registros):',
+                an_cg_places_distinct: 'Cada BIN se concentra en un país distinto: apunta a linajes separados geográficamente.',
+                an_cg_places_mixed: 'Que cada BIN se concentre en un país apunta a linajes separados geográficamente; que haya varios en el mismo país ({list}) sugiere que conviven formas distintas.',
+                an_cg_places_same: 'Los BINs comparten país: pueden ser formas distintas que conviven.',
+                an_cg_own_small: ' Otros {k} BINs propios son pequeños ({list} registros).',
+                an_cg_own_small_1: ' Otro BIN propio es pequeño ({list} registros).',
+                an_cg_own_multi: '<b>Especies en varios BINs propios.</b> {list}',
+                an_cg_own_distinct: ', en países distintos: posibles linajes o especies crípticas',
+                an_cg_own_same: ', en los mismos países',
+                an_cg_small: 'Otros {k} BINs pequeños son solo de {sp}: {list}. Pueden ser variantes raras o secuencias con errores; con tan pocos registros no se puede decir más.',
+                an_cg_small_1: 'Otro BIN pequeño es solo de {sp}: {list}. Puede ser una variante rara o una secuencia con errores; con tan pocos registros no se puede decir más.',
+                an_cg_in_db: '{sp} ({n} en tu base)',
+                an_cg_shared: '<b>BIN compartido.</b> {bin} reúne {list}{prov}.',
+                an_cg_shared_prov: ', además de los nombres provisionales {list}',
+                an_cg_shared_why: ' Con tantos registros de cada una no es un error suelto: COI no las separa (especies muy recientes, hibridación) o los nombres se aplican de forma inconsistente.',
+                an_cg_shared_genera: ' Son de géneros distintos, algo muy raro en especies bien identificadas: revisa las identificaciones.',
+                an_cg_prov: '{names} son nombres provisionales dentro del BIN de {owner} ({bin}): probablemente son esa especie sin identificar del todo, o una forma aún sin describir.',
+                an_cg_prov_1: '{names} es un nombre provisional dentro del BIN de {owner} ({bin}): probablemente es esa especie sin identificar del todo, o una forma aún sin describir.',
+                an_cg_concordant: '{list} tienen un BIN exclusivo: nombre y BIN coinciden.',
+                an_cg_concordant_1: '{list} tiene un BIN exclusivo: nombre y BIN coinciden.',
+                an_cg_species_only: '{k} registros tienen especie pero no BIN (suele pasar con los importados de GenBank) y no entran en esta comparación.',
+                an_cg_species_only_1: 'Un registro tiene especie pero no BIN y no entra en esta comparación.',
+                an_cg_bin_only: '{k} registros tienen BIN pero no especie',
+                an_cg_bin_only_1: 'Un registro tiene BIN pero no especie',
+                an_cg_bin_only_named: '; {k} de ellos están en BINs con nombre de este análisis, así que probablemente son de esas especies',
+                an_cg_bin_only_named_1: '; uno está en un BIN con nombre de este análisis, así que probablemente es de esa especie',
+                an_cg_capped: 'Hay muchos BINs: solo se consultaron en tu base los {n} más relevantes; los demás se juzgan con estas secuencias.',
+                an_cg_next_head: '<b>Qué hacer ahora:</b> ',
+                an_cg_next_strays: 'revisa las fichas de los registros señalados (identificación, fotos, quién la hizo) y, si confirmas el error, déjalos fuera del análisis; mira también dónde caen en el árbol de la pestaña «{dist}».',
+                an_cg_next_split: 'para las especies partidas y los BINs compartidos, comprueba si forman grupos en el árbol y en «{motu}» (pestaña «{dist}»), y mira la red de haplotipos coloreada por BIN y por país.',
+                an_cg_next_ok: 'nombres y BINs coinciden: pasa a «{dist}» para ver las distancias y el barcode gap.',
+                an_cg_next_none: 'esta comparación necesita registros con nombre de especie y BIN, como los de una búsqueda en tu base o un FASTA exportado por este visor.',
+                an_cg_foot: 'Los BIN los calcula BOLD con un umbral de distancia fijo; no son especies. Una especie partida o un BIN compartido pueden ser reales (especies crípticas, hibridación) o deberse a errores de identificación, y los BIN de tu base pueden haber cambiado en BOLD desde que se descargaron.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
                 an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
                 an_g_export_md: 'Descargar la interpretación en Markdown (.md)',
@@ -3318,7 +3395,7 @@
                 an_conc_note: 'Only the {n} records with both a species and a BIN count. A BIN holding several species, or a species spread over several BINs, points to an identification or a BIN worth a look.',
                 an_t_concordant: 'Species with a BIN of their own',
                 an_t_shared: 'BINs with several species',
-                an_t_split: 'Species in several BINs',
+                an_t_split_bins: 'Species in several BINs',
                 an_c_records: 'Records', an_c_species_list: 'Species', an_c_bins_list: 'BINs',
                 an_conc_ok: 'No discordances.',
                 // Identification tab
@@ -3806,6 +3883,83 @@
                 an_hg_next_none: '<b>What to do next:</b> widen the search to gather at least {min} sequences per species.',
                 an_hg_next_unnamed: '<b>What to do next:</b> to study the unnamed sequences, search each BIN on its own and run the analysis again, or give them names; the "{conc}" tab shows which BINs there are.',
                 an_hg_foot: 'Haplotypes are counted without alignment and only within each species name: they depend on how many sequences there are, on their length and on the names being right. High diversity may be real variation, a mix of lineages or cryptic species under one name; the network and the tree help to tell them apart.',
+                an_cg_title: 'What the species and BINs say',
+                an_cg_sub: 'An automatic, indicative reading of how names and BINs agree',
+                an_cg_file: 'species_bins_reading',
+                an_cg_meta: 'Marker: {marker} · {n} records with species and BIN · {date}',
+                an_cg_v_none: '<b>Nothing to compare:</b> no record has both a species name and a BIN.',
+                an_cg_v_one_bin: '<b>All records of {sp} ({n}) are in one BIN, {bin}:</b> COI and the identification agree.',
+                an_cg_v_one_shared: '<b>All records of {sp} ({n}) are in one BIN, {bin},</b> but in your database that BIN also holds {others}: COI doesn\'t tell them apart well.',
+                an_cg_v_main_most: '<b>Nearly all records of {sp} ({p}, {a} of {n}) are in one BIN, {bin}:</b> COI and the identification agree. The rest are spread over {k} other BINs.',
+                an_cg_v_main: '<b>{sp} has most of its records ({p}, {a} of {n}) in BIN {bin},</b> and the rest spread over {k} others.',
+                an_cg_v_main_1: '<b>{sp} has most of its records ({p}, {a} of {n}) in BIN {bin},</b> and the rest in another BIN.',
+                an_cg_v_main_most_1: '<b>Nearly all records of {sp} ({p}, {a} of {n}) are in one BIN, {bin}:</b> COI and the identification agree. The rest are in another BIN.',
+                an_cg_v_strays: ' {k} records are in BINs that belong to other species in your database: they are probably misidentified.',
+                an_cg_v_strays_1: ' One record is in a BIN that belongs to another species in your database: it is probably misidentified.',
+                an_cg_v_own_more: ' It also has {k} more BINs of its own with several records: possible lineages.',
+                an_cg_v_own_more_1: ' It also has one more BIN of its own with several records: a possible lineage.',
+                an_cg_v_shared_one: ' In your database its main BIN also holds {others}.',
+                an_cg_v_split_own: '<b>{sp} is spread over {k} BINs,</b> {m} of them its own with {min} or more records and none with half of them{places}. That is the pattern of a complex of cryptic species or of far-apart geographic lineages.',
+                an_cg_v_places: ', mostly in different countries',
+                an_cg_v_all: '<b>Every species has a BIN of its own:</b> in all {n}, name and BIN agree.',
+                an_cg_v_multi: '<b>{c} of the {n} species have a BIN of their own.</b>',
+                an_cg_v_multi_1: '<b>Only 1 of the {n} species has a BIN of its own</b> ({sp}).',
+                an_cg_v_multi_0: '<b>None of the {n} species has a BIN of its own.</b>',
+                an_cg_v_review: ' Worth a look: {list}.',
+                an_cg_rev_strays: '<b>{k} records in another species\' BIN</b>',
+                an_cg_rev_strays_1: '<b>one record in another species\' BIN</b>',
+                an_cg_rev_shared_1: 'a BIN shared by {list}',
+                an_cg_rev_shared: '{k} BINs shared by several species',
+                an_cg_rev_split: '{k} species spread over several BINs of their own',
+                an_cg_rev_split_1: 'one species spread over several BINs of its own',
+                an_cg_how: '<b>How to read it.</b> A [bin_c] is a group of closely similar sequences that BOLD forms automatically, without looking at the name. Each species would be expected to have its own: [t_concordant]. [t_split_bins] and [t_shared] are the cases to review. To tell whose each BIN is, the whole database is looked at, not just these sequences.',
+                an_cg_where_db: 'which in your database belongs to',
+                an_cg_where_data: 'which in these data belongs to',
+                an_cg_strays_1: '<b>Records in another species\' BIN</b> ({k}, in one BIN). They are probably misidentifications or contamination:',
+                an_cg_strays: '<b>Records in another species\' BIN</b> ({k}, in {b} BINs). They are probably misidentifications or contamination:',
+                an_cg_stray_n: '{n} in {bin}, {where} {owner} ({on})',
+                an_cg_stray_ids: '{ids} in {bin}, {where} {owner} ({on})',
+                an_cg_other_genus: ', <b>another genus</b>',
+                an_cg_place_all: ', all from {c}',
+                an_cg_place_one: ', from {c}',
+                an_cg_more_bins: 'and {k} more BINs',
+                an_cg_more_bins_1: 'and one more BIN',
+                an_cg_reciprocal: ' {a} and {b} have records in each other\'s BIN in {c}: the two species are confused there.',
+                an_cg_bin_place: '{bin} ({n}, {c})',
+                an_cg_bin_n: '{bin} ({n})',
+                an_cg_own_one: '<b>BINs of {sp}\'s own</b> (with {min} or more records):',
+                an_cg_places_distinct: 'Each BIN sits in a different country: this points to geographically separate lineages.',
+                an_cg_places_mixed: 'Each BIN sitting in one country points to geographically separate lineages; several in the same country ({list}) suggest distinct forms living side by side.',
+                an_cg_places_same: 'The BINs share countries: they may be distinct forms living side by side.',
+                an_cg_own_small: ' {k} more BINs of its own are small ({list} records).',
+                an_cg_own_small_1: ' One more BIN of its own is small ({list} records).',
+                an_cg_own_multi: '<b>Species in several BINs of their own.</b> {list}',
+                an_cg_own_distinct: ', in different countries: possible lineages or cryptic species',
+                an_cg_own_same: ', in the same countries',
+                an_cg_small: '{k} more small BINs belong only to {sp}: {list}. They may be rare variants or sequences with errors; with so few records nothing more can be said.',
+                an_cg_small_1: 'One more small BIN belongs only to {sp}: {list}. It may be a rare variant or a sequence with errors; with so few records nothing more can be said.',
+                an_cg_in_db: '{sp} ({n} in your database)',
+                an_cg_shared: '<b>Shared BIN.</b> {bin} holds {list}{prov}.',
+                an_cg_shared_prov: ', besides the provisional names {list}',
+                an_cg_shared_why: ' With this many records of each it isn\'t a stray error: COI doesn\'t separate them (very recent species, hybridization) or the names are applied inconsistently.',
+                an_cg_shared_genera: ' They are of different genera, which is very rare for well-identified species: check the identifications.',
+                an_cg_prov: '{names} are provisional names inside the BIN of {owner} ({bin}): they are probably that species not fully identified, or a form not yet described.',
+                an_cg_prov_1: '{names} is a provisional name inside the BIN of {owner} ({bin}): it is probably that species not fully identified, or a form not yet described.',
+                an_cg_concordant: '{list} have a BIN of their own: name and BIN agree.',
+                an_cg_concordant_1: '{list} has a BIN of its own: name and BIN agree.',
+                an_cg_species_only: '{k} records have a species but no BIN (common in records imported from GenBank) and are left out of this comparison.',
+                an_cg_species_only_1: 'One record has a species but no BIN and is left out of this comparison.',
+                an_cg_bin_only: '{k} records have a BIN but no species',
+                an_cg_bin_only_1: 'One record has a BIN but no species',
+                an_cg_bin_only_named: '; {k} of them are in named BINs of this analysis, so they probably belong to those species',
+                an_cg_bin_only_named_1: '; one is in a named BIN of this analysis, so it probably belongs to that species',
+                an_cg_capped: 'There are many BINs: only the {n} most telling were looked up in your database; the rest are judged by these sequences.',
+                an_cg_next_head: '<b>What to do next:</b> ',
+                an_cg_next_strays: 'check the records pointed out (identification, photos, who identified them) and, if you confirm the error, leave them out of the analysis; see also where they fall in the tree in the "{dist}" tab.',
+                an_cg_next_split: 'for split species and shared BINs, check whether they form groups in the tree and in "{motu}" ("{dist}" tab), and look at the haplotype network coloured by BIN and by country.',
+                an_cg_next_ok: 'names and BINs agree: go on to "{dist}" for the distances and the barcode gap.',
+                an_cg_next_none: 'this comparison needs records with a species name and a BIN, such as those of a search in your database or a FASTA exported by this viewer.',
+                an_cg_foot: 'BOLD computes BINs with a fixed distance threshold; they aren\'t species. A split species or a shared BIN may be real (cryptic species, hybridization) or come from misidentifications, and the BINs in your database may have changed in BOLD since they were downloaded.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
                 an_g_export_txt: 'Download the reading as text (.txt)',
                 an_g_export_md: 'Download the reading as Markdown (.md)',
@@ -7758,6 +7912,7 @@
 			const c = r.concordance;
 			if (!c.paired_records) {
 				body.append(anEl('p', 'an-muted', t('an_conc_none')));
+				anRenderConcGuide(body, r);
 				return;
 			}
 			body.append(anEl('p', 'an-muted', t('an_conc_note', { n: numFmt.format(c.paired_records) })));
@@ -7765,10 +7920,11 @@
 			tiles.append(
 				anTile(numFmt.format(c.concordant_species), t('an_t_concordant'), t('an_t_of', { n: numFmt.format(c.species) })),
 				anTile(numFmt.format(c.shared_bins.length), t('an_t_shared'), t('an_t_of', { n: numFmt.format(c.bins) })),
-				anTile(numFmt.format(c.split_species.length), t('an_t_split'), t('an_t_of', { n: numFmt.format(c.species) })));
+				anTile(numFmt.format(c.split_species.length), t('an_t_split_bins'), t('an_t_of', { n: numFmt.format(c.species) })));
 			body.append(tiles);
 			if (!c.shared_bins.length && !c.split_species.length) {
 				body.append(anEl('p', 'an-muted', t('an_conc_ok')));
+				anRenderConcGuide(body, r);
 				return;
 			}
 			const list = items => items.map(i => `${i.name} (${numFmt.format(i.n)})`).join(', ');
@@ -7781,13 +7937,14 @@
 				], c.shared_bins.slice(0, AN_TABLE_ROWS)));
 			}
 			if (c.split_species.length) {
-				body.append(anEl('div', 'an-h', t('an_t_split')));
+				body.append(anEl('div', 'an-h', t('an_t_split_bins')));
 				body.append(anTable([
 					{ label: t('an_c_species'), cls: 'sp', get: s => s.species },
 					{ label: t('an_c_records'), cls: 'num', get: s => numFmt.format(s.n) },
 					{ label: t('an_c_bins_list'), cls: 'list', get: s => list(s.bins) },
 				], c.split_species.slice(0, AN_TABLE_ROWS)));
 			}
+			anRenderConcGuide(body, r);
 		}
 
 		function anRefreshView() {
@@ -8322,6 +8479,8 @@
 			ambiguous: 'an_f_ambiguous', invalid: 'an_f_invalid', src_records: 'an_src_records', code_field: 'an_code_field',
 			// The haplotypes table's columns and its button
 			haps: 'an_c_haps', singletons: 'an_c_singletons', hd_col: 'an_c_hd', excluded: 'an_c_excluded', net: 'an_net_btn',
+			// The species & BINs view's figures
+			bin_c: 'an_c_bin', t_concordant: 'an_t_concordant', t_split_bins: 'an_t_split_bins', t_shared: 'an_t_shared',
 		};
 		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
 		// Difference between named species above which COI usually tells
@@ -9069,6 +9228,202 @@ li li { display: list-item; margin: 0; }
 					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
 				file: t('an_hg_file'),
 				stem: `${anFileStem()}_${t('an_hg_file')}`,
+			});
+		}
+
+		// ── Reading guide of the species & BINs view ──
+		// The server works out the facts (seq_analysis.concordance_guide),
+		// asking the whole database whose each BIN is: records in another
+		// species' BIN, species in several BINs of their own, shared BINs.
+
+		function anRenderConcGuide(body, r) {
+			const G = r.concordance_guide;
+			if (!G) return;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
+			const bin = b => escapeHtml(b);
+			const one = (k, key, vars = {}) => anGuideText(k === 1 ? key + '_1' : key, { k: num(k), ...vars });
+			const tab = key => escapeHtml(t(key));
+			const S1 = G.species_n === 1;
+			// Names in a list, the genus cut to its initial once named
+			const shortener = () => {
+				let genus = '';
+				return sp => {
+					const html = anGuideShort(sp, genus);
+					genus = genus || sp.split(' ')[0];
+					return html;
+				};
+			};
+			const where = x => t(x.src === 'db' ? 'an_cg_where_db' : 'an_cg_where_data');
+			// Top countries of a species' own BINs: all different, all one, or mixed
+			const places = bins => {
+				const tops = bins.map(b => b.countries[0]).filter(Boolean);
+				if (tops.length < 2) return { kind: '' };
+				const seen = new Map();
+				tops.forEach(c => seen.set(c, (seen.get(c) || 0) + 1));
+				const repeated = [...seen].filter(([, n]) => n > 1).map(([c]) => c);
+				return { kind: !repeated.length ? 'distinct' : seen.size === 1 ? 'same' : 'mixed', repeated };
+			};
+			const binText = b => b.countries.length
+				? anGuideText('an_cg_bin_place', { bin: bin(b.bin), n: num(b.n), c: escapeHtml(b.countries.join(', ')) })
+				: anGuideText('an_cg_bin_n', { bin: bin(b.bin), n: num(b.n) });
+			// Species named in a shared BIN: these records, then the database's
+			const sharedNames = (s, plain) => {
+				const short = shortener();
+				const here = s.species.map(([sp, n]) => `${short(sp)} (${num(n)})`);
+				const seen = new Set(s.species.map(([sp]) => sp.split(' ').slice(0, 2).join(' ')));
+				const db = s.others.filter(([sp]) => !seen.has(sp.split(' ').slice(0, 2).join(' ')))
+					.map(([sp, n]) => plain ? `${short(sp)} (${num(n)})` : anGuideText('an_cg_in_db', { sp: short(sp), n: num(n) }));
+				return anGuideJoin([...here, ...db], ', ');
+			};
+
+			// Verdict
+			let verdict;
+			if (!G.paired) {
+				verdict = anGuideText('an_cg_v_none');
+			} else if (S1) {
+				const [sp, n, main, mn, nb] = G.overview[0];
+				const os = G.own_split[0], sh = G.shared[0];
+				const v = { sp: anGuideName(sp), bin: bin(main), n: num(n), a: num(mn), p: anPct(mn, n), k: num(nb - 1) };
+				if (os && os.top < 0.5) {
+					const pl = places(os.bins).kind;
+					verdict = anGuideText('an_cg_v_split_own', { ...v, k: num(nb), m: num(os.bins_n), min: num(G.min_own),
+						places: pl === 'distinct' || pl === 'mixed' ? t('an_cg_v_places') : '' });
+				} else if (mn === n) {
+					verdict = sh ? anGuideText('an_cg_v_one_shared', { ...v, others: sharedNames({ species: [], others: sh.others }, true) })
+						: anGuideText('an_cg_v_one_bin', v);
+				} else {
+					verdict = anGuideText((mn / n >= 0.9 ? 'an_cg_v_main_most' : 'an_cg_v_main') + (nb === 2 ? '_1' : ''), v);
+					if (G.stray_records) verdict += one(G.stray_records, 'an_cg_v_strays');
+					if (os) verdict += one(os.bins_n - 1, 'an_cg_v_own_more');
+					if (sh) verdict += anGuideText('an_cg_v_shared_one', { others: sharedNames({ species: [], others: sh.others }, true) });
+				}
+			} else {
+				const c = G.concordant_n, n = G.species_n;
+				verdict = c === n ? anGuideText('an_cg_v_all', { n: num(n) })
+					: anGuideText(c === 0 ? 'an_cg_v_multi_0' : c === 1 ? 'an_cg_v_multi_1' : 'an_cg_v_multi',
+								  { c: num(c), n: num(n), sp: c === 1 ? anGuideName(G.concordant[0]) : '' });
+				const review = [];
+				if (G.stray_records) review.push(one(G.stray_records, 'an_cg_rev_strays'));
+				if (G.shared_n === 1) {
+					const s = G.shared[0];
+					review.push(anGuideText('an_cg_rev_shared_1', { list: anGuideJoin([...s.species, ...s.others].map(([sp]) => sp)
+						.filter((sp, i, a) => a.findIndex(x => x.split(' ').slice(0, 2).join(' ') === sp.split(' ').slice(0, 2).join(' ')) === i)
+						.map(shortener()), ', ') }));
+				} else if (G.shared_n) {
+					review.push(anGuideText('an_cg_rev_shared', { k: num(G.shared_n) }));
+				}
+				if (G.own_split_n) review.push(one(G.own_split_n, 'an_cg_rev_split'));
+				if (review.length) verdict += anGuideText('an_cg_v_review', { list: anGuideJoin(review, ', ') });
+			}
+
+			if (G.paired) add('info', anGuideText('an_cg_how'));
+
+			// Records in another species' BIN
+			if (G.strays_n) {
+				const item = x => {
+					const vars = { bin: bin(x.bin), n: num(x.n), where: where(x), owner: anGuideName(x.owner), on: num(x.owner_n) };
+					let text = x.ids.length
+						? anGuideText('an_cg_stray_ids', { ...vars, ids: anGuideJoin(x.ids.map(mono), ', ') })
+						: anGuideText('an_cg_stray_n', vars);
+					if (x.other_genus) text += anGuideText('an_cg_other_genus');
+					if (x.countries.length === 1) text += anGuideText(x.n > 1 ? 'an_cg_place_all' : 'an_cg_place_one', { c: escapeHtml(x.countries[0]) });
+					return text;
+				};
+				let lis;
+				if (S1) {
+					const x = G.strays[0];
+					lis = x.items.map(i => `<li>${item(i)}</li>`).join('') + (x.bins_n > x.items.length
+						? `<li>${one(x.bins_n - x.items.length, 'an_cg_more_bins')}</li>` : '');
+				} else {
+					const short = shortener();
+					lis = G.strays.map(x => `<li>${short(x.species)}: ${x.items.map(item).join('; ')}` +
+						(x.bins_n > x.items.length ? anGuideMore(x.items.length, x.bins_n) : '') + '</li>').join('');
+				}
+				let text = anGuideText(G.stray_bins === 1 ? 'an_cg_strays_1' : 'an_cg_strays', { k: num(G.stray_records), b: num(G.stray_bins) }) + `<ul class="an-guide-list">${lis}</ul>`;
+				if (G.strays_n > G.strays.length) text += anGuideMore(G.strays.length, G.strays_n);
+				G.reciprocal.forEach(([a, b, c]) => {
+					text += anGuideText('an_cg_reciprocal', { a: anGuideName(a), b: anGuideName(b), c: escapeHtml(c) });
+				});
+				add('warn', text);
+			}
+
+			// Species in several BINs of their own
+			if (G.own_split.length) {
+				if (S1) {
+					const x = G.own_split[0], pl = places(x.bins);
+					const lis = x.bins.map(b => `<li>${binText(b)}</li>`).join('');
+					let text = anGuideText('an_cg_own_one', { sp: anGuideName(x.species), min: num(G.min_own) }) +
+						`<ul class="an-guide-list">${lis}</ul>`;
+					if (x.bins_n > x.bins.length) text += anGuideMore(x.bins.length, x.bins_n);
+					if (pl.kind === 'distinct') text += anGuideText('an_cg_places_distinct');
+					else if (pl.kind === 'mixed') text += anGuideText('an_cg_places_mixed', { list: escapeHtml(anGuideJoin(pl.repeated, ', ')) });
+					else if (pl.kind === 'same') text += anGuideText('an_cg_places_same');
+					if (x.small.length) text += one(x.small.length, 'an_cg_own_small', { list: escapeHtml(anGuideJoin(x.small.map(num), ', ')) });
+					add('info', text);
+				} else {
+					const short = shortener();
+					const parts = G.own_split.map(x => {
+						const pl = places(x.bins).kind;
+						return `${short(x.species)}: ${anGuideJoin(x.bins.map(binText), ', ')}` +
+							(pl === 'distinct' ? t('an_cg_own_distinct') : pl === 'same' ? t('an_cg_own_same') : '');
+					});
+					add('info', anGuideText('an_cg_own_multi', { list: parts.join('. ') }) +
+						(G.own_split_n > G.own_split.length ? anGuideMore(G.own_split.length, G.own_split_n) : '') + '.');
+				}
+			}
+			G.own_small.slice(0, 3).forEach(x => {
+				add('info', one(x.bins_n, 'an_cg_small', { sp: anGuideName(x.species), list: anGuideJoin(x.bins.map(binText), ', ') }));
+			});
+
+			// Shared BINs
+			const sharedSaid = S1 && G.overview.length && G.overview[0][3] === G.overview[0][1] && !(G.own_split[0] && G.own_split[0].top < 0.5);
+			G.shared.slice(0, sharedSaid ? 0 : 3).forEach(s => {
+				const v = { bin: bin(s.bin), list: sharedNames(s),
+							prov: s.provisional.length ? anGuideText('an_cg_shared_prov', {
+								list: anGuideJoin(s.provisional.map(([sp, n]) => `${anGuideName(sp)} (${num(n)})`), ', ') }) : '' };
+				add(s.genera > 1 ? 'warn' : 'info', anGuideText('an_cg_shared', v) + anGuideText(s.genera > 1 ? 'an_cg_shared_genera' : 'an_cg_shared_why'));
+			});
+			G.provisional.slice(0, 3).forEach(p => {
+				add('info', anGuideText(p.names.length === 1 ? 'an_cg_prov_1' : 'an_cg_prov', {
+					names: anGuideJoin(p.names.map(([sp, n]) => `${anGuideName(sp)} (${num(n)})`), ', '),
+					owner: anGuideName(p.owner), bin: bin(p.bin) }));
+			});
+
+			// Species whose name and BIN agree
+			if (!S1 && G.concordant_n && G.concordant_n < G.species_n) {
+				const short = shortener();
+				const list = G.concordant.map(short);
+				add('ok', one(G.concordant_n, 'an_cg_concordant', {
+					list: G.concordant_n > list.length ? list.join(', ') + anGuideMore(list.length, G.concordant_n) : anGuideJoin(list, ', ') }));
+			}
+
+			// What can't be compared
+			const parts = [];
+			if (G.species_only) parts.push(one(G.species_only, 'an_cg_species_only'));
+			if (G.bin_only) parts.push(one(G.bin_only, 'an_cg_bin_only') +
+				(G.bin_only_named ? one(G.bin_only_named, 'an_cg_bin_only_named') : '') + '.');
+			if (parts.length) add('info', parts.join(' '));
+			if (G.capped) add('info', anGuideText('an_cg_capped', { n: num(G.looked_up) }));
+
+			// What to do next
+			const motu = tab('an_v_delimit'), dist = tab('an_v_distance');
+			const steps = [];
+			if (!G.paired) steps.push(anGuideText('an_cg_next_none'));
+			if (G.paired && G.strays_n) steps.push(anGuideText('an_cg_next_strays', { dist }));
+			if (G.paired && (G.own_split_n || G.shared_n)) steps.push(anGuideText('an_cg_next_split', { motu, dist }));
+			if (G.paired && !G.strays_n && !G.own_split_n && !G.shared_n) steps.push(anGuideText('an_cg_next_ok', { dist }));
+			// Each step a sentence: the first follows the heading in lower case
+			const next = anGuideText('an_cg_next_head') + steps.map((s, i) => i ? s.charAt(0).toUpperCase() + s.slice(1) : s).join(' ');
+			anGuideSection(body, {
+				title: t('an_cg_title'), sub: t('an_cg_sub'), verdict, items, action: null, next, nextFile: next,
+				foot: t('an_cg_foot'),
+				context: [t('an_cg_meta', { marker: r.marker || '—', n: num(G.paired),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_cg_file'),
+				stem: `${anFileStem()}_${t('an_cg_file')}`,
 			});
 		}
 

@@ -3841,7 +3841,8 @@ def analysis_basic():
     try:
         forced_code = _analysis_genetic_code(data)
         records, marker, truncated, total = _analysis_input(data)
-        result = seq_analysis.run_basic(records, marker, forced_code, total)
+        result = seq_analysis.run_basic(records, marker, forced_code, total,
+                                        bin_lookup=_analysis_bin_species)
         if data.get('source') == 'fasta':
             # What the headers gave, so the page can say what can't be done
             result['fields'] = seq_analysis.field_counts(records)
@@ -3857,6 +3858,28 @@ def analysis_basic():
     print(f"Analysis OK — {data.get('source')} | {marker or '?'} | "
           f"{result['summary']['analysed']:,} seqs | {result['seconds']}s")
     return jsonify(result)
+
+
+def _analysis_bin_species(bins):
+    """The species the whole database files under each BIN (the five
+    commonest, and how many records name one), for the species & BINs
+    reading. BINs are indexed, so each takes milliseconds."""
+    out = {}
+    if db_problem():
+        return out
+    try:
+        with get_export_connection() as conn:
+            for b in bins:
+                rows = conn.execute(
+                    "SELECT col_species, COUNT(*) FROM bold_records WHERE col_bin_uri = ? "
+                    "AND col_species IS NOT NULL AND col_species != '' "
+                    "GROUP BY col_species ORDER BY 2 DESC", (b,)).fetchall()
+                if rows:
+                    out[b] = {'species': [[r[0], r[1]] for r in rows[:5]],
+                              'total': sum(r[1] for r in rows)}
+    except sqlite3.Error:
+        pass
+    return out
 
 
 # Per-species subsample sizes the distance analysis accepts

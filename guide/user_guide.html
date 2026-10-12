@@ -964,7 +964,7 @@
     <h2 class="sub-title" id="reanudar">Resuming and updating</h2>
     <p>The Creator <strong>detects work already done</strong> and skips whatever doesn't need repeating:</p>
     <ul class="bullet">
-      <li>If the filtered TSV already exists, Step 1 is skipped.</li>
+      <li>If the filtered TSV of that same package already exists, Step 1 is skipped.</li>
       <li>If the database was already built from that same TSV, Step 2 is skipped.</li>
       <li>Only the indexes that are still missing get created.</li>
       <li>If the FTS index matches the current data, Step 4 is skipped.</li>
@@ -976,7 +976,12 @@
     <ul class="bullet">
       <li><strong>Update</strong> (Option 3 on Start): prepares the new package (Step 1), compares it with the
         current database and applies only the records that are new, modified or removed. Indexes and full-text
-        search are updated along the way, so Steps 3 and 4, most of a rebuild's time, aren't repeated.</li>
+        search are updated along the way, so Steps 3 and 4, most of a rebuild's time, aren't repeated. There's
+        no need to keep the previous package's <code>.filt.tsv</code>: the comparison is made against the
+        database, which stores a fingerprint of every record, and Step 1 deletes the old version's files when it
+        prepares the new one. If you run "Update" on its own from the step list, run Step 1 with the new
+        <code>.tar.gz</code> first: the update uses the <code>.filt.tsv</code> found in
+        <code>data/processed/</code>.</li>
       <li><strong>Rebuild</strong> (Option 1 or 2): deletes the database and creates it from scratch with the new
         package.</li>
     </ul>

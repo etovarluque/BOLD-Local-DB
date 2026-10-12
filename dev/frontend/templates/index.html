@@ -1307,9 +1307,18 @@
 		.an-input-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 		.an-input-form legend { float: none; }
 		.an-input-form .an-note { grid-column: 1 / -1; margin-top: 0; }
-		@media (max-width: 767px) { .an-input-form { grid-template-columns: 1fr; } }
-		.an-sources { display: flex; flex-direction: column; border: 1.5px solid #9aa3b2; border-radius: 8px; background: #fff; overflow: hidden; }
-		.an-source { display: flex; align-items: center; gap: 10px; margin: 0; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+		.an-input-form > fieldset:first-child { display: flex; flex-direction: column; grid-column: 1; grid-row: 1; }
+		.an-input-form > .an-input-opts { grid-column: 2; grid-row: 1; }
+		.an-fasta-box { grid-column: 1; grid-row: 2; margin-top: -8px; }
+		.an-input-foot { grid-column: 2; grid-row: 2; display: grid; gap: 10px; align-content: start; }
+		.an-input-foot #anCodeHint:empty { display: none; }
+		@media (max-width: 767px) {
+			.an-input-form { grid-template-columns: 1fr; }
+			.an-input-form > fieldset:first-child, .an-input-form > .an-input-opts, .an-fasta-box, .an-input-foot { grid-column: 1; grid-row: auto; }
+			.an-fasta-box { order: 1; } .an-input-form > .an-input-opts { order: 2; } .an-input-foot { order: 3; } .an-input-form .an-note { order: 4; }
+		}
+		.an-sources { flex: 1; display: flex; flex-direction: column; border: 1.5px solid #9aa3b2; border-radius: 8px; background: #fff; overflow: hidden; }
+		.an-source { flex: 1; display: flex; align-items: center; gap: 10px; margin: 0; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
 		.an-source:last-child { border-bottom: 0; }
 		.an-source:hover { background: #f7f8fa; }
 		.an-source:has(input:checked) { background: var(--selected); box-shadow: inset 3px 0 0 var(--slate); }
@@ -1319,7 +1328,7 @@
 		.an-field { display: grid; gap: 4px; margin: 0; font-size: .78rem; font-weight: 500; color: var(--mute); }
 		.an-field .form-select { border: 1.5px solid #9aa3b2; }
 		.an-field .form-select:hover:not(:disabled) { border-color: var(--slate); }
-		.an-run { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 2px; }
+		.an-run { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 		.an-fasta-text { font-family: var(--f-mono); font-size: .8rem; }
 		.an-options { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
 		.an-options select { width: auto; min-width: 200px; flex: none; padding-right: 2.25rem; }
@@ -1945,31 +1954,22 @@
                             <legend class="an-label" data-i18n="an_source_label">Secuencias</legend>
                             <div class="an-sources" role="radiogroup">
                                 <label class="an-source">
-                                    <input type="radio" name="anSource" value="records" class="form-check-input mt-0" checked>
-                                    <span data-i18n="an_src_records">Registros seleccionados</span>
-                                    <span class="an-count" id="anSelCount">0</span>
-                                </label>
-                                <label class="an-source">
-                                    <input type="radio" name="anSource" value="search" class="form-check-input mt-0">
+                                    <input type="radio" name="anSource" value="search" class="form-check-input mt-0" checked>
                                     <span data-i18n="an_src_search">Resultados de la búsqueda mostrada</span>
                                     <span class="an-count" id="anSearchCount">—</span>
+                                </label>
+                                <label class="an-source">
+                                    <input type="radio" name="anSource" value="records" class="form-check-input mt-0">
+                                    <span data-i18n="an_src_records">Registros seleccionados</span>
+                                    <span class="an-count" id="anSelCount">0</span>
                                 </label>
                                 <label class="an-source">
                                     <input type="radio" name="anSource" value="fasta" class="form-check-input mt-0">
                                     <span data-i18n="an_src_fasta">Archivo FASTA</span>
                                 </label>
                             </div>
-                            <div id="anFastaBox" class="mt-2" style="display:none;">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <input type="file" id="anFastaFile" class="form-control form-control-sm" accept=".fasta,.fas,.fa,.fna,.ffn,.txt">
-                                    <button type="button" class="btn btn-sm btn-link text-muted p-0 text-nowrap" id="anFastaClear" data-i18n="an_fasta_clear">✕ Quitar</button>
-                                </div>
-                                <textarea id="anFastaText" class="form-control an-fasta-text" rows="5" spellcheck="false"
-                                          data-i18n-placeholder="an_fasta_placeholder"></textarea>
-                                <p class="an-muted an-fasta-help mt-1 mb-0" data-i18n="an_fasta_help"></p>
-                            </div>
                         </fieldset>
-                        <fieldset>
+                        <fieldset class="an-input-opts">
                             <legend class="an-label" data-i18n="an_options_label">Opciones</legend>
                             <div class="an-fields">
                                 <label class="an-field">
@@ -1989,13 +1989,24 @@
                                         <option value="13" data-i18n="an_code_13">13 · Mitocondrial de ascidias</option>
                                     </select>
                                 </label>
-                                <span id="anCodeHint" class="an-muted"></span>
-                                <div class="an-run">
-                                    <span id="anStatus" class="text-muted" style="font-size:.85rem;"></span>
-                                    <button id="anRunBtn" type="button" class="btn btn-primary px-5" data-i18n="an_run_btn">Analizar</button>
-                                </div>
                             </div>
                         </fieldset>
+                        <div id="anFastaBox" class="an-fasta-box" style="display:none;">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <input type="file" id="anFastaFile" class="form-control form-control-sm" accept=".fasta,.fas,.fa,.fna,.ffn,.txt">
+                                <button type="button" class="btn btn-sm btn-link text-muted p-0 text-nowrap" id="anFastaClear" data-i18n="an_fasta_clear">✕ Quitar</button>
+                            </div>
+                            <textarea id="anFastaText" class="form-control an-fasta-text" rows="5" spellcheck="false"
+                                      data-i18n-placeholder="an_fasta_placeholder"></textarea>
+                            <p class="an-muted an-fasta-help mt-1 mb-0" data-i18n="an_fasta_help"></p>
+                        </div>
+                        <div class="an-input-foot">
+                            <span id="anCodeHint" class="an-muted"></span>
+                            <div class="an-run">
+                                <span id="anStatus" class="text-muted" style="font-size:.85rem;"></span>
+                                <button id="anRunBtn" type="button" class="btn btn-primary px-5" data-i18n="an_run_btn">Analizar</button>
+                            </div>
+                        </div>
                         <div id="anNote" class="an-note" hidden></div>
                     </div>
                 </div>

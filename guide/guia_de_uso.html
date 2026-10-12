@@ -966,7 +966,7 @@
     <h2 class="sub-title" id="reanudar">Reanudar y actualizar</h2>
     <p>El Constructor <strong>detecta el trabajo ya hecho</strong> y se salta lo que no hace falta repetir:</p>
     <ul class="bullet">
-      <li>Si el TSV filtrado ya existe, el Paso 1 se omite.</li>
+      <li>Si ya existe el TSV filtrado de ese mismo paquete, el Paso 1 se omite.</li>
       <li>Si la base ya se construyó desde ese mismo TSV, el Paso 2 se omite.</li>
       <li>Solo se crean los índices que aún faltan.</li>
       <li>Si el FTS corresponde a los datos actuales, el Paso 4 se omite.</li>
@@ -979,7 +979,11 @@
       <li><strong>Actualizar</strong> (Opción 3 en Inicio): prepara el paquete nuevo (Paso 1), lo compara con la
         base actual y aplica solo los registros nuevos, modificados y eliminados. Los índices y la búsqueda por
         texto libre se actualizan a la vez, así que no se repiten los pasos 3 y 4, que son la mayor parte del
-        tiempo de una reconstrucción.</li>
+        tiempo de una reconstrucción. No hace falta conservar el <code>.filt.tsv</code> del paquete anterior:
+        la comparación se hace contra la base, que guarda una huella de cada registro, y el Paso 1 borra los
+        archivos de la versión anterior al preparar la nueva. Si lanzas «Actualizar» suelto desde la lista de
+        pasos, ejecuta antes el Paso 1 con el <code>.tar.gz</code> nuevo: la actualización usa el
+        <code>.filt.tsv</code> que hay en <code>data/processed/</code>.</li>
       <li><strong>Reconstruir</strong> (Opción 1 o 2): borra la base y la crea desde cero con el paquete nuevo.</li>
     </ul>
     <p>Qué opción conviene depende del equipo y de cuánto haya cambiado:</p>

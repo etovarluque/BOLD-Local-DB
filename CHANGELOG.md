@@ -84,6 +84,9 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Sequence analysis: *Results of the search on screen* is now the first and
+  default source, and the sequences box ends level with the genetic code
+  select (the FASTA box and the Analyse button sit on a row below).
 - Species and BINs: the tile and table title of species spread over
   several BINs read "Split into several MOTUs" (a key shared with the MOTU
   view); they now read "Species in several BINs" again.

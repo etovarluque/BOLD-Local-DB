@@ -30,6 +30,16 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   and, for COI, warn when the chosen partition lumps named species more than
   2 % apart.
 
+- Haplotype network: a *What this network says* section under the network
+  reads it the same way. It groups the haplotypes into lineages (less than
+  2 % apart) and says whether they match the BINs, species and countries;
+  points out far sequences, naming the species the database files their BIN
+  under; reads the diversity with Grant & Bowen's (1998) classes, Tajima's
+  D with its p-value and the network's shape (star or not); and warns about
+  unsampled haplotypes and long branches.
+- Haplotype network: the Tajima's D tile shows its p-value (Tajima's 1989
+  beta distribution).
+
 ### Changed
 - Export copies in `data/exports/` only last while the viewer is open: the
   folders are emptied when it starts, since files from earlier sessions could

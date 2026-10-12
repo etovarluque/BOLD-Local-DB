@@ -2219,7 +2219,8 @@ Secuencia B:  A C G T C A G C G T ...
     <p>Encima de la red aparecen los estadísticos de diversidad de esas secuencias: <strong>Hd</strong> (diversidad
        haplotípica), <strong>π</strong> (diversidad nucleotídica: proporción media de posiciones distintas entre dos
        secuencias; <em>k</em> es el mismo valor en número de diferencias), los <strong>sitios segregantes</strong> y la
-       <strong>D de Tajima</strong>.</p>
+       <strong>D de Tajima</strong> con su p-valor (con la distribución beta de Tajima, 1989; se aparta de lo
+       esperado en una población de tamaño constante si p &lt; 0.05).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
@@ -2234,6 +2235,23 @@ Secuencia B:  A C G T C A G C G T ...
       </table>
     </div>
     <h3 class="step-title">Cómo interpretarla</h3>
+    <p>Debajo de la red, el recuadro <strong>Qué dice esta red</strong> hace una primera lectura automática. Agrupa
+       los haplotipos en <strong>linajes</strong> (unidos por menos del 2 % de los sitios comparados) y dice si
+       coinciden con los BIN, con las especies y con los países; señala las secuencias muy alejadas del resto (y, si
+       su BIN es en tu base de otra especie, cuál); lee la diversidad con la clasificación de Grant y Bowen (1998), la
+       D de Tajima con su p-valor y la forma de la red (en estrella o no), y avisa de los haplotipos no muestreados y
+       de las ramas largas. Un botón aplica el color que mejor muestra la conclusión, y la lectura se descarga aparte
+       con <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> o <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Las lecturas automáticas pueden equivocarse.</strong> Aplican reglas fijas a las distancias y a los
+        nombres de los registros, sin conocer tu grupo taxonómico, el marcador ni la calidad de cada secuencia, así
+        que pueden contener errores o imprecisiones: umbrales que no sirven para tu grupo, nombres mal asignados en
+        BOLD, alineamientos defectuosos o pocas secuencias. Son una orientación para empezar, no un resultado:
+        <strong>confirma cada hallazgo</strong> revisando los registros, las secuencias y la red, y con otras
+        evidencias (morfología, distribución, otros marcadores) antes de usarlo en una identificación, una
+        publicación o una decisión.</div>
+    </div>
     <ul class="bullet">
       <li>Un haplotipo grande y central con muchos haplotipos raros a una o dos mutaciones (forma de
           <strong>estrella</strong>) suele indicar una expansión poblacional reciente; suele ir con una D de Tajima

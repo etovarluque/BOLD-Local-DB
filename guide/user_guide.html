@@ -2205,7 +2205,8 @@ Sequence B:  A C G T C A G C G T ...
     <p>Above the network are the diversity statistics of those sequences: <strong>Hd</strong> (haplotype
        diversity), <strong>π</strong> (nucleotide diversity: the mean proportion of positions that differ between two
        sequences; <em>k</em> is the same as a number of differences), the <strong>segregating sites</strong> and
-       <strong>Tajima's D</strong>.</p>
+       <strong>Tajima's D</strong> with its p-value (from Tajima's 1989 beta distribution; it departs from what a
+       population of constant size would show when p &lt; 0.05).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Control</th><th>What it does</th></tr></thead>
@@ -2220,6 +2221,23 @@ Sequence B:  A C G T C A G C G T ...
       </table>
     </div>
     <h3 class="step-title">How to read it</h3>
+    <p>Under the network, the <strong>What this network says</strong> box gives a first automatic reading. It
+       groups the haplotypes into <strong>lineages</strong> (joined by less than 2 % of the sites compared) and says
+       whether they match the BINs, the species and the countries; it points out sequences far from the rest (and,
+       when your database files their BIN under another species, which one); it reads the diversity with Grant &amp;
+       Bowen's (1998) classes, Tajima's D with its p-value and the network's shape (star-shaped or not), and warns
+       about unsampled haplotypes and long branches. A button applies the colour that best shows the conclusion, and
+       the reading downloads on its own with <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> or
+       <strong>⤓ MD</strong>.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Automatic readings can be wrong.</strong> They apply fixed rules to the distances and to the
+        records' names, without knowing your taxonomic group, the marker or the quality of each sequence, so they may
+        contain errors or inaccuracies: thresholds that don't suit your group, names misassigned in BOLD, faulty
+        alignments or too few sequences. They are guidance to start from, not a result: <strong>confirm every
+        finding</strong> by checking the records, the sequences and the network, and with other evidence (morphology,
+        distribution, other markers) before using it in an identification, a publication or a decision.</div>
+    </div>
     <ul class="bullet">
       <li>A large central haplotype with many rare ones one or two mutations away (a <strong>star</strong>) usually
           points to a recent population expansion, often with a negative Tajima's D.</li>

@@ -3941,6 +3941,31 @@ def analysis_distance():
     return jsonify(result)
 
 
+def _network_bin_species(guide):
+    """The species each lineage's BIN holds in the whole database (the two
+    commonest), so the network's reading can tell a far sequence filed in
+    another species' BIN. The BIN of every isolated sequence and the
+    commonest BIN of every other lineage."""
+    bins = []
+    for x in guide['lineages']:
+        for b, _ in (x['bins'] if x['ids'] else x['bins'][:1]):
+            if b not in bins:
+                bins.append(b)
+    out = {}
+    try:
+        with get_export_connection() as conn:
+            for b in bins[:seq_network.GUIDE_MAX_LINEAGES]:
+                rows = conn.execute(
+                    "SELECT col_species, COUNT(*) FROM bold_records WHERE col_bin_uri = ? "
+                    "AND col_species IS NOT NULL AND col_species != '' "
+                    "GROUP BY col_species ORDER BY 2 DESC LIMIT 2", (b,)).fetchall()
+                if rows:
+                    out[b] = [[r[0], r[1]] for r in rows]
+    except sqlite3.Error:
+        pass
+    guide['bin_species'] = out
+
+
 @app.route('/api/analysis/network', methods=['POST'])
 def analysis_network():
     """Haplotype network (TCS or MSN) of the analysis input, or of one
@@ -3967,6 +3992,7 @@ def analysis_network():
             # As the haplotype table names them
             records = [r for r in records if (r.get('species') or r.get('taxon') or '') == species]
         result = seq_network.run_network(records, marker, forced_code, method)
+        _network_bin_species(result['guide'])
     except _AnalysisReply as reply:
         return jsonify(reply.body), reply.status
     except seq_network.NetworkLimit as e:

@@ -40,6 +40,13 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 - Haplotype network: the Tajima's D tile shows its p-value (Tajima's 1989
   beta distribution).
 
+- Sequence analysis from a FASTA: species names are also read from
+  headers like `>MN123456.1 Genus species voucher…` (GenBank and most
+  sources) and `>Genus_species_id`. After the analysis, a notice says how
+  many sequences carried a species name, a BIN and a country, and what
+  won't be available without them; a note under the FASTA box lists the
+  headers recognised.
+
 ### Changed
 - Export copies in `data/exports/` only last while the viewer is open: the
   folders are emptied when it starts, since files from earlier sessions could

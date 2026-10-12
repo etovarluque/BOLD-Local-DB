@@ -3842,6 +3842,9 @@ def analysis_basic():
         forced_code = _analysis_genetic_code(data)
         records, marker, truncated, total = _analysis_input(data)
         result = seq_analysis.run_basic(records, marker, forced_code, total)
+        if data.get('source') == 'fasta':
+            # What the headers gave, so the page can say what can't be done
+            result['fields'] = seq_analysis.field_counts(records)
     except _AnalysisReply as reply:
         return jsonify(reply.body), reply.status
     except ValueError as e:

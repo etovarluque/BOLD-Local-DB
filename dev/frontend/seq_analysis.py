@@ -216,12 +216,34 @@ def _taxon_fields(taxon):
     return {"taxon": taxon}
 
 
+_GENUS_RE = re.compile(r"^[A-Z][a-z]{2,}$")
+_EPITHET_RE = re.compile(r"^[a-z][a-z-]{2,}$")
+# Words that stand for an epithet, the first two followed by one
+_QUALIFIERS = {"cf.": True, "aff.": True, "cf": True, "aff": True, "sp.": False, "sp": False}
+
+
+def _species_in(words):
+    """"Genus epithet" at the start of `words` ("Carollia perspicillata
+    voucher...", "Carollia cf. brevicauda", "Carollia sp. ROM 1"), or None."""
+    if len(words) < 2 or not _GENUS_RE.match(words[0]):
+        return None
+    second = words[1]
+    if second.lower() in _QUALIFIERS:
+        if _QUALIFIERS[second.lower()] and len(words) > 2 and _EPITHET_RE.match(words[2]):
+            return f"{words[0]} {second} {words[2]}"
+        return f"{words[0]} sp." if not _QUALIFIERS[second.lower()] else None
+    return f"{words[0]} {second}" if _EPITHET_RE.match(second) else None
+
+
 def parse_header(header):
     """Fields of a FASTA header.
 
-    Understands the viewer's own export (processid|sampleid|BIN|taxon|marker)
-    and BOLD's (processid|taxon|marker|accession). Anything else keeps its
-    first word as the identifier.
+    Understands the viewer's own export (processid|sampleid|BIN|taxon|marker),
+    BOLD's (processid|taxon|marker|accession), an identifier followed by the
+    name (">MN123456.1 Carollia perspicillata voucher...", as GenBank and
+    most sources write it) and a name joined to the identifier
+    (">Carollia_perspicillata_ABC123"). Anything else keeps its first word
+    as the identifier.
     """
     header = header.strip()
     parts = [p.strip() for p in header.split("|")]
@@ -237,7 +259,22 @@ def parse_header(header):
         rec.update(processid=parts[0], marker=parts[2])
         rec.update(_taxon_fields(parts[1]))
         rec["id"] = parts[0]
+    elif len(parts) == 1 and header:
+        # GenBank marks some records "UNVERIFIED: Genus species..."
+        words = [w for w in header.split()[1:] if not w.endswith(":")]
+        species = _species_in(words) or _species_in(header.split()[0].split("_"))
+        if species:
+            rec.update(species=species, genus=species.split()[0])
     return rec
+
+
+def field_counts(records):
+    """How many records bring a species name, a BIN and a country: what a
+    FASTA's headers gave."""
+    return {"n": len(records),
+            "species": sum(1 for r in records if r.get("species")),
+            "bin": sum(1 for r in records if r.get("bin")),
+            "country": sum(1 for r in records if r.get("country"))}
 
 
 def parse_fasta(text):

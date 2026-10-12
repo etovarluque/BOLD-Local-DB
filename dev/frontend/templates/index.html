@@ -2802,6 +2802,7 @@
                 an_ng_excluded: '<b>Se analizaron {a} de {b} secuencias:</b> {x} quedaron fuera (ver los avisos de arriba). Si las que faltan son de otras regiones o linajes, el patrón podría cambiar.',
                 an_ng_few: '<b>Hay pocas secuencias ({n}).</b> Con tan pocos datos la forma de la red y la D de Tajima cambian con facilidad; tómalas como una primera aproximación.',
                 an_ng_next: '<b>Qué hacer ahora:</b> colorea la red con [color_bin] y [color_country] para ver los linajes, y compáralos con las pestañas «{motu}» y «{tree}». Para estudiar un linaje, busca solo los registros de su BIN y repite la red: así la diversidad y la D de Tajima describen una sola población.',
+                an_ng_next_nobin: '<b>Qué hacer ahora:</b> colorea la red por país o por especie para ver los linajes, y compáralos con las pestañas «{motu}» y «{tree}». Para estudiar un linaje, repite la red solo con sus secuencias: así la diversidad y la D de Tajima describen una sola población.',
                 an_ng_next_one: '<b>Qué hacer ahora:</b> colorea la red con [color_country] para ver cómo se reparten los haplotipos, y compara su diversidad con la de otras especies o regiones construyendo sus redes.',
                 an_ng_foot: 'Una red de un solo marcador sugiere linajes y estructura, pero no los demuestra (en COI, además, solo se ve la línea materna): confírmalos con otros marcadores, la morfología y un muestreo más amplio.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
@@ -3484,6 +3485,7 @@
                 an_ng_excluded: '<b>{a} of {b} sequences were analysed:</b> {x} were left out (see the warnings above). If the missing ones come from other regions or lineages, the pattern could change.',
                 an_ng_few: '<b>There are few sequences ({n}).</b> With this little data the network\'s shape and Tajima\'s D change easily; take them as a first approximation.',
                 an_ng_next: '<b>What to do next:</b> colour the network with [color_bin] and [color_country] to see the lineages, and compare them with the "{motu}" and "{tree}" tabs. To study one lineage, search only the records of its BIN and build the network again: the diversity and Tajima\'s D then describe a single population.',
+                an_ng_next_nobin: '<b>What to do next:</b> colour the network by country or by species to see the lineages, and compare them with the "{motu}" and "{tree}" tabs. To study one lineage, build the network again with its sequences only: the diversity and Tajima\'s D then describe a single population.',
                 an_ng_next_one: '<b>What to do next:</b> colour the network with [color_country] to see how the haplotypes spread, and compare its diversity with other species or regions by building their networks.',
                 an_ng_foot: 'A single-marker network suggests lineages and structure but doesn\'t prove them (and COI only shows the maternal line): confirm them with other markers, morphology and wider sampling.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
@@ -8753,7 +8755,7 @@ li li { display: list-item; margin: 0; }
 			else if (multiSpecies) action = opts.color !== 'species' ? colorTo('species', 'an_tg_color_species') : null;
 			else if (G.places >= 2) action = opts.color !== 'country' ? colorTo('country', 'an_ng_color_country') : null;
 
-			const next = anGuideText(main.length >= 2 ? 'an_ng_next' : 'an_ng_next_one',
+			const next = anGuideText(main.length < 2 ? 'an_ng_next_one' : bins ? 'an_ng_next' : 'an_ng_next_nobin',
 				{ motu: escapeHtml(t('an_v_delimit')), tree: escapeHtml(t('an_v_tree')) });
 			const what = net.species || t('an_net_all_short');
 			anGuideSection(body, {

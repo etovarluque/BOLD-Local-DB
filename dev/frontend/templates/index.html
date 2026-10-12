@@ -1420,6 +1420,7 @@
 		.an-guide-chip.warn { background: #fde8d4; color: #8a3f05; }
 		.an-guide-chip.info { background: #e1ecfb; color: #1f4f8f; }
 		.an-guide-next { margin: 0 0 .5rem; }
+		.an-mono { font-family: var(--f-mono); font-size: .8rem; }
 		.an-guide-foot { margin: 0; color: var(--mute); font-size: .8rem; }
 		.an-term { display: inline-block; padding: 0 5px; border-radius: 4px; background: var(--tint); color: var(--slate); font-size: .74rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; vertical-align: 1px; }
 		.an-table tr.an-rec td { background: #f1f8f6; }
@@ -2665,7 +2666,49 @@
                 an_g_next_ok: '<b>Qué hacer ahora:</b> pulsa «Ver esta partición» para revisarla en la tabla «Especies frente a MOTU» y colorear el árbol con ella.',
                 an_g_next_shown: '<b>Qué hacer ahora:</b> la partición recomendada es la que muestra ahora la tabla «Especies frente a MOTU»; desde ahí puedes colorear el árbol con ella.',
                 an_g_foot: 'Estos métodos solo miran las diferencias entre secuencias. Úsalos como punto de partida y compáralos con la morfología, la distribución u otros marcadores.',
-                an_g_and: ' y ', an_g_unnamed: 'un grupo sin nombre',
+                an_g_and: ' y ', an_g_unnamed: 'un grupo sin nombre', an_g_unnamed_n: '{n} grupos sin nombre',
+                // Reading guide of the NJ tree
+                an_tg_title: 'Qué dice este árbol',
+                an_tg_sub: 'Lectura automática y orientativa del árbol NJ',
+                an_tg_file: 'interpretacion_arbol',
+                an_gt_clade: 'clado',
+                an_tg_color_species: 'Colorear por especie',
+                an_tg_verdict_all: 'El árbol es <b>coherente con los nombres</b>: las {n} especies con más de una secuencia forman cada una su propio grupo.',
+                an_tg_verdict_most: 'El árbol es <b>coherente con los nombres en casi todo</b>: {k} de las {n} especies con más de una secuencia forman su propio grupo; las demás se comentan abajo.',
+                an_tg_verdict_few: 'El árbol <b>no sigue bien los nombres</b>: solo {k} de las {n} especies con más de una secuencia forman su propio grupo. Puede haber identificaciones a revisar, especies que el marcador no separa o nombres que agrupan varias especies.',
+                an_tg_verdict_none: 'Ninguna especie con nombre tiene más de una secuencia, así que el árbol <b>no se puede contrastar con los nombres</b>; sirve para ver qué secuencias se parecen más.',
+                an_tg_verdict_motu_all: ' Los {n} MOTU con más de una secuencia de la partición elegida también forman cada uno su grupo.',
+                an_tg_verdict_motu_some: ' De los {n} MOTU con más de una secuencia de la partición elegida, {k} forman su propio grupo.',
+                an_tg_how: '<b>Cómo se lee.</b> Un árbol NJ (<i>neighbor-joining</i>) agrupa las secuencias por parecido: cuanto más cerca se unen dos ramas, más se parecen. La longitud horizontal de cada rama es la diferencia acumulada (la escala está bajo el árbol). La raíz se coloca en el punto medio entre las dos secuencias más alejadas: es una aproximación, no el ancestro real.',
+                an_tg_species_all: '<b>Las {n} especies son monofiléticas:</b> todas sus secuencias forman un [clade] propio, sin otras especies dentro. Es lo esperable si el marcador separa bien las especies.',
+                an_tg_species: '<b>{k} de {n} especies son monofiléticas</b> (todas sus secuencias forman un [clade] propio, sin otras especies dentro). Es lo esperable si el marcador separa bien las especies.',
+                an_tg_genera_all: '<b>Los {n} géneros forman cada uno su grupo.</b> A nivel de género el árbol es menos fiable (ver abajo), pero aquí coincide con la clasificación.',
+                an_tg_genera_1: '<b>1 de {n} géneros no forma un grupo propio:</b> {list}. A nivel de género el árbol es menos fiable (ver abajo), pero puede reflejar una clasificación en revisión.',
+                an_tg_genera: '<b>{k} de {n} géneros no forman un grupo propio:</b> {list}. A nivel de género el árbol es menos fiable (ver abajo), pero puede reflejar una clasificación en revisión.',
+                an_tg_genus_item: '{g} incluye a {others}',
+                an_tg_verdict_all_1: 'La única especie con más de una secuencia <b>forma su propio grupo</b>.',
+                an_tg_species_all_1: '<b>La especie es monofilética:</b> todas sus secuencias forman un [clade] propio.',
+                an_tg_species_broken_same: '<b>{sp} no forma un grupo propio:</b> comparte su [clade] con {others}, con secuencias idénticas ({d}). El marcador no las distingue: puede ser una identificación a revisar o especies muy recientes.',
+                an_tg_species_broken_close: '<b>{sp} no forma un grupo propio:</b> comparte su [clade] con {others}, a solo {d} de diferencia. El marcador apenas las separa: puede ser una identificación a revisar, hibridación o especies muy recientes.',
+                an_tg_species_broken_far: '<b>{sp} no forma un grupo propio:</b> sus secuencias quedan repartidas y entre ellas está {others} (a {d} como mínimo). Puede esconder más de una especie o tener secuencias mal identificadas.',
+                an_tg_species_broken_many: '<b>{sp} no forma un grupo propio:</b> sus secuencias se reparten por un [clade] que incluye otras {n} especies ({others}), la más cercana a {d}. Puede esconder más de una especie, tener secuencias mal identificadas o pertenecer a un grupo que el marcador no resuelve.',
+                an_tg_species_broken_outlier_1: '<b>{sp} solo deja de formar un grupo propio por la secuencia {id}</b>, muy alejada del resto de su especie (ver abajo). Sin ella, la especie es monofilética.',
+                an_tg_species_broken_outlier: '<b>{sp} solo deja de formar un grupo propio por las secuencias {id}</b>, muy alejadas del resto de su especie (ver abajo). Sin ellas, la especie es monofilética.',
+                an_tg_species_list: '<b>{n} especies no forman un grupo propio:</b> {list}. Pueden ser identificaciones a revisar, especies que el marcador no separa o nombres que agrupan varias especies; colorea el árbol por especie para verlas.',
+                an_tg_species_item: '{sp} con {others} ({d})',
+                an_tg_species_item_outlier: '{sp} (solo por {id})',
+                an_tg_outlier_item: '{sp} {id} ({d}, frente a {rest} en el resto)',
+                an_tg_outlier_list: '<b>{n} secuencias muy alejadas de su especie:</b> {list}. Cada una difiere de las demás de su especie mucho más de lo que esas difieren entre sí. Si no forman un MOTU propio, vale la pena revisar esos registros (contaminación, pseudogén o error de identificación).',
+                an_g_merged_far: '<b>Ojo: esta partición junta especies que difieren hasta un {d}.</b> En COI, dos especies con nombre que difieren más de un {lim} suelen ser distintas: la partición puede estar juntando de más. Compárala con las de más MOTU.',
+                an_tg_motu_all: '<b>Árbol y delimitación coinciden.</b> Los {n} MOTU con más de una secuencia de la partición «{part}» forman cada uno un clado. Con [color_motu] se ve en el propio árbol.',
+                an_tg_motu_some: '<b>{k} de {n} MOTU no forman un clado</b> en la partición «{part}»: {list}. La delimitación y el árbol agrupan algo distinto ahí; con [color_motu] se ve dónde.',
+                an_tg_motu_item: '{m} (con {others})',
+                an_tg_outlier: '<b>Secuencia muy alejada de su especie:</b> {sp} {id} difiere al menos un {d} de cualquier otra secuencia de su especie, frente a {rest} como máximo entre las demás. Si no forma un MOTU propio, vale la pena revisar el registro (contaminación, pseudogén o error de identificación).',
+                an_tg_support: '<b>No hay valores de soporte.</b> Este árbol no tiene bootstrap: los grupos unidos por ramas internas muy cortas (por ejemplo, la relación entre géneros) pueden cambiar con otros datos. Fíate más de los grupos bien separados.',
+                an_tg_singletons: '<b>{n} especies tienen una sola secuencia:</b> su posición no se puede comprobar frente a otras de la misma especie.',
+                an_tg_singletons_1: '<b>Una especie tiene una sola secuencia:</b> su posición no se puede comprobar frente a otras de la misma especie.',
+                an_tg_next: '<b>Qué hacer ahora:</b> colorea el árbol por especie o por MOTU para ver estos casos, y con [color_country] comprueba si las especies partidas siguen la geografía (posibles especies crípticas).',
+                an_tg_foot: 'Un árbol de distancias resume parecidos, no reconstruye la historia evolutiva con detalle. Úsalo junto con la delimitación, la morfología y otros marcadores.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
                 an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
                 an_g_export_md: 'Descargar la interpretación en Markdown (.md)',
@@ -3212,7 +3255,49 @@
                 an_g_next_ok: '<b>What to do next:</b> click «Show this partition» to review it in the «Species against MOTUs» table and colour the tree with it.',
                 an_g_next_shown: '<b>What to do next:</b> the recommended partition is the one the «Species against MOTUs» table now shows; from there you can colour the tree with it.',
                 an_g_foot: 'These methods only look at the differences between sequences. Use them as a starting point and weigh them against morphology, distribution or other markers.',
-                an_g_and: ' and ', an_g_unnamed: 'an unnamed group',
+                an_g_and: ' and ', an_g_unnamed: 'an unnamed group', an_g_unnamed_n: '{n} unnamed groups',
+                // Reading guide of the NJ tree
+                an_tg_title: 'What this tree says',
+                an_tg_sub: 'Automatic, indicative reading of the NJ tree',
+                an_tg_file: 'tree_interpretation',
+                an_gt_clade: 'clade',
+                an_tg_color_species: 'Colour by species',
+                an_tg_verdict_all: 'The tree is <b>consistent with the names</b>: the {n} species with more than one sequence each form their own group.',
+                an_tg_verdict_most: 'The tree is <b>consistent with the names almost everywhere</b>: {k} of the {n} species with more than one sequence form their own group; the rest are discussed below.',
+                an_tg_verdict_few: 'The tree <b>doesn\'t follow the names well</b>: only {k} of the {n} species with more than one sequence form their own group. There may be identifications to check, species the marker doesn\'t separate or names that lump several species.',
+                an_tg_verdict_none: 'No named species has more than one sequence, so the tree <b>can\'t be checked against the names</b>; it shows which sequences are most alike.',
+                an_tg_verdict_motu_all: ' The {n} MOTUs with more than one sequence in the chosen partition also form their own groups.',
+                an_tg_verdict_motu_some: ' Of the {n} MOTUs with more than one sequence in the chosen partition, {k} form their own group.',
+                an_tg_how: '<b>How to read it.</b> An NJ (<i>neighbor-joining</i>) tree groups the sequences by likeness: the closer two branches join, the more alike they are. The horizontal length of each branch is the accumulated difference (the scale is under the tree). The root is placed at the midpoint between the two most distant sequences: an approximation, not the real ancestor.',
+                an_tg_species_all: '<b>All {n} species are monophyletic:</b> all their sequences form a [clade] of their own, with no other species inside. That is what to expect when the marker separates the species well.',
+                an_tg_species: '<b>{k} of {n} species are monophyletic</b> (all their sequences form a [clade] of their own, with no other species inside). That is what to expect when the marker separates the species well.',
+                an_tg_genera_all: '<b>The {n} genera each form their own group.</b> At genus level the tree is less reliable (see below), but here it agrees with the classification.',
+                an_tg_genera_1: '<b>1 of {n} genera doesn\'t form its own group:</b> {list}. At genus level the tree is less reliable (see below), but it may reflect a classification under revision.',
+                an_tg_genera: '<b>{k} of {n} genera don\'t form their own group:</b> {list}. At genus level the tree is less reliable (see below), but it may reflect a classification under revision.',
+                an_tg_genus_item: '{g} includes {others}',
+                an_tg_verdict_all_1: 'The only species with more than one sequence <b>forms its own group</b>.',
+                an_tg_species_all_1: '<b>The species is monophyletic:</b> all its sequences form a [clade] of their own.',
+                an_tg_species_broken_same: '<b>{sp} doesn\'t form its own group:</b> it shares its [clade] with {others}, with identical sequences ({d}). The marker can\'t tell them apart: it may be an identification to check or very recent species.',
+                an_tg_species_broken_close: '<b>{sp} doesn\'t form its own group:</b> it shares its [clade] with {others}, only {d} apart. The marker barely separates them: it may be an identification to check, hybridisation or very recent species.',
+                an_tg_species_broken_far: '<b>{sp} doesn\'t form its own group:</b> its sequences are spread out, with {others} among them (at least {d} away). It may hide more than one species or have misidentified sequences.',
+                an_tg_species_broken_many: '<b>{sp} doesn\'t form its own group:</b> its sequences are spread over a [clade] holding {n} other species ({others}), the closest {d} away. It may hide more than one species, have misidentified sequences or belong to a group the marker doesn\'t resolve.',
+                an_tg_species_broken_outlier_1: '<b>{sp} only fails to form its own group because of sequence {id}</b>, far from the rest of its species (see below). Without it, the species is monophyletic.',
+                an_tg_species_broken_outlier: '<b>{sp} only fails to form its own group because of sequences {id}</b>, far from the rest of its species (see below). Without them, the species is monophyletic.',
+                an_tg_species_list: '<b>{n} species don\'t form their own group:</b> {list}. They may be identifications to check, species the marker doesn\'t separate or names that lump several species; colour the tree by species to see them.',
+                an_tg_species_item: '{sp} with {others} ({d})',
+                an_tg_species_item_outlier: '{sp} (only because of {id})',
+                an_tg_outlier_item: '{sp} {id} ({d}, against {rest} in the rest)',
+                an_tg_outlier_list: '<b>{n} sequences far from their species:</b> {list}. Each differs from the rest of its species far more than those differ among themselves. Unless they form a MOTU of their own, those records are worth checking (contamination, pseudogene or misidentification).',
+                an_g_merged_far: '<b>Note: this partition lumps species that differ by up to {d}.</b> In COI, two named species more than {lim} apart are usually distinct: the partition may be lumping too much. Compare it with those with more MOTUs.',
+                an_tg_motu_all: '<b>Tree and delimitation agree.</b> The {n} MOTUs with more than one sequence in the «{part}» partition each form a clade. [color_motu] shows it on the tree itself.',
+                an_tg_motu_some: '<b>{k} of {n} MOTUs don\'t form a clade</b> in the «{part}» partition: {list}. Delimitation and tree group something differently there; [color_motu] shows where.',
+                an_tg_motu_item: '{m} (with {others})',
+                an_tg_outlier: '<b>Sequence far from its species:</b> {sp} {id} differs by at least {d} from every other sequence of its species, against at most {rest} among the rest. Unless it forms a MOTU of its own, the record is worth checking (contamination, pseudogene or misidentification).',
+                an_tg_support: '<b>There are no support values.</b> This tree has no bootstrap: groups joined by very short internal branches (e.g. how genera relate) may change with other data. Trust well-separated groups more.',
+                an_tg_singletons: '<b>{n} species have a single sequence:</b> their place can\'t be checked against others of the same species.',
+                an_tg_singletons_1: '<b>One species has a single sequence:</b> its place can\'t be checked against others of the same species.',
+                an_tg_next: '<b>What to do next:</b> colour the tree by species or by MOTU to see these cases, and with [color_country] check whether split species follow geography (possible cryptic species).',
+                an_tg_foot: 'A distance tree sums up likeness; it doesn\'t reconstruct evolutionary history in detail. Use it together with the delimitation, morphology and other markers.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
                 an_g_export_txt: 'Download the reading as text (.txt)',
                 an_g_export_md: 'Download the reading as Markdown (.md)',
@@ -7698,14 +7783,24 @@
 		const AN_GUIDE_TERMS = {
 			prior: 'an_c_prior', gap: 'an_c_abgd_gap', rank: 'an_c_rank', threshold: 'an_c_threshold',
 			score: 'an_c_asap_score', pvalue: 'an_c_pvalue',
+			clade: 'an_gt_clade',
+			// A tree option as the toolbar shows it: "Colour: By MOTU"
+			color_motu: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_motu')}`,
+			color_species: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_species')}`,
+			color_country: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_country')}`,
 		};
 		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
+		// Difference between named species above which COI usually tells
+		// them apart (the common rule of thumb for animals)
+		const AN_GUIDE_COI_SPECIES = 0.02;
 
 		// A guide sentence: [term] becomes the column header, {var} its value
 		// (values come already escaped)
 		function anGuideText(key, vars = {}) {
-			let s = t(key).replace(/\[(\w+)\]/g, (m, k) =>
-				`<span class="an-term">${escapeHtml(t(k === 'col' ? vars.col : AN_GUIDE_TERMS[k]))}</span>`);
+			let s = t(key).replace(/\[(\w+)\]/g, (m, k) => {
+				const term = AN_GUIDE_TERMS[k] || vars[k];
+				return `<span class="an-term">${escapeHtml(typeof term === 'function' ? term() : t(term))}</span>`;
+			});
 			for (const k in vars) s = s.split(`{${k}}`).join(vars[k]);
 			return s;
 		}
@@ -7717,10 +7812,29 @@
 			return items.slice(0, -1).join(sep) + t('an_g_and') + items[items.length - 1];
 		}
 		const anGuideMore = (shown, total) => total > shown ? anGuideText('an_g_more', { n: numFmt.format(total - shown) }) : '';
-		// The names of one group: "a, b and c", or "a, b, c, and 5 more" when the server cut the list
-		const anGuideNames = (names, total) => total > names.length
-			? names.map(anGuideName).join(', ') + anGuideMore(names.length, total)
-			: anGuideJoin(names.map(anGuideName), ', ');
+		// A name with its genus cut to the initial when `genus` was just named
+		// ("Carollia perspicillata, C. brevicauda")
+		function anGuideShort(sp, genus) {
+			const [g, ...rest] = (sp || '').split(' ');
+			// "Chiroderma sp." stays whole: "C. sp." says nothing
+			const short = sp && genus && g === genus && rest.length && !AN_PROVISIONAL.test(rest.join(' '));
+			return short ? `<i>${escapeHtml(g[0])}. ${escapeHtml(rest.join(' '))}</i>` : anGuideName(sp);
+		}
+		// The names of one group: "a, b and c", or "a, b, c, and 5 more" when
+		// the list was cut (at `max`, or by the server). A genus already named,
+		// in the list or in `ref`, is abbreviated.
+		function anGuideNames(names, total, ref = '', max = names.length) {
+			const shown = names.slice(0, max);
+			let genus = ref ? ref.split(' ')[0] : '';
+			const html = shown.filter(Boolean).map(sp => {
+				const out = anGuideShort(sp, genus);
+				genus = genus || sp.split(' ')[0];
+				return out;
+			});
+			const unnamed = shown.length - html.length;
+			if (unnamed) html.push(escapeHtml(unnamed === 1 ? t('an_g_unnamed') : t('an_g_unnamed_n', { n: numFmt.format(unnamed) })));
+			return total > shown.length ? html.join(', ') + anGuideMore(shown.length, total) : anGuideJoin(html, ', ');
+		}
 
 		// The partition the guide recommends, as the tables' { method, index }
 		function anGuideRec(g) {
@@ -7823,6 +7937,11 @@
 				add('info', anGuideText(G.merged_n === 1 ? 'an_g_merged_1' : 'an_g_merged', {
 					n: numFmt.format(G.merged_n), range, cmp,
 					list: list.join('; ') + anGuideMore(G.merged.length, G.merged_n) }));
+				// In COI, named species further apart than ~2 % are usually
+				// distinct: a partition lumping them may lump too much
+				if (/COI/i.test(AnState.dist.marker || '') && hi >= AN_GUIDE_COI_SPECIES) {
+					add('warn', anGuideText('an_g_merged_far', { d: anPctOf(hi), lim: anPctOf(AN_GUIDE_COI_SPECIES, 0) }));
+				}
 			}
 			if (G.split_n === 1) {
 				const x = G.split[0];
@@ -7844,21 +7963,31 @@
 
 			const sel = anMotuSel(g);
 			const shown = sel.method === R.method && sel.index === R.index;
-			const reading = {
-				verdict, items, foot: t('an_g_foot'),
+			anGuideSection(body, {
+				title: t('an_g_title'), sub: t('an_g_sub'), verdict, items,
+				action: shown ? null : { label: t('an_g_pick'), run: () => choose(R.method, R.index) },
 				next: t(G.merged_n || G.split_n ? 'an_g_next_check' : shown ? 'an_g_next_shown' : 'an_g_next_ok'),
 				// A file can't be clicked: it points to the viewer instead
 				nextFile: t(G.merged_n || G.split_n ? 'an_g_next_check' : 'an_g_next_file'),
-			};
+				foot: t('an_g_foot'),
+				context: anGuideContext(g.group, g.members.length),
+				file: t('an_g_file') + (AnState.dist.groups.length > 1 ? `_group${g.group + 1}` : ''),
+			});
+		}
 
-			// The section, open unless the user closed it
+		const AN_GUIDE_MARK = { ok: '✓', warn: '!', info: 'i' };
+
+		// A reading section, after a tab's results: a verdict (with an optional
+		// action), the points, what to do next and a closing caveat, plus its
+		// PDF/TXT/MD exports. `reading` holds HTML whose values are escaped.
+		function anGuideSection(body, reading) {
 			const box = anEl('details', 'an-guide');
 			let closed = false;
 			try { closed = localStorage.getItem(AN_GUIDE_CLOSED) === '1'; } catch (e) { /* storage blocked */ }
 			box.open = !closed;
 			const head = anEl('summary', 'an-guide-head');
 			const titles = anEl('span', 'an-guide-titles');
-			titles.append(anEl('span', 'an-guide-title', t('an_g_title')), anEl('span', 'an-guide-sub', t('an_g_sub')));
+			titles.append(anEl('span', 'an-guide-title', reading.title), anEl('span', 'an-guide-sub', reading.sub));
 			// Exports, for whoever wants the reading apart from the results.
 			// Inside the summary: a click on them mustn't fold the section.
 			const exports = anEl('span', 'an-guide-exports');
@@ -7869,7 +7998,7 @@
 				b.addEventListener('click', e => {
 					e.preventDefault();
 					e.stopPropagation();
-					anExportGuide(g, reading, fmt);
+					anExportGuide(reading, fmt);
 				});
 				exports.append(b);
 			});
@@ -7883,16 +8012,16 @@
 			const inner = anEl('div', 'an-guide-body');
 			const v = anEl('div', 'an-guide-verdict');
 			const vt = anEl('span');
-			vt.innerHTML = verdict;
+			vt.innerHTML = reading.verdict;
 			v.append(vt);
-			if (!shown) {
-				const pick = anEl('button', 'btn btn-sm an-guide-pick', t('an_g_pick'));
-				pick.type = 'button';
-				pick.addEventListener('click', () => choose(R.method, R.index));
-				v.append(pick);
+			if (reading.action) {
+				const b = anEl('button', 'btn btn-sm an-guide-pick', reading.action.label);
+				b.type = 'button';
+				b.addEventListener('click', reading.action.run);
+				v.append(b);
 			}
 			const ul = anEl('ul', 'an-guide-points');
-			items.forEach(([kind, html]) => {
+			reading.items.forEach(([kind, html]) => {
 				const li = anEl('li');
 				const span = anEl('span');
 				span.innerHTML = html;
@@ -7906,10 +8035,8 @@
 			body.append(box);
 		}
 
-		const AN_GUIDE_MARK = { ok: '✓', warn: '!', info: 'i' };
-
 		// A guide sentence (its HTML) as Markdown or plain text: bold, italic
-		// names and the column headers each in their own way
+		// names and the terms each in their own way
 		function anGuidePlain(html, md) {
 			const box = document.createElement('div');
 			box.innerHTML = html;
@@ -7926,33 +8053,32 @@
 			return walk(box).replace(/\s+/g, ' ').trim();
 		}
 
-		// What the reading is about: marker, sequences, model, group and date
-		function anGuideContext(g) {
+		// What a reading is about: marker, sequences, model, group and date
+		function anGuideContext(group, n) {
 			const d = AnState.dist;
 			const lines = [t('an_g_meta', {
-				marker: d.marker || '—', n: numFmt.format(g.members.length),
+				marker: d.marker || '—', n: numFmt.format(n),
 				model: t('an_model_' + d.model), date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB'),
 			})];
-			if (d.groups.length > 1) lines.push(anGroupText(d.groups[g.group], g.group));
+			if (d.groups.length > 1) lines.push(anGroupText(d.groups[group], group));
 			return lines;
 		}
 
-		function anExportGuide(g, reading, fmt) {
+		function anExportGuide(reading, fmt) {
 			const d = AnState.dist;
-			const group = d.groups.length > 1 ? `_group${g.group + 1}` : '';
-			const stem = `bold_analysis_${(d.marker || 'seq').replace(/[^\w.-]+/g, '_')}_${exportStamp()}_${t('an_g_file')}${group}`;
-			const context = anGuideContext(g);
+			const stem = `bold_analysis_${(d.marker || 'seq').replace(/[^\w.-]+/g, '_')}_${exportStamp()}_${reading.file}`;
+			const context = reading.context;
 			if (fmt === 'md' || fmt === 'txt') {
 				const md = fmt === 'md';
 				const out = [];
 				if (md) {
-					out.push(`# ${t('an_g_title')}`, '', ...context.map(l => `*${l}*  `), '',
+					out.push(`# ${reading.title}`, '', ...context.map(l => `*${l}*  `), '',
 					         `> ${anGuidePlain(reading.verdict, true)}`, '');
 					reading.items.forEach(([kind, html]) => out.push(`- ${AN_GUIDE_MARK[kind]} ${anGuidePlain(html, true)}`));
 					out.push('', anGuidePlain(reading.nextFile, true), '', `*${reading.foot}*`, '');
 				} else {
-					const title = t('an_g_title');
-					out.push(title, '='.repeat(title.length), '', ...context, '', anGuidePlain(reading.verdict, false), '');
+					out.push(reading.title, '='.repeat(reading.title.length), '', ...context, '',
+					         anGuidePlain(reading.verdict, false), '');
 					reading.items.forEach(([kind, html]) => out.push(`[${AN_GUIDE_MARK[kind]}] ${anGuidePlain(html, false)}`, ''));
 					out.push(anGuidePlain(reading.nextFile, false), '', reading.foot, '');
 				}
@@ -7976,10 +8102,11 @@ li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7p
 .chip { width: 16px; height: 16px; margin-top: 2px; border-radius: 4px; display: grid; place-items: center; font-size: 8pt; font-weight: 600; }
 .chip.ok { background: #d9efe7; color: #1d6150; } .chip.warn { background: #fde8d4; color: #8a3f05; } .chip.info { background: #e1ecfb; color: #1f4f8f; }
 .an-term { padding: 0 4px; border-radius: 3px; background: #eef0f3; font-size: 8pt; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+.an-mono { font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 9pt; }
 .foot { color: #67718a; font-size: 9pt; }
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 </style></head><body>
-<h1>${escapeHtml(t('an_g_title'))}</h1>
+<h1>${escapeHtml(reading.title)}</h1>
 <p class="meta">${context.map(escapeHtml).join('<br>')}</p>
 <div class="verdict">${reading.verdict}</div>
 <ul>${points}</ul>
@@ -8010,6 +8137,151 @@ li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7p
 				// print() returns once the dialog closes; afterprint may not fire everywhere
 				setTimeout(restore, 500);
 			}, 150);
+		}
+
+		// ── Reading guide of the NJ tree ──
+		// The server works out what needs the distances (seq_distance.tree_guide:
+		// species and genera that form a clade or not, sequences far from the
+		// rest of their species); whether each MOTU is a clade is checked here,
+		// as it follows the partition chosen.
+
+		// MOTUs of the partition shown that are a clade of the tree, and those
+		// that aren't (with the MOTUs mixed into theirs)
+		function anTreeMotuClades(T) {
+			const tipsOf = new Map();
+			T.meta.forEach((m, i) => {
+				if (!m.motu) return;
+				if (!tipsOf.has(m.motu)) tipsOf.set(m.motu, []);
+				tipsOf.get(m.motu).push(i);
+			});
+			const leaf = new Map();
+			T.nodes.forEach(n => { if (!n.children.length) leaf.set(n.tip, n); });
+			let tested = 0;
+			const broken = [];
+			tipsOf.forEach((tips, motu) => {
+				if (tips.length < 2) return;
+				tested++;
+				// The MRCA is the shallowest of the pairwise meeting points
+				let anc = null;
+				const first = leaf.get(tips[0]);
+				const path = new Set();
+				for (let n = first; n; n = n.parent) path.add(n);
+				tips.slice(1).forEach(tp => {
+					let n = leaf.get(tp);
+					while (!path.has(n)) n = n.parent;
+					if (!anc || n.depth < anc.depth) anc = n;
+				});
+				const others = new Set(anc.tips.map(i => T.meta[i].motu).filter(m => m && m !== motu));
+				if (others.size) broken.push({ motu, n: tips.length, others: [...others] });
+			});
+			return { tested, broken };
+		}
+
+		function anRenderTreeGuide(body, tree, T, hasMotu) {
+			const G = tree.guide;
+			if (!G) return;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const S = G.species, Ge = G.genera;
+			const opts = anTreeOpts();
+			const motus = hasMotu ? anTreeMotuClades(T) : null;
+			const pct = anPctOf;
+
+			// Verdict: how far the tree follows the names
+			let verdict;
+			if (!S.tested) {
+				verdict = anGuideText('an_tg_verdict_none');
+			} else if (S.mono === S.tested) {
+				verdict = anGuideText(S.tested === 1 ? 'an_tg_verdict_all_1' : 'an_tg_verdict_all', { n: numFmt.format(S.tested) });
+			} else if (S.mono / S.tested >= 0.8) {
+				verdict = anGuideText('an_tg_verdict_most', { k: numFmt.format(S.mono), n: numFmt.format(S.tested) });
+			} else {
+				verdict = anGuideText('an_tg_verdict_few', { k: numFmt.format(S.mono), n: numFmt.format(S.tested) });
+			}
+			if (motus && motus.tested) {
+				verdict += anGuideText(motus.broken.length ? 'an_tg_verdict_motu_some' : 'an_tg_verdict_motu_all',
+				                       { n: numFmt.format(motus.tested), k: numFmt.format(motus.tested - motus.broken.length) });
+			}
+
+			add('info', anGuideText('an_tg_how'));
+			if (S.tested) {
+				const all = S.mono === S.tested;
+				add(all ? 'ok' : 'info', anGuideText(all ? (S.tested === 1 ? 'an_tg_species_all_1' : 'an_tg_species_all') : 'an_tg_species',
+					{ k: numFmt.format(S.mono), n: numFmt.format(S.tested) }));
+			}
+			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
+			// Up to three cases one by one; more, in a single list
+			if (S.broken_n <= 3) {
+				S.broken.forEach(x => {
+					const v = { sp: anGuideName(x.species), d: pct(x.distance), n: numFmt.format(x.others_n),
+					            others: anGuideNames(x.others, x.others_n, x.species, 3) };
+					if (x.outlier) {
+						v.id = anGuideJoin(x.outlier.map(mono), ', ');
+						add('info', anGuideText(x.outlier.length === 1 ? 'an_tg_species_broken_outlier_1' : 'an_tg_species_broken_outlier', v));
+					} else if (x.others_n > 3) {
+						add('info', anGuideText('an_tg_species_broken_many', v));
+					} else {
+						add('info', anGuideText(x.distance === 0 ? 'an_tg_species_broken_same'
+							: x.distance < 0.02 ? 'an_tg_species_broken_close' : 'an_tg_species_broken_far', v));
+					}
+				});
+			} else {
+				const list = S.broken.slice(0, 6).map(x => anGuideText(x.outlier ? 'an_tg_species_item_outlier' : 'an_tg_species_item', {
+					sp: anGuideName(x.species), others: anGuideNames(x.others, x.others_n, x.species, 2),
+					d: pct(x.distance), id: x.outlier ? anGuideJoin(x.outlier.map(mono), ', ') : '' })).join('; ');
+				add('info', anGuideText('an_tg_species_list', {
+					n: numFmt.format(S.broken_n), list: list + anGuideMore(Math.min(6, S.broken.length), S.broken_n) }));
+			}
+			if (Ge.tested > 1 && Ge.broken_n) {
+				const list = Ge.broken.map(x => anGuideText('an_tg_genus_item',
+					{ g: anGuideName(x.genus), others: anGuideNames(x.others, x.others_n, '', 3) })).join('; ');
+				add('info', anGuideText(Ge.broken_n === 1 ? 'an_tg_genera_1' : 'an_tg_genera', {
+					k: numFmt.format(Ge.broken_n), n: numFmt.format(Ge.tested),
+					list: list + anGuideMore(Ge.broken.length, Ge.broken_n) }));
+			} else if (Ge.tested > 1) {
+				add('ok', anGuideText('an_tg_genera_all', { n: numFmt.format(Ge.tested) }));
+			}
+			if (motus && motus.tested) {
+				const g = AnState.dist.delimit.find(x => x.group === tree.group);
+				const part = escapeHtml(anMotuPartition(g).label);
+				if (!motus.broken.length) {
+					add('ok', anGuideText('an_tg_motu_all', { n: numFmt.format(motus.tested), part }));
+				} else {
+					const list = motus.broken.slice(0, 6).map(x => anGuideText('an_tg_motu_item',
+						{ m: escapeHtml(x.motu), others: escapeHtml(anGuideJoin(x.others.slice(0, 4), ', ')) })).join('; ');
+					add('info', anGuideText('an_tg_motu_some', {
+						k: numFmt.format(motus.broken.length), n: numFmt.format(motus.tested), part,
+						list: list + anGuideMore(Math.min(6, motus.broken.length), motus.broken.length) }));
+				}
+			}
+			if (G.outliers_n <= 2) {
+				G.outliers.forEach(x => {
+					add('warn', anGuideText('an_tg_outlier', {
+						sp: anGuideName(x.species), id: mono(x.id), d: pct(x.distance), rest: pct(x.rest) }));
+				});
+			} else {
+				const list = G.outliers.slice(0, 5).map(x => anGuideText('an_tg_outlier_item', {
+					sp: anGuideName(x.species), id: mono(x.id), d: pct(x.distance), rest: pct(x.rest) })).join('; ');
+				add('warn', anGuideText('an_tg_outlier_list', {
+					n: numFmt.format(G.outliers_n), list: list + anGuideMore(Math.min(5, G.outliers.length), G.outliers_n) }));
+			}
+			add('warn', anGuideText('an_tg_support'));
+			if (G.singletons) {
+				add('warn', anGuideText(G.singletons === 1 ? 'an_tg_singletons_1' : 'an_tg_singletons',
+				                        { n: numFmt.format(G.singletons) }));
+			}
+			if (G.n < 10) add('warn', anGuideText('an_g_few', { n: numFmt.format(G.n) }));
+
+			const colorBy = !S.tested ? null : opts.color !== 'species' ? 'species' : null;
+			anGuideSection(body, {
+				title: t('an_tg_title'), sub: t('an_tg_sub'), verdict, items,
+				action: colorBy ? { label: t('an_tg_color_species'), run: () => { opts.color = 'species'; anRefreshView(); } } : null,
+				next: anGuideText('an_tg_next'),
+				nextFile: anGuideText('an_tg_next'),
+				foot: t('an_tg_foot'),
+				context: anGuideContext(tree.group, tree.tips.length),
+				file: t('an_tg_file') + (AnState.dist.groups.length > 1 ? `_group${tree.group + 1}` : ''),
+			});
 		}
 
 		// The first few items of a list, and how many more (all of them on hover)
@@ -9149,6 +9421,7 @@ li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; margin-bottom: 7p
 				target.replaceChildren(title);
 			});
 			redraw();
+			anRenderTreeGuide(body, tree, T, hasMotu);
 		}
 
 		// A round step for an axis that has to reach `max` in about 4 lines

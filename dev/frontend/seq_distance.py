@@ -759,6 +759,144 @@ def midpoint_root(edges, n_tips):
     return children, root
 
 
+# ── Reading guide of the NJ tree ──────────────────────────────────────────────
+# Facts the page turns into its "What this tree says" section: whether each
+# named species and each genus forms a clade, how far apart the species
+# mixed into another one are, and sequences far from the rest of their
+# species. Whether each MOTU is a clade is checked on the page, which knows
+# the partition chosen.
+
+# A sequence is far from its species when its nearest conspecific is at
+# least this far, and this many times farther than any other member's
+TREE_OUTLIER_MIN = 0.02
+TREE_OUTLIER_RATIO = 3
+# Lists sent to the page, at most
+TREE_GUIDE_MAX_ITEMS = 8
+
+
+def tree_guide(children, root, D, species, genera, ids):
+    """`children`/`root` as midpoint_root returns them, over tips 0..n-1
+    whose distances are `D`."""
+    n = D.shape[0]
+    parent, order, stack = {}, [], [root]
+    while stack:
+        node = stack.pop()
+        order.append(node)
+        for child, _ in children.get(node, []):
+            parent[child] = node
+            stack.append(child)
+    tips_of = {}
+    for node in reversed(order):
+        kids = children.get(node)
+        tips_of[node] = [node] if not kids else [t for c, _ in kids for t in tips_of[c]]
+    depth = {root: 0}
+    for node in order:
+        for child, _ in children.get(node, []):
+            depth[child] = depth[node] + 1
+
+    def mrca(tips):
+        path = set()
+        node = tips[0]
+        while node is not None:
+            path.add(node)
+            node = parent.get(node)
+        best = tips[0]
+        for t in tips[1:]:
+            node = t
+            while node not in path:
+                node = parent[node]
+            if best == tips[0] or depth[node] < depth[best]:
+                best = node
+        return best
+
+    names = ["" if not sp or seq_delimit._PROVISIONAL.search(sp) else sp for sp in species]
+
+    def clades(labels):
+        """Labels with 2+ tips: how many form a clade, and those that don't
+        (with the other labels inside their clade and the closest distance
+        to them)."""
+        tips = defaultdict(list)
+        for i, lab in enumerate(labels):
+            if lab:
+                tips[lab].append(i)
+        tested, broken = 0, []
+        for lab, ts in tips.items():
+            if len(ts) < 2:
+                continue
+            tested += 1
+            inside = tips_of[mrca(ts)]
+            others = Counter(labels[i] for i in inside if labels[i] and labels[i] != lab)
+            if not others:
+                continue
+            intruders = [i for i in inside if labels[i] and labels[i] != lab]
+            broken.append({"label": lab, "n": len(ts),
+                           "others": [o for o, _ in others.most_common(TREE_GUIDE_MAX_ITEMS)],
+                           "others_n": len(others),
+                           "distance": float(np.nanmin(D[np.ix_(ts, intruders)]))})
+        broken.sort(key=lambda x: (-x["n"], x["label"]))
+        return tested, broken, {lab: len(ts) for lab, ts in tips.items()}
+
+    # Sequences far from the rest of their species (3+ sequences, so there
+    # is a "rest" to compare with)
+    outliers = []
+    seqs_of = defaultdict(list)
+    for i, sp in enumerate(names):
+        if sp:
+            seqs_of[sp].append(i)
+    for sp, ts in seqs_of.items():
+        if len(ts) < 3:
+            continue
+        sub = D[np.ix_(ts, ts)].astype(np.float64).copy()
+        np.fill_diagonal(sub, np.inf)
+        nearest = np.nanmin(sub, axis=1)
+        for j, t in enumerate(ts):
+            rest = float(np.max(np.delete(nearest, j)))
+            if nearest[j] >= TREE_OUTLIER_MIN and nearest[j] >= TREE_OUTLIER_RATIO * rest:
+                outliers.append({"id": ids[t], "tip": t, "species": sp, "distance": float(nearest[j]), "rest": rest})
+    outliers.sort(key=lambda x: -x["distance"])
+
+    sp_tested, sp_broken, sp_count = clades(names)
+    # A species that is a clade once its far sequences are left out: those
+    # sequences are the story, not the species
+    far = defaultdict(list)
+    for x in outliers:
+        far[x["species"]].append(x["tip"])
+    for x in sp_broken:
+        if not far[x["label"]]:
+            continue
+        rest = [i for i in seqs_of[x["label"]] if i not in far[x["label"]]]
+        inside = tips_of[mrca(rest)] if len(rest) > 1 else rest
+        if not any(names[i] and names[i] != x["label"] for i in inside):
+            x["outlier"] = [ids[i] for i in far[x["label"]]]
+    # Two species mixed with each other are one case: say it once
+    said, cases = set(), []
+    for x in sp_broken:
+        if x["label"] in said and set(x["others"]) <= said:
+            continue
+        said.add(x["label"])
+        if not x.get("outlier"):     # its far sequence, not the others, is the case
+            said.update(x["others"])
+        cases.append(x)
+    cases.sort(key=lambda x: x["distance"])
+    ge_tested, ge_broken, _ = clades(genera)
+
+    return {
+        "n": n,
+        "species": {"tested": sp_tested, "mono": sp_tested - len(sp_broken),
+                    "broken": [{"species": x["label"], "others": x["others"], "others_n": x["others_n"],
+                                "distance": x["distance"], "outlier": x.get("outlier")}
+                               for x in cases[:TREE_GUIDE_MAX_ITEMS]],
+                    "broken_n": len(cases)},
+        "genera": {"tested": ge_tested,
+                   "broken": [{"genus": x["label"], "others": x["others"], "others_n": x["others_n"]}
+                              for x in ge_broken[:TREE_GUIDE_MAX_ITEMS]],
+                   "broken_n": len(ge_broken)},
+        "outliers": [{k: v for k, v in x.items() if k != "tip"} for x in outliers[:TREE_GUIDE_MAX_ITEMS]],
+        "outliers_n": len(outliers),
+        "singletons": sum(1 for c in sp_count.values() if c == 1),
+    }
+
+
 def to_newick(children, root, label):
     """Newick text, smaller clades first (a ladderized tree reads better)."""
     sizes = {}
@@ -972,6 +1110,8 @@ def run_distance(records, marker, forced_code=None, model="k2p",
                           "country": usable[i].get("country") or ""}
                          for i in keep],
                 "dropped": m - len(keep),
+                "guide": tree_guide(children, root, sub, [species[i] for i in keep],
+                                    [genera[i] for i in keep], [ids[i] for i in keep]),
             })
             name = f"tree_group{k + 1}.nwk" if several else "tree.nwk"
             files[name] = to_newick(children, root, lambda t, keep=keep: labels[keep[t]]) + "\n"

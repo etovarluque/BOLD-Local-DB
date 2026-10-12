@@ -1414,6 +1414,11 @@
 		.an-guide-titles { display: flex; flex-direction: column; }
 		.an-guide-title { font-weight: 600; font-size: .95rem; }
 		.an-guide-sub { color: var(--mute); font-size: .8rem; }
+		.an-guide-caution { position: relative; display: inline-flex; margin-left: 7px; vertical-align: -3px; cursor: help; border-radius: 4px; outline: none; }
+		.an-guide-caution:focus-visible { box-shadow: 0 0 0 2px #f57c00; }
+		.an-guide-tip { position: absolute; left: -10px; top: calc(100% + 9px); z-index: 30; width: max-content; max-width: min(340px, 75vw); padding: 8px 11px; border-radius: 6px; background: #2b2f36; color: #fff; font-size: .78rem; font-weight: 400; line-height: 1.45; text-align: left; white-space: normal; box-shadow: 0 6px 18px rgba(0, 0, 0, .2); opacity: 0; visibility: hidden; transition: opacity .12s; pointer-events: none; }
+		.an-guide-tip::before { content: ''; position: absolute; left: 14px; top: -5px; width: 10px; height: 10px; background: #2b2f36; transform: rotate(45deg); }
+		.an-guide-caution:hover .an-guide-tip, .an-guide-caution:focus-visible .an-guide-tip { opacity: 1; visibility: visible; }
 		.an-guide-exports { margin-left: auto; display: inline-flex; gap: 6px; }
 		.an-guide-export { padding: 0 8px; font-size: .74rem; border: 1px solid #cfe5df; background: #fff; color: #2f7d6b; }
 		.an-guide-export:hover { border-color: #2f7d6b; background: #2f7d6b; color: #fff; }
@@ -2648,6 +2653,7 @@
                 an_g_title: 'Qué dicen estos resultados',
                 an_g_sub: 'Lectura automática y orientativa de ASAP y ABGD',
                 an_g_hide: 'Ocultar', an_g_show: 'Mostrar',
+                an_g_caution: 'Las interpretaciones automáticas pueden contener errores o imprecisiones: aplican reglas fijas sin conocer tu grupo taxonómico. Tómalas como una orientación y confirma cada hallazgo antes de corregir una identificación o usarlo en una publicación.',
                 an_g_verdict_abgd: 'La propuesta más fiable es la de <b>ABGD con {n} MOTU</b> (grupos que podrían ser especies distintas), en la columna [col]: sale igual con {k} valores de [prior] seguidos (de {p1} a {p2}), así que no depende de cómo se configure el método.',
                 an_g_verdict_asap: 'ABGD no da una partición estable (cambia con cada valor de [prior]), así que el mejor punto de partida es la opción de ASAP con mejor [score]: <b>rango 1, {n} MOTU</b> (grupos que podrían ser especies distintas).',
                 an_g_pick: 'Ver esta partición',
@@ -3656,6 +3662,7 @@
                 an_g_title: 'What these results say',
                 an_g_sub: 'Automatic, indicative reading of ASAP and ABGD',
                 an_g_hide: 'Hide', an_g_show: 'Show',
+                an_g_caution: 'Automatic readings may contain errors or inaccuracies: they apply fixed rules without knowing your taxonomic group. Take them as guidance and confirm every finding before correcting an identification or using it in a publication.',
                 an_g_verdict_abgd: 'The most reliable proposal is <b>ABGD with {n} MOTUs</b> (groups that could be different species), in the [col] column: it comes out the same with {k} consecutive [prior] values (from {p1} to {p2}), so it doesn\'t depend on how the method is set.',
                 an_g_verdict_asap: 'ABGD gives no stable partition (it changes with every [prior] value), so the best starting point is the ASAP option with the best [score]: <b>rank 1, {n} MOTUs</b> (groups that could be different species).',
                 an_g_pick: 'Show this partition',
@@ -8870,6 +8877,20 @@
 		// A reading section, after a tab's results: a verdict (with an optional
 		// action), the points, what to do next and a closing caveat, plus its
 		// PDF/TXT/MD exports. `reading` holds HTML whose values are escaped.
+		// Yellow warning next to a reading's title: automatic readings can be
+		// wrong. The note shows on hover or keyboard focus; a click on it
+		// mustn't fold the section it sits in.
+		function anGuideCaution() {
+			const c = anEl('span', 'an-guide-caution');
+			c.tabIndex = 0;
+			c.setAttribute('role', 'note');
+			c.setAttribute('aria-label', t('an_g_caution'));
+			c.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" fill="#f57c00"/><path d="M12 9v4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.25" fill="#fff"/></svg>';
+			c.append(anEl('span', 'an-guide-tip', t('an_g_caution')));
+			c.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); });
+			return c;
+		}
+
 		function anGuideSection(body, reading) {
 			const box = anEl('details', 'an-guide');
 			let closed = false;
@@ -8877,7 +8898,9 @@
 			box.open = !closed;
 			const head = anEl('summary', 'an-guide-head');
 			const titles = anEl('span', 'an-guide-titles');
-			titles.append(anEl('span', 'an-guide-title', reading.title), anEl('span', 'an-guide-sub', reading.sub));
+			const title = anEl('span', 'an-guide-title', reading.title);
+			title.append(anGuideCaution());
+			titles.append(title, anEl('span', 'an-guide-sub', reading.sub));
 			// Exports, for whoever wants the reading apart from the results.
 			// Inside the summary: a click on them mustn't fold the section.
 			const exports = anEl('span', 'an-guide-exports');

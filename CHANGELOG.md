@@ -84,6 +84,9 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Sequence analysis: every *What … say* reading has an orange warning
+  triangle next to its title; hovering it (or reaching it with the keyboard)
+  shows that automatic readings may contain errors or inaccuracies.
 - Sequence analysis: *Results of the search on screen* is now the first and
   default source, and the sequences box ends level with the genetic code
   select (the FASTA box and the Analyse button sit on a row below).

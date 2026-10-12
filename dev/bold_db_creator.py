@@ -3745,7 +3745,7 @@ QLabel[tone="running"] { color: %(running)s; }
 /* Sized like runBtn/stopBtn so it sits in the same row as a peer. */
 QLabel[tone="donePill"] {
     color: %(bg)s; font-size: %(fs12)s; font-weight: bold;
-    border-radius: 6px; padding: 7px 18px;
+    border-radius: 6px;
 }
 /* Fills. Prefixed with #panel too: "#panel QLabel { background: transparent }"
    has an ID in it, so it outranks any selector without one. */
@@ -4785,14 +4785,30 @@ class StepPanel(QWidget):
                 self._prog_note.hide()
             self.prog_bar.setValue(int(v))
 
+    def _set_status(self, tone, text):
+        """Shows the step's state next to the buttons. "donePill" is a filled
+        badge; the rest are plain text. The label is kept as tall as the
+        buttons, so the badge lines up with them instead of growing the row.
+        Its side margins are set here, not as stylesheet padding: on a label
+        already on screen, Qt left that padding out of the size hint and the
+        text filled the badge edge to edge."""
+        lbl = self.status_lbl
+        pill = tone == "donePill"
+        _styled(lbl, tone=tone)
+        lbl.setText(text)
+        side = _px(24) if pill else 0
+        lbl.setContentsMargins(side, 0, side, 0)
+        lbl.setFixedHeight(self.run_btn.height())
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter if pill
+                         else Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
     def set_stopping_ui(self):
         self._stopping = True
         self.run_btn.setEnabled(False)
         self.stop_btn.setEnabled(False)
         self.prog_bar.setRange(0, 100)
         self._set_progbar_color(P["yellow"])
-        _styled(self.status_lbl, tone="warn")
-        self.status_lbl.setText(t('stopping_status'))
+        self._set_status("warn", t('stopping_status'))
 
     def _set_running_ui(self):
         self._stopping = False
@@ -4803,8 +4819,7 @@ class StepPanel(QWidget):
         self.prog_bar.setRange(0, 100)
         self.prog_bar.setValue(0)
         self._set_progbar_color(P["progbar"])
-        _styled(self.status_lbl, tone="running")
-        self.status_lbl.setText(t('running_status'))
+        self._set_status("running", t('running_status'))
 
     def set_running_ui(self):
         self._set_running_ui()
@@ -4826,21 +4841,18 @@ class StepPanel(QWidget):
         if not self.app._seq_running:
             self.app._refresh_all_panels_input()
         if ok:
-            _styled(self.status_lbl, tone="donePill")
-            self.status_lbl.setText(t('completed_status'))
+            self._set_status("donePill", t('completed_status'))
             self.prog_bar.setValue(100)
             if not self.app._seq_running:
                 self.app._dim_completed_task()
                 self.app.log_next_action()
         elif was_stopping:
             self._set_progbar_color(P["yellow"])
-            _styled(self.status_lbl, tone="warn")
-            self.status_lbl.setText(t('stopped_status'))
+            self._set_status("warn", t('stopped_status'))
             self.prog_bar.setValue(0)
         else:
             self._set_progbar_color(P["red"])
-            _styled(self.status_lbl, tone="error")
-            self.status_lbl.setText(t('error_status'))
+            self._set_status("error", t('error_status'))
 
     def set_stopped_ui(self):
         self.run_btn.setEnabled(True)
@@ -4849,8 +4861,7 @@ class StepPanel(QWidget):
         self.prog_bar.setRange(0, 100)
         self.prog_bar.setValue(0)
         self._set_progbar_color(P["yellow"])
-        _styled(self.status_lbl, tone="warn")
-        self.status_lbl.setText(t('stopped_status'))
+        self._set_status("warn", t('stopped_status'))
 
     def _stop(self):
         self.app.stop_current(self)

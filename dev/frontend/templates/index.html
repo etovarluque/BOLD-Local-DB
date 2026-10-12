@@ -3042,6 +3042,97 @@
                 an_cg_next_split: 'para las especies partidas y los BINs compartidos, comprueba si forman grupos en el árbol y en «{motu}» (pestaña «{dist}»), y mira la red de haplotipos coloreada por BIN y por país.',
                 an_cg_next_ok: 'nombres y BINs coinciden: pasa a «{dist}» para ver las distancias y el barcode gap.',
                 an_cg_next_none: 'esta comparación necesita registros con nombre de especie y BIN, como los de una búsqueda en tu base o un FASTA exportado por este visor.',
+                an_dg_title: 'Qué dicen las distancias',
+                an_dg_sub: 'Lectura automática y orientativa de las distancias y el barcode gap',
+                an_dg_file: 'interpretacion_distancias',
+                an_dg_marker_start: 'El marcador', an_dg_marker: 'el marcador',
+                an_dg_level_low: 'baja', an_dg_level_moderate: 'moderada', an_dg_level_high: 'alta', an_dg_level_very_high: 'muy alta',
+                an_dg_v_nn_all: '<b>{marker} identifica por su secuencia más cercana todos los registros ({k} de {n}).</b>',
+                an_dg_v_nn_most: '<b>{marker} identifica por su secuencia más cercana casi todos los registros ({p}, {k} de {n}).</b>',
+                an_dg_v_nn: '<b>{marker} identifica por su secuencia más cercana solo el {p} de los registros ({k} de {n}).</b>',
+                an_dg_v_tie: '{k} son idénticos o están igual de cerca de otra especie',
+                an_dg_v_tie_1: '1 es idéntico o está igual de cerca de otra especie',
+                an_dg_v_wrong: '{k} tienen más cerca otra especie',
+                an_dg_v_wrong_1: '1 tiene más cerca otra especie',
+                an_dg_v_trouble: ' El problema se concentra en {list}, que comparten secuencias.',
+                an_dg_v_trouble_1: ' El problema se concentra en {list}.',
+                an_dg_v_overlap: ' Aun así, {k} de las {n} especies no tienen barcode gap: se tocan en los extremos, así que un umbral fijo de distancia no las separaría.',
+                an_dg_v_overlap_all: ' Aun así, ninguna de las {n} especies tiene barcode gap: se tocan en los extremos, así que un umbral fijo de distancia no las separaría.',
+                an_dg_v_good: ' {list} se separan bien.',
+                an_dg_v_good_1: ' {list} se separa bien.',
+                an_dg_v_gap: '<b>{k} de las {n} especies tienen barcode gap.</b>',
+                an_dg_v_none: '<b>No hay especies que comparar:</b> el barcode gap y el vecino más cercano necesitan al menos dos especies con nombre y dos secuencias de alguna de ellas.',
+                an_dg_v_one_split: '<b>La variación dentro de {sp} es {level} (mediana entre pares {m}) y se reparte en {k} linajes</b> separados entre un {a} y un {b} del mayor, cuando dentro de una especie lo habitual es menos de un {lim}.',
+                an_dg_v_one_cryptic: ' Es el patrón de un complejo de especies crípticas o de poblaciones aisladas.',
+                an_dg_v_one_close: ' Están poco separados: pueden ser poblaciones de una misma especie.',
+                an_dg_v_one_all: '<b>Todas las secuencias de {sp} forman un solo linaje,</b> con una variación {level} (mediana entre pares {m}; como mucho {x}).',
+                an_dg_v_one_main_most: '<b>Casi todas las secuencias de {sp} ({p}, {k} de {n}) forman un solo linaje,</b> con una variación {level} (mediana entre pares {m}).',
+                an_dg_v_one_main: '<b>El {p} de las secuencias de {sp} ({k} de {n}) forman un solo linaje,</b> con una variación {level} (mediana entre pares {m}).',
+                an_dg_v_one_rest: ' Las otras {k} quedan aparte (ver abajo).',
+                an_dg_v_one_rest_1: ' La otra queda aparte (ver abajo).',
+                an_dg_v_one_none: '<b>Las {n} secuencias de {sp} no forman ningún linaje:</b> ninguna está a menos de un {lim} de otras dos.',
+                an_dg_how: '<b>Cómo se lee.</b> Cada secuencia se compara con la más parecida de las demás, su [nn]: si es de su misma especie, el código de barras la identificaría bien. El [h_gap] es más exigente: pide que la secuencia más cercana de otra especie esté más lejos que las dos más distintas de la propia ([max_intra]). Basta un registro mal identificado para que una especie se quede sin gap; por eso la lectura mira también el vecino de cada secuencia.',
+                an_dg_how_one: '<b>Cómo se lee.</b> Con una sola especie no hay [h_gap] que medir: la lectura mira cuánto varían sus secuencias y si forman grupos separados (linajes: secuencias encadenadas a menos de un 2 %).',
+                an_dg_nogap: '<b>Sin barcode gap: {k} de las {n} especies.</b>',
+                an_dg_nogap_1: '<b>Sin barcode gap.</b>',
+                an_dg_nogap_all: '<b>Sin barcode gap: las {n} especies.</b>',
+                an_dg_ng_shared: '{sp}: {k} de sus {n} secuencias tienen igual de cerca, o más, una de {with}.',
+                an_dg_ng_shared_1: '{sp}: 1 de sus {n} secuencias tiene igual de cerca, o más, una de {with}.',
+                an_dg_ng_stretch: ' Además, su [max_intra] de {m} se debe a {k} registros aislados (ver abajo).',
+                an_dg_ng_stretch_1: ' Además, su [max_intra] de {m} se debe a un registro aislado (ver abajo).',
+                an_dg_ng_isolated: '{sp}: tendría barcode gap sin sus {k} registros aislados (ver abajo). Su vecino más cercano, {nsp}, está a un {d}, y el resto de la especie, como mucho a un {c}.',
+                an_dg_ng_isolated_1: '{sp}: tendría barcode gap sin un registro aislado (ver abajo). Su vecino más cercano, {nsp}, está a un {d}, y el resto de la especie, como mucho a un {c}.',
+                an_dg_ng_overlap: '{sp}: cada secuencia tiene más cerca una de su especie, pero su [max_intra] ({m}) supera la distancia a {nsp} ({d}).',
+                an_dg_ng_provisional: '{list} son nombres provisionales: es lógico que no se separen de las especies con nombre, y no cuentan en el vecino más cercano.',
+                an_dg_ng_provisional_1: '{list} es un nombre provisional: es lógico que no se separe de las especies con nombre, y no cuenta en el vecino más cercano.',
+                an_dg_ng_more: 'y {n} más',
+                an_dg_ng_why: ' Compartir secuencias puede deberse a hibridación, a especies muy recientes o a registros mal identificados.',
+                an_dg_ng_same_bin: ' En «{conc}», {a} y {b} comparten además el BIN {bin}.',
+                an_dg_gap: '<b>Con barcode gap</b>: {list}.',
+                an_dg_gap_item: '{sp} (su vecino más cercano, {nsp}, está a un {d}, y entre sus secuencias hay como mucho un {m})',
+                an_dg_gap_item_narrow: '{sp} ({d} frente a {m}, un margen estrecho)',
+                an_dg_gap_many: '<b>Con barcode gap: {k} de las {n} especies</b>, entre ellas {list}.',
+                an_dg_lineages: '<b>Linajes dentro de una especie</b> (secuencias encadenadas a menos de un {lim}):',
+                an_dg_lineages_one: '<b>Linajes</b> (secuencias encadenadas a menos de un {lim}; con su distancia al mayor):',
+                an_dg_lin_species: '{sp}, {k} linajes: {list}.',
+                an_dg_lin_apart: '{n} a un {d}{where}',
+                an_dg_lin_cryptic: ' Linajes tan separados apuntan a especies crípticas o a poblaciones aisladas; compara sus BINs y sus países.',
+                an_dg_lin_close: ' Están poco separados: pueden ser poblaciones o razas geográficas de una misma especie.',
+                an_dg_far: '<b>{k} linajes a más de un {far} del resto de su especie</b>, más de lo que suele separar especies de un mismo género: {list}. Comprueba que estén bien identificados.',
+                an_dg_far_1: '<b>Un linaje a más de un {far} del resto de su especie</b>, más de lo que suele separar especies de un mismo género: {list}. Comprueba que esté bien identificado.',
+                an_dg_far_item: '{n} secuencias de {sp}{where}, a un {d}',
+                an_dg_far_item_one: '{n} secuencias{where}, a un {d} del linaje mayor',
+                an_dg_iso: '<b>Registros aislados</b> ({k}): a más de un {lim} de todos los demás de su especie. {list}.',
+                an_dg_iso_1: '<b>Un registro aislado</b>, a más de un {lim} de todos los demás de su especie: {list}.',
+                an_dg_iso_item: '{id} ({sp}, a un {d})',
+                an_dg_iso_item_one: '{id} (a un {d}{where})',
+                an_dg_iso_far: ' A más de un {far} ya no es variación dentro de una especie: lo probable es una identificación errónea, una contaminación o una secuencia defectuosa.',
+                an_dg_iso_near: ' Pueden ser variantes raras o linajes con muy pocos registros.',
+                an_dg_iso_near_1: ' Puede ser una variante rara o un linaje con muy pocos registros.',
+                an_dg_check: 'La [h_check] de arriba señala: {list}.',
+                an_dg_ratio: 'En el [h_summary], la distancia media entre especies del mismo género ({g}) es {r} veces la media dentro de especie ({s}).',
+                an_dg_ratio_ok: ' Supera las 10 veces que suelen pedirse para que el código de barras separe bien las especies.',
+                an_dg_ratio_low: ' Una regla habitual pide al menos 10 veces para que el código de barras separe bien las especies.',
+                an_dg_singles: '{k} especies tienen una sola secuencia: no se puede medir su variación ni su barcode gap.',
+                an_dg_singles_1: '1 especie tiene una sola secuencia: no se puede medir su variación ni su barcode gap.',
+                an_dg_unnamed: '{k} registros sin especie o con nombre provisional (sp., PS1…) no cuentan en el vecino más cercano.',
+                an_dg_unnamed_1: '1 registro sin especie o con nombre provisional (sp., PS1…) no cuenta en el vecino más cercano.',
+                an_dg_relatives: 'Para saber si {marker} separa {sp} de sus parientes, añade especies cercanas al análisis (por ejemplo, busca el género entero).',
+                an_dg_groups: 'Las secuencias forman {k} grupos que no se pueden alinear entre sí (ver arriba): entre grupos no hay distancias, y cada especie se compara solo dentro del suyo.',
+                an_dg_noncoding: 'Con un marcador no codificante la alineación contra la referencia es más aproximada y las distancias, menos fiables.',
+                an_dg_subsampled: 'Se analizaron como mucho {k} secuencias por especie: los recuentos de esta lectura son de esa submuestra.',
+                an_dg_few: '<b>Hay pocas secuencias ({n}).</b> Con tan pocos datos, las distancias y los linajes cambian con facilidad.',
+                an_dg_next_head: '<b>Qué hacer ahora:</b> ',
+                an_dg_next_check: 'revisa las fichas de los registros señalados (identificación, fotos, quién la hizo) y, si confirmas el error, déjalos fuera y repite el análisis.',
+                an_dg_next_shared: 'para {list}, mira si forman grupos separados en «{tree}» y «{motu}»: si no, {marker} no basta para distinguirlas y hará falta otro marcador o caracteres morfológicos.',
+                an_dg_next_shared_1: 'para {list}, mira si forma un grupo aparte en «{tree}» y «{motu}»: si no, {marker} no basta para distinguirla y hará falta otro marcador o caracteres morfológicos.',
+                an_dg_next_lineages: 'comprueba en «{motu}» si la delimitación propone los mismos linajes y mira el «{tree}» coloreado por país; si linajes, BINs y países coinciden, contrasta con la bibliografía del grupo antes de hablar de especies distintas.',
+                an_dg_next_lineages_also: 'para los linajes, comprueba también si la delimitación propone los mismos grupos y si coinciden con los BINs y los países antes de hablar de especies distintas.',
+                an_dg_next_overlap_short: 'para identificar, compara con la secuencia más cercana y no con un umbral de distancia.',
+                an_dg_next_overlap: 'para identificar, compara con la secuencia más cercana y no con un umbral de distancia; mira en «{tree}» si cada especie forma su propio grupo y en «{motu}» si la delimitación las separa.',
+                an_dg_next_ok: 'mira en «{tree}» si cada especie forma su propio grupo.',
+                an_dg_next_none: 'para medir el barcode gap, analiza secuencias de varias especies con nombre (por ejemplo, busca el género entero); mientras, mira el «{tree}».',
+                an_dg_foot: 'Las distancias dependen de qué secuencias entren en el análisis: si falta una especie cercana, otra puede parecer bien separada sin estarlo. El 2 % de los linajes y la regla de las 10 veces son orientativos y varían entre grupos, y la alineación contra una secuencia de referencia es aproximada.',
                 an_cg_foot: 'Los BIN los calcula BOLD con un umbral de distancia fijo; no son especies. Una especie partida o un BIN compartido pueden ser reales (especies crípticas, hibridación) o deberse a errores de identificación, y los BIN de tu base pueden haber cambiado en BOLD desde que se descargaron.',
                 an_g_export_pdf: 'Abrir el diálogo de impresión para guardar la interpretación como PDF',
                 an_g_export_txt: 'Descargar la interpretación como texto (.txt)',
@@ -3959,6 +4050,97 @@
                 an_cg_next_split: 'for split species and shared BINs, check whether they form groups in the tree and in "{motu}" ("{dist}" tab), and look at the haplotype network coloured by BIN and by country.',
                 an_cg_next_ok: 'names and BINs agree: go on to "{dist}" for the distances and the barcode gap.',
                 an_cg_next_none: 'this comparison needs records with a species name and a BIN, such as those of a search in your database or a FASTA exported by this viewer.',
+                an_dg_title: 'What the distances say',
+                an_dg_sub: 'An automatic, indicative reading of the distances and the barcode gap',
+                an_dg_file: 'distances_reading',
+                an_dg_marker_start: 'The marker', an_dg_marker: 'the marker',
+                an_dg_level_low: 'low', an_dg_level_moderate: 'moderate', an_dg_level_high: 'high', an_dg_level_very_high: 'very high',
+                an_dg_v_nn_all: '<b>{marker} identifies every record by its nearest sequence ({k} of {n}).</b>',
+                an_dg_v_nn_most: '<b>{marker} identifies nearly every record by its nearest sequence ({p}, {k} of {n}).</b>',
+                an_dg_v_nn: '<b>{marker} identifies only {p} of the records by their nearest sequence ({k} of {n}).</b>',
+                an_dg_v_tie: '{k} are identical or as close to another species',
+                an_dg_v_tie_1: '1 is identical or as close to another species',
+                an_dg_v_wrong: '{k} are closer to another species',
+                an_dg_v_wrong_1: '1 is closer to another species',
+                an_dg_v_trouble: ' The trouble lies with {list}, which share sequences.',
+                an_dg_v_trouble_1: ' The trouble lies with {list}.',
+                an_dg_v_overlap: ' Even so, {k} of the {n} species have no barcode gap: they touch at the extremes, so a fixed distance threshold wouldn\'t tell them apart.',
+                an_dg_v_overlap_all: ' Even so, none of the {n} species has a barcode gap: they touch at the extremes, so a fixed distance threshold wouldn\'t tell them apart.',
+                an_dg_v_good: ' {list} stand well apart.',
+                an_dg_v_good_1: ' {list} stands well apart.',
+                an_dg_v_gap: '<b>{k} of the {n} species have a barcode gap.</b>',
+                an_dg_v_none: '<b>There are no species to compare:</b> the barcode gap and the nearest neighbour need at least two named species and two sequences of one of them.',
+                an_dg_v_one_split: '<b>Variation within {sp} is {level} (median between pairs {m}) and splits into {k} lineages</b> between {a} and {b} from the largest, when within a species it is usually under {lim}.',
+                an_dg_v_one_cryptic: ' It is the pattern of a complex of cryptic species or of isolated populations.',
+                an_dg_v_one_close: ' They are little apart: they may be populations of a single species.',
+                an_dg_v_one_all: '<b>All sequences of {sp} form a single lineage,</b> with {level} variation (median between pairs {m}; at most {x}).',
+                an_dg_v_one_main_most: '<b>Nearly all sequences of {sp} ({p}, {k} of {n}) form a single lineage,</b> with {level} variation (median between pairs {m}).',
+                an_dg_v_one_main: '<b>{p} of the sequences of {sp} ({k} of {n}) form a single lineage,</b> with {level} variation (median between pairs {m}).',
+                an_dg_v_one_rest: ' The other {k} stand apart (see below).',
+                an_dg_v_one_rest_1: ' The other one stands apart (see below).',
+                an_dg_v_one_none: '<b>The {n} sequences of {sp} form no lineage:</b> none is within {lim} of two others.',
+                an_dg_how: '<b>How to read it.</b> Each sequence is compared with the most similar of the rest, its [nn]: if that one is of its own species, the barcode would identify it. The [h_gap] asks more: the nearest sequence of another species must be farther than the two most different of its own ([max_intra]). A single misidentified record leaves a species without a gap, which is why the reading also looks at each sequence\'s neighbour.',
+                an_dg_how_one: '<b>How to read it.</b> With a single species there is no [h_gap] to measure: the reading looks at how much its sequences vary and whether they form separate groups (lineages: sequences chained less than 2 % apart).',
+                an_dg_nogap: '<b>No barcode gap: {k} of the {n} species.</b>',
+                an_dg_nogap_1: '<b>No barcode gap.</b>',
+                an_dg_nogap_all: '<b>No barcode gap: all {n} species.</b>',
+                an_dg_ng_shared: '{sp}: {k} of its {n} sequences have one of {with} as close or closer.',
+                an_dg_ng_shared_1: '{sp}: 1 of its {n} sequences has one of {with} as close or closer.',
+                an_dg_ng_stretch: ' Its [max_intra] of {m} also comes from {k} isolated records (see below).',
+                an_dg_ng_stretch_1: ' Its [max_intra] of {m} also comes from one isolated record (see below).',
+                an_dg_ng_isolated: '{sp}: it would have a barcode gap without its {k} isolated records (see below). Its nearest neighbour, {nsp}, is {d} away, and the rest of the species at most {c}.',
+                an_dg_ng_isolated_1: '{sp}: it would have a barcode gap without one isolated record (see below). Its nearest neighbour, {nsp}, is {d} away, and the rest of the species at most {c}.',
+                an_dg_ng_overlap: '{sp}: each sequence has one of its own species nearest, but its [max_intra] ({m}) exceeds the distance to {nsp} ({d}).',
+                an_dg_ng_provisional: '{list} are provisional names: it is no surprise they don\'t stand apart from the named species, and they don\'t count for the nearest neighbour.',
+                an_dg_ng_provisional_1: '{list} is a provisional name: it is no surprise it doesn\'t stand apart from the named species, and it doesn\'t count for the nearest neighbour.',
+                an_dg_ng_more: 'and {n} more',
+                an_dg_ng_why: ' Sharing sequences may come from hybridization, very recent species or misidentified records.',
+                an_dg_ng_same_bin: ' In "{conc}", {a} and {b} also share BIN {bin}.',
+                an_dg_gap: '<b>With a barcode gap</b>: {list}.',
+                an_dg_gap_item: '{sp} (its nearest neighbour, {nsp}, is {d} away, and its sequences differ by at most {m})',
+                an_dg_gap_item_narrow: '{sp} ({d} against {m}, a narrow margin)',
+                an_dg_gap_many: '<b>With a barcode gap: {k} of the {n} species</b>, among them {list}.',
+                an_dg_lineages: '<b>Lineages within a species</b> (sequences chained less than {lim} apart):',
+                an_dg_lineages_one: '<b>Lineages</b> (sequences chained less than {lim} apart; with their distance to the largest):',
+                an_dg_lin_species: '{sp}, {k} lineages: {list}.',
+                an_dg_lin_apart: '{n} at {d}{where}',
+                an_dg_lin_cryptic: ' Lineages this far apart point to cryptic species or isolated populations; compare their BINs and countries.',
+                an_dg_lin_close: ' They are little apart: they may be populations or geographic races of a single species.',
+                an_dg_far: '<b>{k} lineages more than {far} from the rest of their species</b>, more than congeneric species usually differ: {list}. Check that they are correctly identified.',
+                an_dg_far_1: '<b>One lineage more than {far} from the rest of its species</b>, more than congeneric species usually differ: {list}. Check that it is correctly identified.',
+                an_dg_far_item: '{n} sequences of {sp}{where}, at {d}',
+                an_dg_far_item_one: '{n} sequences{where}, {d} from the largest lineage',
+                an_dg_iso: '<b>Isolated records</b> ({k}): more than {lim} from every other record of their species. {list}.',
+                an_dg_iso_1: '<b>One isolated record</b>, more than {lim} from every other record of its species: {list}.',
+                an_dg_iso_item: '{id} ({sp}, at {d})',
+                an_dg_iso_item_one: '{id} (at {d}{where})',
+                an_dg_iso_far: ' Beyond {far} it is no longer variation within a species: a misidentification, contamination or a faulty sequence is more likely.',
+                an_dg_iso_near: ' They may be rare variants or lineages with very few records.',
+                an_dg_iso_near_1: ' It may be a rare variant or a lineage with very few records.',
+                an_dg_check: 'The [h_check] above flags: {list}.',
+                an_dg_ratio: 'In the [h_summary], the mean distance between species of a genus ({g}) is {r} times the mean within species ({s}).',
+                an_dg_ratio_ok: ' That is above the 10 times usually asked for the barcode to tell species apart well.',
+                an_dg_ratio_low: ' A common rule of thumb asks for at least 10 times for the barcode to tell species apart well.',
+                an_dg_singles: '{k} species have a single sequence: their variation and barcode gap can\'t be measured.',
+                an_dg_singles_1: '1 species has a single sequence: its variation and barcode gap can\'t be measured.',
+                an_dg_unnamed: '{k} records without a species or with a provisional name (sp., PS1…) don\'t count for the nearest neighbour.',
+                an_dg_unnamed_1: '1 record without a species or with a provisional name (sp., PS1…) doesn\'t count for the nearest neighbour.',
+                an_dg_relatives: 'To know whether {marker} tells {sp} apart from its relatives, add close species to the analysis (for instance, search the whole genus).',
+                an_dg_groups: 'The sequences form {k} groups that can\'t be aligned with each other (see above): there are no distances between groups, and each species is compared only within its own.',
+                an_dg_noncoding: 'With a non-coding marker the alignment against the reference is rougher and the distances less reliable.',
+                an_dg_subsampled: 'At most {k} sequences per species were analysed: this reading\'s counts are of that subsample.',
+                an_dg_few: '<b>There are few sequences ({n}).</b> With this little data, distances and lineages change easily.',
+                an_dg_next_head: '<b>What to do next:</b> ',
+                an_dg_next_check: 'check the flagged records (identification, photos, who made it) and, if you confirm the error, leave them out and run the analysis again.',
+                an_dg_next_shared: 'for {list}, see whether they form separate groups in "{tree}" and "{motu}": if not, {marker} isn\'t enough to tell them apart and another marker or morphological characters will be needed.',
+                an_dg_next_shared_1: 'for {list}, see whether it forms a group of its own in "{tree}" and "{motu}": if not, {marker} isn\'t enough to tell it apart and another marker or morphological characters will be needed.',
+                an_dg_next_lineages: 'check in "{motu}" whether the delimitation proposes the same lineages and look at the "{tree}" coloured by country; if lineages, BINs and countries agree, compare with the group\'s literature before speaking of different species.',
+                an_dg_next_lineages_also: 'for the lineages, check too whether the delimitation proposes the same groups and whether they match the BINs and countries before speaking of different species.',
+                an_dg_next_overlap_short: 'to identify, compare with the nearest sequence rather than with a distance threshold.',
+                an_dg_next_overlap: 'to identify, compare with the nearest sequence rather than with a distance threshold; see in "{tree}" whether each species forms its own group and in "{motu}" whether the delimitation tells them apart.',
+                an_dg_next_ok: 'see in "{tree}" whether each species forms its own group.',
+                an_dg_next_none: 'to measure the barcode gap, analyse sequences of several named species (for instance, search the whole genus); meanwhile, look at the "{tree}".',
+                an_dg_foot: 'Distances depend on which sequences go into the analysis: if a close species is missing, another may look well apart without being so. The 2 % for lineages and the 10-times rule are indicative and vary between groups, and the alignment against a reference sequence is approximate.',
                 an_cg_foot: 'BOLD computes BINs with a fixed distance threshold; they aren\'t species. A split species or a shared BIN may be real (cryptic species, hybridization) or come from misidentifications, and the BINs in your database may have changed in BOLD since they were downloaded.',
                 an_g_export_pdf: 'Open the print dialog to save the reading as a PDF',
                 an_g_export_txt: 'Download the reading as text (.txt)',
@@ -8145,6 +8327,7 @@
 					return span;
 				} },
 			], rows.slice(0, AN_TABLE_ROWS)));
+			anRenderDistGuide(res, d);
 		}
 
 		// Records closer to another species than to their own: likely
@@ -8481,6 +8664,9 @@
 			haps: 'an_c_haps', singletons: 'an_c_singletons', hd_col: 'an_c_hd', excluded: 'an_c_excluded', net: 'an_net_btn',
 			// The species & BINs view's figures
 			bin_c: 'an_c_bin', t_concordant: 'an_t_concordant', t_split_bins: 'an_t_split_bins', t_shared: 'an_t_shared',
+			// The distances view's headings, tiles and columns
+			nn: 'an_c_nn', max_intra: 'an_c_max_intra', h_gap: 'an_h_gap', h_check: 'an_h_check', h_summary: 'an_h_summary',
+			t_suspects: 'an_t_suspects', t_renamed: 'an_t_renamed', t_congeneric: 'an_t_congeneric',
 		};
 		const AN_GUIDE_CLOSED = 'boldAnGuideClosed';
 		// Difference between named species above which COI usually tells
@@ -9424,6 +9610,253 @@ li li { display: list-item; margin: 0; }
 					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
 				file: t('an_cg_file'),
 				stem: `${anFileStem()}_${t('an_cg_file')}`,
+			});
+		}
+
+		// ── Reading guide of the distances ──
+		// The server works out the facts (seq_distance.distance_guide): the
+		// nearest neighbour of each sequence, why each species lacks a barcode
+		// gap, lineages within species and isolated records. The page words them.
+
+		// Median distance within a species above which its variation is
+		// moderate, high and very high
+		const AN_DG_LEVELS = [0.01, 0.02, 0.04];
+		// A barcode gap narrower than this is narrow
+		const AN_DG_NARROW = 0.01;
+		// Lineages farther apart than this are well apart
+		const AN_DG_APART = 0.03;
+		// Times the congeneric mean distance should exceed the within-species
+		// mean (Hebert et al. 2004)
+		const AN_DG_RATIO = 10;
+		// Nearest-neighbour success above which COI "identifies nearly all"
+		const AN_DG_MOST = 0.95;
+
+		function anRenderDistGuide(body, d) {
+			const G = d.guide;
+			if (!G) return;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const pct = x => anPctOf(x, 1);
+			// Just past the lineage threshold, "2.0 %" would read as not past it
+			const pctNear = x => x < 0.03 ? anPctOf(x, 2) : pct(x);
+			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
+			const one = (k, key, vars = {}) => anGuideText(k === 1 ? key + '_1' : key, { k: num(k), ...vars });
+			const tab = key => escapeHtml(t(key));
+			const lim = anPctOf(G.lineage, 0), far = anPctOf(G.far, 0);
+			// The marker, at the start of a sentence and inside one
+			const Mk = d.marker ? escapeHtml(d.marker) : t('an_dg_marker_start'), mk = d.marker ? escapeHtml(d.marker) : t('an_dg_marker');
+			const P = G.species_n === 1 ? G.one : null;
+			// Names in reading order: the genus cut to its initial once named
+			let genus = '';
+			const name = sp => {
+				const html = anGuideShort(sp, genus);
+				genus = genus || (sp || '').split(' ')[0];
+				return html;
+			};
+			// "Ecuador, Peru; BOLD:AAA6224"
+			const where = l => {
+				const parts = [];
+				if (l.countries.length) parts.push(escapeHtml(l.countries.map(c => c[0]).join(', ')));
+				if (l.bins.length) parts.push(escapeHtml(l.bins.map(b => b[0]).join(', ')));
+				return parts.length ? ` (${parts.join('; ')})` : '';
+			};
+			const lineage = (l, k) => k && l.apart !== null
+				? anGuideText('an_dg_lin_apart', { n: num(l.n), d: pct(l.apart), where: where(l) })
+				: num(l.n) + where(l);
+			// Lineages close enough to be of the species, and those too far
+			const near = p => p.lineages.filter(l => l.apart === null || l.apart <= G.far);
+			const farLins = [];
+			(P ? [P] : G.split).forEach(p => p.lineages.forEach(l => {
+				if (l.apart !== null && l.apart > G.far) farLins.push({ sp: p.species, l });
+			}));
+			const level = m => t('an_dg_level_' + (m < AN_DG_LEVELS[0] ? 'low' : m < AN_DG_LEVELS[1] ? 'moderate'
+				: m < AN_DG_LEVELS[2] ? 'high' : 'very_high'));
+			const shared = G.nogap.filter(e => e.cause === 'shared');
+
+			// Verdict
+			let verdict;
+			const nnN = G.nn_ok + G.nn_tie + G.nn_wrong;
+			if (P) {
+				const lins = near(P), main = lins[0];
+				const v = { sp: name(P.species), n: num(P.n), m: pct(P.median), level: level(P.median), lim };
+				if (lins.length > 1 && main.n / P.n < 0.9 && lins.slice(1).some(l => l.apart !== null)) {
+					const ds = lins.slice(1).map(l => l.apart).filter(x => x !== null);
+					verdict = anGuideText('an_dg_v_one_split', { ...v, k: num(lins.length),
+						a: pct(Math.min(...ds)), b: pct(Math.max(...ds)) });
+					verdict += anGuideText(Math.max(...ds) >= AN_DG_APART ? 'an_dg_v_one_cryptic' : 'an_dg_v_one_close');
+				} else if (main && main.n === P.n) {
+					verdict = anGuideText('an_dg_v_one_all', { ...v, x: pct(P.max) });
+				} else if (main) {
+					verdict = anGuideText(main.n / P.n >= 0.9 ? 'an_dg_v_one_main_most' : 'an_dg_v_one_main',
+						{ ...v, k: num(main.n), p: anPct(main.n, P.n) });
+					verdict += one(P.n - main.n, 'an_dg_v_one_rest');
+				} else {
+					verdict = anGuideText('an_dg_v_one_none', v);
+				}
+			} else if (nnN) {
+				const v = { n: num(nnN), k: num(G.nn_ok), p: anPct(G.nn_ok, nnN), marker: Mk };
+				verdict = anGuideText(G.nn_ok === nnN ? 'an_dg_v_nn_all' : G.nn_ok / nnN >= AN_DG_MOST ? 'an_dg_v_nn_most' : 'an_dg_v_nn', v);
+				const parts = [];
+				if (G.nn_tie) parts.push(one(G.nn_tie, 'an_dg_v_tie'));
+				if (G.nn_wrong) parts.push(one(G.nn_wrong, 'an_dg_v_wrong'));
+				if (parts.length) verdict += ' ' + anGuideJoin(parts, ', ') + '.';
+				if (shared.length) {
+					const top = shared.slice(0, 3).map(e => name(e.species));
+					verdict += anGuideText(top.length === 1 ? 'an_dg_v_trouble_1' : 'an_dg_v_trouble', { list: anGuideJoin(top, ', ') });
+				} else if (G.nogap_n) {
+					verdict += anGuideText(G.nogap_n === G.tested ? 'an_dg_v_overlap_all' : 'an_dg_v_overlap',
+						{ k: num(G.nogap_n), n: num(G.tested) });
+				}
+				if (shared.length && G.gap_n && G.gap_n <= 3) {
+					verdict += anGuideText(G.gap_n === 1 ? 'an_dg_v_good_1' : 'an_dg_v_good',
+						{ list: anGuideJoin(G.gap.map(e => name(e.species)), ', ') });
+				}
+			} else if (G.tested) {
+				verdict = anGuideText('an_dg_v_gap', { k: num(G.gap_n), n: num(G.tested) });
+			} else {
+				verdict = anGuideText('an_dg_v_none');
+			}
+
+			add('info', anGuideText(P ? 'an_dg_how_one' : 'an_dg_how'));
+
+			// Barcode gap: the species without one, and why
+			if (!P && G.nogap_n) {
+				const lis = [], prov = [];
+				G.nogap.forEach(e => {
+					const v = { sp: name(e.species), n: num(e.n), m: pct(e.max_intra), d: pct(e.nn), nsp: name(e.nn_species) };
+					if (e.cause === 'provisional') { prov.push(e.species); return; }
+					let text;
+					if (e.cause === 'shared') {
+						const others = e.nn_with.map(([sp, k]) => `${name(sp)} (${num(k)})`);
+						const k = e.nn_tie + e.nn_wrong;
+						text = anGuideText(k === 1 ? 'an_dg_ng_shared_1' : 'an_dg_ng_shared', { ...v, k: num(k),
+							with: e.nn_with.length === 1 ? name(e.nn_with[0][0]) : anGuideJoin(others, ', ') });
+						if (e.isolated_n && e.core_max !== null && e.max_intra > e.core_max) {
+							text += one(e.isolated_n, 'an_dg_ng_stretch', { m: pct(e.max_intra) });
+						}
+					} else if (e.cause === 'isolated') {
+						text = one(e.isolated_n, 'an_dg_ng_isolated', { ...v, c: pct(e.core_max) });
+					} else {
+						text = anGuideText('an_dg_ng_overlap', v);
+					}
+					lis.push(`<li>${text}</li>`);
+				});
+				if (prov.length) {
+					const list = anGuideJoin(prov.map(sp => name(sp)), ', ');
+					lis.push(`<li>${anGuideText(prov.length === 1 ? 'an_dg_ng_provisional_1' : 'an_dg_ng_provisional', { list })}</li>`);
+				}
+				if (G.nogap_n > G.nogap.length) lis.push(`<li>${anGuideText('an_dg_ng_more', { n: num(G.nogap_n - G.nogap.length) })}</li>`);
+				let text = anGuideText(G.tested === 1 ? 'an_dg_nogap_1' : G.nogap_n === G.tested ? 'an_dg_nogap_all' : 'an_dg_nogap', { k: num(G.nogap_n), n: num(G.tested) })
+					+ `<ul class="an-guide-list">${lis.join('')}</ul>`;
+				if (shared.length) {
+					text += anGuideText('an_dg_ng_why');
+					// Two of them that also share their commonest BIN
+					const pair = shared.map(e => [e, e.nn_with.find(([sp]) => G.partner_bins[sp] && G.partner_bins[sp] === e.bin)])
+						.find(([, w]) => w);
+					if (pair) text += anGuideText('an_dg_ng_same_bin', { a: name(pair[0].species), b: name(pair[1][0]),
+						bin: escapeHtml(pair[0].bin), conc: tab('an_v_concordance') });
+				}
+				add(shared.length ? 'warn' : 'info', text);
+			}
+			if (!P && G.gap_n) {
+				if (G.gap_n <= 3) {
+					const list = G.gap.map(e => anGuideText(e.nn - e.max_intra < AN_DG_NARROW ? 'an_dg_gap_item_narrow' : 'an_dg_gap_item',
+						{ sp: name(e.species), nsp: name(e.nn_species), d: pct(e.nn), m: pct(e.max_intra) }));
+					add('ok', anGuideText('an_dg_gap', { list: anGuideJoin(list) }));
+				} else {
+					add('ok', anGuideText('an_dg_gap_many', { k: num(G.gap_n), n: num(G.tested),
+						list: anGuideJoin(G.gap.slice(0, 5).map(e => name(e.species)), ', ') + anGuideMore(Math.min(5, G.gap.length), G.gap_n) }));
+				}
+			}
+
+			// Lineages within species
+			if (P) {
+				const lins = near(P);
+				if (lins.length > 1) {
+					const ds = lins.slice(1).map(l => l.apart).filter(x => x !== null);
+					const lis = lins.map((l, k) => `<li>${lineage(l, k)}</li>`).join('');
+					add('info', anGuideText('an_dg_lineages_one', { lim }) + `<ul class="an-guide-list">${lis}</ul>`
+						+ anGuideText(Math.max(...ds) >= AN_DG_APART ? 'an_dg_lin_cryptic' : 'an_dg_lin_close'));
+				}
+			} else {
+				const split = G.split.filter(p => near(p).length > 1);
+				if (split.length) {
+					let apartAll = 0;
+					const lis = split.slice(0, 4).map(p => {
+						const lins = near(p);
+						lins.forEach(l => { if (l.apart !== null) apartAll = Math.max(apartAll, l.apart); });
+						const list = anGuideJoin(lins.map((l, k) => lineage(l, k)), ', ');
+						return `<li>${anGuideText('an_dg_lin_species', { sp: name(p.species), k: num(lins.length), list })}</li>`;
+					});
+					if (split.length > 4) lis.push(`<li>${anGuideText('an_dg_ng_more', { n: num(split.length - 4) })}</li>`);
+					add('info', anGuideText('an_dg_lineages', { lim }) + `<ul class="an-guide-list">${lis.join('')}</ul>`
+						+ anGuideText(apartAll >= AN_DG_APART ? 'an_dg_lin_cryptic' : 'an_dg_lin_close'));
+				}
+			}
+			if (farLins.length) {
+				const lis = farLins.slice(0, 4).map(({ sp, l }) => anGuideText(P ? 'an_dg_far_item_one' : 'an_dg_far_item',
+					{ sp: name(sp), n: num(l.n), where: where(l), d: pct(l.apart) }));
+				add('warn', anGuideText(farLins.length === 1 ? 'an_dg_far_1' : 'an_dg_far', { k: num(farLins.length), far,
+					list: anGuideJoin(lis) + anGuideMore(Math.min(4, farLins.length), farLins.length) }));
+			}
+
+			// Isolated records
+			if (G.isolated_n) {
+				const shown = G.isolated.slice(0, 5);
+				const list = shown.map(x => anGuideText(P ? 'an_dg_iso_item_one' : 'an_dg_iso_item', {
+					id: mono(x.id), sp: name(x.species), d: pctNear(x.d),
+					where: [x.country, x.bin].filter(Boolean).map(w => '; ' + escapeHtml(w)).join('') }));
+				add(G.isolated_far ? 'warn' : 'info', one(G.isolated_n, 'an_dg_iso', { lim,
+					list: anGuideJoin(list, ', ') + anGuideMore(shown.length, G.isolated_n) })
+					+ anGuideText(G.isolated_far ? 'an_dg_iso_far' : G.isolated_n === 1 ? 'an_dg_iso_near_1' : 'an_dg_iso_near', { far }));
+			}
+
+			// The identification check, the means and what is left out
+			const c = d.check;
+			if (c && (c.suspects.length || c.shared.length)) {
+				const parts = [];
+				const kinds = [['t_suspects', c.suspects.length], ['t_renamed', c.shared.filter(p => p.kind === 'renamed').length],
+							   ['t_congeneric', c.shared.filter(p => p.kind === 'congeneric').length]];
+				kinds.forEach(([term, k]) => { if (k) parts.push(`[${term}] ${num(k)}`); });
+				add('info', anGuideText('an_dg_check', { list: parts.join('; ') }).replace(/\[(\w+)\]/g,
+					(m, k) => `<span class="an-term">${escapeHtml(t(AN_GUIDE_TERMS[k]))}</span>`));
+			}
+			const lv = Object.fromEntries(d.summary.map(s => [s.level, s]));
+			if (!P && lv.species && lv.genus && lv.species.mean && lv.genus.mean) {
+				const r = lv.genus.mean / lv.species.mean;
+				add('info', anGuideText('an_dg_ratio', { g: anPctOf(lv.genus.mean), s: anPctOf(lv.species.mean),
+					r: r >= 10 ? Math.round(r).toLocaleString('en-US') : r.toFixed(1) })
+					+ anGuideText(r >= AN_DG_RATIO ? 'an_dg_ratio_ok' : 'an_dg_ratio_low'));
+			}
+			if (!P && G.singles) add('info', one(G.singles, 'an_dg_singles'));
+			if (G.unnamed) add('info', one(G.unnamed, 'an_dg_unnamed'));
+			if (P) add('info', anGuideText('an_dg_relatives', { sp: name(P.species), marker: mk }));
+			if (d.groups.length > 1) add('warn', anGuideText('an_dg_groups', { k: num(d.groups.length) }));
+			if (!d.coding) add('warn', anGuideText('an_dg_noncoding'));
+			if (d.subsampled) add('warn', anGuideText('an_dg_subsampled', { k: num(d.subsampled) }));
+			if (G.n < 10) add('warn', anGuideText('an_dg_few', { n: num(G.n) }));
+
+			// What to do next
+			const tree = tab('an_v_tree'), motu = tab('an_v_delimit');
+			const steps = [];
+			if (G.isolated_n || farLins.length || (c && c.suspects.length)) steps.push(anGuideText('an_dg_next_check'));
+			if (shared.length) steps.push(anGuideText(shared.length === 1 ? 'an_dg_next_shared_1' : 'an_dg_next_shared', { tree, motu, marker: mk,
+				list: anGuideJoin(shared.slice(0, 3).map(e => anGuideShort(e.species, genus)), ', ') }));
+			const lineages = (P && near(P).length > 1) || (!P && G.split.some(p => near(p).length > 1));
+			if (lineages) steps.push(anGuideText(shared.length ? 'an_dg_next_lineages_also' : 'an_dg_next_lineages', { tree, motu }));
+			if (!P && !shared.length && G.nogap.some(e => e.cause === 'overlap')) {
+				steps.push(anGuideText(lineages ? 'an_dg_next_overlap_short' : 'an_dg_next_overlap', { tree, motu }));
+			}
+			if (!steps.length) steps.push(anGuideText(G.tested ? 'an_dg_next_ok' : 'an_dg_next_none', { tree }));
+			// Each step a sentence: the first follows the heading in lower case
+			const next = anGuideText('an_dg_next_head') + steps.map((s, i) => i ? s.charAt(0).toUpperCase() + s.slice(1) : s).join(' ');
+			anGuideSection(body, {
+				title: t('an_dg_title'), sub: t('an_dg_sub'), verdict, items, action: null, next, nextFile: next,
+				foot: t('an_dg_foot'),
+				context: [t('an_g_meta', { marker: d.marker || '—', n: num(d.analysed), model: t('an_model_' + d.model),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_dg_file'),
 			});
 		}
 

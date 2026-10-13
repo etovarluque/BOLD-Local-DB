@@ -7,6 +7,13 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 
 ## [Unreleased]
 
+### Pending
+- Diversity: taxonomic distinctness (Δ⁺) and its variation (Λ⁺) per zone,
+  with the significance funnel against the analysis' units (Clarke &
+  Warwick), a reading rule that skips it when all units share a genus, and
+  Jaccard next to Sørensen in the pairs table. Shown in the mockup, left
+  out of the first version of the tab.
+
 ### Added
 - Sequence analysis › Diversity, a fifth tab that counts each sequence's
   unit (BIN, or species name) in its zone (country, province or state,

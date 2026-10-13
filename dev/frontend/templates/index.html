@@ -1370,6 +1370,15 @@
 		.an-subviews button:hover { color: var(--ink); }
 		.an-subviews button.active { border-color: var(--ink); background: var(--ink); color: #fff; }
 		.an-subviews button:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+		/* Views the data can't fill: struck through but clickable; a dot when some sections are hidden */
+		.an-views button.off, .an-subviews button.off { opacity: .55; text-decoration: line-through; }
+		.an-views button.off.active, .an-subviews button.off.active { opacity: 1; text-decoration: none; }
+		.an-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+		.an-subviews button { display: inline-flex; align-items: center; gap: 6px; }
+		.an-off { max-width: 70ch; padding: 20px; border: 1px dashed #c9cfd9; border-radius: 10px; }
+		.an-off-t { margin-bottom: 6px; font-weight: 600; }
+		.an-off p { margin: 0 0 6px; color: var(--mute); font-size: .9rem; }
+		.an-hidden { padding: 8px 12px; border: 1px dashed #c9cfd9; border-radius: 8px; color: var(--mute); font-size: .84rem; }
 		.an-h { margin: 1.25rem 0 .5rem; font-weight: 600; font-size: .95rem; }
 		.an-h:first-child { margin-top: 0; }
 		.an-muted { color: var(--mute); font-size: .85rem; }
@@ -2463,6 +2472,24 @@
                 an_v_quality: 'Calidad',
                 an_v_haplotypes: 'Haplotipos',
                 an_v_hap_table: 'Tabla',
+                an_st_partial_tab: 'Con estos datos, alguna sección de esta pestaña queda oculta',
+                an_st_hap_nosp: 'Ninguna secuencia trae nombre de especie: todas se cuentan en un solo grupo, y su diversidad mezcla especies distintas.',
+                an_st_net_nocountry: 'Ninguna secuencia trae país: la red no se puede colorear por país.',
+                an_st_net_nocountry_bin: 'Ninguna secuencia trae país ni BIN: la red no se puede colorear por país ni por BIN.',
+                an_st_conc_t: '«Especies y BINs» necesita el nombre de especie y el BIN de cada secuencia.',
+                an_st_conc_none: 'Ninguna secuencia trae nombre de especie ni BIN, así que no hay nada que comparar.',
+                an_st_conc_nosp: 'Ninguna secuencia trae nombre de especie: los BIN no se pueden comparar con los nombres.',
+                an_st_conc_nobin: 'Ninguna secuencia trae BIN: los nombres no se pueden comparar con los BIN.',
+                an_st_conc_apart: 'Ninguna secuencia trae a la vez nombre de especie y BIN.',
+                an_st_how_fasta: 'Si las secuencias están en BOLD, búscalas en el visor y analiza desde la búsqueda o desde la selección: así llegan el nombre, el BIN y el país de cada registro.',
+                an_st_dist_nosp: 'Sin nombres de especie se ocultan el barcode gap y la revisión de identificaciones; el resumen y el histograma de distancias siguen disponibles.',
+                an_st_tree_nosp: 'Ninguna secuencia trae nombre de especie: el árbol no se puede colorear por especie.',
+                an_st_tree_nocountry: 'Ninguna secuencia trae país: el árbol no se puede colorear por país.',
+                an_st_tree_none: 'Ninguna secuencia trae nombre de especie ni país: el árbol no se puede colorear por especie ni por país.',
+                an_st_motu_nosp: 'Sin nombres de especie se oculta la tabla «Especies frente a MOTU»; la delimitación no usa nombres y la descarga de MOTU sigue disponible.',
+                an_hg_prov_noconc: '{list} son nombres provisionales: se cuentan aparte de {base}, aunque podrían ser la misma especie o no. «{tree}» ayuda a decidirlo.',
+                an_hg_prov_1_noconc: '{list} es un nombre provisional: se cuenta aparte de {base}, aunque podría ser la misma especie o no. «{tree}» ayuda a decidirlo.',
+                an_hg_next_unnamed_noconc: '<b>Qué hacer ahora:</b> para estudiar las secuencias sin nombre, busca cada BIN por separado y repite el análisis, o asígnales nombre.',
                 an_v_concordance: 'Especies y BINs',
                 an_h_length: 'Distribución de longitudes',
                 an_hist_x: 'Longitud (pb)',
@@ -3544,6 +3571,24 @@
                 an_v_quality: 'Quality',
                 an_v_haplotypes: 'Haplotypes',
                 an_v_hap_table: 'Table',
+                an_st_partial_tab: 'With these data, some section of this tab is hidden',
+                an_st_hap_nosp: 'No sequence has a species name: all are counted as one group, and its diversity mixes different species.',
+                an_st_net_nocountry: 'No sequence has a country: the network can\'t be coloured by country.',
+                an_st_net_nocountry_bin: 'No sequence has a country or a BIN: the network can\'t be coloured by country or by BIN.',
+                an_st_conc_t: '"Species and BINs" needs the species name and the BIN of each sequence.',
+                an_st_conc_none: 'No sequence has a species name or a BIN, so there is nothing to compare.',
+                an_st_conc_nosp: 'No sequence has a species name: the BINs can\'t be compared with the names.',
+                an_st_conc_nobin: 'No sequence has a BIN: the names can\'t be compared with the BINs.',
+                an_st_conc_apart: 'No sequence has both a species name and a BIN.',
+                an_st_how_fasta: 'If the sequences are in BOLD, look them up in the viewer and analyse from the search or the selection: then each record brings its name, BIN and country.',
+                an_st_dist_nosp: 'Without species names the barcode gap and the identification check are hidden; the distance summary and histogram are still there.',
+                an_st_tree_nosp: 'No sequence has a species name: the tree can\'t be coloured by species.',
+                an_st_tree_nocountry: 'No sequence has a country: the tree can\'t be coloured by country.',
+                an_st_tree_none: 'No sequence has a species name or a country: the tree can\'t be coloured by species or by country.',
+                an_st_motu_nosp: 'Without species names the "Species against MOTUs" table is hidden; the delimitation doesn\'t use names and the MOTU download is still there.',
+                an_hg_prov_noconc: '{list} are provisional names: they are counted apart from {base}, though they may or may not be the same species. "{tree}" helps to decide.',
+                an_hg_prov_1_noconc: '{list} is a provisional name: it is counted apart from {base}, though it may or may not be the same species. "{tree}" helps to decide.',
+                an_hg_next_unnamed_noconc: '<b>What to do next:</b> to study the unnamed sequences, search each BIN on its own and run the analysis again, or give them names.',
                 an_v_concordance: 'Species and BINs',
                 an_h_length: 'Length distribution',
                 an_hist_x: 'Length (bp)',
@@ -7760,6 +7805,54 @@
 		                         concordance: 'an_v_concordance', distance: 'an_v_distance',
 		                         tree: 'an_v_tree', delimit: 'an_v_delimit' };
 
+		// What a view can show with the data received: ok; partial, with
+		// some sections hidden (why); or off, with nothing to show (what is
+		// missing and how to get it). Decided by the data, not by the source:
+		// a search without names is read like a FASTA without them.
+		function anViewState(view, r = AnState.result) {
+			const f = r && r.fields;
+			if (!f) return { s: 'ok' };
+			const fasta = r.source === 'fasta';
+			const partial = key => ({ s: 'partial', why: t(key) });
+			switch (view) {
+				case 'haplotypes':
+					return f.species ? { s: 'ok' } : partial('an_st_hap_nosp');
+				case 'network':
+					return f.country ? { s: 'ok' } : partial(f.bin ? 'an_st_net_nocountry' : 'an_st_net_nocountry_bin');
+				case 'concordance':
+					if (r.concordance.paired_records) return { s: 'ok' };
+					return { s: 'off', title: t('an_st_conc_t'),
+					         why: t(!f.species && !f.bin ? 'an_st_conc_none' : !f.species ? 'an_st_conc_nosp'
+					                : !f.bin ? 'an_st_conc_nobin' : 'an_st_conc_apart'),
+					         how: fasta ? t('an_st_how_fasta') : null };
+				case 'distance':
+					return f.species ? { s: 'ok' } : partial('an_st_dist_nosp');
+				case 'tree':
+					return f.species && f.country ? { s: 'ok' }
+						: partial(!f.species && !f.country ? 'an_st_tree_none' : !f.species ? 'an_st_tree_nosp' : 'an_st_tree_nocountry');
+				case 'delimit':
+					return f.species ? { s: 'ok' } : partial('an_st_motu_nosp');
+				default:
+					return { s: 'ok' };
+			}
+		}
+
+		// A tab is off when all its views are, partial when any isn't whole
+		function anTabState(tab) {
+			const st = tab.views.map(v => anViewState(v).s);
+			return st.every(x => x === 'off') ? 'off' : st.some(x => x !== 'ok') ? 'partial' : 'ok';
+		}
+
+		const anViewOff = view => anViewState(view).s === 'off';
+
+		// What an off view says instead of its results
+		function anRenderOff(body, st) {
+			const box = anEl('div', 'an-off');
+			box.append(anEl('div', 'an-off-t', st.title), anEl('p', '', st.why));
+			if (st.how) box.append(anEl('p', '', st.how));
+			body.append(box);
+		}
+
 		// Name of a view in its tab, and of that tab
 		const anSubName = view => t(AN_VIEW_LABELS[view]);
 		const anTabName = view => t(anTabOf(view).label);
@@ -8002,7 +8095,7 @@
 				chip('an_marker_field', data.marker || t('an_no_marker')),
 				chip('an_code_field', code.disabled ? '—' : code.options[code.selectedIndex].textContent));
 			document.getElementById('anInputToggle').hidden = false;
-			anFieldsNote(data.fields);
+			anFieldsNote(data.source === 'fasta' ? data.fields : null);
 		}
 
 		// What a FASTA's headers gave (species, BIN, country) and what can't
@@ -8197,7 +8290,10 @@
 					const subs = anEl('div', 'an-subviews');
 					subs.setAttribute('role', 'tablist');
 					tab.views.forEach(v => {
-						const b = anEl('button', v === view ? 'active' : '', t(AN_VIEW_LABELS[v]));
+						const st = anViewState(v).s;
+						const b = anEl('button', [v === view ? 'active' : '', st === 'ok' ? '' : st].filter(Boolean).join(' '),
+						               t(AN_VIEW_LABELS[v]));
+						if (st === 'partial') b.append(anEl('span', 'an-dot'));
 						b.type = 'button';
 						b.setAttribute('role', 'tab');
 						b.setAttribute('aria-selected', v === view);
@@ -8206,16 +8302,25 @@
 					});
 					body.append(subs);
 				}
+				const st = anViewState(view);
+				if (st.s === 'off') return anRenderOff(body, st);
+				if (st.s === 'partial') body.append(anEl('p', 'an-hidden', st.why));
 				renderers[view](body, r);
 			};
 			AnState.showView = show;
 			AN_TABS.forEach(tab => {
-				const b = anEl('button', '', t(tab.label));
+				const state = anTabState(tab);
+				const b = anEl('button', state === 'ok' ? '' : state, t(tab.label));
 				b.type = 'button';
 				b.dataset.tab = tab.id;
 				b.setAttribute('role', 'tab');
 				const badge = badges[tab.id];
-				if (badge && badge[0]) {
+				if (state === 'off') b.title = anViewState(tab.views[0]).title;
+				else if (state === 'partial') {
+					b.append(anEl('span', 'an-dot'));
+					b.title = t('an_st_partial_tab');
+				}
+				if (state !== 'off' && badge && badge[0]) {
 					b.append(anEl('span', 'an-badge' + (badge[1] ? ' warn' : ''), numFmt.format(badge[0])));
 					b.title = t(badge[2], { n: numFmt.format(badge[0]) });
 				}
@@ -9491,7 +9596,7 @@ li li { display: list-item; margin: 0; }
 			const flagged = tab('an_h_flagged');
 			const next = codeWrong ? anGuideText(B ? 'an_qg_next_code' : 'an_qg_next_code_none')
 				: G.stops_n || G.reversed_n || gcOut || invalid
-					? anGuideText(r.fields ? 'an_qg_next_review_fasta' : 'an_qg_next_review', { flagged, tabs })
+					? anGuideText(r.source === 'fasta' ? 'an_qg_next_review_fasta' : 'an_qg_next_review', { flagged, tabs })
 					: anGuideText('an_qg_next_ok', { tabs });
 
 			const action = codeWrong && B ? {
@@ -9637,7 +9742,7 @@ li li { display: list-item; margin: 0; }
 			if (prov.length) {
 				const base = anNetBinomial(prov[0]);
 				const ps = prov.filter(sp => anNetBinomial(sp) === base);
-				add('info', anGuideText(ps.length === 1 ? 'an_hg_prov_1' : 'an_hg_prov',
+				add('info', anGuideText((ps.length === 1 ? 'an_hg_prov_1' : 'an_hg_prov') + (anViewOff('concordance') ? '_noconc' : ''),
 										{ list: anGuideNames(ps, ps.length, base), base: anGuideName(base), conc, tree }));
 			}
 
@@ -9708,7 +9813,7 @@ li li { display: list-item; margin: 0; }
 			const sp = G.largest ? anGuideName(G.largest) : '';
 			let next;
 			if (!N) {
-				next = U && U.n >= G.min_n ? anGuideText(U.bins ? 'an_hg_next_unnamed' : 'an_hg_next_unnamed_nobin', { conc })
+				next = U && U.n >= G.min_n ? anGuideText(!U.bins ? 'an_hg_next_unnamed_nobin' : anViewOff('concordance') ? 'an_hg_next_unnamed_noconc' : 'an_hg_next_unnamed', { conc })
 					: G.largest ? anGuideText('an_hg_next_few', { min, sp }) : anGuideText('an_hg_next_none', { min });
 			} else if (N === 1) {
 				next = anGuideText('an_hg_next_one', { sp }) + (S[0].n > 1000 ? anGuideText('an_hg_next_big') : '');

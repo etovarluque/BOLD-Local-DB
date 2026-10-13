@@ -265,6 +265,13 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   percentage, instead of saying it doesn't move.
 - User guide: what the database update needs (the new package's filtered
   TSV; the previous one isn't needed).
+- User guide: the analysis' five tabs and their views, struck-through views
+  and the orange dot, the warning triangle on readings, the new haplotype
+  columns (π, segregating sites, Tajima's D, countries) and their reading,
+  and two new sections, *Geographic structure* (ΦST, Mantel test and its
+  plot) and *Diversity by zone* (richness, Chao1, coverage, rarefaction,
+  taxonomic distinctness, Sørensen and Jaccard, turnover and nestedness),
+  with their limits. References to the old tab names now point to views.
 
 ## [2.2.1]
 

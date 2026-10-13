@@ -564,6 +564,8 @@
           <li><a href="#an-delimitacion">Delimitación de especies (MOTU)</a></li>
           <li><a href="#an-arbol">Árbol NJ</a></li>
           <li><a href="#an-red">Red de haplotipos</a></li>
+          <li><a href="#an-estructura">Estructura geográfica</a></li>
+          <li><a href="#an-diversidad">Diversidad por zona</a></li>
           <li><a href="#an-descargas">Descargas y límites</a></li>
           <li><a href="#an-ejemplo">Ejemplo completo</a></li>
         </ol>
@@ -712,7 +714,7 @@
           <tr><td><strong>Opción 2 · Crear la base de datos completa</strong></td><td>Pasos 1 a 4: añade la búsqueda por texto libre.</td></tr>
           <tr><td><strong>Opción 3 · Actualizar la base de datos</strong></td><td>Aplica solo lo que cambió en un paquete nuevo de BOLD. Muestra la RAM del equipo y el tamaño de la base para que decidas si conviene (ver <a href="#reanudar">Reanudar y actualizar</a>).</td></tr>
           <tr><td><strong>Estado</strong></td><td>Versión de datos cargada (fecha del paquete) y si cada paso está hecho: <em>1. Preparar datos</em>, <em>2. Base de datos</em> (con el número de registros), <em>3. Búsquedas aceleradas</em> y <em>4. Texto libre</em>.</td></tr>
-          <tr><td><strong>Abrir el visor</strong></td><td>Arranca el visor web y lo abre en el navegador. Solo se habilita cuando hay base de datos.</td></tr>
+          <tr><td><strong>Abrir el visor</strong></td><td>Arranca el visor web y lo abre en el navegador. Solo se habilita, en verde, cuando hay base de datos.</td></tr>
           <tr><td><strong>Manual de uso</strong></td><td>Abre esta guía.</td></tr>
           <tr><td><strong>Descargar datos de BOLD</strong></td><td>Abre en el navegador la página de descarga del paquete público de BOLD.</td></tr>
           <tr><td><strong>Abrir carpeta data/raw</strong></td><td>Abre la carpeta donde debe estar el <code>.tar.gz</code>.</td></tr>
@@ -1588,6 +1590,11 @@
           delimitación de especies con ASAP y ABGD.</li>
       <li><strong>Red de haplotipos</strong> (bajo demanda, de una especie o de todas las secuencias): redes TCS o MSN
           con estadísticos de diversidad.</li>
+      <li><strong>Diversidad dentro de cada especie y estructura geográfica</strong> (en segundo plano, justo después
+          del análisis básico): diversidad nucleotídica y D de Tajima de cada especie, ΦST entre países y aislamiento
+          por distancia.</li>
+      <li><strong>Diversidad por zona</strong> (al abrir su pestaña): riqueza y completitud de cada país, provincia,
+          región o celda de 1°, distinción taxonómica y cuánto se parecen las zonas.</li>
     </ul>
     <div class="callout warn">
       <span class="icon">⚠️</span>
@@ -1663,10 +1670,34 @@
         </tbody>
       </table>
     </div>
-    <p>Los resultados se reparten en pestañas: <strong>Composición y calidad</strong>, <strong>Haplotipos</strong>,
-       <strong>Especies y BINs</strong>, <strong>Distancias</strong> y <strong>Árbol NJ</strong>. Cada una muestra un
-       contador (secuencias con alertas, haplotipos, casos para revisar), en naranja cuando hay algo que conviene
-       mirar.</p>
+    <p>Los resultados se reparten en cinco pestañas, algunas con varias vistas (una segunda fila de botones). Cada
+       pestaña vuelve a la última vista abierta en ella, y algunas muestran un contador (secuencias con alertas,
+       haplotipos, casos para revisar), en naranja cuando hay algo que conviene mirar.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pestaña</th><th>Vistas</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Calidad</strong></td><td><a href="#an-calidad">Composición y calidad</a></td></tr>
+          <tr><td><strong>Haplotipos</strong></td><td><a href="#an-haplotipos">Tabla</a> · <a href="#an-red">Red</a> · <a href="#an-estructura">Estructura geográfica</a></td></tr>
+          <tr><td><strong>Especies y BINs</strong></td><td><a href="#an-concordancia">Especies y BINs</a></td></tr>
+          <tr><td><strong>Distancias y delimitación</strong></td><td><a href="#an-distancias">Distancias</a> · <a href="#an-arbol">Árbol NJ</a> · <a href="#an-delimitacion">MOTU</a>, bajo un único bloque de opciones que se rellena una vez</td></tr>
+          <tr><td><strong>Diversidad</strong></td><td><a href="#an-diversidad">Riqueza y completitud</a> · <a href="#an-diversidad-beta">Entre zonas</a>, bajo las opciones de unidad y zonas</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Las pestañas y vistas muestran lo que permiten los datos recibidos, sea cual sea la fuente (una búsqueda sin
+       nombres se lee como un FASTA sin ellos):</p>
+    <ul class="bullet">
+      <li>Una vista que los datos no pueden llenar aparece <strong>tachada</strong>, pero se abre igual para decir qué
+          falta y cómo conseguirlo (por ejemplo, <em>Diversidad</em> sin país, provincia ni coordenadas).</li>
+      <li>Una vista con alguna sección oculta lleva un <strong>punto naranja</strong> y dice cuál y por qué (sin nombres
+          de especie: el barcode gap, la revisión de identificaciones y la tabla de especies frente a MOTU; sin país: el
+          color por país).</li>
+      <li>Las lecturas nunca remiten a una vista tachada.</li>
+    </ul>
+    <p>Cada lectura <strong>Qué dice…</strong> lleva un <strong>triángulo de aviso</strong> naranja junto al título:
+       al pasar el ratón por encima (o llegar a él con el teclado) recuerda que las lecturas automáticas pueden contener
+       errores o imprecisiones.</p>
 
     <!-- Calidad -->
     <h2 class="sub-title" id="an-calidad">Composición y calidad</h2>
@@ -1751,10 +1782,19 @@
           <tr><td><strong>Haplotipos</strong></td><td>Variantes distintas encontradas</td></tr>
           <tr><td><strong>Únicos</strong></td><td>Haplotipos vistos una sola vez (<em>singletons</em>)</td></tr>
           <tr><td><strong>Hd</strong></td><td>Diversidad haplotípica de Nei: probabilidad de que dos secuencias tomadas al azar de la especie sean distintas. Va de 0 (todas iguales) a 1 (todas distintas). Se calcula como Hd = n/(n−1) · (1 − Σ p<sub>i</sub>²), donde p<sub>i</sub> es la frecuencia de cada haplotipo</td></tr>
+          <tr><td><strong>π (%)</strong></td><td>Diversidad nucleotídica: la proporción media de posiciones que difieren entre dos secuencias de la especie</td></tr>
+          <tr><td><strong>Sitios segregantes</strong></td><td>Posiciones en las que no todas las secuencias de la especie tienen la misma base</td></tr>
+          <tr><td><strong>D de Tajima</strong></td><td>Compara π con los sitios segregantes; lleva <code>*</code> cuando es significativa (p &lt; 0,05; el valor de p aparece al pasar el ratón). Negativa: exceso de variantes raras (expansión o selección purificadora); positiva: exceso de variantes intermedias (linajes mezclados o estructura)</td></tr>
+          <tr><td><strong>Países</strong></td><td>Países de los que proceden las secuencias de la especie</td></tr>
           <tr><td><strong>Excluidas</strong></td><td>Secuencias que no entraron por tener N o ambigüedades</td></tr>
         </tbody>
       </table>
     </div>
+    <p>π, los sitios segregantes, la D de Tajima y los países se calculan <strong>en segundo plano</strong> justo
+       después de los resultados básicos, así que durante unos segundos muestran «…». A diferencia del recuento de
+       haplotipos, cada especie se <strong>alinea</strong> por separado y se compara solo en las posiciones que cubren
+       todas sus secuencias; las especies con más de 300 secuencias usan una muestra al azar de 300. Las secuencias sin
+       nombre y los nombres «Género sp.» a secas pueden mezclar especies, así que no reciben D de Tajima.</p>
     <div class="callout ok">
       <span class="icon">🧪</span>
       <div>
@@ -1783,7 +1823,12 @@
        secuencias iguales recortadas en extremos distintos cuentan como dos: el servidor busca las que coinciden en todo
        el tramo que comparten y da una cifra aproximada); y señala los nombres provisionales, las especies con pocas
        secuencias o con muchas excluidas, y las secuencias sin nombre de especie, que se cuentan juntas y mezclan
-       especies. Un botón abre la red de la especie con más secuencias, y la lectura se descarga aparte con
+       especies. Los nombres que se quedan en el género («Amanita sp.») se listan aparte, porque pueden reunir varias
+       especies. Cuando llegan π y la D de Tajima, añade las especies cuya <strong>diversidad nucleotídica destaca
+       sobre el resto</strong> (posibles linajes ocultos o especies crípticas: compruébalas en las distancias y los MOTU)
+       y las <strong>D de Tajima significativas</strong> (negativa: expansión o selección purificadora, con la salvedad
+       de que juntar países también puede bajarla; positiva: linajes mezclados). Un botón abre la red de la especie con
+       más secuencias, y la lectura se descarga aparte con
        <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> o <strong>⤓ MD</strong>.</p>
     <div class="callout warn">
       <span class="icon">⚠️</span>
@@ -1923,8 +1968,9 @@ Secuencia B:  A C G T C A G C G T ...
 
     <!-- Distancias -->
     <h2 class="sub-title" id="an-distancias">Distancias y barcode gap</h2>
-    <p>Las pestañas <strong>Distancias</strong>, <strong>Especies (MOTU)</strong> y <strong>Árbol NJ</strong> se calculan bajo demanda sobre la misma
-       entrada del análisis básico. Elige las opciones y pulsa <strong>Calcular</strong>:</p>
+    <p>Las vistas <strong>Distancias</strong>, <strong>Árbol NJ</strong> y <strong>MOTU</strong> de la pestaña
+       <strong>Distancias y delimitación</strong> se calculan bajo demanda sobre la misma entrada del análisis básico.
+       Elige las opciones (comunes a las tres vistas) y pulsa <strong>Calcular</strong>:</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Opción</th><th>Valores</th><th>Cuándo usarla</th></tr></thead>
@@ -2060,7 +2106,7 @@ Secuencia B:  A C G T C A G C G T ...
     <!-- Revisión automática -->
     <h2 class="sub-title" id="an-revision">Revisión automática de identificaciones</h2>
     <p>Al calcular las distancias, el visor compara cada registro con la secuencia más parecida de <em>otra</em>
-       especie. El resultado aparece al principio de la pestaña <strong>Distancias</strong>, antes del resumen, en tres
+       especie. El resultado aparece al principio de la vista <strong>Distancias</strong>, antes del resumen, en tres
        listas:</p>
     <div class="table-wrap">
       <table>
@@ -2105,7 +2151,8 @@ Secuencia B:  A C G T C A G C G T ...
     <p>Con <strong>Delimitar especies</strong> marcado, el cálculo de distancias ejecuta además dos métodos de
        delimitación de especies: <strong>ASAP</strong> y <strong>ABGD</strong>. Los dos agrupan las secuencias en
        <strong>MOTU</strong> (unidades taxonómicas operativas moleculares) usando solo las distancias, sin mirar los
-       nombres. La pestaña <strong>Especies (MOTU)</strong> compara esos grupos con las especies y los BINs de los
+       nombres. La vista <strong>MOTU</strong> (pestaña <em>Distancias y delimitación</em>) compara esos grupos con
+       las especies y los BINs de los
        registros. Si hay varios grupos de alineamiento, cada uno se delimita por separado y se elige en
        <em>Delimitación del grupo</em>.</p>
     <div class="table-wrap">
@@ -2132,7 +2179,7 @@ Secuencia B:  A C G T C A G C G T ...
         </tbody>
       </table>
     </div>
-    <p>Con <strong>Ver</strong> eliges la partición que se compara con los nombres; al abrir la pestaña se muestra la
+    <p>Con <strong>Ver</strong> eliges la partición que se compara con los nombres; al abrir la vista se muestra la
        mejor de ASAP. Para cada <strong>especie con nombre</strong> (los nombres provisionales como «sp.», «cf.»,
        «aff.» o con números no cuentan) se indica su estado:</p>
     <div class="table-wrap">
@@ -2273,11 +2320,11 @@ Secuencia B:  A C G T C A G C G T ...
 
     <!-- Red de haplotipos -->
     <h2 class="sub-title" id="an-red">Red de haplotipos</h2>
-    <p>La pestaña <strong>Red de haplotipos</strong> dibuja cómo se relacionan los haplotipos: cada círculo es un
+    <p>La vista <strong>Red</strong> de la pestaña <strong>Haplotipos</strong> dibuja cómo se relacionan los haplotipos: cada círculo es un
        haplotipo, su tamaño es el número de secuencias y cada marca en una línea es una mutación. Se construye bajo
        demanda: elige en <em>Secuencias</em> una especie (o todas las del análisis), el método y pulsa
-       <strong>Construir red</strong>. El botón <strong>Red</strong> de cada fila de la pestaña
-       <a href="#an-haplotipos">Haplotipos</a> la construye directamente para esa especie.</p>
+       <strong>Construir red</strong>. El botón <strong>Red</strong> de cada fila de la vista
+       <a href="#an-haplotipos">Tabla</a> la construye directamente para esa especie (bastan dos secuencias).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Método</th><th>Cómo une los haplotipos</th><th>Cuándo usarlo</th></tr></thead>
@@ -2298,7 +2345,7 @@ Secuencia B:  A C G T C A G C G T ...
     <p>Las secuencias se alinean como para las distancias y se comparan solo en las <strong>posiciones que todas
        tienen completas</strong> (A, C, G o T): así un extremo más corto o una N no crea un haplotipo nuevo. Las que
        cubrirían una región mucho más corta que las demás se excluyen y se avisa. Por eso el número de haplotipos
-       puede no coincidir con el de la pestaña <em>Haplotipos</em>, que no alinea.</p>
+       puede no coincidir con el de la vista <em>Tabla</em>, que no alinea.</p>
     <p>Encima de la red aparecen los estadísticos de diversidad de esas secuencias: <strong>Hd</strong> (diversidad
        haplotípica), <strong>π</strong> (diversidad nucleotídica: proporción media de posiciones distintas entre dos
        secuencias; <em>k</em> es el mismo valor en número de diferencias), los <strong>sitios segregantes</strong> y la
@@ -2354,6 +2401,118 @@ Secuencia B:  A C G T C A G C G T ...
         2.000 secuencias; TCS hasta 300 haplotipos y MSN hasta 600.</div>
     </div>
 
+    <!-- Estructura geográfica -->
+    <h2 class="sub-title" id="an-estructura">Estructura geográfica</h2>
+    <p>La vista <strong>Estructura geográfica</strong> de la pestaña <strong>Haplotipos</strong> pregunta si la
+       variación genética de una especie depende de dónde se recolectó. Se calcula en segundo plano junto con π y la D
+       de Tajima, a partir del mismo alineamiento por especie, y necesita el país o las coordenadas de los registros (el
+       análisis lee las coordenadas como un solo campo o como latitud y longitud separadas). Solo aparece tachada cuando
+       no hay ni dos países ni diez secuencias con coordenadas.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Columna</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Países (secuencias)</strong></td><td>Los países comparados, con sus secuencias. Solo cuentan los países con al menos 5 secuencias de la especie, y la especie necesita dos</td></tr>
+          <tr><td><strong>ΦST</strong> y <strong>p (ΦST)</strong></td><td>La parte de la variación genética que está entre países, según un AMOVA (Excoffier, Smouse y Quattro 1992): 0, ninguna; 1, toda. Desde 0,25 es fuerte y desde 0,05 moderada. El valor de p sale de 999 permutaciones de las secuencias entre países</td></tr>
+          <tr><td><strong>Mantel r</strong> y <strong>p (Mantel)</strong></td><td>Aislamiento por distancia (Mantel 1967): si las secuencias más alejadas en el mapa son también las más distintas. r cerca de 1, mucho; cerca de 0, nada. Necesita al menos 10 secuencias con coordenadas en 3 lugares o más (una muestra de 150 si hay más); funciona también dentro de un solo país</td></tr>
+          <tr><td><strong>Distancia máx. (km)</strong></td><td>La mayor distancia entre dos secuencias de la especie</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Ver</strong> en una fila dibuja su <strong>gráfico de aislamiento por distancia</strong>: cada punto es
+       un par de secuencias, con la distancia geográfica en horizontal y la proporción de diferencias en vertical. Una
+       nube que sube de forma continua es un gradiente; dos nubes separadas indican grupos distintos.</p>
+    <p>Debajo de la tabla, la lectura <strong>Qué dice la estructura geográfica</strong> resume cuántas especies tienen
+       una estructura clara, moderada o ninguna; señala aquellas cuyos países difieren tanto (ΦST de 0,5 o más) que
+       podrían ser especies crípticas, sobre todo si su π está además entre los más altos; distingue el aislamiento por
+       distancia (un gradiente) de los grupos separados; lee la prueba de Mantel por sí sola cuando no se pueden comparar
+       países; y avisa de los países con menos de 10 secuencias, donde ΦST es muy incierto.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Los países no son poblaciones.</strong> ΦST y Mantel toman cada país como una población: las
+        fronteras rara vez coinciden con barreras biológicas, un muestreo concentrado en pocas localidades crea una
+        estructura aparente y con pocas secuencias por país el resultado es muy incierto. Contrasta cualquier estructura
+        fuerte con los MOTU y con el árbol coloreado por país antes de hablar de especies distintas.</div>
+    </div>
+
+    <!-- Diversidad por zona -->
+    <h2 class="sub-title" id="an-diversidad">Diversidad por zona</h2>
+    <p>La pestaña <strong>Diversidad</strong> cuenta cada secuencia en su <strong>unidad</strong> y en su
+       <strong>zona</strong>, que se eligen arriba de la pestaña:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opción</th><th>Valores</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unidad</strong></td><td><em>BIN</em> (la opción por defecto si los registros los tienen) o <em>Especie</em> (el nombre; se dejan fuera las secuencias sin nombre y los nombres «Género sp.» a secas)</td></tr>
+          <tr><td><strong>Zonas</strong></td><td><em>País</em>, <em>Provincia o estado</em>, <em>Región</em> o una <em>Cuadrícula de 1°</em> a partir de las coordenadas. Por defecto, la primera con al menos dos zonas. Las provincias y regiones llevan su país entre paréntesis, salvo si todas son del mismo país</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Los recuentos reflejan cuánto se ha <strong>secuenciado</strong>, no la abundancia de cada unidad en el campo,
+       así que de ellos solo se leen la riqueza y la composición (no se calculan Shannon ni Simpson). Las zonas con menos
+       de <strong>20 secuencias</strong> quedan fuera, y la página dice cuántas. La pestaña aparece tachada cuando
+       ninguna secuencia tiene zona o unidad.</p>
+
+    <h3 class="step-title">Riqueza y completitud</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Columna</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Secuencias / Localidades</strong></td><td>Las secuencias de la zona y las coordenadas distintas de las que proceden</td></tr>
+          <tr><td><strong>BINs</strong> (o <strong>Especies</strong>)</td><td>Unidades observadas</td></tr>
+          <tr><td><strong>Con 1 secuencia</strong></td><td>Unidades vistas una sola vez: cuantas más, más unidades faltan todavía</td></tr>
+          <tr><td><strong>Chao1</strong></td><td>Las unidades que encontraría un muestreo completo, estimadas a partir de las que tienen una y dos secuencias (Chao 1987), con su intervalo del 95 % entre paréntesis. Es un mínimo</td></tr>
+          <tr><td><strong>Cobertura</strong></td><td>La parte de las secuencias de la zona que pertenece a unidades ya vistas (Chao y Jost 2012): desde el 95 % la zona está casi completa; por debajo del 80 %, poco muestreada</td></tr>
+          <tr><td><strong>A igual esfuerzo (n)</strong></td><td>Las unidades esperadas con las secuencias de la zona más pequeña (rarefacción). Es esta columna, y no la riqueza observada, la que sirve para comparar zonas: una zona con más secuencias siempre tiene más unidades</td></tr>
+          <tr><td><strong>Exclusivos</strong></td><td>Unidades que solo aparecen en esa zona</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Las <strong>curvas de rarefacción y extrapolación</strong> (Chao et al. 2014) muestran, para las 8 zonas con más
+       secuencias, las unidades esperadas según el número de secuencias: línea continua hasta el esfuerzo actual (el
+       punto) y discontinua hasta el doble. Una curva que sigue subiendo indica que faltan unidades por secuenciar.</p>
+    <p>La <strong>distinción taxonómica</strong> (Clarke y Warwick 1998) mide lo alejadas que están, en la taxonomía,
+       las unidades de cada zona. <strong>Δ⁺</strong> es la distancia media entre dos unidades a lo largo de género,
+       familia, orden, clase y filo, y <strong>Λ⁺</strong> su varianza (cuánto más pobladas están unas ramas que otras).
+       Los rangos que comparten todas las unidades se descartan, así que 100 es la separación más profunda del análisis
+       (familias distintas, si todo es de un orden). A diferencia de la riqueza, Δ⁺ no depende del número de unidades,
+       así que compara zonas muestreadas con distinto esfuerzo. Cada zona se contrasta con 500 conjuntos al azar del mismo
+       tamaño tomados de todas las unidades del análisis: el gráfico de <strong>embudo</strong> muestra la banda del 95 %
+       y las zonas que quedan fuera.</p>
+    <ul class="bullet">
+      <li><strong>Por debajo de la banda</strong>: la zona reúne linajes más cercanos de lo esperado (pocos géneros o
+          familias; un ambiente que favorece a ciertos linajes, o un muestreo centrado en un grupo). Cuando el análisis
+          junta regiones con faunas distintas, la mayoría de las zonas quedan por debajo: compara entonces cuáles se
+          alejan más.</li>
+      <li><strong>Por encima de la banda</strong>: sus unidades se reparten por ramas más lejanas de lo que daría el
+          azar.</li>
+      <li><strong>Λ⁺ alto</strong>: un árbol desigual, con unos géneros o familias que reúnen muchas unidades y otros una
+          sola. Solo se valora cuando varían dos rangos o más (con el género solo, Λ⁺ se deduce de Δ⁺).</li>
+    </ul>
+    <p>No se calcula con una sola zona, y se omite, diciéndolo, cuando todas las unidades son del mismo género.</p>
+
+    <h3 class="step-title" id="an-diversidad-beta">Entre zonas</h3>
+    <p>Cuánto se parecen las zonas por las unidades que comparten, solo por presencia o ausencia. Las fichas dan la
+       disimilitud de Sørensen del conjunto de zonas y qué parte es <strong>recambio</strong> (cada zona tiene unidades
+       que la otra no) y qué parte <strong>anidamiento</strong> (la zona más pobre es un subconjunto de la más rica),
+       según Baselga (2010), además de las unidades que solo aparecen en una zona. Debajo: un mapa de calor con la
+       similitud de Sørensen de cada par de zonas (hasta 12 zonas), la tabla de pares (unidades compartidas, unidades de
+       cada una solo, <strong>Sørensen</strong>, <strong>Jaccard</strong>, recambio y anidamiento), las unidades más
+       extendidas y las de una sola zona.</p>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div><strong>¿Sørensen o Jaccard?</strong> Los dos van de 0 (nada en común) a 1 (las mismas unidades). Sørensen
+        cuenta dos veces las unidades compartidas, así que para un mismo par siempre es el mayor de los dos; Jaccard es
+        la parte de todas las unidades del par que están en ambas zonas. Usa siempre el mismo al comparar con otros
+        estudios.</div>
+    </div>
+    <p>Cada vista tiene su lectura. <strong>Qué dicen la riqueza y la completitud</strong>: qué zonas están casi
+       completas, incompletas o poco muestreadas (con las unidades que faltan), la más rica y la más pobre a igual
+       esfuerzo, la zona donde más queda por secuenciar, los pocos nombres de especie cuando se cuentan especies y la
+       distinción taxonómica. <strong>Qué dice la comparación entre zonas</strong>: si las diferencias son sobre todo
+       recambio o anidamiento, las zonas más y menos parecidas, el anidamiento en el que interviene una zona poco
+       muestreada (probablemente un artefacto del muestreo) y las unidades de una sola zona.</p>
+
     <!-- Descargas -->
     <h2 class="sub-title" id="an-descargas">Descargas y límites</h2>
     <div class="table-wrap">
@@ -2387,6 +2546,8 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td>Secuencias en el árbol</td><td>2.000 por grupo</td></tr>
           <tr><td>Secuencias en la delimitación de especies</td><td>2.000 por grupo</td></tr>
           <tr><td>Red de haplotipos</td><td>2.000 secuencias; 300 haplotipos con TCS y 600 con MSN</td></tr>
+          <tr><td>π, D de Tajima y estructura geográfica</td><td>300 secuencias por especie (una muestra al azar por encima); países con 5 secuencias o más; prueba de Mantel con 10 a 150 secuencias con coordenadas</td></tr>
+          <tr><td>Diversidad por zona</td><td>Zonas con 20 secuencias o más; las curvas de las 8 zonas más grandes; el mapa de calor hasta 12 zonas</td></tr>
           <tr><td>Posiciones comparables para una distancia</td><td>100</td></tr>
         </tbody>
       </table>
@@ -2531,7 +2692,7 @@ Secuencia B:  A C G T C A G C G T ...
 
     <div class="faq-item">
       <div class="q">El resumen de distancias da un máximo dentro de especie altísimo (20–30 %) o un mínimo de 0 % entre géneros.</div>
-      <div class="a">Casi siempre es uno o pocos registros mal identificados: una secuencia de otra especie con el nombre equivocado infla el máximo de su especie y hunde el mínimo entre especies. La <a href="#an-revision">revisión automática de identificaciones</a>, al principio de la pestaña Distancias, los lista con la especie con la que se confunden. Ver también <a href="#an-conceptos">Antes de empezar: distancias y barcode gap</a>.</div>
+      <div class="a">Casi siempre es uno o pocos registros mal identificados: una secuencia de otra especie con el nombre equivocado infla el máximo de su especie y hunde el mínimo entre especies. La <a href="#an-revision">revisión automática de identificaciones</a>, al principio de la vista Distancias, los lista con la especie con la que se confunden. Ver también <a href="#an-conceptos">Antes de empezar: distancias y barcode gap</a>.</div>
     </div>
 
     <div class="faq-item">

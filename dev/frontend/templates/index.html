@@ -2505,6 +2505,7 @@
                 an_c_rarefied: 'A igual esfuerzo ({m})',
                 an_c_exclusive: 'Exclusivos',
                 an_div_small: '{k} zonas con menos de {min} secuencias ({n} secuencias en total) quedan fuera.',
+                an_div_small_1: 'Una zona con menos de {min} secuencias ({n} en total) queda fuera.',
                 an_h_rarefaction: 'Curvas de rarefacción y extrapolación',
                 an_rarefaction_note: 'Unidades ({u}) esperadas según el número de secuencias. Línea continua: muestreado; punto: el esfuerzo actual; discontinua: extrapolado hasta el doble. Una curva que sigue subiendo indica que faltan unidades por secuenciar.',
                 an_rare_tip: '{z}: {s} {u} en {n} secuencias',
@@ -2572,6 +2573,7 @@
                 an_rg_complete: '<b>Zonas casi completas:</b> {list}. Sus curvas están en la asíntota.',
                 an_rg_complete_1: '<b>Zona casi completa:</b> {list}. Su curva está en la asíntota.',
                 an_rg_small: '{k} zonas con menos de {min} secuencias ({n} secuencias en total) quedan fuera: con tan pocas, ni la riqueza ni la completitud se pueden estimar.',
+                an_rg_small_1: 'Una zona con menos de {min} secuencias ({n} en total) queda fuera: con tan pocas, ni la riqueza ni la completitud se pueden estimar.',
                 an_rg_nozone: '{k} secuencias no tienen {z} y quedan fuera.',
                 an_rg_few_names: '<b>Pocos nombres:</b> solo el {p} de las secuencias tiene nombre de especie, así que contar especies deja fuera la mayoría. Con la unidad «BIN» se usan casi todas.',
                 an_rg_nobin: '{k} secuencias no tienen BIN y quedan fuera del recuento.',
@@ -3820,6 +3822,7 @@
                 an_c_rarefied: 'At equal effort ({m})',
                 an_c_exclusive: 'Exclusive',
                 an_div_small: '{k} zones with fewer than {min} sequences ({n} sequences in all) are left out.',
+                an_div_small_1: 'One zone with fewer than {min} sequences ({n} in all) is left out.',
                 an_h_rarefaction: 'Rarefaction and extrapolation curves',
                 an_rarefaction_note: 'Units ({u}) expected by number of sequences. Solid line: sampled; dot: current effort; dashed: extrapolated to twice as many. A curve still rising means units remain to be sequenced.',
                 an_rare_tip: '{z}: {s} {u} in {n} sequences',
@@ -3887,6 +3890,7 @@
                 an_rg_complete: '<b>Nearly complete zones:</b> {list}. Their curves have reached the asymptote.',
                 an_rg_complete_1: '<b>Nearly complete zone:</b> {list}. Its curve has reached the asymptote.',
                 an_rg_small: '{k} zones with fewer than {min} sequences ({n} sequences in all) are left out: with so few, neither richness nor completeness can be estimated.',
+                an_rg_small_1: 'One zone with fewer than {min} sequences ({n} in all) is left out: with so few, neither richness nor completeness can be estimated.',
                 an_rg_nozone: '{k} sequences lack {z} and are left out.',
                 an_rg_few_names: '<b>Few names:</b> only {p} of the sequences have a species name, so counting species leaves most out. The "BIN" unit uses nearly all of them.',
                 an_rg_nobin: '{k} sequences have no BIN and are left out of the count.',
@@ -8990,7 +8994,10 @@
 			const f = (AnState.result && AnState.result.fields) || {};
 			AnState.divOpts = {
 				unit: f.bin ? 'bin' : 'species',
-				zoning: f.countries >= 2 ? 'country' : f.provinces >= 2 ? 'province' : f.coords ? 'grid' : 'country',
+				// Zones big enough to be kept first (a country with 3 sequences
+				// would leave a single zone), then any variety
+				zoning: f.big_countries >= 2 ? 'country' : f.big_provinces >= 2 ? 'province' : f.big_cells >= 2 ? 'grid'
+					: f.countries >= 2 ? 'country' : f.provinces >= 2 ? 'province' : f.coords ? 'grid' : 'country',
 			};
 			return AnState.divOpts;
 		}
@@ -9096,7 +9103,7 @@
 				{ label: t('an_c_rarefied', { m: numFmt.format(d.common_n) }), cls: 'num', get: z => z.rarefied === null ? '—' : anNum(z.rarefied, 1) },
 				{ label: t('an_c_exclusive'), cls: 'num', get: z => d.zones.length > 1 ? numFmt.format(z.exclusive) : '—' },
 			], d.zones.slice(0, AN_TABLE_ROWS)));
-			if (d.small_zones.length) body.append(anEl('p', 'an-muted mt-2', t('an_div_small', {
+			if (d.small_zones.length) body.append(anEl('p', 'an-muted mt-2', t(d.small_zones.length === 1 ? 'an_div_small_1' : 'an_div_small', {
 				k: numFmt.format(d.small_zones.length), min: numFmt.format(d.min_zone),
 				n: numFmt.format(d.small_zones.reduce((a, [, n]) => a + n, 0)) })));
 			body.append(anEl('div', 'an-h', t('an_h_rarefaction')));
@@ -9334,7 +9341,7 @@
 				if (complete.length) add('ok', anGuideText(complete.length === 1 ? 'an_rg_complete_1' : 'an_rg_complete', { u: units,
 					list: zlist(complete, z => ` (${pc(z.coverage)})`) }));
 			}
-			if (G.small_n) add('info', anGuideText('an_rg_small', { k: num(G.small_n), n: num(G.small_seqs), min: num(d.min_zone) }));
+			if (G.small_n) add('info', anGuideText(G.small_n === 1 ? 'an_rg_small_1' : 'an_rg_small', { k: num(G.small_n), n: num(G.small_seqs), min: num(d.min_zone) }));
 			if (G.no_zone) add('info', anGuideText('an_rg_nozone', { k: num(G.no_zone), z: escapeHtml(t('an_div_zw_' + d.zoning)) }));
 			if (G.few_names) add('warn', anGuideText('an_rg_few_names', { p: pc(G.named_share) }));
 			else if (d.unit === 'bin' && G.no_unit) add('info', anGuideText('an_rg_nobin', { k: num(G.no_unit) }));

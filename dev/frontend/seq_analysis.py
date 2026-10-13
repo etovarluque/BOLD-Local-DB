@@ -326,16 +326,25 @@ def parse_header(header):
 def field_counts(records):
     """How many records bring a species name, a BIN, a country and
     coordinates, and how many countries: what the views that need them can
-    show."""
+    show. The big_* counts are zones with enough sequences for the
+    Diversity tab, to pick its default zones."""
     import seq_popgen  # it imports this module
+    import seq_diversity
     places = [r.get("country") for r in records if not no_place(r.get("country"))]
+    provinces = Counter((r.get("country"), r.get("province")) for r in records if r.get("province"))
+    cells = Counter(seq_diversity.zone_of(r, "grid") for r in records)
+    cells.pop("", None)
+    big = lambda counts: sum(1 for n in counts.values() if n >= seq_diversity.MIN_ZONE_SEQUENCES)
     return {"n": len(records),
             "species": sum(1 for r in records if r.get("species")),
             "bin": sum(1 for r in records if r.get("bin")),
             "country": len(places),
             "countries": len(set(places)),
-            "provinces": len({(r.get("country"), r.get("province")) for r in records if r.get("province")}),
-            "coords": sum(1 for r in records if seq_popgen.coord_of(r))}
+            "provinces": len(provinces),
+            "coords": sum(1 for r in records if seq_popgen.coord_of(r)),
+            "big_countries": big(Counter(places)),
+            "big_provinces": big(provinces),
+            "big_cells": big(cells)}
 
 
 def parse_fasta(text):

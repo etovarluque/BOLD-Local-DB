@@ -135,6 +135,12 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 ### Fixed
 - Richness reading: "sequences lack a country" instead of "have no a
   country".
+- Diversity: the default zones count only zones with 20 or more sequences.
+  A second country with 3 sequences made it pick countries, which left a
+  single zone, instead of the provinces. Provinces keep their country in
+  brackets only when the zones kept span several countries (a small zone
+  of another country no longer adds "(Colombia)" to every one), and a
+  single small zone left out is said in the singular.
 
 ### Changed
 - Sequence analysis: tabs and views show what the data received allow,

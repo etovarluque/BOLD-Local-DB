@@ -8,6 +8,15 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 ## [Unreleased]
 
 ### Added
+- Readings for the new diversity figures. The haplotype reading adds the
+  species whose nucleotide diversity is well above the rest (possible
+  hidden lineages, pointing to distances and MOTUs), significant Tajima's D
+  (negative: expansion or purifying selection, with the caveat of pooled
+  countries; positive: mixed lineages), and the unnamed group's diversity.
+  *Geographic structure* gets its own reading: species with groups so far
+  apart that they may be cryptic species, isolation by distance, moderate
+  or no structure, isolation by distance without a PhiST, and countries
+  with too few sequences.
 - Haplotypes: the table adds each species' nucleotide diversity (π),
   segregating sites, Tajima's D (marked when significant) and number of
   countries, computed aligning each species on its own (a random sample of

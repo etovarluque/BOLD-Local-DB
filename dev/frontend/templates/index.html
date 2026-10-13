@@ -2472,6 +2472,58 @@
                 an_v_quality: 'Calidad',
                 an_v_haplotypes: 'Haplotipos',
                 an_v_hap_table: 'Tabla',
+                an_hg_pg_running: 'La diversidad nucleotídica (π) y la D de Tajima de cada especie se están calculando; esta lectura las añadirá al terminar.',
+                an_hg_pi_high: '<b>{k} de {n} especies tienen una diversidad nucleotídica muy por encima del resto</b> (mediana {m}): {list}. Una [pi_col] tan alta dentro de un nombre suele indicar dos o más linajes, o especies crípticas.',
+                an_hg_pi_high_1: '<b>Una especie tiene una diversidad nucleotídica muy por encima del resto</b> (mediana {m} en {n} especies): {list}. Una [pi_col] tan alta dentro de un nombre suele indicar dos o más linajes, o especies crípticas.',
+                an_hg_pi_ok: '<b>Diversidad nucleotídica.</b> Ninguna de las {n} especies con 10 o más secuencias alineadas se sale del resto (mediana de [pi_col] {m}).',
+                an_hg_pi_ok_few: '<b>Diversidad nucleotídica.</b> Las {n} especies con 10 o más secuencias alineadas tienen una [pi_col] moderada (mediana {m}).',
+                an_hg_pi_one: '<b>Diversidad nucleotídica.</b> {sp} tiene una [pi_col] de {pi} en {n} secuencias alineadas: dos secuencias tomadas al azar difieren en ese porcentaje de posiciones.',
+                an_hg_pi_one_high: '<b>{sp} tiene una diversidad nucleotídica alta</b>: [pi_col] {pi} en {n} secuencias alineadas. Dentro de una especie suele quedar por debajo del 2 %; tanta diversidad apunta a dos o más linajes bajo un mismo nombre.',
+                an_hg_taj_neg: '<b>D de Tajima negativa y significativa</b> en {list}: muchos haplotipos raros alrededor de unos pocos comunes. Encaja con una expansión reciente o con selección purificadora.',
+                an_hg_taj_neg_1: '<b>D de Tajima negativa y significativa</b> en {list}: muchos haplotipos raros alrededor de unos pocos comunes. Encaja con una expansión reciente o con selección purificadora.',
+                an_hg_taj_pooled: ' Pero si las secuencias vienen de varios países, juntar poblaciones distintas también la produce: mira «{struct}» antes de concluir.',
+                an_hg_taj_pooled_nostruct: ' Pero si las secuencias vienen de varios lugares, juntar poblaciones distintas también la produce.',
+                an_hg_taj_pos: '<b>D de Tajima positiva y significativa</b> en {list}: faltan haplotipos raros. Suele indicar linajes divergentes mezclados bajo un nombre o poblaciones muy subdivididas.',
+                an_hg_taj_pos_1: '<b>D de Tajima positiva y significativa</b> en {list}: faltan haplotipos raros. Suele indicar linajes divergentes mezclados bajo un nombre o poblaciones muy subdivididas.',
+                an_hg_taj_none: '<b>D de Tajima.</b> No es significativa en ninguna de las {n} especies: nada indica expansiones ni mezcla de linajes.',
+                an_hg_taj_none_one: '<b>D de Tajima.</b> No es significativa en {sp}: nada indica una expansión ni mezcla de linajes.',
+                an_hg_pi_unnamed: 'Las {n} secuencias sin nombre tienen una [pi_col] de {pi}, pero mezclan especies, así que esa cifra no describe a ninguna y no se calcula su D de Tajima; «{motu}» las separa en grupos sin necesitar nombres.',
+                an_hg_next_pi: ' Para {list}, con [pi_col] muy alta, comprueba en «{dist}» y «{motu}» (pestaña «{tab}») si se separan en linajes.',
+                an_hg_next_pi_1: ' Para {list}, con [pi_col] muy alta, comprueba en «{dist}» y «{motu}» (pestaña «{tab}») si se separa en linajes.',
+                an_sg_title: 'Qué dice la estructura geográfica',
+                an_sg_sub: 'Lectura automática y orientativa de ΦST y la prueba de Mantel',
+                an_sg_file: 'interpretacion_estructura_geografica',
+                an_sg_meta: 'Marcador: {marker} · {n} especies comparadas entre países · {date}',
+                an_sg_v_all: '<b>Las {n} especies tienen una estructura geográfica clara:</b> buena parte de su variación genética separa unos países de otros.',
+                an_sg_v_most: '<b>{k} de {n} especies tienen una estructura geográfica clara:</b> buena parte de su variación genética separa unos países de otros.',
+                an_sg_v_some: '<b>Solo {k} de {n} especies tienen una estructura geográfica clara;</b> en las demás, la variación apenas depende del país.',
+                an_sg_v_moderate: '<b>Ninguna de las {n} especies tiene una estructura geográfica fuerte,</b> aunque {k} la tienen moderada.',
+                an_sg_v_none: '<b>Ninguna de las {n} especies tiene estructura geográfica:</b> sus haplotipos se reparten igual entre países, señal de flujo genético.',
+                an_sg_v_apart: ' En {sp} es tan fuerte (ΦST {phi}) que conviene revisar si es una sola especie.',
+                an_sg_v_one_split: '<b>{sp} tiene una estructura geográfica muy fuerte</b> (ΦST {phi} entre {k} países): tanto que conviene revisar si es una sola especie.',
+                an_sg_v_one_gradient: '<b>{sp} tiene una estructura geográfica clara</b> (ΦST {phi} entre {k} países), y las diferencias crecen con la distancia.',
+                an_sg_v_one_moderate: '<b>{sp} tiene una estructura geográfica moderada</b> (ΦST {phi} entre {k} países).',
+                an_sg_v_one_flow: '<b>{sp} no tiene estructura geográfica</b> (ΦST {phi} entre {k} países): sus haplotipos se reparten igual entre países, señal de flujo genético.',
+                an_sg_v_mantel_only: '<b>Ninguna especie tiene al menos {min} secuencias en dos países</b>, así que no se compara entre países; {n} se pueden leer solo por la distancia entre sus localidades.',
+                an_sg_how: '<b>Cómo se lee.</b> [phist_col] es la parte de la variación genética que está entre países: desde {s} es fuerte, desde {m} moderada y por debajo apenas hay estructura. La prueba de Mantel ([mantel_col]) dice si las secuencias más alejadas en el mapa son también las más distintas (aislamiento por distancia). Solo cuentan los valores con p < 0,05.',
+                an_sg_apart: '<b>Grupos geográficos muy separados:</b> {list}. La diferencia entre países es tan grande que pueden ser linajes aislados desde hace mucho o especies crípticas, sobre todo si no crece de forma gradual con la distancia. Compáralo con la partición de «{motu}».',
+                an_sg_apart_1: '<b>Grupos geográficos muy separados:</b> {list}. La diferencia entre países es tan grande que pueden ser linajes aislados desde hace mucho o especies crípticas, sobre todo si no crece de forma gradual con la distancia. Compáralo con la partición de «{motu}».',
+                an_sg_apart_pi: ' {list} tienen además una [pi_col] de las más altas: otra señal de linajes distintos bajo un mismo nombre.',
+                an_sg_apart_pi_1: ' {list} tiene además una [pi_col] de las más altas: otra señal de linajes distintos bajo un mismo nombre.',
+                an_sg_gradient: '<b>Aislamiento por distancia:</b> {list}. Las diferencias crecen con la distancia: lo esperable en especies que se dispersan poco. Los países separan puntos de un continuo, no necesariamente poblaciones distintas.',
+                an_sg_gradient_1: '<b>Aislamiento por distancia:</b> {list}. Las diferencias crecen con la distancia: lo esperable en una especie que se dispersa poco. Los países separan puntos de un continuo, no necesariamente poblaciones distintas.',
+                an_sg_moderate: '<b>Estructura moderada:</b> {list}. Hay algo de diferenciación entre países, pero la mayor parte de la variación está dentro de cada uno.',
+                an_sg_moderate_1: '<b>Estructura moderada:</b> {list}. Hay algo de diferenciación entre países, pero la mayor parte de la variación está dentro de cada uno.',
+                an_sg_flow: '<b>Sin estructura:</b> {list}. Sus haplotipos se reparten igual entre países, señal de mucho flujo genético (o de una expansión reciente).',
+                an_sg_flow_1: '<b>Sin estructura:</b> {list}. Sus haplotipos se reparten igual entre países, señal de mucho flujo genético (o de una expansión reciente).',
+                an_sg_within: '<b>Aislamiento por distancia, sin comparar países:</b> {list}. No tienen dos países con al menos {min} secuencias, así que no hay [phist_col], pero sus secuencias más alejadas son las más distintas.',
+                an_sg_within_1: '<b>Aislamiento por distancia, sin comparar países:</b> {list}. No tienen dos países con al menos {min} secuencias, así que no hay [phist_col], pero sus secuencias más alejadas son las más distintas.',
+                an_sg_small: '<b>Países con pocas secuencias</b> (menos de {z}) en {list}: ahí [phist_col] tiene mucha incertidumbre; tómalo como orientativo.',
+                an_sg_small_1: '<b>Países con pocas secuencias</b> (menos de {z}) en {list}: ahí [phist_col] tiene mucha incertidumbre; tómalo como orientativo.',
+                an_sg_next_apart: '<b>Qué hacer ahora:</b> para {sp}, mira en «{motu}» si la delimitación separa los mismos grupos de países, y colorea el árbol por país en «{tree}». Si linajes, países y MOTU coinciden, contrasta con la bibliografía del grupo antes de hablar de especies distintas.',
+                an_sg_next_gradient: '<b>Qué hacer ahora:</b> pulsa «Ver» en {sp} para ver su gráfica de aislamiento por distancia: si la nube sube sin saltos, es un continuo; si hay dos nubes separadas, hay grupos distintos.',
+                an_sg_next_none: '<b>Qué hacer ahora:</b> nada que revisar por la geografía. Si quieres más detalle, colorea la red de {sp} por país.',
+                an_sg_foot: 'ΦST y Mantel tratan cada país como una población: los países no siempre coinciden con barreras biológicas, un muestreo concentrado en pocas localidades crea estructura aparente y, con pocas secuencias por país, el resultado tiene mucha incertidumbre.',
                 an_v_structure: 'Estructura geográfica',
                 an_c_pi: 'π (%)',
                 an_c_seg: 'Sitios segregantes',
@@ -3095,9 +3147,9 @@
                 an_hg_excl_single: 'Queda fuera una secuencia por tener N o bases ambiguas ([excluded]): no cambia estos números.',
                 an_hg_excl_one: 'Quedan fuera {x} secuencias por tener N o bases ambiguas ([excluded], el {p}): no cambian mucho estos números.',
                 an_hg_excl: 'Quedan fuera {x} secuencias por tener N o bases ambiguas ([excluded]; la que más pierde es {sp}, {e} de {t}): no cambian mucho estos números.',
-                an_hg_next: '<b>Qué hacer ahora:</b> para ver cómo se relacionan los haplotipos de una especie, pulsa [net] en su fila. La red alinea las secuencias y compara solo el tramo común (así no cuenta haplotipos de más), y añade la diversidad nucleotídica y la D de Tajima. Empieza por {sp}, la especie con más secuencias{low}.',
+                an_hg_next: '<b>Qué hacer ahora:</b> para ver cómo se relacionan los haplotipos de una especie, pulsa [net] en su fila. La red alinea las secuencias y compara solo el tramo común (así no cuenta haplotipos de más). Empieza por {sp}, la especie con más secuencias{low}.',
                 an_hg_next_low: ', y compara {sp} con las demás',
-                an_hg_next_one: '<b>Qué hacer ahora:</b> pulsa [net] para ver la red de {sp}: alinea las secuencias, compara solo el tramo común (así no cuenta haplotipos de más) y añade la diversidad nucleotídica y la D de Tajima.',
+                an_hg_next_one: '<b>Qué hacer ahora:</b> pulsa [net] para ver la red de {sp}: alinea las secuencias, compara solo el tramo común (así no cuenta haplotipos de más) y muestra cómo se reparten por países.',
                 an_hg_next_big: ' Con tantas secuencias, conviene acotar antes la búsqueda (por país o por BIN) para que la red sea legible.',
                 an_hg_next_few: '<b>Qué hacer ahora:</b> amplía la búsqueda para reunir al menos {min} secuencias por especie; mientras, la red de {sp} ([net]) muestra cómo se relacionan las que hay.',
                 an_hg_next_none: '<b>Qué hacer ahora:</b> amplía la búsqueda para reunir al menos {min} secuencias por especie.',
@@ -3598,6 +3650,58 @@
                 an_v_quality: 'Quality',
                 an_v_haplotypes: 'Haplotypes',
                 an_v_hap_table: 'Table',
+                an_hg_pg_running: 'Each species\' nucleotide diversity (π) and Tajima\'s D are being computed; this reading will add them when done.',
+                an_hg_pi_high: '<b>{k} of {n} species have a nucleotide diversity well above the rest</b> (median {m}): {list}. Such a high [pi_col] within one name usually means two or more lineages, or cryptic species.',
+                an_hg_pi_high_1: '<b>One species has a nucleotide diversity well above the rest</b> (median {m} over {n} species): {list}. Such a high [pi_col] within one name usually means two or more lineages, or cryptic species.',
+                an_hg_pi_ok: '<b>Nucleotide diversity.</b> None of the {n} species with 10 or more aligned sequences stands out (median [pi_col] {m}).',
+                an_hg_pi_ok_few: '<b>Nucleotide diversity.</b> The {n} species with 10 or more aligned sequences have a moderate [pi_col] (median {m}).',
+                an_hg_pi_one: '<b>Nucleotide diversity.</b> {sp} has a [pi_col] of {pi} over {n} aligned sequences: two sequences taken at random differ at that share of positions.',
+                an_hg_pi_one_high: '<b>{sp} has a high nucleotide diversity</b>: [pi_col] {pi} over {n} aligned sequences. Within a species it usually stays under 2%; this much points to two or more lineages under one name.',
+                an_hg_taj_neg: '<b>Negative, significant Tajima\'s D</b> in {list}: many rare haplotypes around a few common ones. It fits a recent expansion or purifying selection.',
+                an_hg_taj_neg_1: '<b>Negative, significant Tajima\'s D</b> in {list}: many rare haplotypes around a few common ones. It fits a recent expansion or purifying selection.',
+                an_hg_taj_pooled: ' But if the sequences come from several countries, pooling different populations also produces it: look at "{struct}" before concluding.',
+                an_hg_taj_pooled_nostruct: ' But if the sequences come from several places, pooling different populations also produces it.',
+                an_hg_taj_pos: '<b>Positive, significant Tajima\'s D</b> in {list}: rare haplotypes are missing. It usually means divergent lineages mixed under one name or strongly subdivided populations.',
+                an_hg_taj_pos_1: '<b>Positive, significant Tajima\'s D</b> in {list}: rare haplotypes are missing. It usually means divergent lineages mixed under one name or strongly subdivided populations.',
+                an_hg_taj_none: '<b>Tajima\'s D.</b> It isn\'t significant in any of the {n} species: nothing points to expansions or mixed lineages.',
+                an_hg_taj_none_one: '<b>Tajima\'s D.</b> It isn\'t significant in {sp}: nothing points to an expansion or mixed lineages.',
+                an_hg_pi_unnamed: 'The {n} unnamed sequences have a [pi_col] of {pi}, but they mix species, so the figure describes none and their Tajima\'s D isn\'t computed; "{motu}" splits them into groups without needing names.',
+                an_hg_next_pi: ' For {list}, with a very high [pi_col], check in "{dist}" and "{motu}" ("{tab}" tab) whether they split into lineages.',
+                an_hg_next_pi_1: ' For {list}, with a very high [pi_col], check in "{dist}" and "{motu}" ("{tab}" tab) whether it splits into lineages.',
+                an_sg_title: 'What the geographic structure says',
+                an_sg_sub: 'An automatic, indicative reading of ΦST and the Mantel test',
+                an_sg_file: 'geographic_structure_reading',
+                an_sg_meta: 'Marker: {marker} · {n} species compared between countries · {date}',
+                an_sg_v_all: '<b>All {n} species have a clear geographic structure:</b> much of their genetic variation sets countries apart.',
+                an_sg_v_most: '<b>{k} of {n} species have a clear geographic structure:</b> much of their genetic variation sets countries apart.',
+                an_sg_v_some: '<b>Only {k} of {n} species have a clear geographic structure;</b> in the rest, variation hardly depends on the country.',
+                an_sg_v_moderate: '<b>None of the {n} species has a strong geographic structure,</b> though {k} have a moderate one.',
+                an_sg_v_none: '<b>None of the {n} species has a geographic structure:</b> their haplotypes spread evenly across countries, a sign of gene flow.',
+                an_sg_v_apart: ' In {sp} it is so strong (ΦST {phi}) that it is worth checking whether it is a single species.',
+                an_sg_v_one_split: '<b>{sp} has a very strong geographic structure</b> (ΦST {phi} between {k} countries): so strong that it is worth checking whether it is a single species.',
+                an_sg_v_one_gradient: '<b>{sp} has a clear geographic structure</b> (ΦST {phi} between {k} countries), and differences grow with distance.',
+                an_sg_v_one_moderate: '<b>{sp} has a moderate geographic structure</b> (ΦST {phi} between {k} countries).',
+                an_sg_v_one_flow: '<b>{sp} has no geographic structure</b> (ΦST {phi} between {k} countries): its haplotypes spread evenly across countries, a sign of gene flow.',
+                an_sg_v_mantel_only: '<b>No species has at least {min} sequences in two countries</b>, so none is compared between countries; {n} can be read only by the distance between their localities.',
+                an_sg_how: '<b>How to read it.</b> [phist_col] is the share of the genetic variation that lies between countries: from {s} it is strong, from {m} moderate, and below that there is hardly any structure. The Mantel test ([mantel_col]) says whether the sequences farthest apart on the map are also the most different (isolation by distance). Only values with p < 0.05 count.',
+                an_sg_apart: '<b>Geographic groups far apart:</b> {list}. Countries differ so much that these may be lineages isolated for a long time or cryptic species, above all if the difference doesn\'t grow gradually with distance. Compare it with the "{motu}" partition.',
+                an_sg_apart_1: '<b>Geographic groups far apart:</b> {list}. Countries differ so much that these may be lineages isolated for a long time or cryptic species, above all if the difference doesn\'t grow gradually with distance. Compare it with the "{motu}" partition.',
+                an_sg_apart_pi: ' {list} also have one of the highest [pi_col]: another sign of distinct lineages under one name.',
+                an_sg_apart_pi_1: ' {list} also has one of the highest [pi_col]: another sign of distinct lineages under one name.',
+                an_sg_gradient: '<b>Isolation by distance:</b> {list}. Differences grow with distance: expected in species that disperse little. Countries cut points of a continuum, not necessarily separate populations.',
+                an_sg_gradient_1: '<b>Isolation by distance:</b> {list}. Differences grow with distance: expected in a species that disperses little. Countries cut points of a continuum, not necessarily separate populations.',
+                an_sg_moderate: '<b>Moderate structure:</b> {list}. Countries differ somewhat, but most of the variation lies within each one.',
+                an_sg_moderate_1: '<b>Moderate structure:</b> {list}. Countries differ somewhat, but most of the variation lies within each one.',
+                an_sg_flow: '<b>No structure:</b> {list}. Their haplotypes spread evenly across countries, a sign of much gene flow (or of a recent expansion).',
+                an_sg_flow_1: '<b>No structure:</b> {list}. Its haplotypes spread evenly across countries, a sign of much gene flow (or of a recent expansion).',
+                an_sg_within: '<b>Isolation by distance, without comparing countries:</b> {list}. They don\'t have two countries with at least {min} sequences, so there is no [phist_col], but their sequences farthest apart are the most different.',
+                an_sg_within_1: '<b>Isolation by distance, without comparing countries:</b> {list}. They don\'t have two countries with at least {min} sequences, so there is no [phist_col], but their sequences farthest apart are the most different.',
+                an_sg_small: '<b>Countries with few sequences</b> (under {z}) in {list}: there [phist_col] is very uncertain; take it as indicative.',
+                an_sg_small_1: '<b>Countries with few sequences</b> (under {z}) in {list}: there [phist_col] is very uncertain; take it as indicative.',
+                an_sg_next_apart: '<b>What to do next:</b> for {sp}, see in "{motu}" whether the delimitation splits the same groups of countries, and colour the tree by country in "{tree}". If lineages, countries and MOTUs agree, compare with the group\'s literature before speaking of different species.',
+                an_sg_next_gradient: '<b>What to do next:</b> press "Show" on {sp} to see its isolation-by-distance plot: if the cloud rises without jumps, it is a continuum; two separate clouds mean distinct groups.',
+                an_sg_next_none: '<b>What to do next:</b> nothing to check on geography. For more detail, colour the network of {sp} by country.',
+                an_sg_foot: 'ΦST and Mantel treat each country as one population: countries don\'t always match biological barriers, sampling concentrated in a few localities creates apparent structure, and with few sequences per country the result is very uncertain.',
                 an_v_structure: 'Geographic structure',
                 an_c_pi: 'π (%)',
                 an_c_seg: 'Segregating sites',
@@ -4221,9 +4325,9 @@
                 an_hg_excl_single: 'One sequence is left out for its Ns or ambiguous bases ([excluded]): it doesn\'t change these numbers.',
                 an_hg_excl_one: '{x} sequences are left out for their Ns or ambiguous bases ([excluded], {p}): they hardly change these numbers.',
                 an_hg_excl: '{x} sequences are left out for their Ns or ambiguous bases ([excluded]; the one losing most is {sp}, {e} of {t}): they hardly change these numbers.',
-                an_hg_next: '<b>What to do next:</b> to see how a species\' haplotypes relate, press [net] on its row. The network aligns the sequences and compares only the shared stretch (so it doesn\'t count extra haplotypes), and adds nucleotide diversity and Tajima\'s D. Start with {sp}, the species with the most sequences{low}.',
+                an_hg_next: '<b>What to do next:</b> to see how a species\' haplotypes relate, press [net] on its row. The network aligns the sequences and compares only the shared stretch (so it doesn\'t count extra haplotypes). Start with {sp}, the species with the most sequences{low}.',
                 an_hg_next_low: ', and compare {sp} with the rest',
-                an_hg_next_one: '<b>What to do next:</b> press [net] to see the network of {sp}: it aligns the sequences, compares only the shared stretch (so it doesn\'t count extra haplotypes) and adds nucleotide diversity and Tajima\'s D.',
+                an_hg_next_one: '<b>What to do next:</b> press [net] to see the network of {sp}: it aligns the sequences, compares only the shared stretch (so it doesn\'t count extra haplotypes) and shows how they spread over countries.',
                 an_hg_next_big: ' With this many sequences, narrow the search first (by country or BIN) so the network stays readable.',
                 an_hg_next_few: '<b>What to do next:</b> widen the search to gather at least {min} sequences per species; meanwhile, the network of {sp} ([net]) shows how those at hand relate.',
                 an_hg_next_none: '<b>What to do next:</b> widen the search to gather at least {min} sequences per species.',
@@ -8507,6 +8611,7 @@
 				body.append(anEl('p', 'an-muted', t('an_struct_none', { min: P.min_zone, m: P.min_mantel })));
 				return;
 			}
+
 			const rows = pg.structure;
 			const pick = rows.find(x => x.species === AnState.structSpecies && x.mantel) || rows.find(x => x.mantel);
 			const pv = p => p === null || p === undefined ? '—' : p <= 1 / (P.permutations + 1) + 1e-9 ? `≤ ${(1 / (P.permutations + 1)).toFixed(3)}` : p.toFixed(3);
@@ -8537,6 +8642,7 @@
 					sample: m.with_coords > m.n ? t('an_ibd_sample', { n: numFmt.format(m.n), m: numFmt.format(m.with_coords) }) : '' })));
 				body.append(anIbdScatter(m));
 			}
+			anRenderStructGuide(body, pg);
 		}
 
 		// Genetic against geographic distance, one point per pair of sequences
@@ -9172,6 +9278,7 @@
 			color_bin: () => `${t('an_tree_color').replace(/:$/, '')}: ${t('an_tree_by_bin')}`,
 			hap: 'an_ng_t_hap', unsampled: 'an_t_intermediates', hd: 'an_t_hd', pi: 'an_t_pi',
 			tajima: 'an_t_tajima', pv: 'an_ng_t_p', bin: 'an_ng_t_bin',
+			pi_col: () => 'π', phist_col: () => 'ΦST', mantel_col: 'an_c_mantel_r',
 			// The quality view's figures, flags and controls
 			barcode: 'an_t_barcode', length: 'an_t_length', gc: 'an_t_gc', gc3: 'an_t_gc3',
 			f_short: 'an_f_short', f_stops: 'an_f_stops', f_reversed: 'an_f_reversed', many_n: 'an_f_many_n',
@@ -9822,6 +9929,112 @@ li li { display: list-item; margin: 0; }
 		// species with enough sequences, the haplotypes left if those trimmed
 		// at different ends were joined, unnamed sequences and their BINs.
 
+		// π and Tajima's D in the haplotype reading
+		function anHapPopgenItems(PG, add, nameList) {
+			const pc = x => anPctOf(x, 2);
+			const d = x => anNum(x.d, 2);
+			const struct = escapeHtml(anViewName('structure'));
+			if (PG.unnamed) add('info', anGuideText('an_hg_pi_unnamed', { n: numFmt.format(PG.unnamed.n), pi: pc(PG.unnamed.pi),
+				motu: escapeHtml(anViewName('delimit')) }));
+			if (!PG.read_n) return;
+			if (PG.single) {
+				const x = PG.single;
+				add(PG.high_pi.length ? 'warn' : 'info', anGuideText(PG.high_pi.length ? 'an_hg_pi_one_high' : 'an_hg_pi_one',
+					{ sp: anGuideName(x.species), pi: pc(x.pi), n: numFmt.format(x.n) }));
+			} else if (PG.high_pi.length) {
+				add('warn', anGuideText(PG.high_pi.length === 1 ? 'an_hg_pi_high_1' : 'an_hg_pi_high', {
+					list: nameList(PG.high_pi, x => ` (${pc(x.pi)})`), k: numFmt.format(PG.high_pi.length),
+					n: numFmt.format(PG.read_n), m: PG.median_pi === null ? '—' : pc(PG.median_pi) }));
+			} else {
+				add('ok', anGuideText(PG.alone ? 'an_hg_pi_ok_few' : 'an_hg_pi_ok', { n: numFmt.format(PG.read_n),
+					m: PG.median_pi === null ? '—' : pc(PG.median_pi) }));
+			}
+			const neg = PG.tajima_neg, pos = PG.tajima_pos;
+			if (neg.length) {
+				const pooled = neg.filter(x => x.zones >= 2).length;
+				add('info', anGuideText(neg.length === 1 ? 'an_hg_taj_neg_1' : 'an_hg_taj_neg', {
+					list: nameList(neg, x => ` (${d(x)})`) })
+					+ (pooled ? anGuideText(anViewOff('structure') ? 'an_hg_taj_pooled_nostruct' : 'an_hg_taj_pooled', { struct }) : ''));
+			}
+			if (pos.length) add('warn', anGuideText(pos.length === 1 ? 'an_hg_taj_pos_1' : 'an_hg_taj_pos', {
+				list: nameList(pos, x => ` (${d(x)})`) }));
+			if (!neg.length && !pos.length && PG.tajima_n) add('ok', PG.single
+				? anGuideText('an_hg_taj_none_one', { sp: anGuideName(PG.single.species) })
+				: anGuideText('an_hg_taj_none', { n: numFmt.format(PG.tajima_n) }));
+		}
+
+		// ── Reading of the geographic structure ──
+		// Facts from seq_popgen.guide: each species tested between countries
+		// is "flow" (no or weak structure), "moderate", "gradient" (strong,
+		// with isolation by distance) or "split" (strong, without it).
+
+		function anRenderStructGuide(body, pg) {
+			const G = pg.guide;
+			if (!G || (!G.struct.length && !G.mantel_only.length)) return;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const f2 = x => anNum(x, 2);
+			const motu = escapeHtml(anViewName('delimit')), tree = escapeHtml(anViewName('tree'));
+			const list = (xs, fmt, max = 6) => {
+				let genus = '';
+				const parts = xs.slice(0, max).map(x => {
+					const html = anGuideShort(x.species, genus);
+					genus = genus || x.species.split(' ')[0];
+					return html + fmt(x);
+				});
+				return xs.length > max ? parts.join(', ') + anGuideMore(max, xs.length) : anGuideJoin(parts, ', ');
+			};
+			const S = G.struct;
+			// Strong enough to ask whether it is one species
+			const apart = S.filter(x => x.kind === 'split' || (x.kind === 'gradient' && x.very));
+			const gradient = S.filter(x => x.kind === 'gradient' && !x.very);
+			const moderate = S.filter(x => x.kind === 'moderate');
+			const flow = S.filter(x => x.kind === 'flow');
+			const strong = apart.length + gradient.length;
+
+			let verdict;
+			if (!S.length) verdict = anGuideText('an_sg_v_mantel_only', { n: num(G.mantel_only.length), min: num(G.min_zone) });
+			else if (S.length === 1) {
+				const x = S[0];
+				verdict = anGuideText('an_sg_v_one_' + (x.kind === 'gradient' && x.very ? 'split' : x.kind),
+					{ sp: anGuideName(x.species), phi: f2(x.phi), k: num(x.zones.length) });
+			} else {
+				const key = strong === S.length ? 'an_sg_v_all' : strong > S.length / 2 ? 'an_sg_v_most'
+					: strong ? 'an_sg_v_some' : moderate.length ? 'an_sg_v_moderate' : 'an_sg_v_none';
+				verdict = anGuideText(key, { k: num(strong || moderate.length), n: num(S.length) });
+				if (apart.length) verdict += anGuideText('an_sg_v_apart', { sp: anGuideName(apart[0].species), phi: f2(apart[0].phi) });
+			}
+
+			add('info', anGuideText('an_sg_how', { s: f2(G.strong_phi), m: f2(G.moderate_phi) }));
+			const phiR = x => ` (ΦST ${f2(x.phi)}${x.r !== null ? `, r ${f2(x.r)}` : ''})`;
+			if (apart.length) {
+				const pi = apart.filter(x => x.high_pi);
+				add('warn', anGuideText(apart.length === 1 ? 'an_sg_apart_1' : 'an_sg_apart', { list: list(apart, phiR), motu })
+					+ (pi.length ? anGuideText(pi.length === 1 ? 'an_sg_apart_pi_1' : 'an_sg_apart_pi', { list: list(pi, () => '') }) : ''));
+			}
+			if (gradient.length) add('info', anGuideText(gradient.length === 1 ? 'an_sg_gradient_1' : 'an_sg_gradient', { list: list(gradient, phiR) }));
+			if (moderate.length) add('info', anGuideText(moderate.length === 1 ? 'an_sg_moderate_1' : 'an_sg_moderate', { list: list(moderate, phiR) }));
+			if (flow.length) add('ok', anGuideText(flow.length === 1 ? 'an_sg_flow_1' : 'an_sg_flow', { list: list(flow, x => ` (ΦST ${f2(x.phi)})`) }));
+			const within = G.mantel_only.filter(x => x.p < 0.05 && x.r > 0);
+			if (within.length) add('info', anGuideText(within.length === 1 ? 'an_sg_within_1' : 'an_sg_within', {
+				list: list(within, x => ` (r ${f2(x.r)}, ${num(Math.round(x.km))} km)`), min: num(G.min_zone) }));
+			const small = S.filter(x => x.small.length && x.kind !== 'flow');
+			if (small.length) add('warn', anGuideText(small.length === 1 ? 'an_sg_small_1' : 'an_sg_small', {
+				list: list(small, x => ` (${escapeHtml(anGuideJoin(x.small, ', '))})`), z: num(G.small_zone) }));
+
+			const next = anGuideText(apart.length ? 'an_sg_next_apart' : gradient.length ? 'an_sg_next_gradient' : 'an_sg_next_none',
+				{ sp: anGuideName((apart[0] || gradient[0] || S[0] || G.mantel_only[0]).species), motu, tree });
+			anGuideSection(body, {
+				title: t('an_sg_title'), sub: t('an_sg_sub'), verdict, items, action: null, next, nextFile: next,
+				foot: t('an_sg_foot'),
+				context: [t('an_sg_meta', { marker: pg.marker || '—', n: num(S.length),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_sg_file'),
+				stem: `${anFileStem()}_${t('an_sg_file')}`,
+			});
+		}
+
 		function anRenderHapGuide(body, r) {
 			const G = r.haplotype_guide;
 			if (!G) return;
@@ -10009,6 +10222,11 @@ li li { display: list-item; margin: 0; }
 					: anGuideText('an_hg_excl', { x: num(G.excluded), sp: anGuideName(sp), e: num(e), t: num(tot) }));
 			}
 
+			// Nucleotide diversity and Tajima's D (seq_popgen.guide), when in
+			const PG = AnState.popgen && AnState.popgen.guide;
+			if (AnState.popgenRunning) add('info', anGuideText('an_hg_pg_running'));
+			else if (PG) anHapPopgenItems(PG, add, nameList);
+
 			// What to do next
 			const sp = G.largest ? anGuideName(G.largest) : '';
 			let next;
@@ -10021,6 +10239,9 @@ li li { display: list-item; margin: 0; }
 				next = anGuideText('an_hg_next', { sp,
 					low: lowest.species !== G.largest && band(lowest.hd) !== 'vhigh' ? anGuideText('an_hg_next_low', { sp: anGuideName(lowest.species) }) : '' });
 			}
+			if (PG && PG.high_pi.length && N) next += anGuideText(PG.high_pi.length === 1 ? 'an_hg_next_pi_1' : 'an_hg_next_pi', {
+				list: nameList(PG.high_pi, () => '', 3), dist: escapeHtml(anSubName('distance')), motu: escapeHtml(anSubName('delimit')),
+				tab: escapeHtml(anTabName('distance')) });
 			const action = G.largest && (N || !(U && U.n >= G.min_n))
 				? { label: t('an_hg_net', { sp: G.largest }), run: () => anNetworkOf(G.largest) } : null;
 			anGuideSection(body, {

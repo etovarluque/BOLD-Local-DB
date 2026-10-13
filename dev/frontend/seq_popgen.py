@@ -48,6 +48,21 @@ MANTEL_MAX_POINTS = 1500
 PERMUTATIONS = 999
 EARTH_KM = 6371.0
 
+# Reading guide. Species are read with GUIDE_MIN_N aligned sequences; pi is
+# high when it doubles the median of the others and passes GUIDE_HIGH_PI (or
+# GUIDE_HIGH_PI_ALONE with fewer than three species to compare). PhiST is
+# strong from GUIDE_STRONG_PHI, moderate from GUIDE_MODERATE_PHI, and
+# GUIDE_SPLIT_PHI without isolation by distance suggests separate groups.
+# Zones under GUIDE_SMALL_ZONE sequences make PhiST uncertain.
+GUIDE_MIN_N = 10
+GUIDE_HIGH_PI = 0.01
+GUIDE_HIGH_PI_ALONE = 0.02
+GUIDE_STRONG_PHI = 0.25
+GUIDE_MODERATE_PHI = 0.05
+GUIDE_SPLIT_PHI = 0.5
+GUIDE_SMALL_ZONE = 10
+ALPHA = 0.05
+
 _COORD_RE = re.compile(r"(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)")
 
 
@@ -128,7 +143,7 @@ def phi_st(d, labels, permutations=PERMUTATIONS, rng=None):
             if phi(w) >= observed - 1e-12:
                 hits += 1
         done += k
-    return observed, (hits + 1) / (permutations + 1)
+    return float(observed), (hits + 1) / (permutations + 1)
 
 
 def _km(coords):
@@ -220,6 +235,59 @@ def _structure(species, codes, recs, d):
     return out
 
 
+def guide(species, structure):
+    """Facts for the readings of the haplotype table (diversity, Tajima's D)
+    and of the geographic structure; the page words them."""
+    read = [x for x in species if x["species"] and not x["mixed"] and x["used"] >= GUIDE_MIN_N]
+    pis = sorted(x["pi"] for x in read)
+    median = float(np.median(pis)) if pis else None
+    if len(read) >= 3:
+        high = [x for x in read if x["pi"] >= max(2 * median, GUIDE_HIGH_PI)]
+    else:
+        high = [x for x in read if x["pi"] >= GUIDE_HIGH_PI_ALONE]
+    high.sort(key=lambda x: -x["pi"])
+    sig = [x for x in read if x["tajima_p"] is not None and x["tajima_p"] < ALPHA]
+    row = lambda x: {"species": x["species"], "n": x["used"], "pi": x["pi"], "d": x["tajima_d"],
+                     "p": x["tajima_p"], "zones": x["zones"]}
+    unnamed = next((x for x in species if not x["species"] and x["used"] >= GUIDE_MIN_N), None)
+    mixed = [x for x in species if x["species"] and x["mixed"] and x["used"] >= GUIDE_MIN_N]
+    high_names = {x["species"] for x in high}
+
+    tested = [s for s in structure if s["phi_st"] is not None]
+    rows = []
+    for s in tested:
+        m = s["mantel"]
+        ibd = bool(m and m["p"] < ALPHA and m["r"] > 0)
+        sig_phi = s["phi_p"] < ALPHA
+        phi = s["phi_st"]
+        kind = ("flow" if not sig_phi or phi < GUIDE_MODERATE_PHI
+                else "moderate" if phi < GUIDE_STRONG_PHI
+                else "gradient" if ibd else "split")
+        rows.append({"species": s["species"], "n": s["n"], "phi": phi, "phi_p": s["phi_p"], "kind": kind,
+                     "very": phi >= GUIDE_SPLIT_PHI, "ibd": ibd,
+                     "r": m["r"] if m else None, "mantel_p": m["p"] if m else None,
+                     "km": m["max_km"] if m else None,
+                     "zones": [[z["zone"], z["n"]] for z in s["zones"]],
+                     "small": [z["zone"] for z in s["zones"] if z["n"] < GUIDE_SMALL_ZONE],
+                     "high_pi": s["species"] in high_names})
+    mantel_only = [{"species": s["species"], "n": s["mantel"]["n"], "r": s["mantel"]["r"],
+                    "p": s["mantel"]["p"], "km": s["mantel"]["max_km"]}
+                   for s in structure if s["phi_st"] is None and s["mantel"]]
+    return {
+        "min_n": GUIDE_MIN_N, "read_n": len(read), "median_pi": median,
+        "high_pi": [row(x) for x in high], "alone": len(read) < 3,
+        "single": row(read[0]) if len(read) == 1 else None,
+        "tajima_neg": [row(x) for x in sorted(sig, key=lambda x: x["tajima_d"]) if x["tajima_d"] < 0],
+        "tajima_pos": [row(x) for x in sorted(sig, key=lambda x: -x["tajima_d"]) if x["tajima_d"] > 0],
+        "tajima_n": sum(1 for x in read if x["tajima_d"] is not None),
+        "unnamed": {"n": unnamed["used"], "pi": unnamed["pi"]} if unnamed else None,
+        "mixed": [[x["species"], x["used"], x["pi"]] for x in mixed],
+        "struct": rows, "mantel_only": mantel_only,
+        "min_zone": MIN_ZONE_SEQUENCES, "small_zone": GUIDE_SMALL_ZONE,
+        "strong_phi": GUIDE_STRONG_PHI, "moderate_phi": GUIDE_MODERATE_PHI,
+    }
+
+
 def run_popgen(records, marker, forced_code=None):
     """Diversity of each species and its structure between zones, for the
     Haplotypes tab."""
@@ -261,6 +329,7 @@ def run_popgen(records, marker, forced_code=None):
                 structure.append(s)
     structure.sort(key=lambda s: (s["phi_st"] is None, -(s["phi_st"] or 0), s["species"]))
     return {"marker": marker, "zone": "country", "species": species, "structure": structure,
+            "guide": guide(species, structure),
             "excluded": {k: v for k, v in excluded.items() if v},
             "params": {"max_species": MAX_SPECIES_SEQUENCES, "min_zone": MIN_ZONE_SEQUENCES,
                        "min_mantel": MIN_MANTEL_SEQUENCES, "permutations": PERMUTATIONS},

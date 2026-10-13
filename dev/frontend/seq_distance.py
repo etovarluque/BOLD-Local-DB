@@ -703,7 +703,7 @@ def distance_guide(D, species, ids, bins, countries, gap):
     names = ["" if not sp or _PROVISIONAL.search(sp) else sp for sp in species]
     codes = _codes_of(names)
     named = codes >= 0
-    places = [c if c and c.strip().lower() not in seq_analysis._NO_PLACE else "" for c in countries]
+    places = ["" if seq_analysis.no_place(c) else c for c in countries]
 
     nn = defaultdict(lambda: {"ok": 0, "tie": 0, "wrong": 0, "with": Counter()})
     alone = 0

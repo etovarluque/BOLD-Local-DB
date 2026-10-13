@@ -84,6 +84,8 @@ _HAP_KMER = 30
 GUIDE_CONC_LOOKUP = 40
 GUIDE_CONC_OWN = 5
 GUIDE_CONC_SHARED = 0.1
+# Records are out of place only in a BIN whose owner holds this share of it
+GUIDE_CONC_OWNER = 0.5
 GUIDE_CONC_SPECIES = 8
 
 # ── Genetic codes ─────────────────────────────────────────────────────────────
@@ -631,7 +633,7 @@ def concordance(records):
         if len(rec["clean"]) < MIN_LENGTH:
             continue
         sp, b = rec.get("species") or "", rec.get("bin") or ""
-        if sp and rec.get("country"):
+        if sp and not no_place(rec.get("country")):
             countries_of[sp].add(rec["country"])
         if sp and b:
             bins_of[sp][b] += 1
@@ -666,9 +668,15 @@ def concordance(records):
     }
 
 
-_PROVISIONAL_WORDS = {"sp", "spp", "cf", "aff", "nr", "gr"}
-# Country values that name no place
-_NO_PLACE = {"unrecoverable", "exception", "?"}
+_PROVISIONAL_WORDS = {"sp", "spp", "cf", "aff", "nr", "gr", "indet"}
+# Country values that name no place: BOLD's "Unrecoverable", "Unspecified
+# country" and "Exception - Culture", "Exception - Zoological Park"...
+_NO_PLACE = ("unrecoverable", "unspecified", "exception", "?")
+
+
+def no_place(country):
+    """Whether a country value names no place (empty, or a placeholder)."""
+    return not country or country.strip().lower().startswith(_NO_PLACE)
 
 
 def _binomial(species):
@@ -680,10 +688,12 @@ def _binomial(species):
 
 def _provisional(species):
     """A name that doesn't settle a species: "Aedes sp.", "Carollia cf.
-    sowelli", "Carollia brevicauda PS1"."""
+    sowelli", "Carollia brevicauda PS1", or a hybrid ("Oncorhynchus mykiss
+    x Salmo salar")."""
     words = species.split()
     return (len(words) < 2 or words[1].rstrip(".").lower() in _PROVISIONAL_WORDS
-            or any(c.isdigit() for c in species) or (len(words) > 2 and words[2][:1].isupper()))
+            or any(c.isdigit() for c in species) or (len(words) > 2 and words[2][:1].isupper())
+            or any(w.lower() in ("x", "×") for w in words[2:]))
 
 
 def _species_bins(records):
@@ -751,14 +761,14 @@ def concordance_guide(records, conc, bin_species=None, capped=False):
 
     def countries(sp, b):
         # BOLD fills unknown places with "Unrecoverable"
-        return [c for c, _ in Counter(r["country"] for r in members[(sp, b)] if r.get("country")
-                                      and r["country"].strip().lower() not in _NO_PLACE).most_common(2)]
+        return [c for c, _ in Counter(r["country"] for r in members[(sp, b)]
+                                      if not no_place(r.get("country"))).most_common(2)]
 
     def ids(sp, b, n):
         return [r.get("processid") or r.get("id") for r in members[(sp, b)]][:3] if n <= 3 else []
 
     strays, own_split, own_small, shared, provisional = [], [], [], {}, {}
-    stray_bins, overview = set(), []
+    stray_bins, stray_pairs, overview = set(), set(), []
     for sp, counts in sorted(bins.items(), key=lambda x: (-sum(x[1].values()), x[0])):
         total = sum(counts.values())
         main = counts.most_common(1)[0][0]
@@ -769,18 +779,31 @@ def concordance_guide(records, conc, bin_species=None, capped=False):
                 provisional.setdefault(main, {"bin": main, "owner": o, "names": []})["names"].append([sp, counts[main]])
             continue
         items, own = [], []
+        # A BIN of its own with several records, besides the main one
+        owns_other = any(b != main and k >= GUIDE_CONC_OWN and _binomial(owner(b)[0] or sp) == _binomial(sp)
+                         for b, k in counts.items())
         for b, n in counts.most_common():
             o, o_n, b_total, src = owner(b)
-            entry = {"bin": b, "n": n, "countries": countries(sp, b)}
-            mine = not o or _binomial(o) == _binomial(sp)
-            if not mine and b == main and n >= max(3, GUIDE_CONC_SHARED * b_total):
-                mine = True
+            entry = {"bin": b, "n": n, "countries": countries(sp, b),
+                     "owned": not o or _binomial(o) == _binomial(sp)}
+            # A record is out of place only in a BIN that another species
+            # holds more than half of. A BIN of many species, none with half
+            # of it (COI doesn't separate them), is theirs as well; so is the
+            # main BIN of a species with no other BIN of its own when it
+            # holds several of its records (the whole species sits there:
+            # shared, not an error).
+            mine = (not o or _binomial(o) == _binomial(sp) or o_n <= GUIDE_CONC_OWNER * b_total
+                    or (b == main and (n >= max(3, GUIDE_CONC_SHARED * b_total)
+                                       or (n >= GUIDE_CONC_OWN and not owns_other))))
             if mine:
                 own.append(entry)
                 if b == main:
                     listed, b_total, src = holders(b)
+                    # Others sharing it: a tenth of the BIN, or any with a
+                    # few records when this species doesn't hold half of it
+                    least = max(3, GUIDE_CONC_SHARED * b_total) if n >= GUIDE_CONC_OWNER * b_total else 3
                     others = [x for x in listed if not _provisional(x[0]) and _binomial(x[0]) != _binomial(sp)
-                              and x[1] >= max(3, GUIDE_CONC_SHARED * b_total)]
+                              and x[1] >= least]
                     if others:
                         s = shared.setdefault(b, {"bin": b, "species": [], "others": others, "src": src,
                                                   "genera": set()})
@@ -792,10 +815,11 @@ def concordance_guide(records, conc, bin_species=None, capped=False):
                 items.append(entry)
         if items:
             stray_bins.update(x["bin"] for x in items)
+            stray_pairs.update((_binomial(sp), x["bin"]) for x in items)
             strays.append({"species": sp, "n": total, "records": sum(x["n"] for x in items),
                            "bins_n": len(items), "items": items[:GUIDE_LIST]})
         big = [x for x in own if x["n"] >= GUIDE_CONC_OWN]
-        small = [x for x in own if x["n"] < GUIDE_CONC_OWN and x["bin"] != main]
+        small = [x for x in own if x["n"] < GUIDE_CONC_OWN and x["bin"] != main and x["owned"]]
         if len(big) >= 2:
             own_split.append({"species": sp, "n": total, "bins_n": len(big), "bins": big[:GUIDE_CONC_SPECIES],
                               "small": [x["n"] for x in small], "top": round(own[0]["n"] / total, 3) if own else 0})
@@ -812,17 +836,27 @@ def concordance_guide(records, conc, bin_species=None, capped=False):
                 continue
             back = [j for j in y["items"] if _binomial(j["owner"]) == _binomial(x["species"])]
             places = set(it["countries"]) & {c for j in back for c in j["countries"]}
-            if back and places:
+            if back and places and not any(r[:2] == [x["species"], y["species"]] for r in reciprocal):
                 reciprocal.append([x["species"], y["species"], sorted(places)[0]])
 
     named_bins = {b for (sp, b) in members if not _provisional(sp)}
     bin_only = [r for r in records if r.get("bin") and not r.get("species") and len(r["clean"]) >= MIN_LENGTH]
     # One BIN of its own here, and not shared in the database either
+    # Species whose records in a BIN are out of place don't share it as well
+    for b in list(shared):
+        s = shared[b]
+        s["others"] = [x for x in s["others"] if (_binomial(x[0]), b) not in stray_pairs]
+        if not s["others"] and len(s["species"]) < 2:
+            del shared[b]
+            continue
+        s["genera"] = len({_binomial(x[0]).split()[0] for x in s["others"] + s["species"]})
     in_shared = {sp for s in shared.values() for sp, _ in s["species"]}
+    elsewhere = {x["species"] for x in strays} | {sp for p in provisional.values() for sp, _ in p["names"]}
     concordant = sorted(sp for sp, counts in bins.items()
-                        if len(counts) == 1 and len(in_data[next(iter(counts))]) == 1 and sp not in in_shared)
+                        if len(counts) == 1 and len(in_data[next(iter(counts))]) == 1
+                        and sp not in in_shared and sp not in elsewhere
+                        and _binomial(owner(next(iter(counts)))[0] or sp) == _binomial(sp))
     for s in shared.values():
-        s["genera"] = len(s["genera"])
         s["provisional"] = provisional.pop(s["bin"], {"names": []})["names"]
     return {
         "species_n": conc["species"],

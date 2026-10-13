@@ -2472,6 +2472,33 @@
                 an_v_quality: 'Calidad',
                 an_v_haplotypes: 'Haplotipos',
                 an_v_hap_table: 'Tabla',
+                an_v_structure: 'Estructura geográfica',
+                an_c_pi: 'π (%)',
+                an_c_seg: 'Sitios segregantes',
+                an_c_tajima: 'D de Tajima',
+                an_c_countries: 'Países',
+                an_hap_popgen_note: 'π (diversidad nucleotídica), sitios segregantes y D de Tajima se calculan alineando cada especie y comparando solo las posiciones que cubren todas sus secuencias; de las especies con más de {max} secuencias se usa una muestra al azar de ese tamaño. * D de Tajima significativa (p < 0,05). Sin nombre o con «sp.» pueden mezclarse especies, así que no se calcula la D de Tajima.',
+                an_popgen_running: 'Calculando la diversidad y la estructura geográfica de cada especie…',
+                an_popgen_error: 'No se pudo calcular la diversidad: {msg}',
+                an_struct_note: 'Especies con al menos {min} secuencias en dos países o más. ΦST mide qué parte de su variación genética está entre países (0: ninguna; 1: toda). La prueba de Mantel mide si las secuencias más alejadas en el mapa son también las más distintas (r cercano a 1: mucho; cercano a 0: nada). Los p-valores salen de {perm} permutaciones; los países con menos secuencias de la especie quedan fuera de ΦST.',
+                an_struct_none: 'Ninguna especie tiene al menos {min} secuencias en dos países, ni {m} secuencias con coordenadas en tres lugares distintos.',
+                an_c_zones: 'Países (secuencias)',
+                an_c_p_phist: 'p (ΦST)',
+                an_c_mantel_r: 'Mantel r',
+                an_c_p_mantel: 'p (Mantel)',
+                an_c_max_km: 'Distancia máx. (km)',
+                an_struct_pick: 'Ver',
+                an_h_ibd: 'Aislamiento por distancia · {sp}',
+                an_ibd_note: '{n} secuencias con coordenadas en {k} lugares{sample}. Cada punto es un par de secuencias: si la nube sube hacia la derecha, las más alejadas son las más distintas.',
+                an_ibd_sample: ' (una muestra de {n} de {m})',
+                an_axis_km: 'Distancia geográfica (km)',
+                an_axis_gen: 'Diferencias (%)',
+                an_ibd_tip: '{km} km · {d} % de diferencias',
+                an_st_struct_t: '«Estructura geográfica» necesita saber dónde se recogió cada secuencia.',
+                an_st_struct_nocountry: 'Compara la variación genética entre países y con la distancia geográfica, así que necesita el país o las coordenadas, y ninguna secuencia los trae.',
+                an_st_struct_t_two: '«Estructura geográfica» necesita secuencias de al menos dos países.',
+                an_st_struct_one: 'Todas las secuencias con país son del mismo, así que no hay países entre los que comparar.',
+                an_st_struct_one_how: 'Busca o selecciona secuencias de más de un país.',
                 an_st_partial_tab: 'Con estos datos, alguna sección de esta pestaña queda oculta',
                 an_st_hap_nosp: 'Ninguna secuencia trae nombre de especie: todas se cuentan en un solo grupo, y su diversidad mezcla especies distintas.',
                 an_st_net_nocountry: 'Ninguna secuencia trae país: la red no se puede colorear por país.',
@@ -3571,6 +3598,33 @@
                 an_v_quality: 'Quality',
                 an_v_haplotypes: 'Haplotypes',
                 an_v_hap_table: 'Table',
+                an_v_structure: 'Geographic structure',
+                an_c_pi: 'π (%)',
+                an_c_seg: 'Segregating sites',
+                an_c_tajima: 'Tajima\'s D',
+                an_c_countries: 'Countries',
+                an_hap_popgen_note: 'π (nucleotide diversity), segregating sites and Tajima\'s D are computed aligning each species and comparing only the positions all its sequences cover; species with more than {max} sequences use a random sample of that size. * Significant Tajima\'s D (p < 0.05). Unnamed or "sp." sequences may mix species, so they get no Tajima\'s D.',
+                an_popgen_running: 'Computing the diversity and geographic structure of each species…',
+                an_popgen_error: 'The diversity couldn\'t be computed: {msg}',
+                an_struct_note: 'Species with at least {min} sequences in two or more countries. ΦST measures how much of their genetic variation lies between countries (0: none; 1: all). The Mantel test measures whether the sequences farthest apart on the map are also the most different (r near 1: strongly; near 0: not at all). P-values come from {perm} permutations; countries with fewer sequences of the species are left out of ΦST.',
+                an_struct_none: 'No species has at least {min} sequences in two countries, or {m} sequences with coordinates at three different places.',
+                an_c_zones: 'Countries (sequences)',
+                an_c_p_phist: 'p (ΦST)',
+                an_c_mantel_r: 'Mantel r',
+                an_c_p_mantel: 'p (Mantel)',
+                an_c_max_km: 'Max. distance (km)',
+                an_struct_pick: 'Show',
+                an_h_ibd: 'Isolation by distance · {sp}',
+                an_ibd_note: '{n} sequences with coordinates at {k} places{sample}. Each point is a pair of sequences: if the cloud rises to the right, those farthest apart are the most different.',
+                an_ibd_sample: ' (a sample of {n} of {m})',
+                an_axis_km: 'Geographic distance (km)',
+                an_axis_gen: 'Differences (%)',
+                an_ibd_tip: '{km} km · {d}% differences',
+                an_st_struct_t: '"Geographic structure" needs to know where each sequence was collected.',
+                an_st_struct_nocountry: 'It compares the genetic variation between countries and with geographic distance, so it needs the country or the coordinates, and no sequence has them.',
+                an_st_struct_t_two: '"Geographic structure" needs sequences from at least two countries.',
+                an_st_struct_one: 'All sequences with a country are from the same one, so there are no countries to compare.',
+                an_st_struct_one_how: 'Search or select sequences from more than one country.',
                 an_st_partial_tab: 'With these data, some section of this tab is hidden',
                 an_st_hap_nosp: 'No sequence has a species name: all are counted as one group, and its diversity mixes different species.',
                 an_st_net_nocountry: 'No sequence has a country: the network can\'t be coloured by country.',
@@ -7791,17 +7845,22 @@
 			distRunning: false,
 			showView: null,
 			tabViews: {},      // view last seen in each tab
+			popgen: null,      // diversity and structure of each species (asked for on its own)
+			popgenRunning: false,
+			popgenError: null,
+			structSpecies: null, // species whose isolation by distance is drawn
 		};
 
 		// Tabs and the views in them; the views of a tab share its options
 		const AN_TABS = [
 			{ id: 'quality', label: 'an_v_quality', views: ['quality'] },
-			{ id: 'haplotypes', label: 'an_v_haplotypes', views: ['haplotypes', 'network'] },
+			{ id: 'haplotypes', label: 'an_v_haplotypes', views: ['haplotypes', 'network', 'structure'] },
 			{ id: 'concordance', label: 'an_v_concordance', views: ['concordance'] },
 			{ id: 'distance', label: 'an_v_dist_tab', views: ['distance', 'tree', 'delimit'],
 			  controls: body => anDistanceControls(body) },
 		];
 		const AN_VIEW_LABELS = { quality: 'an_v_quality', haplotypes: 'an_v_hap_table', network: 'an_v_network',
+		                         structure: 'an_v_structure',
 		                         concordance: 'an_v_concordance', distance: 'an_v_distance',
 		                         tree: 'an_v_tree', delimit: 'an_v_delimit' };
 
@@ -7825,6 +7884,12 @@
 					         why: t(!f.species && !f.bin ? 'an_st_conc_none' : !f.species ? 'an_st_conc_nosp'
 					                : !f.bin ? 'an_st_conc_nobin' : 'an_st_conc_apart'),
 					         how: fasta ? t('an_st_how_fasta') : null };
+				case 'structure':
+					if (!f.country) return { s: 'off', title: t('an_st_struct_t'), why: t('an_st_struct_nocountry'),
+					                         how: fasta ? t('an_st_how_fasta') : null };
+					if (f.countries < 2) return { s: 'off', title: t('an_st_struct_t_two'), why: t('an_st_struct_one'),
+					                              how: t('an_st_struct_one_how') };
+					return { s: 'ok' };
 				case 'distance':
 					return f.species ? { s: 'ok' } : partial('an_st_dist_nosp');
 				case 'tree':
@@ -7967,6 +8032,7 @@
 				species: v('col_species'), genus: v('col_genus'), family: v('col_family'),
 				order: v('col_order'), class: v('col_class'), phylum: v('col_phylum'),
 				kingdom: v('col_kingdom'), country: v('col_country_ocean'),
+				province: v('col_province_state'), coord: v('col_coord'),
 				marker: v('col_marker_code'), seq: row[SEQ_COL],
 			};
 		}
@@ -8038,9 +8104,13 @@
 				AnState.lastBody = Object.assign({}, body, { marker: data.marker });
 				AnState.dist = null;
 				AnState.net = null;
+				AnState.popgen = null;
+				AnState.popgenError = null;
+				AnState.structSpecies = null;
 				anRender();
 				anSummariseInput(data);
 				anSetInputOpen(false);
+				anRunPopgen();
 			} catch (e) {
 				showBatchDialog(escapeHtml(e.message));
 			} finally {
@@ -8273,6 +8343,7 @@
 			views.setAttribute('role', 'tablist');
 			const body = anEl('div', 'an-view-body');
 			const renderers = { quality: anRenderQuality, haplotypes: anRenderHaplotypes, network: anRenderNetwork,
+			                    structure: anRenderStructure,
 			                    concordance: anRenderConcordance, distance: anRenderDistance,
 			                    tree: anRenderTree, delimit: anRenderDelimit };
 			const show = view => {
@@ -8384,8 +8455,128 @@
 			anRenderQualityGuide(body, r);
 		}
 
+		// ── Diversity and geographic structure ──
+		// Computed by /api/analysis/popgen (seq_popgen.py) right after the
+		// basic results, in the background: the haplotype table fills its
+		// diversity columns and the structure view when it arrives.
+
+		async function anRunPopgen() {
+			if (!AnState.lastBody) return;
+			const asked = AnState.lastBody;
+			AnState.popgenRunning = true;
+			try {
+				const response = await fetch('/api/analysis/popgen', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(asked),
+				});
+				const data = await response.json().catch(() => ({}));
+				if (AnState.lastBody !== asked) return;
+				if (!response.ok || data.error) throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				AnState.popgen = data;
+			} catch (e) {
+				if (AnState.lastBody === asked) AnState.popgenError = e.message;
+			} finally {
+				if (AnState.lastBody === asked) {
+					AnState.popgenRunning = false;
+					if (['haplotypes', 'structure'].includes(AnState.view)) anRefreshView();
+				}
+			}
+		}
+
+		// Diversity of each species, by the name the haplotype table shows
+		function anPopgenBySpecies() {
+			const m = new Map();
+			if (AnState.popgen) AnState.popgen.species.forEach(x => m.set(x.species, x));
+			return m;
+		}
+
+		// Where the diversity columns stand: still computing, failed or done
+		function anPopgenStatus(body) {
+			if (AnState.popgenRunning) body.append(anEl('p', 'an-muted', t('an_popgen_running')));
+			else if (AnState.popgenError) body.append(anEl('div', 'an-warn', '⚠ ' + t('an_popgen_error', { msg: AnState.popgenError })));
+		}
+
+		function anRenderStructure(body) {
+			anPopgenStatus(body);
+			const pg = AnState.popgen;
+			if (!pg) return;
+			const P = pg.params;
+			body.append(anEl('p', 'an-muted', t('an_struct_note', { min: P.min_zone, perm: numFmt.format(P.permutations) })));
+			if (!pg.structure.length) {
+				body.append(anEl('p', 'an-muted', t('an_struct_none', { min: P.min_zone, m: P.min_mantel })));
+				return;
+			}
+			const rows = pg.structure;
+			const pick = rows.find(x => x.species === AnState.structSpecies && x.mantel) || rows.find(x => x.mantel);
+			const pv = p => p === null || p === undefined ? '—' : p <= 1 / (P.permutations + 1) + 1e-9 ? `≤ ${(1 / (P.permutations + 1)).toFixed(3)}` : p.toFixed(3);
+			if (rows.length > AN_TABLE_ROWS) body.append(anEl('p', 'an-muted',
+				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(rows.length) })));
+			body.append(anTable([
+				{ label: t('an_c_species'), cls: 'sp', get: x => x.species },
+				{ label: t('an_c_seqs'), cls: 'num', get: x => numFmt.format(x.n) },
+				{ label: t('an_c_zones'), get: x => x.zones.length
+					? x.zones.map(z => `${z.zone} ${numFmt.format(z.n)}`).join(', ') : '—' },
+				{ label: 'ΦST', cls: 'num', get: x => x.phi_st === null ? '—' : x.phi_st.toFixed(2) },
+				{ label: t('an_c_p_phist'), cls: 'num', get: x => pv(x.phi_p) },
+				{ label: t('an_c_mantel_r'), cls: 'num', get: x => x.mantel ? x.mantel.r.toFixed(2) : '—' },
+				{ label: t('an_c_p_mantel'), cls: 'num', get: x => x.mantel ? pv(x.mantel.p) : '—' },
+				{ label: t('an_c_max_km'), cls: 'num', get: x => x.mantel ? numFmt.format(Math.round(x.mantel.max_km)) : '—' },
+				{ label: '', get: x => {
+					if (!x.mantel) return '';
+					const b = anEl('button', 'btn btn-sm an-pick' + (x === pick ? ' active' : ''), t('an_struct_pick'));
+					b.type = 'button';
+					b.addEventListener('click', () => { AnState.structSpecies = x.species; anRefreshView(); });
+					return b;
+				} },
+			], rows.slice(0, AN_TABLE_ROWS)));
+			if (pick) {
+				const m = pick.mantel;
+				body.append(anEl('div', 'an-h', t('an_h_ibd', { sp: pick.species })));
+				body.append(anEl('p', 'an-muted', t('an_ibd_note', { n: numFmt.format(m.n), k: numFmt.format(m.places),
+					sample: m.with_coords > m.n ? t('an_ibd_sample', { n: numFmt.format(m.n), m: numFmt.format(m.with_coords) }) : '' })));
+				body.append(anIbdScatter(m));
+			}
+		}
+
+		// Genetic against geographic distance, one point per pair of sequences
+		function anIbdScatter(m) {
+			const W = 560, H = 360, L = 56, R = 16, T = 12, B = 46;
+			const pw = W - L - R, ph = H - T - B;
+			const maxX = Math.max(1, ...m.pairs.map(p => p[0])), maxY = Math.max(0.1, ...m.pairs.map(p => p[1]));
+			const sx = anStep(maxX), sy = anStep(maxY);
+			const topX = Math.ceil(maxX / sx) * sx, topY = Math.ceil(maxY / sy) * sy;
+			const x = v => L + v / topX * pw, y = v => T + ph - v / topY * ph;
+			const parts = [];
+			for (let v = 0; v <= topY + 1e-9; v += sy) parts.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`,
+				`<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${anNum(v, sy < 1 ? 1 : 0)}</text>`);
+			for (let v = 0; v <= topX + 1e-9; v += sx) parts.push(`<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${T + ph}"/>`,
+				`<text x="${x(v)}" y="${T + ph + 16}" text-anchor="middle">${numFmt.format(v)}</text>`);
+			m.pairs.forEach(([km, d], i) => parts.push(
+				`<circle class="pt" data-i="${i}" cx="${x(km).toFixed(1)}" cy="${y(d).toFixed(1)}" r="3" fill="${AN_SERIES.intra}" fill-opacity=".45"/>`));
+			parts.push(`<line class="axis" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>`,
+			           `<line class="axis" x1="${L}" x2="${L}" y1="${T}" y2="${T + ph}"/>`,
+			           `<text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">${escapeHtml(t('an_axis_km'))}</text>`,
+			           `<text transform="translate(14 ${T + ph / 2}) rotate(-90)" text-anchor="middle">${escapeHtml(t('an_axis_gen'))}</text>`);
+			const wrap = anEl('div', 'an-hist an-scatter');
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(t('an_axis_km'))}">${parts.join('')}</svg>`);
+			anAttachTip(wrap, wrap.querySelector('svg'), (i, hit) => {
+				const [km, d] = m.pairs[i];
+				return { mark: hit, text: t('an_ibd_tip', { km: numFmt.format(Math.round(km)), d: anNum(d, 2) }) };
+			});
+			return wrap;
+		}
+
 		function anRenderHaplotypes(body, r) {
 			body.append(anEl('p', 'an-muted', t('an_hap_note')));
+			const pg = anPopgenBySpecies();
+			anPopgenStatus(body);
+			if (AnState.popgen) body.append(anEl('p', 'an-muted', t('an_hap_popgen_note', { max: numFmt.format(AnState.popgen.params.max_species) })));
+			const pgCell = (h, get) => {
+				if (AnState.popgenRunning) return '…';
+				const x = pg.get(h.species);
+				return x ? get(x) : '—';
+			};
 			const haps = [...r.haplotypes].sort((a, b) => b.n - a.n || a.species.localeCompare(b.species));
 			if (haps.length > AN_TABLE_ROWS) body.append(anEl('p', 'an-muted',
 				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(haps.length) })));
@@ -8395,6 +8586,15 @@
 				{ label: t('an_c_haps'), cls: 'num', get: h => numFmt.format(h.haplotypes) },
 				{ label: t('an_c_singletons'), cls: 'num', get: h => numFmt.format(h.singletons) },
 				{ label: t('an_c_hd'), cls: 'num', get: h => h.hd === null ? '—' : h.hd.toFixed(3) },
+				{ label: t('an_c_pi'), cls: 'num', get: h => pgCell(h, x => anNum(100 * x.pi, 2)) },
+				{ label: t('an_c_seg'), cls: 'num', get: h => pgCell(h, x => numFmt.format(x.segregating)) },
+				{ label: t('an_c_tajima'), cls: 'num', get: h => pgCell(h, x => {
+					if (x.tajima_d === null) return '—';
+					const span = anEl('span', '', anNum(x.tajima_d, 2) + (x.tajima_p < 0.05 ? ' *' : ''));
+					span.title = `p = ${x.tajima_p.toFixed(3)}`;
+					return span;
+				}) },
+				{ label: t('an_c_countries'), cls: 'num', get: h => pgCell(h, x => x.zones ? numFmt.format(x.zones) : '—') },
 				{ label: t('an_c_excluded'), cls: 'num', get: h => h.excluded ? numFmt.format(h.excluded) : '' },
 				{ label: '', get: h => {
 					if (!h.species || h.n < 2) return '';

@@ -84,6 +84,7 @@ import genbank_batch
 import seq_analysis
 import seq_distance
 import seq_network
+import seq_popgen
 import seq_identify
 # What bold_db_creator.py writes and this viewer reads: file and table names,
 # the version and the database layout version
@@ -3661,7 +3662,8 @@ ANALYSIS_COLUMNS = [
     ('bin', 'col_bin_uri'), ('species', 'col_species'), ('genus', 'col_genus'),
     ('family', 'col_family'), ('order', 'col_order'), ('class', 'col_class'),
     ('phylum', 'col_phylum'), ('kingdom', 'col_kingdom'),
-    ('country', 'col_country_ocean'), ('marker', 'col_marker_code'),
+    ('country', 'col_country_ocean'), ('province', 'col_province_state'),
+    ('coord', 'col_coord'), ('marker', 'col_marker_code'),
     ('seq', 'col_nuc'),
 ]
 _ANALYSIS_KEYS = {key for key, _ in ANALYSIS_COLUMNS}
@@ -4006,6 +4008,33 @@ def _network_bin_species(guide):
     except sqlite3.Error:
         pass
     guide['bin_species'] = out
+
+
+@app.route('/api/analysis/popgen', methods=['POST'])
+def analysis_popgen():
+    """Diversity of each species (pi, segregating sites, Tajima's D) and its
+    structure between countries (PhiST, Mantel), for the Haplotypes tab.
+
+    Body: as /api/analysis/basic. The page asks for it on its own once the
+    basic results are shown.
+    """
+    data = request.get_json(silent=True) or {}
+    start = time.time()
+    try:
+        forced_code = _analysis_genetic_code(data)
+        records, marker, _, _ = _analysis_input(data)
+        result = seq_popgen.run_popgen(records, marker, forced_code)
+    except _AnalysisReply as reply:
+        return jsonify(reply.body), reply.status
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except sqlite3.Error as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    result['seconds'] = round(time.time() - start, 2)
+    print(f"Diversity OK — {data.get('source')} | {marker or '?'} | "
+          f"{len(result['species']):,} species | {len(result['structure']):,} structured | {result['seconds']}s")
+    return jsonify(result)
 
 
 @app.route('/api/analysis/network', methods=['POST'])

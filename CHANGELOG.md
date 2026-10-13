@@ -8,6 +8,18 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 ## [Unreleased]
 
 ### Added
+- Haplotypes: the table adds each species' nucleotide diversity (π),
+  segregating sites, Tajima's D (marked when significant) and number of
+  countries, computed aligning each species on its own (a random sample of
+  300 sequences for larger ones) right after the basic results, in the
+  background. Unnamed and bare "Genus sp." sequences may mix species and get
+  no Tajima's D.
+- Haplotypes › Geographic structure: for species with at least 5 sequences
+  in two or more countries, PhiST between countries (AMOVA, 999
+  permutations) and a Mantel test of genetic against geographic distance
+  for sequences with coordinates, with its isolation-by-distance plot. The
+  analysis now reads the coordinates and province of each record. Struck
+  through when the sequences bring no country or only one.
 - Species delimitation: a *What these results say* section after the ASAP
   and ABGD tables reads the results for users new to them. It proposes the
   partition to start from (ABGD's when it holds over several consecutive

@@ -309,7 +309,8 @@ def run_popgen(records, marker, forced_code=None):
     usable, excluded = seq_distance.usable_records(records, forced_code)
     groups = defaultdict(list)
     for rec in usable:
-        groups[rec.get("species") or ""].append(rec)
+        # As the haplotype table names them (a FASTA's taxon field included)
+        groups[rec.get("species") or rec.get("taxon") or ""].append(rec)
 
     rng = random.Random(0)
     species, structure = [], []

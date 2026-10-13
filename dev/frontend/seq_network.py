@@ -51,8 +51,6 @@ GUIDE_STAR_SHARE = 0.3
 GUIDE_STAR_NEAR = 0.6
 GUIDE_MAX_LINEAGES = 30
 GUIDE_MAX_ITEMS = 8
-# BOLD's placeholders in the country field, which aren't places
-_NO_PLACE = ("unrecoverable", "unspecified", "exception")
 # Epithets that don't name a species ("Carollia sp.", "Aedes cf. aegypti")
 _NO_EPITHET = {"sp", "sp.", "spp", "spp.", "cf", "cf.", "aff", "aff.", "nr", "nr.", "gr", "gr."}
 
@@ -355,7 +353,8 @@ def tcs(d):
 # ── Reading guide ──────────────────────────────────────────────────────────────
 
 def _place(country):
-    return country if country and not country.lower().startswith(_NO_PLACE) else ""
+    # BOLD's placeholders in the country field aren't places
+    return "" if seq_analysis.no_place(country) else country
 
 
 def _binomial(species):

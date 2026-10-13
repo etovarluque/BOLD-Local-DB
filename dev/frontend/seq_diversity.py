@@ -94,10 +94,11 @@ def chao1(counts):
     f2 = sum(1 for c in counts if c == 2)
     k = (n - 1) / n if n else 0
     est = s + k * f1 * (f1 - 1) / (2 * (f2 + 1))
-    # Variance (Chao 1987, bias-corrected form)
+    # Variance of the bias-corrected form (Chao 2005; EstimateS, SpadeR)
     if f2 > 0:
-        r = f1 / f2
-        var = f2 * (k * r ** 2 / 2 + k ** 2 * r ** 3 + k ** 2 * r ** 4 / 4)
+        var = (k * f1 * (f1 - 1) / (2 * (f2 + 1))
+               + k ** 2 * f1 * (2 * f1 - 1) ** 2 / (4 * (f2 + 1) ** 2)
+               + k ** 2 * f1 ** 2 * f2 * (f1 - 1) ** 2 / (4 * (f2 + 1) ** 4))
     else:
         var = k * f1 * (f1 - 1) / 2 + k ** 2 * f1 * (2 * f1 - 1) ** 2 / 4 - k ** 2 * f1 ** 4 / (4 * est) if est else 0
     t = est - s
@@ -118,7 +119,8 @@ def coverage(counts):
     if f2 > 0:
         a = (n - 1) * f1 / ((n - 1) * f1 + 2 * f2)
     else:
-        a = (n - 1) * (f1 - 1) / ((n - 1) * (f1 - 1) + 2) if f1 > 1 else 1.0
+        # A single singleton and no doubleton: no unit left unseen (f0 = 0)
+        a = (n - 1) * (f1 - 1) / ((n - 1) * (f1 - 1) + 2) if f1 > 1 else 0.0
     return max(0.0, 1 - f1 / n * a)
 
 
@@ -203,7 +205,8 @@ def _lineage(rec):
 def _distances(codes):
     """Pairs of units at each taxonomic distance: 1 = same genus, up to
     len(RANKS) + 1 = no rank in common. codes has one row per unit and one
-    column per rank (-1 = unknown, matches nothing)."""
+    column per rank (-1 = unknown, matches nothing; distinctness fills
+    missing ranks, so it passes none)."""
     s = len(codes)
     shared = []
     for k in range(codes.shape[1]):
@@ -211,8 +214,9 @@ def _distances(codes):
         col = col[col >= 0]
         counts = np.bincount(col) if len(col) else np.zeros(1, dtype=np.int64)
         shared.append(int((counts * (counts - 1) // 2).sum()))
-    # Pairs sharing a rank also share the ones above; unknown ranks can
-    # break that, so keep the cumulative counts non-decreasing
+    # Pairs sharing a rank also share the ones above; inconsistent
+    # taxonomies (one genus under two families) can break that, so keep the
+    # cumulative counts non-decreasing
     for k in range(1, len(shared)):
         shared[k] = max(shared[k], shared[k - 1])
     out, prev = [], 0
@@ -279,13 +283,25 @@ def distinctness(unit_rows, zone_sets):
     if len({unit_rows[u][0] for u in units}) < 2:
         return {"skipped": "one_genus", "genus": unit_rows[units[0]][0], "units": len(units)}
     index = {u: i for i, u in enumerate(units)}
+    # A missing rank takes the commonest value the other units of its rank
+    # below hold (the family of the other Aedes), or one of its own from it
+    # ("?Aedes"), so units sharing that lower rank still share this one and
+    # every pair keeps its level
+    filled = {u: list(unit_rows[u]) for u in units}
+    for k in range(1, len(RANKS)):
+        known = defaultdict(Counter)
+        for lin in filled.values():
+            if lin[k]:
+                known[lin[k - 1]][lin[k]] += 1
+        for lin in filled.values():
+            if not lin[k]:
+                common = known[lin[k - 1]].most_common(1)
+                lin[k] = common[0][0] if common else "?" + lin[k - 1]
     codes = np.full((len(units), len(RANKS)), -1, dtype=np.int64)
     for k in range(len(RANKS)):
         seen = {}
         for u in units:
-            v = unit_rows[u][k]
-            if v:
-                codes[index[u], k] = seen.setdefault(v, len(seen))
+            codes[index[u], k] = seen.setdefault(filled[u][k], len(seen))
     # A rank every unit shares adds nothing: drop it, so the largest
     # distance (100) is the deepest split in the analysis (Clarke & Warwick)
     codes = codes[:, [k for k in range(len(RANKS)) if (codes[:, k] != 0).any()]]
@@ -365,8 +381,14 @@ def run_diversity(records, marker, unit="bin", zoning="country"):
         if len(tails) == 1 and None not in tails:
             t = tails.pop()
             short = lambda z: z[:-len(t)] if tail(z) == t else z
-            by_zone = defaultdict(Counter, {short(z): c for z, c in by_zone.items()})
-            places = defaultdict(set, {short(z): p for z, p in places.items()})
+            # A zone of the same name with no country joins it, rather than
+            # one replacing the other
+            merged_zone, merged_places = defaultdict(Counter), defaultdict(set)
+            for z, c in by_zone.items():
+                merged_zone[short(z)].update(c)
+            for z, p in places.items():
+                merged_places[short(z)] |= p
+            by_zone, places = merged_zone, merged_places
     sizes = {z: sum(c.values()) for z, c in by_zone.items()}
     kept = sorted((z for z in by_zone if sizes[z] >= MIN_ZONE_SEQUENCES), key=lambda z: (-sizes[z], z))
     small = sorted((z for z in by_zone if sizes[z] < MIN_ZONE_SEQUENCES), key=lambda z: (-sizes[z], z))

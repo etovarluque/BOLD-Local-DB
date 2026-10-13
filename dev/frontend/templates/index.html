@@ -2547,6 +2547,7 @@
                 an_rg_v_all: '<b>Las {n} zonas están casi completas:</b> más secuencias del mismo grupo apenas añadirían {u}.',
                 an_rg_v_none: '<b>Ninguna de las {n} zonas está completa:</b> en todas faltan {u} por secuenciar.',
                 an_rg_v_mixed: '<b>{ok} están casi completas; {bad}, no.</b>',
+                an_rg_v_mixed_1: '<b>{ok} está casi completa; {bad}, no.</b>',
                 an_rg_v_equal: ' A igual esfuerzo ({m} secuencias), la más rica es {a} ({ra} {u}) y la más pobre {b} ({rb}).',
                 an_rg_v_obs: ' La que más {u} tiene en bruto es {z}, pero porque tiene más secuencias.',
                 an_rg_how: '<b>Cómo se lee.</b> Chao1 estima cuántas unidades ({u}) habría con un muestreo completo a partir de los que tienen una y dos secuencias: cuantos más de una sola, más faltan. La cobertura es la parte de las secuencias que pertenece a unidades ya vistas: desde el {c} la zona está casi completa; por debajo del {p}, poco muestreada. Para comparar zonas, mira la riqueza a igual esfuerzo, no la observada: una zona con más secuencias siempre tiene más unidades.',
@@ -3836,7 +3837,8 @@
                 an_rg_v_one_poor: '<b>{z} is poorly sampled: {s} {u} in {n} sequences</b>, with {c} coverage; Chao1 estimates {chao}, so some {m} remain to be sequenced.',
                 an_rg_v_all: '<b>All {n} zones are nearly complete:</b> more sequences of the same group would hardly add {u}.',
                 an_rg_v_none: '<b>None of the {n} zones is complete:</b> {u} remain to be sequenced in all of them.',
-                an_rg_v_mixed: '<b>{ok} are nearly complete; {bad} are not.</b>',
+                an_rg_v_mixed: '<b>{ok} are nearly complete; {bad}, not.</b>',
+                an_rg_v_mixed_1: '<b>{ok} is nearly complete; {bad}, not.</b>',
                 an_rg_v_equal: ' At equal effort ({m} sequences), the richest is {a} ({ra} {u}) and the poorest {b} ({rb}).',
                 an_rg_v_obs: ' The one with the most {u} as counted is {z}, but because it has more sequences.',
                 an_rg_how: '<b>How to read it.</b> Chao1 estimates how many {u} a complete sampling would find from those with one and two sequences: the more with only one, the more are missing. Coverage is the share of sequences that belong to units already seen: from {c} a zone is nearly complete; under {p}, poorly sampled. To compare zones, look at richness at equal effort, not as counted: a zone with more sequences always has more units.',
@@ -9195,7 +9197,7 @@
 			} else {
 				verdict = complete.length === Z.length ? anGuideText('an_rg_v_all', { n: num(Z.length), u: units })
 					: !complete.length ? anGuideText('an_rg_v_none', { n: num(Z.length), u: units })
-					: anGuideText('an_rg_v_mixed', { ok: zlist(complete, () => ''), bad: zlist([...poor, ...incomplete], () => '') });
+					: anGuideText(complete.length === 1 ? 'an_rg_v_mixed_1' : 'an_rg_v_mixed', { ok: zlist(complete, () => ''), bad: zlist([...poor, ...incomplete], () => '') });
 				const R = G.rarefied_order;
 				if (G.rarefied_alike) verdict += anGuideText('an_rg_v_equal_same', { m: num(G.common_n), r: anNum(R[0][1], 1), u: units });
 				else if (R.length >= 2) {

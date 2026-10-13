@@ -205,6 +205,13 @@ def run_diversity(records, marker, unit="bin", zoning="country"):
         if unit == "bin" and rec.get("species") and not seq_popgen.mixed_name(rec["species"]):
             names[(u, rec["species"])] += 1
 
+    # Provinces or regions all of one country: the country needn't be said
+    if zoning in ("province", "region") and by_zone:
+        tails = {z[z.rfind(" ("):] if z.endswith(")") and " (" in z else None for z in by_zone}
+        if len(tails) == 1 and None not in tails:
+            cut = len(tails.pop())
+            by_zone = defaultdict(Counter, {z[:-cut]: c for z, c in by_zone.items()})
+            places = defaultdict(set, {z[:-cut]: p for z, p in places.items()})
     sizes = {z: sum(c.values()) for z, c in by_zone.items()}
     kept = sorted((z for z in by_zone if sizes[z] >= MIN_ZONE_SEQUENCES), key=lambda z: (-sizes[z], z))
     small = sorted((z for z in by_zone if sizes[z] < MIN_ZONE_SEQUENCES), key=lambda z: (-sizes[z], z))

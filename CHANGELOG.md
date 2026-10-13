@@ -84,6 +84,13 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- NJ tree reading: "only 0 of the 126 species" (rbcL of Salix) now reads
+  that none forms its own group; one sequence per species says the tree
+  can't be checked for that reason; a single MOTU reads "the only MOTU"
+  ("1 of 1 MOTUs don't" before); and the next step no longer asks to look
+  at "these cases" when there are none. Lists with semicolons end "; and
+  …" (their items may hold "and"), and the subsample note reads "one
+  sequence per species".
 - Species delimitation reading: a steady ABGD partition is recommended only
   when its barcode gap could be a jump between species (0.5–20 %). Solenopsis
   got "the most reliable proposal" of 757 MOTUs out of 1,515 sequences with a

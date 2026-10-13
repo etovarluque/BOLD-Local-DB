@@ -561,13 +561,23 @@ def _joined_haplotypes(reps):
     return len({find(i) for i in range(len(reps))})
 
 
+def _genus_only(species):
+    """A name that stops at the genus: "Amanita sp.", "Russula spp.", or
+    the genus alone (a FASTA's taxon field)."""
+    words = species.split()
+    return len(words) == 1 or (len(words) == 2 and words[1].rstrip(".").lower() in ("sp", "spp"))
+
+
 def haplotype_guide(records, haps, reps):
     """Facts for the reading of the haplotypes view, which the page words.
 
     `haps` is `haplotypes(records)`, and `reps` the haplotype sequences it
-    put out per species.
+    put out per species. Names that stop at the genus ("Amanita sp.") may
+    hold several species: they are listed apart, not read as species.
     """
-    named = [h for h in haps if h["species"]]
+    genus_only = sorted((h for h in haps if h["species"] and _genus_only(h["species"]) and h["n"] >= GUIDE_HAP_MIN),
+                        key=lambda h: (-h["n"], h["species"]))
+    named = [h for h in haps if h["species"] and not _genus_only(h["species"])]
     big = sorted((h for h in named if h["n"] >= GUIDE_HAP_MIN), key=lambda h: (-h["n"], h["species"]))
     few = sorted((h for h in named if 2 <= h["n"] < GUIDE_HAP_MIN), key=lambda h: (-h["n"], h["species"]))
     species = []
@@ -599,6 +609,9 @@ def haplotype_guide(records, haps, reps):
                           if worst and worst["excluded"] else None),
         "excluded_heavy": heavy[:GUIDE_LIST],
         "largest": largest["species"] if largest else None,
+        # [name, sequences, Hd] of names that stop at the genus
+        "genus_only": [[h["species"], h["n"], h["hd"]] for h in genus_only[:GUIDE_LIST]],
+        "genus_only_n": len(genus_only),
         "min_n": GUIDE_HAP_MIN,
         "overlap_bp": GUIDE_HAP_OVERLAP,
     }

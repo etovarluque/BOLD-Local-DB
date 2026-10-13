@@ -84,6 +84,15 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Haplotypes reading: names that stop at the genus ("Amanita sp.") are no
+  longer read as species (they may hold several): they are listed apart with
+  their HD, and are never the species to start with nor the network offered.
+  "Most" now means more than half (exactly half is said as such), species
+  that lose every sequence to Ns are told apart from those losing some, and
+  the trimming list reads "Apis mellifera (504 → about 320)". Wording: "all
+  5" and "both" instead of "5 of the 5", "all 19 of its sequences are one
+  haplotype", a capital on "An unnamed group", and a next step that doesn't
+  point to BINs when the input has none.
 - Composition and quality reading: sequences whose GC is far from the rest
   but which are much shorter than the median (fragments: a short stretch has
   a composition of its own) are now told apart like the much longer ones,

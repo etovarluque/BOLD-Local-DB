@@ -85,6 +85,7 @@ import seq_analysis
 import seq_distance
 import seq_network
 import seq_popgen
+import seq_diversity
 import seq_identify
 # What bold_db_creator.py writes and this viewer reads: file and table names,
 # the version and the database layout version
@@ -3663,7 +3664,7 @@ ANALYSIS_COLUMNS = [
     ('family', 'col_family'), ('order', 'col_order'), ('class', 'col_class'),
     ('phylum', 'col_phylum'), ('kingdom', 'col_kingdom'),
     ('country', 'col_country_ocean'), ('province', 'col_province_state'),
-    ('coord', 'col_coord'), ('marker', 'col_marker_code'),
+    ('region', 'col_region'), ('coord', 'col_coord'), ('marker', 'col_marker_code'),
     ('seq', 'col_nuc'),
 ]
 _ANALYSIS_KEYS = {key for key, _ in ANALYSIS_COLUMNS}
@@ -4034,6 +4035,34 @@ def analysis_popgen():
     result['seconds'] = round(time.time() - start, 2)
     print(f"Diversity OK — {data.get('source')} | {marker or '?'} | "
           f"{len(result['species']):,} species | {len(result['structure']):,} structured | {result['seconds']}s")
+    return jsonify(result)
+
+
+@app.route('/api/analysis/diversity', methods=['POST'])
+def analysis_diversity():
+    """Richness, completeness and composition by zone, for the Diversity tab.
+
+    Body: as /api/analysis/basic, plus unit ('bin'|'species') and zoning
+    ('country'|'province'|'region'|'grid').
+    """
+    data = request.get_json(silent=True) or {}
+    unit, zoning = data.get('unit', 'bin'), data.get('zoning', 'country')
+    if unit not in seq_diversity.UNITS or zoning not in seq_diversity.ZONINGS:
+        return jsonify({'error': t('analysis_invalid_request')}), 400
+    start = time.time()
+    try:
+        records, marker, _, _ = _analysis_input(data)
+        result = seq_diversity.run_diversity(records, marker, unit, zoning)
+    except _AnalysisReply as reply:
+        return jsonify(reply.body), reply.status
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except sqlite3.Error as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    result['seconds'] = round(time.time() - start, 2)
+    print(f"Diversity by zone OK — {data.get('source')} | {marker or '?'} | {unit} by {zoning} | "
+          f"{len(result['zones']):,} zones | {result['seconds']}s")
     return jsonify(result)
 
 

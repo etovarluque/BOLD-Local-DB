@@ -334,6 +334,7 @@ def field_counts(records):
             "bin": sum(1 for r in records if r.get("bin")),
             "country": len(places),
             "countries": len(set(places)),
+            "provinces": len({(r.get("country"), r.get("province")) for r in records if r.get("province")}),
             "coords": sum(1 for r in records if seq_popgen.coord_of(r))}
 
 

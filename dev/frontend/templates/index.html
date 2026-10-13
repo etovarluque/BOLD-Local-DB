@@ -2778,6 +2778,8 @@
                 an_ng_v_star_plain: ' Es el patrón típico de una <b>expansión reciente</b>, aunque la D de Tajima no llega a confirmarlo.',
                 an_ng_v_one: 'Las {n} secuencias forman <b>un solo linaje</b>: ningún grupo de haplotipos queda a {cut} mutaciones o más del resto (el 2 % de los sitios comparados).',
                 an_ng_v_one_species: 'Las {n} secuencias, de {s} especies, forman <b>un solo linaje</b>: ningún grupo queda a {cut} mutaciones o más del resto, así que <b>el marcador no separa estas especies</b>.',
+                an_ng_v_one_main: '<b>{k} de las {n} secuencias forman un solo linaje</b> (dentro de él ningún grupo queda a {cut} mutaciones o más del resto); las otras {r} quedan a {cut} mutaciones o más de él.',
+                an_ng_v_scattered: 'Las {n} secuencias se reparten en <b>{g} grupos separados por {cut} mutaciones o más</b>, todos con menos de {min} secuencias: son muy pocas para hablar de linajes.',
                 an_ng_v_foreign_1: ' Otro linaje lleva el BIN de otra especie (ver abajo).',
                 an_ng_v_foreign: ' Otros {k} linajes llevan el BIN de otra especie (ver abajo).',
                 an_ng_v_isolated_1: ' Aparte, 1 secuencia queda a {d} mutaciones ({p}) o más del resto.',
@@ -2785,6 +2787,8 @@
                 an_ng_how_tcs: '<b>Cómo se lee.</b> Cada círculo es un [hap] (una secuencia distinta) y su tamaño indica cuántas secuencias lo comparten. Cada marca en una línea es una mutación. Los puntos negros son [unsampled]: no aparecen en los datos, pero hacen falta para unir los que sí. H1 es el haplotipo más frecuente, H2 el siguiente, y así.',
                 an_ng_how_msn: '<b>Cómo se lee.</b> Cada círculo es un [hap] (una secuencia distinta) y su tamaño indica cuántas secuencias lo comparten. Cada marca en una línea es una mutación, y los ciclos son caminos alternativos igual de cortos. H1 es el haplotipo más frecuente, H2 el siguiente, y así.',
                 an_ng_lineages: '<b>Linajes.</b> Aquí se llama linaje a un grupo de haplotipos unidos entre sí por menos de {cut} mutaciones (el 2 % de los {sites} sitios comparados), un umbral habitual en COI para la variación dentro de una especie:',
+                an_ng_lineages_noncoi: ' Con {marker} ese 2 % es solo una referencia: este marcador puede variar más o menos que COI.',
+                an_ng_rdna: '{marker} es ADN ribosómico nuclear: cada genoma tiene muchas copias, a menudo algo distintas, así que los haplotipos, la forma de estrella y la D de Tajima se leen aquí con menos seguridad que en un marcador mitocondrial.',
                 an_ng_lineage_item: 'Linaje {i}: {h}, {n}',
                 an_ng_n_haps_1: '1 haplotipo', an_ng_n_haps: '{n} haplotipos',
                 an_ng_n_seqs_1: '1 secuencia', an_ng_n_seqs: '{n} secuencias',
@@ -2825,6 +2829,12 @@
                 an_ng_geo_wide: '<b>Sin estructura geográfica clara.</b> {h1} aparece en {k} de los {n} países: el mismo haplotipo se repite por buena parte del área muestreada, lo que indica dispersión reciente o mucho intercambio entre poblaciones.',
                 an_ng_geo_local: '<b>Haplotipos locales.</b> Solo {s} de los {m} haplotipos con más de una secuencia aparecen en más de un país (de {n} países): puede haber estructura geográfica. Con [color_country] se ve en la red.',
                 an_ng_geo_shared: '<b>Haplotipos compartidos entre países.</b> {s} de los {m} haplotipos con más de una secuencia aparecen en más de un país (de {n} países): hay intercambio entre poblaciones o una dispersión reciente.',
+                an_ng_iso_advice_seq_1_nm: 'Revisa el registro: podría ser un error de secuenciación o una contaminación.',
+                an_ng_iso_advice_lineage_nm: 'Al ser varias, pueden ser un linaje poco muestreado; si no, revisa los registros (errores de secuenciación o contaminaciones).',
+                an_ng_iso_list_nm: '<b>{k} secuencias aisladas</b>, cada una a {cut} mutaciones o más del resto: {list}. Revisa esos registros: pueden ser errores de identificación, de secuenciación o contaminaciones.',
+                an_ng_geo_wide_all: '<b>Sin estructura geográfica clara.</b> {h1} aparece en los {n} países: el mismo haplotipo se repite por toda el área muestreada, lo que indica dispersión reciente o mucho intercambio entre poblaciones.',
+                an_ng_geo_local_1: '<b>Haplotipos locales.</b> Solo uno de los {m} haplotipos con más de una secuencia aparece en más de un país (de {n} países): puede haber estructura geográfica. Con [color_country] se ve en la red.',
+                an_ng_geo_shared_1: '<b>Haplotipos compartidos entre países.</b> Uno de los {m} haplotipos con más de una secuencia aparece en más de un país (de {n} países): hay intercambio entre poblaciones o una dispersión reciente.',
                 an_ng_div: '<b>Diversidad.</b> [hd] {hd}: {hd_text} [pi] {pi}: de media, dos secuencias difieren en {k} mutaciones. {gb}',
                 an_ng_hd_vhigh: 'dos secuencias tomadas al azar son casi siempre haplotipos distintos.',
                 an_ng_hd_high: 'dos secuencias tomadas al azar suelen ser haplotipos distintos.',
@@ -3224,6 +3234,7 @@
                 an_net_seqs_label: 'Secuencias:', an_net_method_label: 'Método:',
                 an_net_all: 'Todas las del análisis ({n})', an_net_all_short: 'todas las secuencias',
                 an_net_species_opt: '{sp} · {n} secuencias, {h} haplotipos',
+                an_net_species_opt_1: '{sp} · {n} secuencias, 1 haplotipo',
                 an_net_tcs: 'TCS (parsimonia estadística)', an_net_msn: 'MSN (red de expansión mínima)',
                 an_net_run: 'Construir red', an_net_running: 'Construyendo la red…',
                 an_net_intro: 'Une los haplotipos por las mutaciones que los separan. Lo habitual es una red por especie (también con el botón «Red» de la pestaña Haplotipos). Hasta {n} secuencias; TCS admite {tcs} haplotipos y MSN {msn}.',
@@ -3846,6 +3857,8 @@
                 an_ng_v_star_plain: ' It is the typical pattern of a <b>recent expansion</b>, although Tajima\'s D doesn\'t quite confirm it.',
                 an_ng_v_one: 'The {n} sequences form <b>a single lineage</b>: no group of haplotypes is {cut} mutations or more from the rest (2 % of the sites compared).',
                 an_ng_v_one_species: 'The {n} sequences, of {s} species, form <b>a single lineage</b>: no group is {cut} mutations or more from the rest, so <b>the marker doesn\'t tell these species apart</b>.',
+                an_ng_v_one_main: '<b>{k} of the {n} sequences form a single lineage</b> (within it no group is {cut} mutations or more from the rest); the other {r} lie {cut} mutations or more from it.',
+                an_ng_v_scattered: 'The {n} sequences fall into <b>{g} groups {cut} mutations or more apart</b>, all with fewer than {min} sequences: too few to speak of lineages.',
                 an_ng_v_foreign_1: ' Another lineage carries the BIN of another species (see below).',
                 an_ng_v_foreign: ' {k} other lineages carry the BIN of another species (see below).',
                 an_ng_v_isolated_1: ' Besides, 1 sequence is {d} mutations ({p}) or more from the rest.',
@@ -3853,6 +3866,8 @@
                 an_ng_how_tcs: '<b>How to read it.</b> Each circle is a [hap] (a distinct sequence), sized by how many sequences share it. Each tick on a line is a mutation. The black dots are [unsampled]: they aren\'t in the data, but are needed to join those that are. H1 is the commonest haplotype, H2 the next, and so on.',
                 an_ng_how_msn: '<b>How to read it.</b> Each circle is a [hap] (a distinct sequence), sized by how many sequences share it. Each tick on a line is a mutation, and loops are equally short alternative paths. H1 is the commonest haplotype, H2 the next, and so on.',
                 an_ng_lineages: '<b>Lineages.</b> Here a lineage is a group of haplotypes joined by fewer than {cut} mutations (2 % of the {sites} sites compared), a usual threshold in COI for variation within a species:',
+                an_ng_lineages_noncoi: ' With {marker} that 2 % is only a reference: this marker may vary more or less than COI.',
+                an_ng_rdna: '{marker} is nuclear ribosomal DNA: each genome holds many copies, often slightly different, so haplotypes, the star shape and Tajima\'s D read less reliably here than in a mitochondrial marker.',
                 an_ng_lineage_item: 'Lineage {i}: {h}, {n}',
                 an_ng_n_haps_1: '1 haplotype', an_ng_n_haps: '{n} haplotypes',
                 an_ng_n_seqs_1: '1 sequence', an_ng_n_seqs: '{n} sequences',
@@ -3893,6 +3908,12 @@
                 an_ng_geo_wide: '<b>No clear geographic structure.</b> {h1} occurs in {k} of the {n} countries: the same haplotype recurs over much of the sampled area, which points to a recent spread or to much exchange between populations.',
                 an_ng_geo_local: '<b>Local haplotypes.</b> Only {s} of the {m} haplotypes with more than one sequence occur in more than one country (of {n} countries): there may be geographic structure. [color_country] shows it on the network.',
                 an_ng_geo_shared: '<b>Haplotypes shared between countries.</b> {s} of the {m} haplotypes with more than one sequence occur in more than one country (of {n} countries): there is exchange between populations or a recent spread.',
+                an_ng_iso_advice_seq_1_nm: 'Check the record: it could be a sequencing error or contamination.',
+                an_ng_iso_advice_lineage_nm: 'Being several, they may be an undersampled lineage; otherwise, check the records (sequencing errors or contamination).',
+                an_ng_iso_list_nm: '<b>{k} isolated sequences</b>, each {cut} mutations or more from the rest: {list}. Check those records: they may be misidentifications, sequencing errors or contamination.',
+                an_ng_geo_wide_all: '<b>No clear geographic structure.</b> {h1} occurs in all {n} countries: the same haplotype recurs over the whole sampled area, which points to a recent spread or to much exchange between populations.',
+                an_ng_geo_local_1: '<b>Local haplotypes.</b> Only one of the {m} haplotypes with more than one sequence occurs in more than one country (of {n} countries): there may be geographic structure. [color_country] shows it on the network.',
+                an_ng_geo_shared_1: '<b>Haplotypes shared between countries.</b> One of the {m} haplotypes with more than one sequence occurs in more than one country (of {n} countries): there is exchange between populations or a recent spread.',
                 an_ng_div: '<b>Diversity.</b> [hd] {hd}: {hd_text} [pi] {pi}: on average, two sequences differ by {k} mutations. {gb}',
                 an_ng_hd_vhigh: 'two sequences picked at random are nearly always different haplotypes.',
                 an_ng_hd_high: 'two sequences picked at random are usually different haplotypes.',
@@ -4292,6 +4313,7 @@
                 an_net_seqs_label: 'Sequences:', an_net_method_label: 'Method:',
                 an_net_all: 'All in the analysis ({n})', an_net_all_short: 'all sequences',
                 an_net_species_opt: '{sp} · {n} sequences, {h} haplotypes',
+                an_net_species_opt_1: '{sp} · {n} sequences, 1 haplotype',
                 an_net_tcs: 'TCS (statistical parsimony)', an_net_msn: 'MSN (minimum spanning network)',
                 an_net_run: 'Build network', an_net_running: 'Building the network…',
                 an_net_intro: 'Joins the haplotypes by the mutations between them. Usually one network per species (also with the "Network" button on the Haplotypes tab). Up to {n} sequences; TCS takes {tcs} haplotypes and MSN {msn}.',
@@ -10300,6 +10322,8 @@ li li { display: list-item; margin: 0; }
 			const num = n => numFmt.format(n);
 			const pct = x => anPctOf(x, 1);
 			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
+			// Nuclear pseudogenes (NUMTs) only concern mitochondrial markers
+			const mito = anMarkerKind(net.marker) === 'mito';
 			// "a 3, b 2 and c 1", or "a 3, b 2, c 1, and 4 more" when cut
 			const list = (parts, total) => total > parts.length ? parts.join(', ') + anGuideMore(parts.length, total) : anGuideJoin(parts, ', ');
 			const tally = (pairs, k = 3) => list(pairs.slice(0, k).map(([v, n]) => `${escapeHtml(v)} ${num(n)}`), pairs.length);
@@ -10353,7 +10377,7 @@ li li { display: list-item; margin: 0; }
 			const tajimaSig = st.tajima_p !== null && st.tajima_p !== undefined && st.tajima_p < 0.05;
 
 			// Verdict
-			let verdict;
+			let verdict, oneMainRest = 0;
 			if (core.length >= 2) {
 				const pairs = G.between.filter(([a, b]) => core.includes(a) && core.includes(b));
 				// Each lineage's nearest other: the range of those distances
@@ -10370,14 +10394,24 @@ li li { display: list-item; margin: 0; }
 			} else if (G.star.is_star) {
 				verdict = anGuideText('an_ng_v_star', { h1: escapeHtml(G.star.h1), share: pct(G.star.share), near: num(G.star.near) }) +
 					anGuideText(tajimaSig && st.tajima_d < 0 ? 'an_ng_v_star_tajima' : 'an_ng_v_star_plain');
+			} else if (G.lineages_n > 1 && !main.length) {
+				// Every group too small to be a lineage
+				verdict = anGuideText('an_ng_v_scattered', { n: num(G.n), g: num(G.lineages_n), cut: num(G.cut), min: num(G.min_lineage) });
+			} else if (G.lineages_n > 1 && main.length === 1) {
+				// One lineage and, apart from it, small groups
+				const k = L[main[0]].n;
+				oneMainRest = G.n - k;
+				verdict = anGuideText('an_ng_v_one_main', { k: num(k), n: num(G.n), r: num(G.n - k), cut: num(G.cut) });
 			} else if (multiSpecies) {
 				verdict = anGuideText('an_ng_v_one_species', { n: num(G.n), s: num(G.species_n), cut: num(G.cut) });
 			} else {
 				verdict = anGuideText('an_ng_v_one', { n: num(G.n), cut: num(G.cut) });
 			}
 			if (foreign.length) verdict += anGuideText(foreign.length === 1 ? 'an_ng_v_foreign_1' : 'an_ng_v_foreign', { k: num(foreign.length) });
-			if (isolated.length) {
-				const k = isolated.reduce((sum, i) => sum + L[i].n, 0);
+			const isolatedN = isolated.reduce((sum, i) => sum + L[i].n, 0);
+			// Not when the verdict already said those few lie apart
+			if (isolated.length && isolatedN !== oneMainRest) {
+				const k = isolatedN;
 				const d = Math.min(...isolated.map(i => L[i].near_d));
 				verdict += anGuideText(k === 1 ? 'an_ng_v_isolated_1' : 'an_ng_v_isolated', { k: num(k), d: num(d), p: pct(d / G.sites) });
 			}
@@ -10399,7 +10433,8 @@ li li { display: list-item; margin: 0; }
 					return `<li>${text}</li>`;
 				}).join('');
 				add('info', anGuideText('an_ng_lineages', { cut: num(G.cut), sites: num(G.sites) }) +
-					`<ul class="an-guide-list">${lis}</ul>` + anGuideMore(shown.length, main.length));
+					`<ul class="an-guide-list">${lis}</ul>` + anGuideMore(shown.length, main.length) +
+					(/COI/i.test(net.marker || '') ? '' : anGuideText('an_ng_lineages_noncoi', { marker: escapeHtml(net.marker || '') })));
 			}
 
 			// BINs
@@ -10445,7 +10480,7 @@ li li { display: list-item; margin: 0; }
 					if (!bin && x.bins.length && x.bins.every(([b]) => b === nearBin)) bin = anGuideText('an_ng_iso_bin_same');
 					const one = x.n === 1;
 					const advice = far || otherBin ? 'an_ng_iso_advice_id' + (one ? '_1' : '')
-						: one ? 'an_ng_iso_advice_seq_1' : 'an_ng_iso_advice_lineage';
+						: (one ? 'an_ng_iso_advice_seq_1' : 'an_ng_iso_advice_lineage') + (mito ? '' : '_nm');
 					add('warn', anGuideText(one ? 'an_ng_iso_1' : 'an_ng_iso', {
 						k: num(x.n), ids: anGuideJoin(x.ids.map(mono), ', '),
 						place: x.countries.length ? ` (${x.countries.map(([c]) => escapeHtml(c)).join(', ')})` : '',
@@ -10455,7 +10490,7 @@ li li { display: list-item; margin: 0; }
 			} else if (isolated.length) {
 				const shown = isolated.slice(0, 6).map(i => anGuideText('an_ng_iso_item', {
 					ids: anGuideJoin(L[i].ids.map(mono), ', '), d: num(L[i].near_d), p: pct(L[i].near_frac) }));
-				add('warn', anGuideText('an_ng_iso_list', { k: num(isolated.reduce((sum, i) => sum + L[i].n, 0)), cut: num(G.cut),
+				add('warn', anGuideText(mito ? 'an_ng_iso_list' : 'an_ng_iso_list_nm', { k: num(isolated.reduce((sum, i) => sum + L[i].n, 0)), cut: num(G.cut),
 					list: anGuideList(shown, isolated.length, '; ') }));
 			}
 
@@ -10486,8 +10521,12 @@ li li { display: list-item; margin: 0; }
 			if (G.places >= 2 && G.n >= 10) {
 				const v = { s: num(G.shared_places), m: num(G.multi_haps), n: num(G.places), h1: escapeHtml(G.star.h1), k: num(G.h1_places) };
 				if (distinctPlaces && !multiSpecies) add('info', anGuideText('an_ng_geo_struct', v));
-				else if (G.places >= 3 && G.h1_places / G.places >= 0.5) add('info', anGuideText('an_ng_geo_wide', v));
-				else if (G.multi_haps) add('info', anGuideText(G.shared_places / G.multi_haps < 0.5 ? 'an_ng_geo_local' : 'an_ng_geo_shared', v));
+				else if (G.places >= 3 && G.h1_places / G.places >= 0.5) {
+					add('info', anGuideText(G.h1_places === G.places ? 'an_ng_geo_wide_all' : 'an_ng_geo_wide', v));
+				} else if (G.multi_haps) {
+					add('info', anGuideText((G.shared_places / G.multi_haps < 0.5 ? 'an_ng_geo_local' : 'an_ng_geo_shared')
+						+ (G.shared_places === 1 ? '_1' : ''), v));
+				}
 			}
 
 			// Diversity, after Grant & Bowen
@@ -10531,6 +10570,8 @@ li li { display: list-item; margin: 0; }
 				add('warn', anGuideText('an_ng_excluded', { a: num(net.analysed), b: num(net.received), x: num(left) }));
 			}
 			if (G.n < 10) add('warn', anGuideText('an_ng_few', { n: num(G.n) }));
+			// Nuclear rDNA: copies within a genome blur haplotypes
+			if (/^(ITS|5\.8S|18S|28S)/i.test(net.marker || '')) add('warn', anGuideText('an_ng_rdna', { marker: escapeHtml(net.marker) }));
 
 			// The colour that shows what the verdict talks about
 			let action = null;
@@ -10807,7 +10848,7 @@ li li { display: list-item; margin: 0; }
 			[...r.haplotypes].filter(h => h.species && h.n >= 2)
 				.sort((a, b) => b.n - a.n || a.species.localeCompare(b.species))
 				.forEach(h => {
-					const o = anEl('option', '', t('an_net_species_opt', { sp: h.species, n: numFmt.format(h.n), h: numFmt.format(h.haplotypes) }));
+					const o = anEl('option', '', t(h.haplotypes === 1 ? 'an_net_species_opt_1' : 'an_net_species_opt', { sp: h.species, n: numFmt.format(h.n), h: numFmt.format(h.haplotypes) }));
 					o.value = h.species;
 					sp.append(o);
 				});

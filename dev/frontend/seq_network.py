@@ -60,9 +60,11 @@ _NO_EPITHET = {"sp", "sp.", "spp", "spp.", "cf", "cf.", "aff", "aff.", "nr", "nr
 class NetworkLimit(ValueError):
     """The input is too big (or too small) for a network."""
 
-    def __init__(self, kind, n, limit):
+    def __init__(self, kind, n, limit, stops=0):
         super().__init__(kind)
-        self.kind, self.n, self.limit = kind, n, limit
+        # `stops`: sequences left out for stop codons (a wrong genetic code
+        # leaves out nearly all of them)
+        self.kind, self.n, self.limit, self.stops = kind, n, limit, stops
 
 
 # ── Haplotypes ────────────────────────────────────────────────────────────────
@@ -521,9 +523,10 @@ def run_network(records, marker, forced_code=None, method="tcs"):
         raise NetworkLimit("too_many", len(records), MAX_NETWORK_SEQUENCES)
     usable, excluded = seq_distance.usable_records(records, forced_code)
     if len(usable) < 2:
-        raise NetworkLimit("too_few", len(usable), 2)
+        raise NetworkLimit("too_few", len(usable), 2, excluded["stops"])
 
-    groups, unplaced = seq_distance.align_groups([rec["clean"] for rec in usable])
+    # Two sequences make a network (a species with two in the haplotypes table)
+    groups, unplaced = seq_distance.align_groups([rec["clean"] for rec in usable], min_size=2)
     excluded["unplaced"] = len(unplaced)
     if not groups:
         raise NetworkLimit("too_few", 0, 2)

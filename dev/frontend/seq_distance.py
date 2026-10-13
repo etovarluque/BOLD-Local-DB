@@ -296,7 +296,7 @@ def _identity(row, ref):
     return (same / total if total else 0.0), total
 
 
-def align_groups(seqs):
+def align_groups(seqs, min_size=MIN_GROUP_SIZE):
     """Sequences split into groups that align to a common reference.
 
     One marker name can hold unrelated genes (BOLD's "16S" covers bacterial
@@ -307,6 +307,7 @@ def align_groups(seqs):
 
     Returns (groups, unplaced): each group {ref, ref_index, members:
     [(index, aligned)]}, largest first; unplaced, the indices in no group.
+    `min_size`: fewest sequences a group needs (a network of two is fine).
     """
     remaining = list(range(len(seqs)))
     groups, unplaced = [], []
@@ -327,7 +328,7 @@ def align_groups(seqs):
                 members.append((i, a))
             else:
                 rest.append(i)
-        if len(members) < MIN_GROUP_SIZE:
+        if len(members) < min_size:
             # The reference found too few relatives: they stay out
             unplaced.extend(i for i, _ in members)
         else:

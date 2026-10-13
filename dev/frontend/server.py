@@ -816,6 +816,10 @@ STRINGS = {
         'analysis_network_too_many': 'Hay {n} secuencias y una red admite {limit}. Elige una especie o limita la búsqueda.',
         'analysis_network_too_few': 'Hacen falta al menos {limit} secuencias alineables para una red (hay {n}).',
         'analysis_network_too_many_haplotypes': 'Hay {n} haplotipos y este método admite {limit}. Elige una especie o usa MSN, que admite más.',
+        'analysis_network_too_many_species': 'Esta especie tiene {n} secuencias y una red admite {limit}. Limita la búsqueda (por país, por ejemplo).',
+        'analysis_network_too_many_haplotypes_species': 'Esta especie tiene {n} haplotipos y TCS admite {limit}. Usa MSN, que admite más, o limita la búsqueda (por país, por ejemplo).',
+        'analysis_network_too_many_haplotypes_msn': 'Hay {n} haplotipos y MSN admite {limit}. Elige una especie o limita la búsqueda.',
+        'analysis_network_too_many_haplotypes_msn_species': 'Esta especie tiene {n} haplotipos y MSN admite {limit}. Limita la búsqueda (por país, por ejemplo).',
         'analysis_network_short_core': 'Las secuencias solo comparten {n} posiciones completas (mínimo {limit}): son de regiones distintas del marcador o tienen muchas N.',
         'analysis_delimit_too_many': 'Delimitación no calculada: hay {n} secuencias y el máximo es {limit}. Limita las secuencias por especie.',
         'identify_index_failed': 'No se pudo crear el índice: {error}',
@@ -915,6 +919,10 @@ STRINGS = {
         'analysis_network_too_many': 'There are {n} sequences and a network takes {limit}. Choose a species or narrow the search.',
         'analysis_network_too_few': 'A network needs at least {limit} sequences that align (there are {n}).',
         'analysis_network_too_many_haplotypes': 'There are {n} haplotypes and this method takes {limit}. Choose a species or use MSN, which takes more.',
+        'analysis_network_too_many_species': 'This species has {n} sequences and a network takes {limit}. Narrow the search (by country, for instance).',
+        'analysis_network_too_many_haplotypes_species': 'This species has {n} haplotypes and TCS takes {limit}. Use MSN, which takes more, or narrow the search (by country, for instance).',
+        'analysis_network_too_many_haplotypes_msn': 'There are {n} haplotypes and MSN takes {limit}. Choose a species or narrow the search.',
+        'analysis_network_too_many_haplotypes_msn_species': 'This species has {n} haplotypes and MSN takes {limit}. Narrow the search (by country, for instance).',
         'analysis_network_short_core': 'The sequences only share {n} complete positions (minimum {limit}): they cover different regions of the marker or have many Ns.',
         'analysis_delimit_too_many': 'No delimitation: there are {n} sequences and the most is {limit}. Limit the sequences per species.',
         'identify_index_failed': 'The index could not be built: {error}',
@@ -3989,7 +3997,10 @@ def _network_bin_species(guide):
                 rows = conn.execute(
                     "SELECT col_species, COUNT(*) FROM bold_records WHERE col_bin_uri = ? "
                     "AND col_species IS NOT NULL AND col_species != '' "
-                    "GROUP BY col_species ORDER BY 2 DESC LIMIT 2", (b,)).fetchall()
+                    "GROUP BY col_species ORDER BY 2 DESC LIMIT 8", (b,)).fetchall()
+                # Whose the BIN is: provisional names ("Heliconius
+                # petiveranaDHJ01", "sp.") don't say
+                rows = [r for r in rows if not seq_analysis._provisional(r[0])][:2]
                 if rows:
                     out[b] = [[r[0], r[1]] for r in rows]
     except sqlite3.Error:
@@ -4027,7 +4038,15 @@ def analysis_network():
     except _AnalysisReply as reply:
         return jsonify(reply.body), reply.status
     except seq_network.NetworkLimit as e:
-        return jsonify({'error': t('analysis_network_' + e.kind, n=f'{e.n:,}', limit=f'{e.limit:,}')}), 400
+        # The advice depends on what was asked: one species already, or MSN
+        key = 'analysis_network_' + e.kind
+        if e.kind in ('too_many', 'too_many_haplotypes'):
+            key += ('_msn' if e.kind == 'too_many_haplotypes' and method == 'msn' else '') + \
+                   ('_species' if species is not None else '')
+        message = t(key, n=f'{e.n:,}', limit=f'{e.limit:,}')
+        if e.kind == 'too_few' and e.stops > e.n:
+            message += t('analysis_too_few_stops', k=f'{e.stops:,}')
+        return jsonify({'error': message}), 400
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except sqlite3.Error as e:

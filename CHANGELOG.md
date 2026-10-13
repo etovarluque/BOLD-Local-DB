@@ -84,6 +84,19 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Species delimitation reading: a steady ABGD partition is recommended only
+  when its barcode gap could be a jump between species (0.5–20 %). Solenopsis
+  got "the most reliable proposal" of 757 MOTUs out of 1,515 sequences with a
+  gap of 0.08 %, and Bombus 6 MOTUs lumping 258 species with one of 28 %; the
+  reading now says why it starts from ASAP instead, and when ASAP's threshold
+  is as implausible (ITS of Penicillium, Carex) that neither method can
+  delimit species here. With one sequence per species it warns that the
+  methods have no variation within species to work with. Two groups of one
+  species read "2 groups of Astyanax mutator" (not "Astyanax mutator and A.
+  mutator"), MOTUs joining the same species are listed once with how many
+  they are, names with "?" are provisional, and lists separated by
+  semicolons end "; and 10 more" (here and in the network reading). The
+  English next steps use straight quotes.
 - Distances reading: the species named as "the trouble" are those with the
   most sequences mixed with another species (it named the three with the
   most sequences, or the first three alphabetically when subsampled: Danaus

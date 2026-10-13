@@ -2656,6 +2656,10 @@
                 an_g_caution: 'Las interpretaciones automáticas pueden contener errores o imprecisiones: aplican reglas fijas sin conocer tu grupo taxonómico. Tómalas como una orientación y confirma cada hallazgo antes de corregir una identificación o usarlo en una publicación.',
                 an_g_verdict_abgd: 'La propuesta más fiable es la de <b>ABGD con {n} MOTU</b> (grupos que podrían ser especies distintas), en la columna [col]: sale igual con {k} valores de [prior] seguidos (de {p1} a {p2}), así que no depende de cómo se configure el método.',
                 an_g_verdict_asap: 'ABGD no da una partición estable (cambia con cada valor de [prior]), así que el mejor punto de partida es la opción de ASAP con mejor [score]: <b>rango 1, {n} MOTU</b> (grupos que podrían ser especies distintas).',
+                an_g_verdict_asap_small: 'ABGD repite una partición de {m} MOTU entre [prior] = {p1} y {p2}, pero con un [gap] de solo {gap}: no encuentra un salto entre especies y, con P tan pequeñas, separa casi cada secuencia. Por eso el mejor punto de partida es la opción de ASAP con mejor [score]: <b>rango 1, {n} MOTU</b> (grupos que podrían ser especies distintas).',
+                an_g_verdict_asap_large: 'ABGD repite una partición de {m} MOTU entre [prior] = {p1} y {p2}, pero con un [gap] de {gap}, mucho mayor que el salto habitual entre especies: junta grupos enteros. Por eso el mejor punto de partida es la opción de ASAP con mejor [score]: <b>rango 1, {n} MOTU</b> (grupos que podrían ser especies distintas).',
+                an_g_verdict_none: '<b>Ninguno de los dos métodos encuentra un salto creíble entre especies:</b> la partición estable de ABGD ({m} MOTU) se apoya en un [gap] de {gap} y la mejor opción de ASAP ({n} MOTU) en un [threshold] de {thr}, ambos muy por encima de la distancia habitual entre especies. Con este marcador (o esta submuestra) las secuencias no se pueden delimitar en especies: toma los MOTU con mucha cautela.',
+                an_g_ps1: 'Se analizó una sola secuencia por especie: sin diferencias dentro de las especies, estos métodos no pueden encontrar el salto entre especies. Elige más secuencias por especie y repite el análisis.',
                 an_g_pick: 'Ver esta partición',
                 an_g_abgd_stable: '<b>ABGD da un resultado firme.</b> La [prior] es la diferencia máxima que ABGD supone dentro de una especie; prueba diez valores. Entre P = {p1} y {p2} forma siempre los mismos {n} grupos.',
                 an_g_abgd_ends_both: ' Con P más pequeño separa más ({n} grupos con P = {p0}) y con P = {p} lo junta todo en uno.',
@@ -2678,7 +2682,10 @@
                 an_g_agree_splits: ' ABGD separa además {list}; quedan por debajo del umbral de ASAP, por eso ASAP los junta.',
                 an_g_agree_joins: ' En cambio, ABGD junta {list}, que ASAP separa.',
                 an_g_pair: '{a} ({d})',
+                an_g_pair_same: '{k} grupos de {a} ({d})',
+                an_g_in_groups: ' (en {k} grupos)',
                 an_g_more: ' y {n} más',
+                an_g_more_semi: '; y {n} más',
                 an_g_merged: '<b>{n} grupos reúnen especies con nombres distintos</b>, cuyas secuencias difieren solo {range}{cmp}: {list}.',
                 an_g_merged_1: '<b>Un grupo reúne especies con nombres distintos</b>, cuyas secuencias difieren solo {range}{cmp}: {list}.',
                 an_g_below_gap: ', por debajo del gap de {gap}',
@@ -3706,6 +3713,10 @@
                 an_g_caution: 'Automatic readings may contain errors or inaccuracies: they apply fixed rules without knowing your taxonomic group. Take them as guidance and confirm every finding before correcting an identification or using it in a publication.',
                 an_g_verdict_abgd: 'The most reliable proposal is <b>ABGD with {n} MOTUs</b> (groups that could be different species), in the [col] column: it comes out the same with {k} consecutive [prior] values (from {p1} to {p2}), so it doesn\'t depend on how the method is set.',
                 an_g_verdict_asap: 'ABGD gives no stable partition (it changes with every [prior] value), so the best starting point is the ASAP option with the best [score]: <b>rank 1, {n} MOTUs</b> (groups that could be different species).',
+                an_g_verdict_asap_small: 'ABGD repeats a partition of {m} MOTUs from [prior] = {p1} to {p2}, but with a [gap] of only {gap}: it finds no jump between species and, with such small priors, splits nearly every sequence. So the best starting point is the ASAP option with the best [score]: <b>rank 1, {n} MOTUs</b> (groups that could be different species).',
+                an_g_verdict_asap_large: 'ABGD repeats a partition of {m} MOTUs from [prior] = {p1} to {p2}, but with a [gap] of {gap}, far larger than the usual jump between species: it lumps whole groups. So the best starting point is the ASAP option with the best [score]: <b>rank 1, {n} MOTUs</b> (groups that could be different species).',
+                an_g_verdict_none: '<b>Neither method finds a credible jump between species:</b> ABGD\'s steady partition ({m} MOTUs) rests on a [gap] of {gap} and ASAP\'s best option ({n} MOTUs) on a [threshold] of {thr}, both far above the usual distance between species. With this marker (or this subsample) the sequences can\'t be delimited into species: take the MOTUs with great caution.',
+                an_g_ps1: 'A single sequence per species was analysed: with no differences within species, these methods can\'t find the jump between species. Choose more sequences per species and run the analysis again.',
                 an_g_pick: 'Show this partition',
                 an_g_abgd_stable: '<b>ABGD gives a firm result.</b> The [prior] is the largest difference ABGD assumes within a species; it tries ten values. Between P = {p1} and {p2} it always forms the same {n} groups.',
                 an_g_abgd_ends_both: ' With a smaller P it splits more ({n} groups with P = {p0}) and with P = {p} it lumps everything into one.',
@@ -3728,7 +3739,10 @@
                 an_g_agree_splits: ' ABGD also keeps apart {list}; they fall below ASAP\'s threshold, which is why ASAP joins them.',
                 an_g_agree_joins: ' On the other hand, ABGD lumps {list}, which ASAP keeps apart.',
                 an_g_pair: '{a} ({d})',
+                an_g_pair_same: '{k} groups of {a} ({d})',
+                an_g_in_groups: ' (in {k} groups)',
                 an_g_more: ', and {n} more',
+                an_g_more_semi: '; and {n} more',
                 an_g_merged: '<b>{n} groups bring together species with different names</b>, whose sequences differ by only {range}{cmp}: {list}.',
                 an_g_merged_1: '<b>One group brings together species with different names</b>, whose sequences differ by only {range}{cmp}: {list}.',
                 an_g_below_gap: ', below the {gap} gap',
@@ -3742,9 +3756,9 @@
                 an_g_singletons: '<b>{n} species have a single sequence.</b> With one specimen there is no telling whether the species is split; treat them with caution.',
                 an_g_singletons_1: '<b>One species has a single sequence.</b> With one specimen there is no telling whether it is split; treat it with caution.',
                 an_g_few: '<b>There are few sequences ({n}).</b> With this little data partitions change easily; take them as a first approximation.',
-                an_g_next_check: '<b>What to do next:</b> look in the «Species against MOTUs» table for the species marked «Shares MOTU» or «Split». When two names share almost the same sequence, it may be a misidentification or two species this marker can\'t tell apart; when a species splits, it may hide different species.',
-                an_g_next_ok: '<b>What to do next:</b> click «Show this partition» to review it in the «Species against MOTUs» table and colour the tree with it.',
-                an_g_next_shown: '<b>What to do next:</b> the recommended partition is the one the «Species against MOTUs» table now shows; from there you can colour the tree with it.',
+                an_g_next_check: '<b>What to do next:</b> look in the "Species against MOTUs" table for the species marked "Shares MOTU" or "Split". When two names share almost the same sequence, it may be a misidentification or two species this marker can\'t tell apart; when a species splits, it may hide different species.',
+                an_g_next_ok: '<b>What to do next:</b> click "Show this partition" to review it in the "Species against MOTUs" table and colour the tree with it.',
+                an_g_next_shown: '<b>What to do next:</b> the recommended partition is the one the "Species against MOTUs" table now shows; from there you can colour the tree with it.',
                 an_g_foot: 'These methods only look at the differences between sequences. Use them as a starting point and weigh them against morphology, distribution or other markers.',
                 an_g_and: ' and ', an_g_unnamed: 'an unnamed group', an_g_unnamed_n: '{n} unnamed groups',
                 // Reading guide of the NJ tree
@@ -3780,8 +3794,8 @@
                 an_tg_outlier_item: '{sp} {id} ({d}, against {rest} in the rest)',
                 an_tg_outlier_list: '<b>{n} sequences far from their species:</b> {list}. Each differs from the rest of its species far more than those differ among themselves. Unless they form a MOTU of their own, those records are worth checking (contamination, pseudogene or misidentification).',
                 an_g_merged_far: '<b>Note: this partition lumps species that differ by up to {d}.</b> In COI, two named species more than {lim} apart are usually distinct: the partition may be lumping too much. Compare it with those with more MOTUs.',
-                an_tg_motu_all: '<b>Tree and delimitation agree.</b> The {n} MOTUs with more than one sequence in the «{part}» partition each form a clade. [color_motu] shows it on the tree itself.',
-                an_tg_motu_some: '<b>{k} of {n} MOTUs don\'t form a clade</b> in the «{part}» partition: {list}. Delimitation and tree group something differently there; [color_motu] shows where.',
+                an_tg_motu_all: '<b>Tree and delimitation agree.</b> The {n} MOTUs with more than one sequence in the "{part}" partition each form a clade. [color_motu] shows it on the tree itself.',
+                an_tg_motu_some: '<b>{k} of {n} MOTUs don\'t form a clade</b> in the "{part}" partition: {list}. Delimitation and tree group something differently there; [color_motu] shows where.',
                 an_tg_motu_item: '{m} (with {others})',
                 an_tg_outlier: '<b>Sequence far from its species:</b> {sp} {id} differs by at least {d} from every other sequence of its species, against at most {rest} among the rest. Unless it forms a MOTU of its own, the record is worth checking (contamination, pseudogene or misidentification).',
                 an_tg_support: '<b>There are no support values.</b> This tree has no bootstrap: groups joined by very short internal branches (e.g. how genera relate) may change with other data. Trust well-separated groups more.',
@@ -4247,7 +4261,7 @@
                 an_g_export_md: 'Download the reading as Markdown (.md)',
                 an_g_file: 'interpretation',
                 an_g_meta: 'Marker: {marker} · {n} sequences · {model} model · {date}',
-                an_g_next_file: '<b>What to do next:</b> review the recommended partition in the viewer\'s «Species against MOTUs» table («Show this partition» button) and colour the tree with it.',
+                an_g_next_file: '<b>What to do next:</b> review the recommended partition in the viewer\'s "Species against MOTUs" table ("Show this partition" button) and colour the tree with it.',
                 an_g_tag_rec: 'recommended · same over {k} P values', an_g_tag_rec_asap: 'recommended',
                 an_g_tag_same: 'same as ABGD', an_g_tag_near: 'closest to ABGD',
                 an_tree_by_motu: 'By MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTUs',
@@ -8793,8 +8807,9 @@
 		const anGuideMore = (shown, total) => total > shown ? anGuideText('an_g_more', { n: numFmt.format(total - shown) }) : '';
 		// The items shown of a longer list: "a, b and c", or "a, b, c and 5
 		// more" (never "a, b and c and 5 more")
-		const anGuideList = (items, total, sep = ', ') =>
-			total > items.length ? items.join(sep) + anGuideMore(items.length, total) : anGuideJoin(items, sep);
+		const anGuideList = (items, total, sep = ', ') => total <= items.length ? anGuideJoin(items, sep)
+			: items.join(sep) + (sep === '; ' ? anGuideText('an_g_more_semi', { n: numFmt.format(total - items.length) })
+				: anGuideMore(items.length, total));
 		// A name with its genus cut to the initial when `genus` was just named
 		// ("Carollia perspicillata, C. brevicauda")
 		function anGuideShort(sp, genus) {
@@ -8825,6 +8840,10 @@
 			return r ? { method: r.method, index: r.index, run: r.run } : null;
 		}
 
+		// Largest barcode gap (and ASAP threshold) that can be a jump between
+		// species (seq_delimit.GUIDE_GAP_MAX)
+		const AN_G_GAP_MAX = 0.2;
+
 		function anRenderGuide(body, g, choose) {
 			const G = g.guide;
 			if (!G || !G.recommended) return;
@@ -8834,7 +8853,13 @@
 
 			let verdict;
 			if (R.method === 'asap') {
-				verdict = anGuideText('an_g_verdict_asap', { n: numFmt.format(R.motus) });
+				const X = G.abgd_rejected;
+				// ASAP no better: its threshold is as implausible as ABGD's gap
+				const none = X && !X.small && R.threshold > AN_G_GAP_MAX;
+				verdict = X ? anGuideText(none ? 'an_g_verdict_none' : X.small ? 'an_g_verdict_asap_small' : 'an_g_verdict_asap_large', {
+					n: numFmt.format(R.motus), m: numFmt.format(X.motus), gap: anPctOf(X.gap), thr: anPctOf(R.threshold),
+					p1: anPrior(X.priors[0]), p2: anPrior(X.priors[1]) })
+					: anGuideText('an_g_verdict_asap', { n: numFmt.format(R.motus) });
 			} else {
 				verdict = anGuideText('an_g_verdict_abgd', {
 					n: numFmt.format(R.motus), k: numFmt.format(R.run.length),
@@ -8894,8 +8919,11 @@
 					if (C.p >= 0.05 && C.rank > 1) s += anGuideText('an_g_agree_same_weak', v);
 					add('ok', s);
 				} else {
-					const pairs = list => list.map(x => anGuideText('an_g_pair', {
-						a: anGuideNames(x.names, x.names_n), d: anPctOf(x.distance) }));
+					// Several groups of one name: "2 groups of Myotis vivesi", "2 unnamed groups"
+					const pairs = list => list.map(x => x.names_n !== 1 || x.groups < 2
+						? anGuideText('an_g_pair', { a: anGuideNames(x.names, x.names_n), d: anPctOf(x.distance) })
+						: x.names[0] ? anGuideText('an_g_pair_same', { k: numFmt.format(x.groups), a: anGuideName(x.names[0]), d: anPctOf(x.distance) })
+						: anGuideText('an_g_pair', { a: escapeHtml(t('an_g_unnamed_n', { n: numFmt.format(x.groups) })), d: anPctOf(x.distance) }));
 					let s = anGuideText('an_g_agree_near', v);
 					if (C.abgd_splits.length) s += anGuideText('an_g_agree_splits', {
 						list: anGuideList(pairs(C.abgd_splits), C.abgd_splits_n, '; ') });
@@ -8916,10 +8944,12 @@
 				const lo = Math.min(...ds), hi = Math.max(...ds);
 				const range = lo === hi ? anPctOf(hi) : `${(100 * lo).toFixed(2)}–${anPctOf(hi)}`;
 				const cmp = R.gap && hi < R.gap ? anGuideText('an_g_below_gap', { gap: anPctOf(R.gap) }) : '';
-				const list = G.merged.map(x => anGuideNames(x.species, x.species_n));
-				add('info', anGuideText(G.merged_n === 1 ? 'an_g_merged_1' : 'an_g_merged', {
-					n: numFmt.format(G.merged_n), range, cmp,
-					list: list.join('; ') + anGuideMore(G.merged.length, G.merged_n) }));
+				const list = G.merged.map(x => anGuideNames(x.species, x.species_n)
+					+ (x.motus > 1 ? anGuideText('an_g_in_groups', { k: numFmt.format(x.motus) }) : ''));
+				const motus = G.merged_motus || G.merged_n;
+				add('info', anGuideText(motus === 1 ? 'an_g_merged_1' : 'an_g_merged', {
+					n: numFmt.format(motus), range, cmp,
+					list: anGuideList(list, G.merged_n, '; ') }));
 				// In COI, named species further apart than ~2 % are usually
 				// distinct: a partition lumping them may lump too much
 				if (/COI/i.test(AnState.dist.marker || '') && hi >= AN_GUIDE_COI_SPECIES) {
@@ -8943,6 +8973,7 @@
 				                        { n: numFmt.format(G.singletons) }));
 			}
 			if (G.n < 10) add('warn', anGuideText('an_g_few', { n: numFmt.format(G.n) }));
+			if (AnState.dist.subsampled === 1) add('warn', anGuideText('an_g_ps1'));
 
 			const sel = anMotuSel(g);
 			const shown = sel.method === R.method && sel.index === R.index;
@@ -10395,7 +10426,7 @@ li li { display: list-item; margin: 0; }
 				const shown = isolated.slice(0, 6).map(i => anGuideText('an_ng_iso_item', {
 					ids: anGuideJoin(L[i].ids.map(mono), ', '), d: num(L[i].near_d), p: pct(L[i].near_frac) }));
 				add('warn', anGuideText('an_ng_iso_list', { k: num(isolated.reduce((sum, i) => sum + L[i].n, 0)), cut: num(G.cut),
-					list: shown.join('; ') + anGuideMore(shown.length, isolated.length) }));
+					list: anGuideList(shown, isolated.length, '; ') }));
 			}
 
 			// Species, when the network holds several
@@ -10404,19 +10435,19 @@ li li { display: list-item; margin: 0; }
 					const shown = G.shared_species.slice(0, 5).map(x => anGuideText('an_ng_species_shared_item',
 						{ h: escapeHtml(x.hap), names: names(x.species, 3) }));
 					add('warn', anGuideText(G.shared_species_n === 1 ? 'an_ng_species_shared_1' : 'an_ng_species_shared', {
-						k: num(G.shared_species_n), list: shown.join('; ') + anGuideMore(shown.length, G.shared_species_n) }));
+						k: num(G.shared_species_n), list: anGuideList(shown, G.shared_species_n, '; ') }));
 				}
 				if (mixed.length) {
 					const shown = mixed.slice(0, 5).map(i => anGuideText('an_ng_species_mixed_item',
 						{ i: num(i + 1), names: names(L[i].species, 3) }));
 					add('info', anGuideText(mixed.length === 1 ? 'an_ng_species_mixed_1' : 'an_ng_species_mixed', {
-						k: num(mixed.length), list: shown.join('; ') + anGuideMore(shown.length, mixed.length) }));
+						k: num(mixed.length), list: anGuideList(shown, mixed.length, '; ') }));
 				}
 				if (split.length) {
 					const shown = split.slice(0, 5).map(([sp, ls]) => anGuideText('an_ng_species_split_item',
 						{ sp: anGuideName(sp), ls: escapeHtml(t('an_ng_lineages_list', { ls: lineageNums(ls) })) }));
 					add('info', anGuideText(split.length === 1 ? 'an_ng_species_split_1' : 'an_ng_species_split', {
-						k: num(split.length), list: shown.join('; ') + anGuideMore(shown.length, split.length) }));
+						k: num(split.length), list: anGuideList(shown, split.length, '; ') }));
 				}
 				if (main.length >= 2 && !mixed.length && !split.length && !G.shared_species_n) add('ok', anGuideText('an_ng_species_match'));
 			}

@@ -7,14 +7,18 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 
 ## [Unreleased]
 
-### Pending
-- Diversity: taxonomic distinctness (Δ⁺) and its variation (Λ⁺) per zone,
-  with the significance funnel against the analysis' units (Clarke &
-  Warwick), a reading rule that skips it when all units share a genus, and
-  Jaccard next to Sørensen in the pairs table. Shown in the mockup, left
-  out of the first version of the tab.
-
 ### Added
+- Diversity › Richness and completeness: taxonomic distinctness per zone
+  (Clarke & Warwick). Δ⁺, the average distance between two units along
+  genus, family, order, class and phylum, and Λ⁺, its variance, against a
+  funnel of 500 random sets of each size drawn from the analysis' units
+  (95 % band), in a table and a chart. Ranks shared by every unit are
+  dropped, so 100 is the deepest split in the analysis. Not computed with a
+  single zone, and skipped (said so) when every unit shares a genus. The
+  reading names the zones below (closer lineages) or above the band, says
+  when most zones fall below (expected when the analysis joins distinct
+  faunas), and the uneven trees (high Λ⁺, only when two or more ranks vary).
+- Diversity › Between zones: Jaccard next to Sørensen in the pairs table.
 - Sequence analysis › Diversity, a fifth tab that counts each sequence's
   unit (BIN, or species name) in its zone (country, province or state,
   region, or a 1-degree grid cell from the coordinates), with both options
@@ -127,6 +131,10 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   (sequences chained less than 2 % apart, with their countries, BINs and
   distance to the largest) and isolated records. With a single species it
   reads how much it varies.
+
+### Fixed
+- Richness reading: "sequences lack a country" instead of "have no a
+  country".
 
 ### Changed
 - Sequence analysis: tabs and views show what the data received allow,
@@ -257,6 +265,13 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   percentage, instead of saying it doesn't move.
 - User guide: what the database update needs (the new package's filtered
   TSV; the previous one isn't needed).
+- User guide: the analysis' five tabs and their views, struck-through views
+  and the orange dot, the warning triangle on readings, the new haplotype
+  columns (π, segregating sites, Tajima's D, countries) and their reading,
+  and two new sections, *Geographic structure* (ΦST, Mantel test and its
+  plot) and *Diversity by zone* (richness, Chao1, coverage, rarefaction,
+  taxonomic distinctness, Sørensen and Jaccard, turnover and nestedness),
+  with their limits. References to the old tab names now point to views.
 
 ## [2.2.1]
 

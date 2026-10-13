@@ -564,6 +564,8 @@
           <li><a href="#an-delimitacion">Species delimitation (MOTUs)</a></li>
           <li><a href="#an-arbol">NJ tree</a></li>
           <li><a href="#an-red">Haplotype network</a></li>
+          <li><a href="#an-estructura">Geographic structure</a></li>
+          <li><a href="#an-diversidad">Diversity by zone</a></li>
           <li><a href="#an-descargas">Downloads and limits</a></li>
           <li><a href="#an-ejemplo">Worked example</a></li>
         </ol>
@@ -713,7 +715,7 @@
           <tr><td><strong>Option 2 · Create the full database</strong></td><td>Steps 1 to 4: adds full-text search.</td></tr>
           <tr><td><strong>Option 3 · Update the database</strong></td><td>Applies only what changed in a new BOLD package. Shows the computer's RAM and the database size so you can judge whether it pays off (see <a href="#reanudar">Resuming and updating</a>).</td></tr>
           <tr><td><strong>Status</strong></td><td>Loaded data version (package date) and whether each step is done: <em>1. Prepare data</em>, <em>2. Database</em> (with the record count), <em>3. Sped-up searches</em> and <em>4. Full text</em>.</td></tr>
-          <tr><td><strong>Open the viewer</strong></td><td>Starts the web viewer and opens it in the browser. Enabled only once there's a database.</td></tr>
+          <tr><td><strong>Open the viewer</strong></td><td>Starts the web viewer and opens it in the browser. Enabled, and green, only once there's a database.</td></tr>
           <tr><td><strong>User manual</strong></td><td>Opens this guide.</td></tr>
           <tr><td><strong>Download data from BOLD</strong></td><td>Opens BOLD's public data package page in the browser.</td></tr>
           <tr><td><strong>Open data/raw folder</strong></td><td>Opens the folder where the <code>.tar.gz</code> must be.</td></tr>
@@ -1584,6 +1586,11 @@
           delimitation with ASAP and ABGD.</li>
       <li><strong>Haplotype network</strong> (on demand, of one species or every sequence): TCS or MSN networks
           with diversity statistics.</li>
+      <li><strong>Diversity within species and geographic structure</strong> (in the background, right after the
+          basic analysis): each species' nucleotide diversity and Tajima's D, ΦST between countries and isolation by
+          distance.</li>
+      <li><strong>Diversity by zone</strong> (when its tab is opened): richness and completeness of each country,
+          province, region or 1° grid cell, taxonomic distinctness, and how alike the zones are.</li>
     </ul>
     <div class="callout warn">
       <span class="icon">⚠️</span>
@@ -1659,9 +1666,34 @@
         </tbody>
       </table>
     </div>
-    <p>The results are split into tabs: <strong>Composition and quality</strong>, <strong>Haplotypes</strong>,
-       <strong>Species and BINs</strong>, <strong>Distances</strong> and <strong>NJ tree</strong>. Each shows a count
-       (flagged sequences, haplotypes, cases to review), in orange when something deserves a look.</p>
+    <p>The results are split into five tabs, some with several views (a second row of buttons). Each tab goes back
+       to the view last seen in it, and some show a count (flagged sequences, haplotypes, cases to review), in orange
+       when something deserves a look.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tab</th><th>Views</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Quality</strong></td><td><a href="#an-calidad">Composition and quality</a></td></tr>
+          <tr><td><strong>Haplotypes</strong></td><td><a href="#an-haplotipos">Table</a> · <a href="#an-red">Network</a> · <a href="#an-estructura">Geographic structure</a></td></tr>
+          <tr><td><strong>Species and BINs</strong></td><td><a href="#an-concordancia">Species and BINs</a></td></tr>
+          <tr><td><strong>Distances and delimitation</strong></td><td><a href="#an-distancias">Distances</a> · <a href="#an-arbol">NJ tree</a> · <a href="#an-delimitacion">MOTUs</a>, under one options block filled in once</td></tr>
+          <tr><td><strong>Diversity</strong></td><td><a href="#an-diversidad">Richness and completeness</a> · <a href="#an-diversidad-beta">Between zones</a>, under the unit and zone options</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Tabs and views show what the data received allow, whatever the source (a search without names is read like a
+       FASTA without them):</p>
+    <ul class="bullet">
+      <li>A view the data can't fill is <strong>struck through</strong>, but still opens to say what is missing and
+          how to get it (e.g. <em>Diversity</em> with no country, province or coordinates).</li>
+      <li>A view with some sections hidden carries an <strong>orange dot</strong> and says which, and why (without
+          species names: the barcode gap, the identification check and the species-against-MOTUs table; without
+          country: the colour by country).</li>
+      <li>Readings never point to a struck-through view.</li>
+    </ul>
+    <p>Each <strong>What … say</strong> reading has an orange <strong>warning triangle</strong> next to its title:
+       hovering it (or reaching it with the keyboard) reminds you that automatic readings may contain errors or
+       inaccuracies.</p>
 
     <!-- Quality -->
     <h2 class="sub-title" id="an-calidad">Composition and quality</h2>
@@ -1744,10 +1776,19 @@
           <tr><td><strong>Haplotypes</strong></td><td>Distinct variants found</td></tr>
           <tr><td><strong>Singletons</strong></td><td>Haplotypes seen only once</td></tr>
           <tr><td><strong>Hd</strong></td><td>Nei's haplotype diversity: the probability that two sequences picked at random from the species differ. Ranges from 0 (all identical) to 1 (all different). Computed as Hd = n/(n−1) · (1 − Σ p<sub>i</sub>²), where p<sub>i</sub> is each haplotype's frequency</td></tr>
+          <tr><td><strong>π (%)</strong></td><td>Nucleotide diversity: the mean share of positions that differ between two sequences of the species</td></tr>
+          <tr><td><strong>Segregating sites</strong></td><td>Positions where not every sequence of the species carries the same base</td></tr>
+          <tr><td><strong>Tajima's D</strong></td><td>Compares π with the segregating sites; marked with <code>*</code> when significant (p &lt; 0.05; hover it for the p-value). Negative: an excess of rare variants (expansion or purifying selection); positive: an excess of intermediate ones (mixed lineages or structure)</td></tr>
+          <tr><td><strong>Countries</strong></td><td>Countries the species' sequences come from</td></tr>
           <tr><td><strong>Left out</strong></td><td>Sequences not included because of Ns or ambiguities</td></tr>
         </tbody>
       </table>
     </div>
+    <p>π, the segregating sites, Tajima's D and the countries are computed <strong>in the background</strong> right
+       after the basic results, so they show "…" for a few seconds. Unlike the haplotype count, each species is
+       <strong>aligned</strong> on its own and compared only over the positions all its sequences cover; species with
+       more than 300 sequences use a random sample of 300. Unnamed sequences and bare "Genus sp." names may mix species,
+       so they get no Tajima's D.</p>
     <div class="callout ok">
       <span class="icon">🧪</span>
       <div>
@@ -1775,9 +1816,13 @@
        <strong>extra haplotypes from trimming</strong> (as nothing is aligned here, two identical sequences trimmed at
        different ends count as two: the server looks for those that match over their whole shared stretch and gives an
        approximate figure); and it points out provisional names, species with few sequences or many left out, and
-       sequences with no species name, which are counted together and mix species. A button opens the network of the
-       species with the most sequences, and the reading downloads on its own with <strong>⤓ PDF</strong>,
-       <strong>⤓ TXT</strong> or <strong>⤓ MD</strong>.</p>
+       sequences with no species name, which are counted together and mix species. Names that stop at the genus
+       ("Amanita sp.") are listed apart, since they may hold several species. Once π and Tajima's D arrive, it adds
+       the species whose <strong>nucleotide diversity is well above the rest</strong> (possible hidden lineages or
+       cryptic species: check them in the distances and the MOTUs) and the <strong>significant Tajima's D</strong>
+       (negative: expansion or purifying selection, with the caveat that pooling countries can also lower it;
+       positive: mixed lineages). A button opens the network of the species with the most sequences, and the reading
+       downloads on its own with <strong>⤓ PDF</strong>, <strong>⤓ TXT</strong> or <strong>⤓ MD</strong>.</p>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div><strong>Automatic readings can be wrong.</strong> They apply fixed rules to the counts of each species name,
@@ -1917,8 +1962,9 @@ Sequence B:  A C G T C A G C G T ...
     </div>
 
     <h2 class="sub-title" id="an-distancias">Distances and barcode gap</h2>
-    <p>The <strong>Distances</strong>, <strong>Species (MOTUs)</strong> and <strong>NJ tree</strong> tabs are computed on demand from the same input as
-       the basic analysis. Choose the options and press <strong>Compute</strong>:</p>
+    <p>The <strong>Distances</strong>, <strong>NJ tree</strong> and <strong>MOTUs</strong> views of the
+       <strong>Distances and delimitation</strong> tab are computed on demand from the same input as the basic
+       analysis. Choose the options (shared by the three views) and press <strong>Compute</strong>:</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Option</th><th>Values</th><th>When to use it</th></tr></thead>
@@ -2052,7 +2098,7 @@ Sequence B:  A C G T C A G C G T ...
     <!-- Automatic check -->
     <h2 class="sub-title" id="an-revision">Automatic identification check</h2>
     <p>When computing distances, the viewer compares each record with the closest sequence of <em>another</em>
-       species. The result shows at the top of the <strong>Distances</strong> tab, before the summary, in three
+       species. The result shows at the top of the <strong>Distances</strong> view, before the summary, in three
        lists:</p>
     <div class="table-wrap">
       <table>
@@ -2096,7 +2142,8 @@ Sequence B:  A C G T C A G C G T ...
     <p>With <strong>Delimit species</strong> ticked, the distance analysis also runs two species delimitation
        methods: <strong>ASAP</strong> and <strong>ABGD</strong>. Both group the sequences into <strong>MOTUs</strong>
        (molecular operational taxonomic units) from the distances alone, without looking at the names. The
-       <strong>Species (MOTUs)</strong> tab compares those groups with the records' species and BINs. When there are
+       <strong>MOTUs</strong> view (tab <em>Distances and delimitation</em>) compares those groups with the records'
+       species and BINs. When there are
        several alignment groups, each one is delimited apart and chosen in <em>Delimitation of group</em>.</p>
     <div class="table-wrap">
       <table>
@@ -2121,7 +2168,7 @@ Sequence B:  A C G T C A G C G T ...
         </tbody>
       </table>
     </div>
-    <p><strong>Show</strong> picks the partition compared with the names; the tab opens on ASAP's best. Each
+    <p><strong>Show</strong> picks the partition compared with the names; the view opens on ASAP's best. Each
        <strong>named species</strong> (provisional names such as "sp.", "cf.", "aff." or with numbers don't count) gets a
        status:</p>
     <div class="table-wrap">
@@ -2258,11 +2305,11 @@ Sequence B:  A C G T C A G C G T ...
 
     <!-- Haplotype network -->
     <h2 class="sub-title" id="an-red">Haplotype network</h2>
-    <p>The <strong>Haplotype network</strong> tab draws how the haplotypes relate: each circle is a haplotype, its
+    <p>The <strong>Network</strong> view of the <strong>Haplotypes</strong> tab draws how the haplotypes relate: each circle is a haplotype, its
        size the number of sequences, and each tick on a line one mutation. It is built on demand: choose a species
        (or every sequence in the analysis) in <em>Sequences</em>, the method, and press <strong>Build
-       network</strong>. The <strong>Network</strong> button on each row of the <a href="#an-haplotipos">Haplotypes</a>
-       tab builds it straight away for that species.</p>
+       network</strong>. The <strong>Network</strong> button on each row of the <a href="#an-haplotipos">Table</a>
+       view builds it straight away for that species (two sequences are enough).</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Method</th><th>How it joins the haplotypes</th><th>When to use it</th></tr></thead>
@@ -2283,7 +2330,7 @@ Sequence B:  A C G T C A G C G T ...
     <p>The sequences are aligned as for the distances and compared only over the <strong>positions every one of
        them has complete</strong> (A, C, G or T), so a shorter end or an N doesn't make a new haplotype. Those that
        would cover a much shorter region than the rest are left out, with a notice. That is why the number of
-       haplotypes may differ from the <em>Haplotypes</em> tab, which doesn't align.</p>
+       haplotypes may differ from the <em>Table</em> view, which doesn't align.</p>
     <p>Above the network are the diversity statistics of those sequences: <strong>Hd</strong> (haplotype
        diversity), <strong>π</strong> (nucleotide diversity: the mean proportion of positions that differ between two
        sequences; <em>k</em> is the same as a number of differences), the <strong>segregating sites</strong> and
@@ -2337,6 +2384,115 @@ Sequence B:  A C G T C A G C G T ...
         to 2,000 sequences; TCS up to 300 haplotypes and MSN up to 600.</div>
     </div>
 
+    <!-- Geographic structure -->
+    <h2 class="sub-title" id="an-estructura">Geographic structure</h2>
+    <p>The <strong>Geographic structure</strong> view of the <strong>Haplotypes</strong> tab asks whether a species'
+       genetic variation depends on where it was collected. It is computed in the background with π and Tajima's D,
+       from the same per-species alignment, and needs the country or the coordinates of the records (the analysis
+       reads the coordinates as one field or as separate latitude and longitude). It is struck through only when there
+       are neither two countries nor ten sequences with coordinates.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Countries (sequences)</strong></td><td>The countries compared, with their sequences. Only countries with at least 5 sequences of the species count, and the species needs two of them</td></tr>
+          <tr><td><strong>ΦST</strong> and <strong>p (ΦST)</strong></td><td>The share of the genetic variation that lies between countries, from an AMOVA (Excoffier, Smouse &amp; Quattro 1992): 0, none; 1, all. From 0.25 it is strong, from 0.05 moderate. The p-value comes from 999 permutations of the sequences among countries</td></tr>
+          <tr><td><strong>Mantel r</strong> and <strong>p (Mantel)</strong></td><td>Isolation by distance (Mantel 1967): whether the sequences farthest apart on the map are also the most different. r near 1, strongly; near 0, not at all. Needs at least 10 sequences with coordinates at 3 or more places (a sample of 150 when there are more); it also works within a single country</td></tr>
+          <tr><td><strong>Max. distance (km)</strong></td><td>The greatest distance between two of the species' sequences</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Show</strong> on a row draws its <strong>isolation-by-distance plot</strong>: each point is a pair of
+       sequences, with the geographic distance across and the share of differences up. A cloud that rises steadily is a
+       continuum; two separate clouds mean distinct groups.</p>
+    <p>Under the table, the <strong>What the geographic structure says</strong> reading sums up how many species have
+       a clear, moderate or no structure; points out those whose countries differ so much (ΦST of 0.5 or more) that they
+       may be cryptic species, especially if their π is also among the highest; separates isolation by distance (a
+       gradient) from groups apart; reads the Mantel test alone when the countries can't be compared; and warns about
+       countries with fewer than 10 sequences, where ΦST is very uncertain.</p>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Countries are not populations.</strong> ΦST and Mantel take each country as one population:
+        borders rarely match biological barriers, sampling concentrated in a few localities creates apparent structure,
+        and with few sequences per country the result is very uncertain. Compare any strong structure with the MOTUs
+        and the tree coloured by country before speaking of different species.</div>
+    </div>
+
+    <!-- Diversity by zone -->
+    <h2 class="sub-title" id="an-diversidad">Diversity by zone</h2>
+    <p>The <strong>Diversity</strong> tab counts each sequence in its <strong>unit</strong> and its
+       <strong>zone</strong>, chosen on top of the tab:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Option</th><th>Values</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unit</strong></td><td><em>BIN</em> (the default when the records have them) or <em>Species</em> (the name; unnamed sequences and bare "Genus sp." names are left out)</td></tr>
+          <tr><td><strong>Zones</strong></td><td><em>Country</em>, <em>Province or state</em>, <em>Region</em> or a <em>1° grid</em> of the coordinates. By default, the first one with at least two zones. Provinces and regions carry their country in brackets, unless all are of the same country</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The counts reflect how much has been <strong>sequenced</strong>, not how abundant each unit is in the field,
+       so only richness and composition are read from them (no Shannon or Simpson). Zones with fewer than
+       <strong>20 sequences</strong> are left out, and the page says how many. The tab is struck through when no
+       sequence has a zone or a unit.</p>
+
+    <h3 class="step-title">Richness and completeness</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sequences / Localities</strong></td><td>The zone's sequences and the distinct coordinates they come from</td></tr>
+          <tr><td><strong>BINs</strong> (or <strong>Species</strong>)</td><td>Units observed</td></tr>
+          <tr><td><strong>With 1 sequence</strong></td><td>Units seen once (singletons): the more there are, the more units are still missing</td></tr>
+          <tr><td><strong>Chao1</strong></td><td>The units a complete sampling would find, estimated from those with one and two sequences (Chao 1987), with its 95 % interval in brackets. It is a lower bound</td></tr>
+          <tr><td><strong>Coverage</strong></td><td>The share of the zone's sequences that belong to units already seen (Chao &amp; Jost 2012): from 95 % the zone is nearly complete; under 80 %, poorly sampled</td></tr>
+          <tr><td><strong>At equal effort (n)</strong></td><td>The units expected with the sequences of the smallest zone (rarefaction). This, not the observed richness, is the column to compare zones with: a zone with more sequences always has more units</td></tr>
+          <tr><td><strong>Exclusive</strong></td><td>Units found only in that zone</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The <strong>rarefaction and extrapolation curves</strong> (Chao et al. 2014) show, for the 8 zones with the most
+       sequences, the units expected by number of sequences: solid up to the current effort (the dot), dashed up to
+       twice as many. A curve still rising means units remain to be sequenced.</p>
+    <p><strong>Taxonomic distinctness</strong> (Clarke &amp; Warwick 1998) measures how far apart, in the taxonomy,
+       the units of each zone are. <strong>Δ⁺</strong> is the average distance between two units along genus, family,
+       order, class and phylum, and <strong>Λ⁺</strong> its variance (how much more crowded some branches are than
+       others). Ranks shared by every unit are dropped, so 100 is the deepest split in the analysis (different
+       families, if everything is one order). Unlike richness, Δ⁺ doesn't depend on the number of units, so it
+       compares zones sampled with different effort. Each zone is set against 500 random sets of the same size drawn
+       from all the units of the analysis: the <strong>funnel</strong> chart shows the 95 % band and the zones outside
+       it.</p>
+    <ul class="bullet">
+      <li><strong>Below the band</strong>: the zone gathers closer lineages than expected (few genera or families;
+          an environment that favours some lineages, or sampling focused on one group). When the analysis joins
+          regions with different faunas, most zones fall below: then compare which fall furthest.</li>
+      <li><strong>Above the band</strong>: its units spread over more distant branches than chance would give.</li>
+      <li><strong>High Λ⁺</strong>: an uneven tree, with some genera or families holding many units and others one.
+          Only judged when two or more ranks vary (with the genus alone, Λ⁺ follows from Δ⁺).</li>
+    </ul>
+    <p>It isn't computed with a single zone, and it is skipped, saying so, when every unit belongs to the same
+       genus.</p>
+
+    <h3 class="step-title" id="an-diversidad-beta">Between zones</h3>
+    <p>How alike the zones are by the units they share, by presence or absence only. The tiles give the overall
+       Sørensen dissimilarity of all the zones and how much of it is <strong>turnover</strong> (each zone has units
+       the other lacks) and <strong>nestedness</strong> (the poorer zone is a subset of the richer), after Baselga
+       (2010), plus the units found in a single zone. Below: a heat map of the Sørensen similarity of every two zones
+       (up to 12 zones), the table of pairs (shared units, units of each one only, <strong>Sørensen</strong>,
+       <strong>Jaccard</strong>, turnover and nestedness), the most widespread units and those of one zone only.</p>
+    <div class="callout tip">
+      <span class="icon">ℹ️</span>
+      <div><strong>Sørensen or Jaccard?</strong> Both go from 0 (nothing shared) to 1 (the same units). Sørensen
+        weighs the shared units twice, so it is always the higher of the two for the same pair; Jaccard is the share of
+        all the units of the pair found in both. Use one of them consistently when comparing with other studies.</div>
+    </div>
+    <p>Each view has its reading. <strong>What richness and completeness say</strong>: which zones are nearly
+       complete, incomplete or poorly sampled (with the units still missing), the richest and poorest at equal effort,
+       the zone where most remains to be sequenced, few species names when counting species, and the taxonomic
+       distinctness. <strong>What the comparison between zones says</strong>: whether the differences are mostly turnover or
+       nestedness, the most and least alike zones, nestedness involving a poorly sampled zone (probably an artefact of
+       sampling) and the units of one zone only.</p>
+
     <!-- Downloads -->
     <h2 class="sub-title" id="an-descargas">Downloads and limits</h2>
     <div class="table-wrap">
@@ -2370,6 +2526,8 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td>Sequences in the tree</td><td>2,000 per group</td></tr>
           <tr><td>Sequences in species delimitation</td><td>2,000 per group</td></tr>
           <tr><td>Haplotype network</td><td>2,000 sequences; 300 haplotypes with TCS and 600 with MSN</td></tr>
+          <tr><td>π, Tajima's D and geographic structure</td><td>300 sequences per species (a random sample above that); countries with 5 or more sequences; Mantel test with 10 to 150 sequences with coordinates</td></tr>
+          <tr><td>Diversity by zone</td><td>Zones with 20 or more sequences; the curves of the 8 largest zones; the heat map up to 12 zones</td></tr>
           <tr><td>Comparable positions for a distance</td><td>100</td></tr>
         </tbody>
       </table>
@@ -2513,7 +2671,7 @@ Sequence B:  A C G T C A G C G T ...
 
     <div class="faq-item">
       <div class="q">The distance summary shows a huge largest distance within species (20–30 %) or 0 % between genera.</div>
-      <div class="a">It is nearly always one or a few misidentified records: a sequence of another species under the wrong name inflates its species' largest distance and sinks the smallest one between species. The <a href="#an-revision">automatic identification check</a>, at the top of the Distances tab, lists them with the species each is mistaken for. See also <a href="#an-conceptos">Before you start: distances and the barcode gap</a>.</div>
+      <div class="a">It is nearly always one or a few misidentified records: a sequence of another species under the wrong name inflates its species' largest distance and sinks the smallest one between species. The <a href="#an-revision">automatic identification check</a>, at the top of the Distances view, lists them with the species each is mistaken for. See also <a href="#an-conceptos">Before you start: distances and the barcode gap</a>.</div>
     </div>
 
     <div class="faq-item">

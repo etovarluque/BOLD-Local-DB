@@ -84,6 +84,21 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Haplotype network: a species with two sequences (offered by the
+  haplotypes table) can now be drawn; alignment groups of two were dropped
+  and the network said there were no sequences. The reading only calls the
+  network "a single lineage" when every haplotype is chained to the rest:
+  otherwise it says how many sequences form the lineage and how many lie
+  apart, or that the groups are too small to be lineages (3 sequences of 2
+  species, 33 mutations apart, read as one lineage). Whose a BIN is skips
+  provisional names (a lineage of Heliconius erato was said to carry the BIN
+  of "Heliconius petiveranaDHJ01"). With markers other than COI the 2 %
+  lineage cut is flagged as a reference only, nuclear rDNA (ITS, 18S, 28S)
+  gets a caution, and isolated sequences of non-mitochondrial markers no
+  longer mention NUMTs. Error messages say what to do when a species was
+  already chosen or MSN was used, and mention a wrong genetic code when
+  stops left too few sequences. Wording: singulars, "in all 3 countries",
+  "1 haplotype" in the species list.
 - NJ tree reading: "only 0 of the 126 species" (rbcL of Salix) now reads
   that none forms its own group; one sequence per species says the tree
   can't be checked for that reason; a single MOTU reads "the only MOTU"

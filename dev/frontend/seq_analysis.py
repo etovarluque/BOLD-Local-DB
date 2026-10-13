@@ -324,12 +324,14 @@ def parse_header(header):
 
 
 def field_counts(records):
-    """How many records bring a species name, a BIN and a country: what a
-    FASTA's headers gave."""
+    """How many records bring a species name, a BIN and a country, and how
+    many countries: what the views that need them can show."""
+    places = [r.get("country") for r in records if not no_place(r.get("country"))]
     return {"n": len(records),
             "species": sum(1 for r in records if r.get("species")),
             "bin": sum(1 for r in records if r.get("bin")),
-            "country": sum(1 for r in records if r.get("country"))}
+            "country": len(places),
+            "countries": len(set(places))}
 
 
 def parse_fasta(text):

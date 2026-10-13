@@ -3853,9 +3853,9 @@ def analysis_basic():
         records, marker, truncated, total = _analysis_input(data)
         result = seq_analysis.run_basic(records, marker, forced_code, total,
                                         bin_lookup=_analysis_bin_species)
-        if data.get('source') == 'fasta':
-            # What the headers gave, so the page can say what can't be done
-            result['fields'] = seq_analysis.field_counts(records)
+        # What the input brings, so the page can say what can't be done
+        result['fields'] = seq_analysis.field_counts(records)
+        result['source'] = data.get('source')
     except _AnalysisReply as reply:
         return jsonify(reply.body), reply.status
     except ValueError as e:

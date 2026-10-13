@@ -84,6 +84,16 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Sequence analysis: tabs and views show what the data received allow,
+  whatever the source (a search without names is read like a FASTA without
+  them). A view the data can't fill is struck through but still opens, to
+  say what is missing and how to get it (*Species and BINs* with no record
+  holding both a name and a BIN); a view with sections hidden carries an
+  orange dot and says which, and why (no names: the barcode gap, the
+  identification check and the species-against-MOTUs table; no country: the
+  colour by country). Readings no longer point to a view that is struck
+  through. The server now sends the field counts for every source, with the
+  number of countries.
 - Sequence analysis: the seven views are grouped in four tabs. *Quality*;
   *Haplotypes* with the table and the network as two views; *Species and
   BINs*; and *Distances and delimitation* with distances, the NJ tree and the

@@ -583,7 +583,8 @@ def _test_level(altered, S_tot, nb_tot, pi_intra_obs, length, pval, rng, max_rep
 # ── Groups against names and BINs ─────────────────────────────────────────────
 
 # Names that don't identify a species (as in the identification check)
-_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex)\b\.?|\d", re.IGNORECASE)
+_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex|indet)\b\.?|\d|\s[x×]\s"
+                          r"|(?-i:^\S+\s+\S+\s+[A-Z])", re.IGNORECASE)
 
 
 # Species statuses, problems first

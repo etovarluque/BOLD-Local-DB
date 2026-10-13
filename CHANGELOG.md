@@ -84,6 +84,19 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Distances reading: the species named as "the trouble" are those with the
+  most sequences mixed with another species (it named the three with the
+  most sequences, or the first three alphabetically when subsampled: Danaus
+  chrysippus with 11 of 254 instead of D. montezuma with 30 of 32).
+  Provisional names no longer count among the species with or without a
+  barcode gap, and the genus/species ratio leaves them out ("Conus sp."
+  mixes species and put the mean within species at 12.6 % in 12S); trailing
+  capitals ("Lumbricus rubellus CEA"), hybrids and "indet." count as
+  provisional in distances and delimitation too. With one sequence per
+  species it says so and asks for more; when most sequences were left out
+  for stop codons (a wrong genetic code) the reading and the error message
+  say so. Wording: "all its 5 sequences", "all 9 species", lineages just
+  past 2 % shown with two decimals, and lists cut as "a, b and 5 more".
 - Species and BINs reading: records count as out of place only in a BIN
   that another species holds more than half of. A BIN of many species (70
   Acropora species in BOLD:AAF5735, none with even a sixth of it) is now

@@ -3130,6 +3130,7 @@
                 an_dg_nogap_all: '<b>Sin barcode gap: las {n} especies.</b>',
                 an_dg_ng_shared: '{sp}: {k} de sus {n} secuencias tienen igual de cerca, o más, una de {with}.',
                 an_dg_ng_shared_1: '{sp}: 1 de sus {n} secuencias tiene igual de cerca, o más, una de {with}.',
+                an_dg_ng_shared_all: '{sp}: todas sus secuencias ({n}) tienen igual de cerca, o más, una de {with}.',
                 an_dg_ng_stretch: ' Además, su [max_intra] de {m} se debe a {k} registros aislados (ver abajo).',
                 an_dg_ng_stretch_1: ' Además, su [max_intra] de {m} se debe a un registro aislado (ver abajo).',
                 an_dg_ng_isolated: '{sp}: tendría barcode gap sin sus {k} registros aislados (ver abajo). Su vecino más cercano, {nsp}, está a un {d}, y el resto de la especie, como mucho a un {c}.',
@@ -3144,6 +3145,7 @@
                 an_dg_gap_item: '{sp} (su vecino más cercano, {nsp}, está a un {d}, y entre sus secuencias hay como mucho un {m})',
                 an_dg_gap_item_narrow: '{sp} ({d} frente a {m}, un margen estrecho)',
                 an_dg_gap_many: '<b>Con barcode gap: {k} de las {n} especies</b>, entre ellas {list}.',
+                an_dg_gap_many_all: '<b>Con barcode gap: las {n} especies</b> ({list}).',
                 an_dg_lineages: '<b>Linajes dentro de una especie</b> (secuencias encadenadas a menos de un {lim}):',
                 an_dg_lineages_one: '<b>Linajes</b> (secuencias encadenadas a menos de un {lim}; con su distancia al mayor):',
                 an_dg_lin_species: '{sp}, {k} linajes: {list}.',
@@ -3163,6 +3165,7 @@
                 an_dg_iso_near_1: ' Puede ser una variante rara o un linaje con muy pocos registros.',
                 an_dg_check: 'La [h_check] de arriba señala: {list}.',
                 an_dg_ratio: 'En el [h_summary], la distancia media entre especies del mismo género ({g}) es {r} veces la media dentro de especie ({s}).',
+                an_dg_ratio_named: 'Sin los nombres provisionales (que pueden reunir varias especies), la distancia media entre especies del mismo género ({g}) es {r} veces la media dentro de especie ({s}).',
                 an_dg_ratio_ok: ' Supera las 10 veces que suelen pedirse para que el código de barras separe bien las especies.',
                 an_dg_ratio_low: ' Una regla habitual pide al menos 10 veces para que el código de barras separe bien las especies.',
                 an_dg_singles: '{k} especies tienen una sola secuencia: no se puede medir su variación ni su barcode gap.',
@@ -3172,7 +3175,10 @@
                 an_dg_relatives: 'Para saber si {marker} separa {sp} de sus parientes, añade especies cercanas al análisis (por ejemplo, busca el género entero).',
                 an_dg_groups: 'Las secuencias forman {k} grupos que no se pueden alinear entre sí (ver arriba): entre grupos no hay distancias, y cada especie se compara solo dentro del suyo.',
                 an_dg_noncoding: 'Con un marcador no codificante la alineación contra la referencia es más aproximada y las distancias, menos fiables.',
+                an_dg_stops_code: '{k} secuencias quedaron fuera por codones de parada, más que las {n} analizadas: lo más probable es que el código genético elegido no corresponda a este grupo. Revísalo en [code_field] (o déjalo en automático) y repite.',
                 an_dg_subsampled: 'Se analizaron como mucho {k} secuencias por especie: los recuentos de esta lectura son de esa submuestra.',
+                an_dg_v_none_ps1: '<b>Con una sola secuencia por especie no hay nada que comparar dentro de cada especie:</b> el barcode gap y el vecino más cercano necesitan al menos dos de alguna. Elige más secuencias por especie (2 o más) y repite el análisis.',
+                an_dg_next_ps1: 'repite el análisis con 2 o más secuencias por especie; si así se pasa del máximo, acota la búsqueda (por país o por un grupo menor).',
                 an_dg_few: '<b>Hay pocas secuencias ({n}).</b> Con tan pocos datos, las distancias y los linajes cambian con facilidad.',
                 an_dg_next_head: '<b>Qué hacer ahora:</b> ',
                 an_dg_next_check: 'revisa las fichas de los registros señalados (identificación, fotos, quién la hizo) y, si confirmas el error, déjalos fuera y repite el análisis.',
@@ -4174,6 +4180,7 @@
                 an_dg_nogap_all: '<b>No barcode gap: all {n} species.</b>',
                 an_dg_ng_shared: '{sp}: {k} of its {n} sequences have one of {with} as close or closer.',
                 an_dg_ng_shared_1: '{sp}: 1 of its {n} sequences has one of {with} as close or closer.',
+                an_dg_ng_shared_all: '{sp}: all its {n} sequences have one of {with} as close or closer.',
                 an_dg_ng_stretch: ' Its [max_intra] of {m} also comes from {k} isolated records (see below).',
                 an_dg_ng_stretch_1: ' Its [max_intra] of {m} also comes from one isolated record (see below).',
                 an_dg_ng_isolated: '{sp}: it would have a barcode gap without its {k} isolated records (see below). Its nearest neighbour, {nsp}, is {d} away, and the rest of the species at most {c}.',
@@ -4188,6 +4195,7 @@
                 an_dg_gap_item: '{sp} (its nearest neighbour, {nsp}, is {d} away, and its sequences differ by at most {m})',
                 an_dg_gap_item_narrow: '{sp} ({d} against {m}, a narrow margin)',
                 an_dg_gap_many: '<b>With a barcode gap: {k} of the {n} species</b>, among them {list}.',
+                an_dg_gap_many_all: '<b>With a barcode gap: all {n} species</b> ({list}).',
                 an_dg_lineages: '<b>Lineages within a species</b> (sequences chained less than {lim} apart):',
                 an_dg_lineages_one: '<b>Lineages</b> (sequences chained less than {lim} apart; with their distance to the largest):',
                 an_dg_lin_species: '{sp}, {k} lineages: {list}.',
@@ -4207,6 +4215,7 @@
                 an_dg_iso_near_1: ' It may be a rare variant or a lineage with very few records.',
                 an_dg_check: 'The [h_check] above flags: {list}.',
                 an_dg_ratio: 'In the [h_summary], the mean distance between species of a genus ({g}) is {r} times the mean within species ({s}).',
+                an_dg_ratio_named: 'Leaving out provisional names (which may hold several species), the mean distance between species of a genus ({g}) is {r} times the mean within species ({s}).',
                 an_dg_ratio_ok: ' That is above the 10 times usually asked for the barcode to tell species apart well.',
                 an_dg_ratio_low: ' A common rule of thumb asks for at least 10 times for the barcode to tell species apart well.',
                 an_dg_singles: '{k} species have a single sequence: their variation and barcode gap can\'t be measured.',
@@ -4216,7 +4225,10 @@
                 an_dg_relatives: 'To know whether {marker} tells {sp} apart from its relatives, add close species to the analysis (for instance, search the whole genus).',
                 an_dg_groups: 'The sequences form {k} groups that can\'t be aligned with each other (see above): there are no distances between groups, and each species is compared only within its own.',
                 an_dg_noncoding: 'With a non-coding marker the alignment against the reference is rougher and the distances less reliable.',
+                an_dg_stops_code: '{k} sequences were left out for stop codons, more than the {n} analysed: the genetic code chosen most likely doesn\'t suit this group. Check it in [code_field] (or leave it automatic) and run again.',
                 an_dg_subsampled: 'At most {k} sequences per species were analysed: this reading\'s counts are of that subsample.',
+                an_dg_v_none_ps1: '<b>With a single sequence per species there is nothing to compare within each species:</b> the barcode gap and the nearest neighbour need at least two of some species. Choose more sequences per species (2 or more) and run the analysis again.',
+                an_dg_next_ps1: 'run the analysis again with 2 or more sequences per species; if that goes over the limit, narrow the search (by country or to a smaller group).',
                 an_dg_few: '<b>There are few sequences ({n}).</b> With this little data, distances and lineages change easily.',
                 an_dg_next_head: '<b>What to do next:</b> ',
                 an_dg_next_check: 'check the flagged records (identification, photos, who made it) and, if you confirm the error, leave them out and run the analysis again.',
@@ -8779,6 +8791,10 @@
 			return items.slice(0, -1).join(sep) + t('an_g_and') + items[items.length - 1];
 		}
 		const anGuideMore = (shown, total) => total > shown ? anGuideText('an_g_more', { n: numFmt.format(total - shown) }) : '';
+		// The items shown of a longer list: "a, b and c", or "a, b, c and 5
+		// more" (never "a, b and c and 5 more")
+		const anGuideList = (items, total, sep = ', ') =>
+			total > items.length ? items.join(sep) + anGuideMore(items.length, total) : anGuideJoin(items, sep);
 		// A name with its genus cut to the initial when `genus` was just named
 		// ("Carollia perspicillata, C. brevicauda")
 		function anGuideShort(sp, genus) {
@@ -8882,9 +8898,9 @@
 						a: anGuideNames(x.names, x.names_n), d: anPctOf(x.distance) }));
 					let s = anGuideText('an_g_agree_near', v);
 					if (C.abgd_splits.length) s += anGuideText('an_g_agree_splits', {
-						list: anGuideJoin(pairs(C.abgd_splits)) + anGuideMore(C.abgd_splits.length, C.abgd_splits_n) });
+						list: anGuideList(pairs(C.abgd_splits), C.abgd_splits_n, '; ') });
 					if (C.abgd_joins.length) s += anGuideText('an_g_agree_joins', {
-						list: anGuideJoin(pairs(C.abgd_joins)) + anGuideMore(C.abgd_joins.length, C.abgd_joins_n) });
+						list: anGuideList(pairs(C.abgd_joins), C.abgd_joins_n, '; ') });
 					add('ok', s);
 				}
 			}
@@ -9841,7 +9857,7 @@ li li { display: list-item; margin: 0; }
 				return parts.length ? ` (${parts.join('; ')})` : '';
 			};
 			const lineage = (l, k) => k && l.apart !== null
-				? anGuideText('an_dg_lin_apart', { n: num(l.n), d: pct(l.apart), where: where(l) })
+				? anGuideText('an_dg_lin_apart', { n: num(l.n), d: pctNear(l.apart), where: where(l) })
 				: num(l.n) + where(l);
 			// Lineages close enough to be of the species, and those too far
 			const near = p => p.lineages.filter(l => l.apart === null || l.apart <= G.far);
@@ -9894,22 +9910,22 @@ li li { display: list-item; margin: 0; }
 			} else if (G.tested) {
 				verdict = anGuideText('an_dg_v_gap', { k: num(G.gap_n), n: num(G.tested) });
 			} else {
-				verdict = anGuideText('an_dg_v_none');
+				verdict = anGuideText(d.subsampled === 1 ? 'an_dg_v_none_ps1' : 'an_dg_v_none');
 			}
 
 			add('info', anGuideText(P ? 'an_dg_how_one' : 'an_dg_how'));
 
 			// Barcode gap: the species without one, and why
 			if (!P && G.nogap_n) {
-				const lis = [], prov = [];
+				const lis = [], prov = [...(G.nogap_prov || [])];
 				G.nogap.forEach(e => {
 					const v = { sp: name(e.species), n: num(e.n), m: pct(e.max_intra), d: pct(e.nn), nsp: name(e.nn_species) };
-					if (e.cause === 'provisional') { prov.push(e.species); return; }
+					if (e.cause === 'provisional') return;
 					let text;
 					if (e.cause === 'shared') {
 						const others = e.nn_with.map(([sp, k]) => `${name(sp)} (${num(k)})`);
 						const k = e.nn_tie + e.nn_wrong;
-						text = anGuideText(k === 1 ? 'an_dg_ng_shared_1' : 'an_dg_ng_shared', { ...v, k: num(k),
+						text = anGuideText(k === e.n ? 'an_dg_ng_shared_all' : k === 1 ? 'an_dg_ng_shared_1' : 'an_dg_ng_shared', { ...v, k: num(k),
 							with: e.nn_with.length === 1 ? name(e.nn_with[0][0]) : anGuideJoin(others, ', ') });
 						if (e.isolated_n && e.core_max !== null && e.max_intra > e.core_max) {
 							text += one(e.isolated_n, 'an_dg_ng_stretch', { m: pct(e.max_intra) });
@@ -9944,8 +9960,8 @@ li li { display: list-item; margin: 0; }
 						{ sp: name(e.species), nsp: name(e.nn_species), d: pct(e.nn), m: pct(e.max_intra) }));
 					add('ok', anGuideText('an_dg_gap', { list: anGuideJoin(list) }));
 				} else {
-					add('ok', anGuideText('an_dg_gap_many', { k: num(G.gap_n), n: num(G.tested),
-						list: anGuideJoin(G.gap.slice(0, 5).map(e => name(e.species)), ', ') + anGuideMore(Math.min(5, G.gap.length), G.gap_n) }));
+					add('ok', anGuideText(G.gap_n === G.tested ? 'an_dg_gap_many_all' : 'an_dg_gap_many', { k: num(G.gap_n), n: num(G.tested),
+						list: anGuideList(G.gap.slice(0, 5).map(e => name(e.species)), G.gap_n) }));
 				}
 			}
 
@@ -9977,7 +9993,7 @@ li li { display: list-item; margin: 0; }
 				const lis = farLins.slice(0, 4).map(({ sp, l }) => anGuideText(P ? 'an_dg_far_item_one' : 'an_dg_far_item',
 					{ sp: name(sp), n: num(l.n), where: where(l), d: pct(l.apart) }));
 				add('warn', anGuideText(farLins.length === 1 ? 'an_dg_far_1' : 'an_dg_far', { k: num(farLins.length), far,
-					list: anGuideJoin(lis) + anGuideMore(Math.min(4, farLins.length), farLins.length) }));
+					list: anGuideList(lis, farLins.length, '; ') }));
 			}
 
 			// Isolated records
@@ -9987,7 +10003,7 @@ li li { display: list-item; margin: 0; }
 					id: mono(x.id), sp: name(x.species), d: pctNear(x.d),
 					where: [x.country, x.bin].filter(Boolean).map(w => '; ' + escapeHtml(w)).join('') }));
 				add(G.isolated_far ? 'warn' : 'info', one(G.isolated_n, 'an_dg_iso', { lim,
-					list: anGuideJoin(list, ', ') + anGuideMore(shown.length, G.isolated_n) })
+					list: anGuideList(list, G.isolated_n) })
 					+ anGuideText(G.isolated_far ? 'an_dg_iso_far' : G.isolated_n === 1 ? 'an_dg_iso_near_1' : 'an_dg_iso_near', { far }));
 			}
 
@@ -10002,9 +10018,10 @@ li li { display: list-item; margin: 0; }
 					(m, k) => `<span class="an-term">${escapeHtml(t(AN_GUIDE_TERMS[k]))}</span>`));
 			}
 			const lv = Object.fromEntries(d.summary.map(s => [s.level, s]));
-			if (!P && lv.species && lv.genus && lv.species.mean && lv.genus.mean) {
-				const r = lv.genus.mean / lv.species.mean;
-				add('info', anGuideText('an_dg_ratio', { g: anPctOf(lv.genus.mean), s: anPctOf(lv.species.mean),
+			const R = G.ratio || { species: lv.species && lv.species.mean, genus: lv.genus && lv.genus.mean };
+			if (!P && R.species && R.genus) {
+				const r = R.genus / R.species;
+				add('info', anGuideText(R.named_only ? 'an_dg_ratio_named' : 'an_dg_ratio', { g: anPctOf(R.genus), s: anPctOf(R.species),
 					r: r >= 10 ? Math.round(r).toLocaleString('en-US') : r.toFixed(1) })
 					+ anGuideText(r >= AN_DG_RATIO ? 'an_dg_ratio_ok' : 'an_dg_ratio_low'));
 			}
@@ -10013,7 +10030,10 @@ li li { display: list-item; margin: 0; }
 			if (P) add('info', anGuideText('an_dg_relatives', { sp: name(P.species), marker: mk }));
 			if (d.groups.length > 1) add('warn', anGuideText('an_dg_groups', { k: num(d.groups.length) }));
 			if (!d.coding) add('warn', anGuideText('an_dg_noncoding'));
-			if (d.subsampled) add('warn', anGuideText('an_dg_subsampled', { k: num(d.subsampled) }));
+			// Most sequences left out for stops: the code, not the sequences
+			const exStops = (d.excluded || {}).stops || 0;
+			if (exStops > d.analysed) add('warn', anGuideText('an_dg_stops_code', { k: num(exStops), n: num(d.analysed) }));
+			if (d.subsampled && d.subsampled > 1) add('warn', anGuideText('an_dg_subsampled', { k: num(d.subsampled) }));
 			if (G.n < 10) add('warn', anGuideText('an_dg_few', { n: num(G.n) }));
 
 			// What to do next
@@ -10027,7 +10047,7 @@ li li { display: list-item; margin: 0; }
 			if (!P && !shared.length && G.nogap.some(e => e.cause === 'overlap')) {
 				steps.push(anGuideText(lineages ? 'an_dg_next_overlap_short' : 'an_dg_next_overlap', { tree, motu }));
 			}
-			if (!steps.length) steps.push(anGuideText(G.tested ? 'an_dg_next_ok' : 'an_dg_next_none', { tree }));
+			if (!steps.length) steps.push(anGuideText(G.tested ? 'an_dg_next_ok' : d.subsampled === 1 ? 'an_dg_next_ps1' : 'an_dg_next_none', { tree }));
 			// Each step a sentence: the first follows the heading in lower case
 			const next = anGuideText('an_dg_next_head') + steps.map((s, i) => i ? s.charAt(0).toUpperCase() + s.slice(1) : s).join(' ');
 			anGuideSection(body, {

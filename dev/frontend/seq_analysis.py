@@ -692,7 +692,7 @@ def _provisional(species):
     x Salmo salar")."""
     words = species.split()
     return (len(words) < 2 or words[1].rstrip(".").lower() in _PROVISIONAL_WORDS
-            or any(c.isdigit() for c in species) or (len(words) > 2 and words[2][:1].isupper())
+            or any(c.isdigit() or c == "?" for c in species) or (len(words) > 2 and words[2][:1].isupper())
             or any(w.lower() in ("x", "×") for w in words[2:]))
 
 

@@ -583,7 +583,7 @@ def _test_level(altered, S_tot, nb_tot, pi_intra_obs, length, pval, rng, max_rep
 # ── Groups against names and BINs ─────────────────────────────────────────────
 
 # Names that don't identify a species (as in the identification check)
-_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex|indet)\b\.?|\d|\s[x×]\s"
+_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex|indet)\b\.?|\d|\s[x×]\s|\?"
                           r"|(?-i:^\S+\s+\S+\s+[A-Z])", re.IGNORECASE)
 
 
@@ -654,6 +654,12 @@ def labels_of(groups, n):
 # An ABGD partition is recommended when it comes out the same over at least
 # this many consecutive priors
 GUIDE_MIN_RUN = 2
+# A steady ABGD partition is recommended only when its barcode gap could be
+# the jump between species: a tiny one means ABGD found no gap (with a small
+# prior it splits nearly everything, steadily), a huge one that it lumps
+# whole genera
+GUIDE_GAP_MIN = 0.005
+GUIDE_GAP_MAX = 0.2
 # Lists sent to the page, at most (the page says how many more there are)
 GUIDE_MAX_ITEMS = 8
 
@@ -702,8 +708,10 @@ def _joined(fine, coarse, D, species):
         for f in parts:
             rest = sorted(g - f)
             gaps.append(float(np.nanmin(D[np.ix_(sorted(f), rest)])))
-        out.append({"names": [_name_of(f, species) for f in parts[:GUIDE_MAX_ITEMS]],
-                    "names_n": len(parts), "distance": max(gaps)})
+        # Names once each: two groups of one species joined say so
+        names = list(dict.fromkeys(_name_of(f, species) for f in parts))
+        out.append({"names": names[:GUIDE_MAX_ITEMS], "names_n": len(names), "groups": len(parts),
+                    "distance": max(gaps)})
     out.sort(key=lambda x: x["distance"])
     return out
 
@@ -726,6 +734,13 @@ def guide(D, species, genera, bins, asap, abgd):
         stable = ("abgd", rec_run, rec)
     elif len(ini_run) >= GUIDE_MIN_RUN:
         stable = ("abgd_initial", ini_run, ini)
+    if stable:
+        gap = abgd[stable[1][0]]["gap"]
+        if gap is not None and not GUIDE_GAP_MIN <= gap <= GUIDE_GAP_MAX:
+            out["abgd_rejected"] = {"motus": len(stable[2][stable[1][0]]), "gap": float(gap),
+                                    "priors": [abgd[stable[1][0]]["prior"], abgd[stable[1][-1]]["prior"]],
+                                    "small": bool(gap < GUIDE_GAP_MIN)}
+            stable = None
     if abgd:
         first, last = abgd[0], abgd[-1]
         out["abgd_first"] = {"prior": first["prior"], "motus": first["recursive"]}
@@ -798,7 +813,18 @@ def guide(D, species, genera, bins, asap, abgd):
         merged.append({"species": sorted(sps, key=lambda s: (-len(seqs_of[s]), s))[:GUIDE_MAX_ITEMS],
                        "species_n": len(sps),
                        "distance": float(np.nanmin(np.where(other, sub, np.inf)))})
-    merged.sort(key=lambda x: x["distance"])
+    # MOTUs that join the same species: one entry, with how many MOTUs
+    by_set = {}
+    for x in merged:
+        key = tuple(x["species"]) + (x["species_n"],)
+        if key in by_set:
+            y = by_set[key]
+            y["motus"] += 1
+            y["distance"] = min(y["distance"], x["distance"])
+        else:
+            by_set[key] = dict(x, motus=1)
+    merged_motus = len(merged)
+    merged = sorted(by_set.values(), key=lambda x: x["distance"])
     split = []
     for r in named:
         if len(r["motus"]) < 2:
@@ -809,6 +835,6 @@ def guide(D, species, genera, bins, asap, abgd):
     split.sort(key=lambda x: -x["max_intra"])
     out.update(
         named=len(named), singletons=sum(1 for r in named if r["n"] == 1),
-        merged=merged[:GUIDE_MAX_ITEMS], merged_n=len(merged),
+        merged=merged[:GUIDE_MAX_ITEMS], merged_n=len(merged), merged_motus=merged_motus,
         split=split[:GUIDE_MAX_ITEMS], split_n=len(split))
     return out

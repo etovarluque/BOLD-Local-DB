@@ -463,7 +463,7 @@ SUSPECT_NEAR = 0.01
 # ...and this far from every record of its own species
 SUSPECT_FAR = 0.03
 # Names that don't identify a species (hybrids included)
-_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex|indet)\b\.?|\d|\s[x×]\s"
+_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex|indet)\b\.?|\d|\s[x×]\s|\?"
                           r"|(?-i:^\S+\s+\S+\s+[A-Z])", re.IGNORECASE)
 
 

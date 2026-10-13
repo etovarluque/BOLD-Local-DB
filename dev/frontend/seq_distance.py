@@ -1079,7 +1079,10 @@ def tree_guide(children, root, D, species, genera, ids):
                     "broken": [{"species": x["label"], "others": x["others"], "others_n": x["others_n"],
                                 "distance": x["distance"], "outlier": x.get("outlier")}
                                for x in cases[:TREE_GUIDE_MAX_ITEMS]],
-                    "broken_n": len(cases)},
+                    "broken_n": len(cases),
+                    # Every species that isn't a clade, farthest from its intruders
+                    # first (the tree colours them all, not only the cases told)
+                    "nonmono": [x["label"] for x in sorted(sp_broken, key=lambda x: -x["distance"])]},
         "genera": {"tested": ge_tested,
                    "broken": [{"genus": x["label"], "others": x["others"], "others_n": x["others_n"]}
                               for x in ge_broken[:TREE_GUIDE_MAX_ITEMS]],

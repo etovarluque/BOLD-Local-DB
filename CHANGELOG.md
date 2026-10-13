@@ -84,6 +84,16 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Composition and quality reading: sequences whose GC is far from the rest
+  but which are much shorter than the median (fragments: a short stretch has
+  a composition of its own) are now told apart like the much longer ones,
+  instead of being called possible contamination; when those far from the
+  rest are many (10 or more, and at least 10 % of the sequences) they are
+  read as a group with a composition of its own. With a forced genetic code
+  that leaves stops everywhere, the automatic code is proposed whenever it
+  clears them, before a code that only has fewer stop codons. Wording fixes:
+  singulars, "all from project …", sequences with a single stop each, and
+  "2 of the 4" instead of "most" for half of them.
 - Sequence analysis: every *What … say* reading has an orange warning
   triangle next to its title; hovering it (or reaching it with the keyboard)
   shows that automatic readings may contain errors or inaccuracies.

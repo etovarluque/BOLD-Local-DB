@@ -48,10 +48,15 @@ HISTOGRAM_BIN_BP = 25
 # lengths each held by GUIDE_TWO_LENGTHS of the sequences point to two
 # primer pairs; stops in GUIDE_CODE_SHARE of the translated sequences point
 # to a wrong genetic code, and another code that clears GUIDE_CODE_CLEARS of
-# them is offered. Sequences much longer than the median aren't flagged for
-# their GC, which may only reflect the stretch they span.
+# them is offered. Sequences much longer or shorter than the median (by
+# GUIDE_LONG times) aren't flagged for their GC, which may only reflect the
+# stretch they span.
 GUIDE_GC_POINTS = 4.0
 GUIDE_GC_SD = 5
+# As many apart as GUIDE_GC_GROUP of the sequences (and GUIDE_GC_GROUP_MIN)
+# are a group with a composition of its own rather than suspects
+GUIDE_GC_GROUP = 0.1
+GUIDE_GC_GROUP_MIN = 10
 GUIDE_LONG = 1.5
 GUIDE_TWO_LENGTHS = 0.15
 GUIDE_CODE_SHARE = 0.2
@@ -870,7 +875,9 @@ def _project(rec):
 def _better_code(pairs, forced_code):
     """Another genetic code that clears the stops of most of the sequences
     in `pairs` ((record, row) with stops), as {code, auto, cleared}, or None.
-    The automatic choice is tried first when a code was forced."""
+    When a code was forced, the automatic choice (the taxonomy's) wins if it
+    clears enough: a code with fewer stop codons always clears a few more by
+    chance."""
     used = {row["code"] for _, row in pairs}
     candidates = []
     if forced_code:
@@ -889,6 +896,8 @@ def _better_code(pairs, forced_code):
                       if c is not None and check_translation(rec["clean"], c)[2] == 0)
         if cleared >= GUIDE_CODE_CLEARS * len(pairs) and (not best or cleared > best["cleared"]):
             best = {"code": code, "auto": auto, "cleared": cleared}
+            if auto:
+                break
     return best
 
 
@@ -926,15 +935,24 @@ def guide(records, rows, forced_code=None):
         out = sorted(((rec, row) for rec, row in pairs
                       if row["gc"] is not None and abs(row["gc"] - gc_median) > limit),
                      key=lambda p: -abs(p[1]["gc"] - gc_median))
-        # Much longer sequences span another stretch of the gene, whose
-        # composition differs: apart, as they aren't suspect
-        longer = [p for p in out if p[1]["length"] > GUIDE_LONG * median]
-        out = [p for p in out if p[1]["length"] <= GUIDE_LONG * median]
+        # Much longer sequences span another stretch of the gene, and much
+        # shorter ones only part of it (a short stretch has a composition of
+        # its own): apart, as they aren't suspect
+        odd = lambda row: row["length"] > GUIDE_LONG * median or row["length"] < median / GUIDE_LONG
+        apart = [p for p in out if odd(p[1])]
+        out = [p for p in out if not odd(p[1])]
+        # So many apart that they are a group of their own (another species
+        # or lineage with its own composition), not contamination
+        group = len(out) >= max(GUIDE_GC_GROUP_MIN, GUIDE_GC_GROUP * n)
         gc = {"median": round(gc_median, 1), "limit": round(limit, 1),
               "outliers_n": len(out),
+              "group": group,
+              "group_species": [list(x) for x in Counter(
+                  row["species"] for _, row in out if row["species"]).most_common(3)] if group else [],
               "outliers": [item(rec, row, gc=row["gc"]) for rec, row in out[:GUIDE_LIST]],
-              "long_n": len(longer),
-              "long": [item(rec, row, gc=row["gc"]) for rec, row in longer[:GUIDE_LIST]]}
+              "apart_n": len(apart),
+              "apart_short": sum(1 for _, row in apart if row["length"] < median),
+              "apart": [item(rec, row, gc=row["gc"]) for rec, row in apart[:GUIDE_LIST]]}
 
     # Stop codons: where they come from, and whether another code clears them
     stops = [(rec, row) for rec, row in pairs if row["stops"]]

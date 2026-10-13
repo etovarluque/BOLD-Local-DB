@@ -141,6 +141,23 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   brackets only when the zones kept span several countries (a small zone
   of another country no longer adds "(Colombia)" to every one), and a
   single small zone left out is said in the singular.
+- Diversity by province or region: a zone of the same name with no country
+  (a small one) no longer replaces the zone of that country once its
+  country is dropped from the names; their sequences are joined.
+- Diversity: the 95 % interval of Chao1 uses the variance of the
+  bias-corrected estimator it goes with (that of classic Chao1 widened
+  it several times over when there were few doubletons).
+- Diversity: sample coverage of a zone with one singleton and no
+  doubleton is 1, as in Chao & Jost (2012) and iNEXT.
+- Taxonomic distinctness: a unit with a missing rank (a family, say)
+  takes that of the units sharing its rank below, so pairs keep their
+  level instead of being counted as further apart.
+- Haplotypes: diversity and structure name species as the table does,
+  so a FASTA's genus-only names are no longer joined with the unnamed
+  sequences.
+- Haplotype network reading: "?" in the country field is not a place.
+- Sequence analysis of a search: records with no marker and with an empty
+  one are one choice, not two.
 
 ### Changed
 - Sequence analysis: tabs and views show what the data received allow,

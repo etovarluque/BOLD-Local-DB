@@ -3705,7 +3705,7 @@ def _analysis_search_markers(conn, data):
     from_sql, where_sql, params = _analysis_search_source(data)
     rows = conn.execute(f"""
         SELECT m, COUNT(*) FROM (
-            SELECT r.col_marker_code AS m FROM {from_sql}
+            SELECT COALESCE(r.col_marker_code, '') AS m FROM {from_sql}
             WHERE {where_sql} AND r.col_nuc IS NOT NULL AND r.col_nuc != ''
             LIMIT ?)
         GROUP BY m COLLATE NOCASE ORDER BY 2 DESC

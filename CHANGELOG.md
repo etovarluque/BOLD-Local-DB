@@ -84,6 +84,21 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Species and BINs reading: records count as out of place only in a BIN
+  that another species holds more than half of. A BIN of many species (70
+  Acropora species in BOLD:AAF5735, none with even a sixth of it) is now
+  read as shared instead of calling 256 records misidentifications, and a
+  species whose records all sit in another species' BIN (Artemia monica)
+  shares it rather than straying into it, unless it also has a BIN of its
+  own. A species' records are never both out of place and sharing a BIN;
+  small BINs listed as a species' own are only those it holds; species
+  inside another's BIN or out of place no longer appear among those whose
+  name and BIN agree. Hybrids and "indet." count as provisional names, and
+  "Unspecified country" and "Exception - …" aren't taken as places (here,
+  in distances and in the network). The sentence on shared BINs depends on
+  how many records each species has, the pair of species confused in a
+  country is said once, long lists are cut, and the species left out of
+  the out-of-place list are counted on a line of their own.
 - Haplotypes reading: names that stop at the genus ("Amanita sp.") are no
   longer read as species (they may hold several): they are listed apart with
   their HD, and are never the species to start with nor the network offered.

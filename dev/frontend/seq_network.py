@@ -52,7 +52,7 @@ GUIDE_STAR_NEAR = 0.6
 GUIDE_MAX_LINEAGES = 30
 GUIDE_MAX_ITEMS = 8
 # BOLD's placeholders in the country field, which aren't places
-_NO_PLACE = ("unrecoverable", "exception")
+_NO_PLACE = ("unrecoverable", "unspecified", "exception")
 # Epithets that don't name a species ("Carollia sp.", "Aedes cf. aegypti")
 _NO_EPITHET = {"sp", "sp.", "spp", "spp.", "cf", "cf.", "aff", "aff.", "nr", "nr.", "gr", "gr."}
 

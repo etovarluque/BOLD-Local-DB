@@ -3054,6 +3054,8 @@
                 an_cg_place_all: ', todos de {c}',
                 an_cg_place_one: ', de {c}',
                 an_cg_more_bins: 'y otros {k} BINs',
+                an_cg_more_species: 'Otras {k} especies tienen registros en el BIN de otra especie.',
+                an_cg_more_species_1: 'Otra especie tiene registros en el BIN de otra especie.',
                 an_cg_more_bins_1: 'y otro BIN más',
                 an_cg_reciprocal: ' {a} y {b} tienen registros cruzados en los BINs de la otra en {c}: allí se confunden las dos especies.',
                 an_cg_bin_place: '{bin} ({n}, {c})',
@@ -3073,6 +3075,8 @@
                 an_cg_shared: '<b>BIN compartido.</b> {bin} reúne {list}{prov}.',
                 an_cg_shared_prov: ', además de los nombres provisionales {list}',
                 an_cg_shared_why: ' Con tantos registros de cada una no es un error suelto: COI no las separa (especies muy recientes, hibridación) o los nombres se aplican de forma inconsistente.',
+                an_cg_shared_why_some: ' Con tantos registros de varias de ellas no es un error suelto: COI no las separa (especies muy recientes, hibridación) o los nombres se aplican de forma inconsistente; las que tienen pocos registros pueden ser también identificaciones erróneas.',
+                an_cg_shared_why_few: ' Con tan pocos registros no se puede saber si es un error de identificación o un BIN que COI no separa; más registros lo aclararían.',
                 an_cg_shared_genera: ' Son de géneros distintos, algo muy raro en especies bien identificadas: revisa las identificaciones.',
                 an_cg_prov: '{names} son nombres provisionales dentro del BIN de {owner} ({bin}): probablemente son esa especie sin identificar del todo, o una forma aún sin describir.',
                 an_cg_prov_1: '{names} es un nombre provisional dentro del BIN de {owner} ({bin}): probablemente es esa especie sin identificar del todo, o una forma aún sin describir.',
@@ -4094,6 +4098,8 @@
                 an_cg_place_all: ', all from {c}',
                 an_cg_place_one: ', from {c}',
                 an_cg_more_bins: 'and {k} more BINs',
+                an_cg_more_species: '{k} more species have records in another species\' BIN.',
+                an_cg_more_species_1: 'One more species has records in another species\' BIN.',
                 an_cg_more_bins_1: 'and one more BIN',
                 an_cg_reciprocal: ' {a} and {b} have records in each other\'s BIN in {c}: the two species are confused there.',
                 an_cg_bin_place: '{bin} ({n}, {c})',
@@ -4113,6 +4119,8 @@
                 an_cg_shared: '<b>Shared BIN.</b> {bin} holds {list}{prov}.',
                 an_cg_shared_prov: ', besides the provisional names {list}',
                 an_cg_shared_why: ' With this many records of each it isn\'t a stray error: COI doesn\'t separate them (very recent species, hybridization) or the names are applied inconsistently.',
+                an_cg_shared_why_some: ' With this many records of several of them it isn\'t a stray error: COI doesn\'t separate them (very recent species, hybridization) or the names are applied inconsistently; those with few records may also be misidentifications.',
+                an_cg_shared_why_few: ' With so few records it can\'t be told whether it is a misidentification or a BIN that COI doesn\'t split; more records would tell.',
                 an_cg_shared_genera: ' They are of different genera, which is very rare for well-identified species: check the identifications.',
                 an_cg_prov: '{names} are provisional names inside the BIN of {owner} ({bin}): they are probably that species not fully identified, or a form not yet described.',
                 an_cg_prov_1: '{names} is a provisional name inside the BIN of {owner} ({bin}): it is probably that species not fully identified, or a form not yet described.',
@@ -8496,7 +8504,7 @@
 		// partitions and compares the one chosen with the names and BINs.
 
 		// Names that don't identify a species, as on the server
-		const AN_PROVISIONAL = /\b(sp|spp|cf|aff|nr|gr|complex)\b\.?|\d/i;
+		const AN_PROVISIONAL = /\b(sp|spp|cf|aff|nr|gr|complex|indet|x)\b\.?|\d/i;
 		// Species statuses, in the order the table lists them
 		const AN_MOTU_STATUS = ['split_merged', 'merged', 'split', 'match'];
 
@@ -9575,6 +9583,9 @@ li li { display: list-item; margin: 0; }
 		// asking the whole database whose each BIN is: records in another
 		// species' BIN, species in several BINs of their own, shared BINs.
 
+		// Records of each species in a shared BIN past which it isn't a stray error
+		const AN_CG_MANY = 5;
+
 		function anRenderConcGuide(body, r) {
 			const G = r.concordance_guide;
 			if (!G) return;
@@ -9615,7 +9626,8 @@ li li { display: list-item; margin: 0; }
 				const seen = new Set(s.species.map(([sp]) => sp.split(' ').slice(0, 2).join(' ')));
 				const db = s.others.filter(([sp]) => !seen.has(sp.split(' ').slice(0, 2).join(' ')))
 					.map(([sp, n]) => plain ? `${short(sp)} (${num(n)})` : anGuideText('an_cg_in_db', { sp: short(sp), n: num(n) }));
-				return anGuideJoin([...here, ...db], ', ');
+				const all = [...here, ...db], max = 8;
+				return all.length > max ? all.slice(0, max).join(', ') + anGuideMore(max, all.length) : anGuideJoin(all, ', ');
 			};
 
 			// Verdict
@@ -9648,9 +9660,12 @@ li li { display: list-item; margin: 0; }
 				if (G.stray_records) review.push(one(G.stray_records, 'an_cg_rev_strays'));
 				if (G.shared_n === 1) {
 					const s = G.shared[0];
-					review.push(anGuideText('an_cg_rev_shared_1', { list: anGuideJoin([...s.species, ...s.others].map(([sp]) => sp)
+					const names = [...s.species, ...s.others].map(([sp]) => sp)
 						.filter((sp, i, a) => a.findIndex(x => x.split(' ').slice(0, 2).join(' ') === sp.split(' ').slice(0, 2).join(' ')) === i)
-						.map(shortener()), ', ') }));
+						.map(shortener());
+					// A BIN of many species: a few named, the rest counted
+					review.push(anGuideText('an_cg_rev_shared_1', { list: names.length > 4
+						? names.slice(0, 3).join(', ') + anGuideMore(3, names.length) : anGuideJoin(names, ', ') }));
 				} else if (G.shared_n) {
 					review.push(anGuideText('an_cg_rev_shared', { k: num(G.shared_n) }));
 				}
@@ -9681,8 +9696,8 @@ li li { display: list-item; margin: 0; }
 					lis = G.strays.map(x => `<li>${short(x.species)}: ${x.items.map(item).join('; ')}` +
 						(x.bins_n > x.items.length ? anGuideMore(x.items.length, x.bins_n) : '') + '</li>').join('');
 				}
+				if (!S1 && G.strays_n > G.strays.length) lis += `<li>${one(G.strays_n - G.strays.length, 'an_cg_more_species')}</li>`;
 				let text = anGuideText(G.stray_bins === 1 ? 'an_cg_strays_1' : 'an_cg_strays', { k: num(G.stray_records), b: num(G.stray_bins) }) + `<ul class="an-guide-list">${lis}</ul>`;
-				if (G.strays_n > G.strays.length) text += anGuideMore(G.strays.length, G.strays_n);
 				G.reciprocal.forEach(([a, b, c]) => {
 					text += anGuideText('an_cg_reciprocal', { a: anGuideName(a), b: anGuideName(b), c: escapeHtml(c) });
 				});
@@ -9722,8 +9737,19 @@ li li { display: list-item; margin: 0; }
 			G.shared.slice(0, sharedSaid ? 0 : 3).forEach(s => {
 				const v = { bin: bin(s.bin), list: sharedNames(s),
 							prov: s.provisional.length ? anGuideText('an_cg_shared_prov', {
-								list: anGuideJoin(s.provisional.map(([sp, n]) => `${anGuideName(sp)} (${num(n)})`), ', ') }) : '' };
-				add(s.genera > 1 ? 'warn' : 'info', anGuideText('an_cg_shared', v) + anGuideText(s.genera > 1 ? 'an_cg_shared_genera' : 'an_cg_shared_why'));
+								list: s.provisional.length > 5
+									? s.provisional.slice(0, 4).map(([sp, n]) => `${anGuideName(sp)} (${num(n)})`).join(', ') + anGuideMore(4, s.provisional.length)
+									: anGuideJoin(s.provisional.map(([sp, n]) => `${anGuideName(sp)} (${num(n)})`), ', ') }) : '' };
+				// Records of each species, once (these records or the database's)
+				const best = new Map();
+				[...s.species, ...s.others].forEach(([sp, n]) => {
+					const k = sp.split(' ').slice(0, 2).join(' ');
+					best.set(k, Math.max(best.get(k) || 0, n));
+				});
+				const counts = [...best.values()];
+				const many = counts.filter(n => n >= AN_CG_MANY).length;
+				const why = many === counts.length ? 'an_cg_shared_why' : many >= 2 ? 'an_cg_shared_why_some' : 'an_cg_shared_why_few';
+				add(s.genera > 1 ? 'warn' : 'info', anGuideText('an_cg_shared', v) + anGuideText(s.genera > 1 ? 'an_cg_shared_genera' : why));
 			});
 			G.provisional.slice(0, 3).forEach(p => {
 				add('info', anGuideText(p.names.length === 1 ? 'an_cg_prov_1' : 'an_cg_prov', {

@@ -324,14 +324,17 @@ def parse_header(header):
 
 
 def field_counts(records):
-    """How many records bring a species name, a BIN and a country, and how
-    many countries: what the views that need them can show."""
+    """How many records bring a species name, a BIN, a country and
+    coordinates, and how many countries: what the views that need them can
+    show."""
+    import seq_popgen  # it imports this module
     places = [r.get("country") for r in records if not no_place(r.get("country"))]
     return {"n": len(records),
             "species": sum(1 for r in records if r.get("species")),
             "bin": sum(1 for r in records if r.get("bin")),
             "country": len(places),
-            "countries": len(set(places))}
+            "countries": len(set(places)),
+            "coords": sum(1 for r in records if seq_popgen.coord_of(r))}
 
 
 def parse_fasta(text):

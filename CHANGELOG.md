@@ -5,7 +5,10 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
-## [Unreleased]
+## [2.3.0]
+
+### Upgrade notes
+- Update from Home (*Update*). The database doesn't change: no rebuild needed.
 
 ### Added
 - Diversity › Richness and completeness: taxonomic distinctness per zone
@@ -133,6 +136,17 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Fixed
+- Species delimitation: ABGD could take minutes looking for the barcode gap
+  when the gaps found with successive window sizes kept disagreeing. The
+  search now stops after the same budget as when there is no gap, keeping
+  the last window's answer.
+- With sequences in several alignment groups, each group keeps the MOTU
+  partition chosen for it: opening another group's tree no longer resets it
+  to ASAP's best partition or changes the group shown on the *Species
+  (MOTUs)* tab. Colouring the haplotype network by MOTU uses each group's
+  chosen partition.
+- Haplotype network: releasing a dragged circle outside the figure now ends
+  the drag.
 - Richness reading: "sequences lack a country" instead of "have no a
   country".
 - Diversity: the default zones count only zones with 20 or more sequences.
@@ -295,24 +309,6 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   plot) and *Diversity by zone* (richness, Chao1, coverage, rarefaction,
   taxonomic distinctness, Sørensen and Jaccard, turnover and nestedness),
   with their limits. References to the old tab names now point to views.
-
-## [2.2.1]
-
-### Upgrade notes
-- Update from Home (*Update*). The database doesn't change: no rebuild needed.
-
-### Fixed
-- Species delimitation: ABGD could take minutes looking for the barcode gap
-  when the gaps found with successive window sizes kept disagreeing. The
-  search now stops after the same budget as when there is no gap, keeping
-  the last window's answer.
-- With sequences in several alignment groups, each group keeps the MOTU
-  partition chosen for it: opening another group's tree no longer resets it
-  to ASAP's best partition or changes the group shown on the *Species
-  (MOTUs)* tab. Colouring the haplotype network by MOTU uses each group's
-  chosen partition.
-- Haplotype network: releasing a dragged circle outside the figure now ends
-  the drag.
 
 ## [2.2.0]
 

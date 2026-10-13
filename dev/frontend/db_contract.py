@@ -13,7 +13,7 @@ checked.
 
 import sqlite3
 
-APP_VERSION = "2.2.1"
+APP_VERSION = "2.3.0"
 
 # Inside app/
 DB_FILENAME = "bold_db.db"

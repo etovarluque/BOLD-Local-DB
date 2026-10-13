@@ -1364,6 +1364,12 @@
 		.an-badge { padding: 0 7px; border-radius: 9px; background: #fff; color: var(--slate); font-size: .72rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 		.an-badge.warn { background: var(--orange); color: #fff; }
 		.an-view-body { padding: 18px 16px; border: 1px solid #d2d7df; border-top: 0; border-radius: 0 0 10px 10px; }
+		/* Views inside a tab, as pills under its shared options */
+		.an-subviews { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+		.an-subviews button { padding: 3px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--mute); font-weight: 500; font-size: .84rem; }
+		.an-subviews button:hover { color: var(--ink); }
+		.an-subviews button.active { border-color: var(--ink); background: var(--ink); color: #fff; }
+		.an-subviews button:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 		.an-h { margin: 1.25rem 0 .5rem; font-weight: 600; font-size: .95rem; }
 		.an-h:first-child { margin-top: 0; }
 		.an-muted { color: var(--mute); font-size: .85rem; }
@@ -2454,8 +2460,9 @@
                 an_t_stops: 'Con codones de parada',
                 an_t_species: 'Especies',
                 an_t_bins: 'BINs',
-                an_v_quality: 'Composición y calidad',
+                an_v_quality: 'Calidad',
                 an_v_haplotypes: 'Haplotipos',
+                an_v_hap_table: 'Tabla',
                 an_v_concordance: 'Especies y BINs',
                 an_h_length: 'Distribución de longitudes',
                 an_hist_x: 'Longitud (pb)',
@@ -2539,6 +2546,7 @@
                 id_no_rows: 'Ninguna secuencia en esta categoría.',
 
                 an_v_distance: 'Distancias',
+                an_v_dist_tab: 'Distancias y delimitación',
                 an_v_tree: 'Árbol NJ',
                 an_model_label: 'Modelo:',
                 an_model_k2p: 'K2P (Kimura 2 parámetros)',
@@ -2611,7 +2619,7 @@
                 an_c_max_intra: 'Intra máx.', an_c_mean_intra: 'Intra media', an_c_nn: 'Vecino',
                 an_c_nn_species: 'Especie vecina', an_c_gap: 'Gap',
                 an_tree_off: 'Marca «Construir árbol NJ» y pulsa «Calcular».',
-                an_v_delimit: 'Especies (MOTU)',
+                an_v_delimit: 'MOTU',
                 an_delimit_option: 'Delimitar especies: ASAP y ABGD (hasta {n} secuencias)',
                 an_dist_running_delimit: 'Alineando, calculando y delimitando especies (puede tardar un minuto)…',
                 an_delimit_off: 'Marca «Delimitar especies» y pulsa «Calcular».',
@@ -2755,7 +2763,7 @@
                 an_tg_singletons: '<b>{n} especies tienen una sola secuencia:</b> su posición no se puede comprobar frente a otras de la misma especie.',
                 an_tg_singletons_1: '<b>Una especie tiene una sola secuencia:</b> su posición no se puede comprobar frente a otras de la misma especie.',
                 an_tg_next: '<b>Qué hacer ahora:</b> colorea el árbol por especie o por MOTU para ver estos casos, y con [color_country] comprueba si las especies partidas siguen la geografía (posibles especies crípticas).',
-                an_tg_next_ok: '<b>Qué hacer ahora:</b> el árbol no muestra casos que revisar; con [color_country] puedes ver si los grupos siguen la geografía, y en «Especies (MOTU)» si la delimitación propone las mismas especies.',
+                an_tg_next_ok: '<b>Qué hacer ahora:</b> el árbol no muestra casos que revisar; con [color_country] puedes ver si los grupos siguen la geografía, y en «{motu}» si la delimitación propone las mismas especies.',
                 an_tg_foot: 'Un árbol de distancias resume parecidos, no reconstruye la historia evolutiva con detalle. Úsalo junto con la delimitación, la morfología y otros marcadores.',
                 // Reading guide of the haplotype network
                 an_ng_title: 'Qué dice esta red',
@@ -2857,8 +2865,8 @@
                 an_ng_long_msn: '<b>Ramas largas.</b> Hay uniones de hasta {m} mutaciones: la red de expansión mínima une esos grupos directamente, sin haplotipos intermedios, y su posición relativa es poco precisa.',
                 an_ng_excluded: '<b>Se analizaron {a} de {b} secuencias:</b> {x} quedaron fuera (ver los avisos de arriba). Si las que faltan son de otras regiones o linajes, el patrón podría cambiar.',
                 an_ng_few: '<b>Hay pocas secuencias ({n}).</b> Con tan pocos datos la forma de la red y la D de Tajima cambian con facilidad; tómalas como una primera aproximación.',
-                an_ng_next: '<b>Qué hacer ahora:</b> colorea la red con [color_bin] y [color_country] para ver los linajes, y compáralos con las pestañas «{motu}» y «{tree}». Para estudiar un linaje, busca solo los registros de su BIN y repite la red: así la diversidad y la D de Tajima describen una sola población.',
-                an_ng_next_nobin: '<b>Qué hacer ahora:</b> colorea la red por país o por especie para ver los linajes, y compáralos con las pestañas «{motu}» y «{tree}». Para estudiar un linaje, repite la red solo con sus secuencias: así la diversidad y la D de Tajima describen una sola población.',
+                an_ng_next: '<b>Qué hacer ahora:</b> colorea la red con [color_bin] y [color_country] para ver los linajes, y compáralos con «{motu}» y «{tree}» (pestaña «{tab}»). Para estudiar un linaje, busca solo los registros de su BIN y repite la red: así la diversidad y la D de Tajima describen una sola población.',
+                an_ng_next_nobin: '<b>Qué hacer ahora:</b> colorea la red por país o por especie para ver los linajes, y compáralos con «{motu}» y «{tree}» (pestaña «{tab}»). Para estudiar un linaje, repite la red solo con sus secuencias: así la diversidad y la D de Tajima describen una sola población.',
                 an_ng_next_one: '<b>Qué hacer ahora:</b> colorea la red con [color_country] para ver cómo se reparten los haplotipos, y compara su diversidad con la de otras especies o regiones construyendo sus redes.',
                 an_ng_foot: 'Una red de un solo marcador sugiere linajes y estructura, pero no los demuestra (en COI, además, solo se ve la línea materna): confírmalos con otros marcadores, la morfología y un muestreo más amplio.',
                 an_qg_title: 'Qué dicen estas secuencias',
@@ -2934,17 +2942,17 @@
                 an_qg_n_many_1: 'una tiene [many_n]',
                 an_qg_n_amb: '{k} tienen [ambiguous]',
                 an_qg_n_amb_1: 'una tiene [ambiguous]',
-                an_qg_n_hap: '{k} secuencias tienen alguna N o base ambigua y quedan fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
-                an_qg_n_hap_1: 'Una secuencia tiene alguna N o base ambigua y queda fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
-                an_qg_n_hap_total: 'En total, {k} tienen alguna N o base ambigua y quedan fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
-                an_qg_n_hap_total_1: 'En total, una tiene alguna N o base ambigua y queda fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
-                an_qg_n_hap_same: 'Quedan fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
-                an_qg_n_hap_same_1: 'Queda fuera de la pestaña «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
+                an_qg_n_hap: '{k} secuencias tienen alguna N o base ambigua y quedan fuera de «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
+                an_qg_n_hap_1: 'Una secuencia tiene alguna N o base ambigua y queda fuera de «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
+                an_qg_n_hap_total: 'En total, {k} tienen alguna N o base ambigua y quedan fuera de «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
+                an_qg_n_hap_total_1: 'En total, una tiene alguna N o base ambigua y queda fuera de «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
+                an_qg_n_hap_same: 'Quedan fuera de «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usan.',
+                an_qg_n_hap_same_1: 'Queda fuera de «{hap}» (una sola N crearía un haplotipo falso); en las distancias sí se usa.',
                 an_qg_n_none: '<b>N y bases ambiguas.</b> Ninguna secuencia tiene N ni bases ambiguas: todas cuentan en «{hap}».',
                 an_qg_gc: '<b>Composición.</b> El [gc] es {gc} %',
                 an_qg_gc3: ' y el [gc3] {gc3} %',
                 an_qg_gc_ok: ' Cada grupo tiene los suyos; lo que importa es que ninguna secuencia se aparta del resto (todas quedan a menos de {lim} puntos de la mediana), lo que descarta contaminaciones evidentes por organismos de composición muy distinta.',
-                an_qg_gc_out_1: ' Una secuencia se aparta del resto: {id}{sp}, con un {gc} % de GC frente a una mediana de {med} %. Puede ser una contaminación, otro organismo o una secuencia de mala calidad: búscala en el árbol o en «{dist}».',
+                an_qg_gc_out_1: ' Una secuencia se aparta del resto: {id}{sp}, con un {gc} % de GC frente a una mediana de {med} %. Puede ser una contaminación, otro organismo o una secuencia de mala calidad: búscala en «{tree}» o en «{dist}» (pestaña «{tab}»).',
                 an_qg_gc_apart_1_long: ' Solo se aparta del resto {id} ({gc} % frente a una mediana de {med} %), que mide {len} pb, mucho más que las demás: lo más probable es que la diferencia venga de abarcar otro tramo del gen, no de una contaminación.',
                 an_qg_gc_apart_1_short: ' Solo se aparta del resto {id} ({gc} % frente a una mediana de {med} %), que mide solo {len} pb, mucho menos que las demás: un tramo corto tiene su propia composición, así que la diferencia no indica por sí sola una contaminación.',
                 an_qg_gc_apart_long: ' Solo se apartan del resto {ids}, que son mucho más largas que las demás: lo más probable es que la diferencia venga de abarcar otro tramo del gen, no de una contaminación.',
@@ -2956,8 +2964,8 @@
                 an_qg_gc_also_short_1: ' Además se aparta {ids}, pero es mucho más corta que las demás: un tramo corto tiene su propia composición, así que la diferencia no indica por sí sola una contaminación.',
                 an_qg_gc_also_mixed: ' Además se apartan {ids}, pero son mucho más cortas o más largas que las demás: la diferencia viene probablemente del tramo del gen que abarcan.',
                 an_qg_gc_spread: ' La composición varía mucho entre secuencias (lo normal en marcadores no codificantes o en grupos muy diversos), así que aquí no sirve para detectar contaminaciones.',
-                an_qg_gc_out: ' {k} secuencias se apartan del resto (a más de {lim} puntos de la mediana, {med} %): {list}. Pueden ser contaminaciones, otros organismos o secuencias de mala calidad: búscalas en el árbol o en «{dist}».',
-                an_qg_gc_group: ' {k} secuencias ({p}) se apartan del resto (a más de {lim} puntos de la mediana, {med} %){sp}. Que sean tantas apunta a un grupo con una composición propia (otra especie o linaje) más que a contaminaciones; «{dist}» y el árbol muestran si forman un grupo aparte.',
+                an_qg_gc_out: ' {k} secuencias se apartan del resto (a más de {lim} puntos de la mediana, {med} %): {list}. Pueden ser contaminaciones, otros organismos o secuencias de mala calidad: búscalas en «{tree}» o en «{dist}» (pestaña «{tab}»).',
+                an_qg_gc_group: ' {k} secuencias ({p}) se apartan del resto (a más de {lim} puntos de la mediana, {med} %){sp}. Que sean tantas apunta a un grupo con una composición propia (otra especie o linaje) más que a contaminaciones; «{dist}» y «{tree}» (pestaña «{tab}») muestran si forman un grupo aparte.',
                 an_qg_gc_group_most: ', la mayoría de {sp}',
                 an_qg_gc_group_some: ', entre ellas varias de {sp}',
                 an_qg_tabs_1: 'la pestaña «{a}»',
@@ -2967,7 +2975,7 @@
                 an_qg_next_review: '<b>Qué hacer ahora:</b> revisa las secuencias señaladas arriba (todas las que tienen alertas están en la tabla «{flagged}»). Las distancias, el árbol y la red ya dejan fuera las que tienen codones de parada o caracteres no válidos; para quitar cualquiera de ellas de todo el análisis, selecciona en los resultados de la búsqueda los registros que quieras conservar y analiza [src_records]. Las cortas y las que tienen N pueden quedarse. Después, pasa a {tabs}.',
                 an_qg_next_review_fasta: '<b>Qué hacer ahora:</b> revisa las secuencias señaladas arriba (todas las que tienen alertas están en la tabla «{flagged}»). Las distancias, el árbol y la red ya dejan fuera las que tienen codones de parada o caracteres no válidos; para quitar cualquiera de ellas de todo el análisis, bórrala del archivo FASTA y repite el análisis. Las cortas y las que tienen N pueden quedarse. Después, pasa a {tabs}.',
                 an_qg_next_ok: '<b>Qué hacer ahora:</b> las secuencias se pueden analizar tal como están. Pasa a {tabs}.',
-                an_qg_foot: 'Estas comprobaciones miran cada secuencia por separado y sin alinearla: una secuencia sin alertas aún puede ser de otro organismo o estar mal identificada. Eso solo se ve comparándolas entre sí, en «Distancias» y el árbol.',
+                an_qg_foot: 'Estas comprobaciones miran cada secuencia por separado y sin alinearla: una secuencia sin alertas aún puede ser de otro organismo o estar mal identificada. Eso solo se ve comparándolas entre sí, en «Distancias y delimitación».',
                 an_hg_title: 'Qué dicen estos haplotipos',
                 an_hg_sub: 'Lectura automática y orientativa de los haplotipos por especie',
                 an_hg_file: 'interpretacion_haplotipos',
@@ -3012,8 +3020,8 @@
                 an_hg_trim_1: '<b>Haplotipos de más por los recortes.</b> En {sp}, unos {d} de sus {h} haplotipos coinciden con otro en todo el tramo que comparten (al menos {bp} pb). Como aquí no se alinea, dos secuencias iguales pero recortadas en extremos distintos cuentan como haplotipos diferentes; pasa sobre todo cuando las longitudes varían mucho. El número real estaría más cerca de {m}, y su [hd_col] algo por debajo.',
                 an_hg_trim: '<b>Haplotipos de más por los recortes.</b> En {k} especies, algunos haplotipos coinciden con otro en todo el tramo que comparten (al menos {bp} pb): {list}. Como aquí no se alinea, dos secuencias iguales pero recortadas en extremos distintos cuentan como haplotipos diferentes; los números reales estarían más cerca de los segundos, y sus [hd_col] algo por debajo.',
                 an_hg_trim_item: ' ({h} → unos {m})',
-                an_hg_prov: '{list} son nombres provisionales: se cuentan aparte de {base}, aunque podrían ser la misma especie o no. La pestaña «{conc}» y el árbol ayudan a decidirlo.',
-                an_hg_prov_1: '{list} es un nombre provisional: se cuenta aparte de {base}, aunque podría ser la misma especie o no. La pestaña «{conc}» y el árbol ayudan a decidirlo.',
+                an_hg_prov: '{list} son nombres provisionales: se cuentan aparte de {base}, aunque podrían ser la misma especie o no. «{conc}» y «{tree}» ayudan a decidirlo.',
+                an_hg_prov_1: '{list} es un nombre provisional: se cuenta aparte de {base}, aunque podría ser la misma especie o no. «{conc}» y «{tree}» ayudan a decidirlo.',
                 an_hg_few: '<b>Pocas secuencias.</b> Con menos de {min} secuencias la [hd_col] cambia mucho con cada secuencia que se añade: {list}. Tómalas como orientativas.',
                 an_hg_few_unnamed: '{n} secuencias sin nombre',
                 an_hg_single: ' Otras {k} especies tienen una sola secuencia y no tienen Hd.',
@@ -3118,8 +3126,8 @@
                 an_cg_bin_only_named_1: '; uno está en un BIN con nombre de este análisis, así que probablemente es de esa especie',
                 an_cg_capped: 'Hay muchos BINs: solo se consultaron en tu base los {n} más relevantes; los demás se juzgan con estas secuencias.',
                 an_cg_next_head: '<b>Qué hacer ahora:</b> ',
-                an_cg_next_strays: 'revisa las fichas de los registros señalados (identificación, fotos, quién la hizo) y, si confirmas el error, déjalos fuera del análisis; mira también dónde caen en el árbol de la pestaña «{dist}».',
-                an_cg_next_split: 'para las especies partidas y los BINs compartidos, comprueba si forman grupos en el árbol y en «{motu}» (pestaña «{dist}»), y mira la red de haplotipos coloreada por BIN y por país.',
+                an_cg_next_strays: 'revisa las fichas de los registros señalados (identificación, fotos, quién la hizo) y, si confirmas el error, déjalos fuera del análisis; mira también dónde caen en «{tree}».',
+                an_cg_next_split: 'para las especies partidas y los BINs compartidos, comprueba si forman grupos en «{tree}» y en «{motu}» (pestaña «{tab}»), y mira la red de haplotipos («{net}») coloreada por BIN y por país.',
                 an_cg_next_ok: 'nombres y BINs coinciden: pasa a «{dist}» para ver las distancias y el barcode gap.',
                 an_cg_next_none: 'esta comparación necesita registros con nombre de especie y BIN, como los de una búsqueda en tu base o un FASTA exportado por este visor.',
                 an_dg_title: 'Qué dicen las distancias',
@@ -3229,7 +3237,7 @@
                 an_g_tag_rec: 'recomendada · igual con {k} valores de P', an_g_tag_rec_asap: 'recomendada',
                 an_g_tag_same: 'igual que ABGD', an_g_tag_near: 'más parecida a ABGD',
                 an_tree_by_motu: 'Por MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTU',
-                an_v_network: 'Red de haplotipos',
+                an_v_network: 'Red',
                 an_net_btn: 'Red', an_net_btn_title: 'Red de haplotipos de esta especie',
                 an_net_seqs_label: 'Secuencias:', an_net_method_label: 'Método:',
                 an_net_all: 'Todas las del análisis ({n})', an_net_all_short: 'todas las secuencias',
@@ -3237,7 +3245,7 @@
                 an_net_species_opt_1: '{sp} · {n} secuencias, 1 haplotipo',
                 an_net_tcs: 'TCS (parsimonia estadística)', an_net_msn: 'MSN (red de expansión mínima)',
                 an_net_run: 'Construir red', an_net_running: 'Construyendo la red…',
-                an_net_intro: 'Une los haplotipos por las mutaciones que los separan. Lo habitual es una red por especie (también con el botón «Red» de la pestaña Haplotipos). Hasta {n} secuencias; TCS admite {tcs} haplotipos y MSN {msn}.',
+                an_net_intro: 'Une los haplotipos por las mutaciones que los separan. Lo habitual es una red por especie (también con el botón «Red» de la tabla de haplotipos). Hasta {n} secuencias; TCS admite {tcs} haplotipos y MSN {msn}.',
                 an_net_off: 'Elige las secuencias y pulsa «Construir red».',
                 an_net_title: 'Red {m} · {what} · {n} secuencias, {h} haplotipos',
                 an_net_ex_unaligned: '{n} secuencia(s) que no se alinean con el resto, excluidas.',
@@ -3255,7 +3263,7 @@
                 an_net_drag: 'Arrastra los círculos para ordenar la figura; las exportaciones la guardan tal como se ve. El NEXUS lleva una secuencia por registro y como rasgos el color elegido (país si no hay color), para seguir en PopART.',
                 an_net_tip: '{h} · {n} secuencia(s)', an_net_tip_intermediate: 'Haplotipo intermedio no muestreado',
                 an_net_unknown: 'Sin dato',
-                an_tree_motu_part: 'MOTU: {part}. Se elige otra partición en la pestaña «Especies (MOTU)».',
+                an_tree_motu_part: 'MOTU: {part}. Se elige otra partición en «{motu}».',
                 an_more_items: 'y {n} más',
                 an_tree_title: 'Árbol NJ · {n} secuencias',
                 an_tree_dropped: '{n} excluida(s) por no tener distancia con todas las demás',
@@ -3533,8 +3541,9 @@
                 an_t_stops: 'With stop codons',
                 an_t_species: 'Species',
                 an_t_bins: 'BINs',
-                an_v_quality: 'Composition and quality',
+                an_v_quality: 'Quality',
                 an_v_haplotypes: 'Haplotypes',
+                an_v_hap_table: 'Table',
                 an_v_concordance: 'Species and BINs',
                 an_h_length: 'Length distribution',
                 an_hist_x: 'Length (bp)',
@@ -3618,6 +3627,7 @@
                 id_no_rows: 'No sequence in this category.',
 
                 an_v_distance: 'Distances',
+                an_v_dist_tab: 'Distances and delimitation',
                 an_v_tree: 'NJ tree',
                 an_model_label: 'Model:',
                 an_model_k2p: 'K2P (Kimura 2-parameter)',
@@ -3690,7 +3700,7 @@
                 an_c_max_intra: 'Max intra', an_c_mean_intra: 'Mean intra', an_c_nn: 'Neighbour',
                 an_c_nn_species: 'Neighbour species', an_c_gap: 'Gap',
                 an_tree_off: 'Tick "Build NJ tree" and press "Compute".',
-                an_v_delimit: 'Species (MOTUs)',
+                an_v_delimit: 'MOTUs',
                 an_delimit_option: 'Delimit species: ASAP and ABGD (up to {n} sequences)',
                 an_dist_running_delimit: 'Aligning, computing and delimiting species (may take a minute)…',
                 an_delimit_off: 'Tick "Delimit species" and press "Compute".',
@@ -3834,7 +3844,7 @@
                 an_tg_singletons: '<b>{n} species have a single sequence:</b> their place can\'t be checked against others of the same species.',
                 an_tg_singletons_1: '<b>One species has a single sequence:</b> its place can\'t be checked against others of the same species.',
                 an_tg_next: '<b>What to do next:</b> colour the tree by species or by MOTU to see these cases, and with [color_country] check whether split species follow geography (possible cryptic species).',
-                an_tg_next_ok: '<b>What to do next:</b> the tree shows no cases to check; [color_country] shows whether the groups follow geography, and "Species (MOTUs)" whether the delimitation proposes the same species.',
+                an_tg_next_ok: '<b>What to do next:</b> the tree shows no cases to check; [color_country] shows whether the groups follow geography, and "{motu}" whether the delimitation proposes the same species.',
                 an_tg_foot: 'A distance tree sums up likeness; it doesn\'t reconstruct evolutionary history in detail. Use it together with the delimitation, morphology and other markers.',
                 // Reading guide of the haplotype network
                 an_ng_title: 'What this network says',
@@ -3936,8 +3946,8 @@
                 an_ng_long_msn: '<b>Long branches.</b> Some joins span up to {m} mutations: the minimum spanning network joins those groups directly, with no intermediate haplotypes, and their relative position is imprecise.',
                 an_ng_excluded: '<b>{a} of {b} sequences were analysed:</b> {x} were left out (see the warnings above). If the missing ones come from other regions or lineages, the pattern could change.',
                 an_ng_few: '<b>There are few sequences ({n}).</b> With this little data the network\'s shape and Tajima\'s D change easily; take them as a first approximation.',
-                an_ng_next: '<b>What to do next:</b> colour the network with [color_bin] and [color_country] to see the lineages, and compare them with the "{motu}" and "{tree}" tabs. To study one lineage, search only the records of its BIN and build the network again: the diversity and Tajima\'s D then describe a single population.',
-                an_ng_next_nobin: '<b>What to do next:</b> colour the network by country or by species to see the lineages, and compare them with the "{motu}" and "{tree}" tabs. To study one lineage, build the network again with its sequences only: the diversity and Tajima\'s D then describe a single population.',
+                an_ng_next: '<b>What to do next:</b> colour the network with [color_bin] and [color_country] to see the lineages, and compare them with "{motu}" and "{tree}" ("{tab}" tab). To study one lineage, search only the records of its BIN and build the network again: the diversity and Tajima\'s D then describe a single population.',
+                an_ng_next_nobin: '<b>What to do next:</b> colour the network by country or by species to see the lineages, and compare them with "{motu}" and "{tree}" ("{tab}" tab). To study one lineage, build the network again with its sequences only: the diversity and Tajima\'s D then describe a single population.',
                 an_ng_next_one: '<b>What to do next:</b> colour the network with [color_country] to see how the haplotypes spread, and compare its diversity with other species or regions by building their networks.',
                 an_ng_foot: 'A single-marker network suggests lineages and structure but doesn\'t prove them (and COI only shows the maternal line): confirm them with other markers, morphology and wider sampling.',
                 an_qg_title: 'What these sequences say',
@@ -4013,17 +4023,17 @@
                 an_qg_n_many_1: 'one has [many_n]',
                 an_qg_n_amb: '{k} have [ambiguous]',
                 an_qg_n_amb_1: 'one has [ambiguous]',
-                an_qg_n_hap: '{k} sequences have some N or ambiguous base and are left out of the "{hap}" tab (a single N would make a false haplotype); distances do use them.',
-                an_qg_n_hap_1: 'One sequence has some N or ambiguous base and is left out of the "{hap}" tab (a single N would make a false haplotype); distances do use it.',
-                an_qg_n_hap_total: 'In all, {k} have some N or ambiguous base and are left out of the "{hap}" tab (a single N would make a false haplotype); distances do use them.',
-                an_qg_n_hap_total_1: 'In all, one has some N or ambiguous base and is left out of the "{hap}" tab (a single N would make a false haplotype); distances do use it.',
-                an_qg_n_hap_same: 'They are left out of the "{hap}" tab (a single N would make a false haplotype); distances do use them.',
-                an_qg_n_hap_same_1: 'It is left out of the "{hap}" tab (a single N would make a false haplotype); distances do use it.',
+                an_qg_n_hap: '{k} sequences have some N or ambiguous base and are left out of "{hap}" (a single N would make a false haplotype); distances do use them.',
+                an_qg_n_hap_1: 'One sequence has some N or ambiguous base and is left out of "{hap}" (a single N would make a false haplotype); distances do use it.',
+                an_qg_n_hap_total: 'In all, {k} have some N or ambiguous base and are left out of "{hap}" (a single N would make a false haplotype); distances do use them.',
+                an_qg_n_hap_total_1: 'In all, one has some N or ambiguous base and is left out of "{hap}" (a single N would make a false haplotype); distances do use it.',
+                an_qg_n_hap_same: 'They are left out of "{hap}" (a single N would make a false haplotype); distances do use them.',
+                an_qg_n_hap_same_1: 'It is left out of "{hap}" (a single N would make a false haplotype); distances do use it.',
                 an_qg_n_none: '<b>Ns and ambiguous bases.</b> No sequence has Ns or ambiguous bases: all count in "{hap}".',
                 an_qg_gc: '<b>Composition.</b> The [gc] is {gc}%',
                 an_qg_gc3: ' and the [gc3] {gc3}%',
                 an_qg_gc_ok: ' Each group has its own values; what matters is that no sequence stands apart from the rest (all are within {lim} points of the median), which rules out obvious contamination by organisms of very different composition.',
-                an_qg_gc_out_1: ' One sequence stands apart: {id}{sp}, with {gc}% GC against a median of {med}%. It may be contamination, another organism or a poor-quality sequence: look for it in the tree or in "{dist}".',
+                an_qg_gc_out_1: ' One sequence stands apart: {id}{sp}, with {gc}% GC against a median of {med}%. It may be contamination, another organism or a poor-quality sequence: look for it in "{tree}" or in "{dist}" ("{tab}" tab).',
                 an_qg_gc_apart_1_long: ' Only {id} stands apart ({gc}% against a median of {med}%), and it is {len} bp long, much longer than the rest: the difference most likely comes from spanning another stretch of the gene, not from contamination.',
                 an_qg_gc_apart_1_short: ' Only {id} stands apart ({gc}% against a median of {med}%), and it is only {len} bp long, much shorter than the rest: a short stretch has a composition of its own, so the difference alone doesn\'t point to contamination.',
                 an_qg_gc_apart_long: ' Only {ids} stand apart, and they are much longer than the rest: the difference most likely comes from spanning another stretch of the gene, not from contamination.',
@@ -4035,8 +4045,8 @@
                 an_qg_gc_also_short_1: ' {ids} stands apart as well, but it is much shorter than the rest: a short stretch has a composition of its own, so the difference alone doesn\'t point to contamination.',
                 an_qg_gc_also_mixed: ' {ids} stand apart as well, but they are much shorter or longer than the rest: the difference probably comes from the stretch of the gene they span.',
                 an_qg_gc_spread: ' Composition varies widely between sequences (usual in non-coding markers or very diverse groups), so here it can\'t reveal contamination.',
-                an_qg_gc_out: ' {k} sequences stand apart from the rest (more than {lim} points from the median, {med}%): {list}. They may be contamination, other organisms or poor-quality sequences: look for them in the tree or in "{dist}".',
-                an_qg_gc_group: ' {k} sequences ({p}) stand apart from the rest (more than {lim} points from the median, {med}%){sp}. So many point to a group with a composition of its own (another species or lineage) rather than to contamination; "{dist}" and the tree show whether they form a group of their own.',
+                an_qg_gc_out: ' {k} sequences stand apart from the rest (more than {lim} points from the median, {med}%): {list}. They may be contamination, other organisms or poor-quality sequences: look for them in "{tree}" or in "{dist}" ("{tab}" tab).',
+                an_qg_gc_group: ' {k} sequences ({p}) stand apart from the rest (more than {lim} points from the median, {med}%){sp}. So many point to a group with a composition of its own (another species or lineage) rather than to contamination; "{dist}" and "{tree}" ("{tab}" tab) show whether they form a group of their own.',
                 an_qg_gc_group_most: ', most of them of {sp}',
                 an_qg_gc_group_some: ', among them several of {sp}',
                 an_qg_tabs_1: 'the "{a}" tab',
@@ -4046,7 +4056,7 @@
                 an_qg_next_review: '<b>What to do next:</b> check the sequences pointed out above (all flagged ones are in the "{flagged}" table). Distances, the tree and the network already leave out those with stop codons or invalid characters; to remove any of them from the whole analysis, select in the search results the records you want to keep and analyse [src_records]. Short ones and those with Ns can stay. Then go on to {tabs}.',
                 an_qg_next_review_fasta: '<b>What to do next:</b> check the sequences pointed out above (all flagged ones are in the "{flagged}" table). Distances, the tree and the network already leave out those with stop codons or invalid characters; to remove any of them from the whole analysis, delete it from the FASTA file and run the analysis again. Short ones and those with Ns can stay. Then go on to {tabs}.',
                 an_qg_next_ok: '<b>What to do next:</b> the sequences can be analysed as they are. Go on to {tabs}.',
-                an_qg_foot: 'These checks look at each sequence on its own and without aligning it: a sequence with no flag may still be of another organism or misidentified. That only shows when they are compared with one another, in "Distances" and the tree.',
+                an_qg_foot: 'These checks look at each sequence on its own and without aligning it: a sequence with no flag may still be of another organism or misidentified. That only shows when they are compared with one another, in "Distances and delimitation".',
                 an_hg_title: 'What these haplotypes say',
                 an_hg_sub: 'An automatic, indicative reading of the haplotypes per species',
                 an_hg_file: 'haplotype_reading',
@@ -4091,8 +4101,8 @@
                 an_hg_trim_1: '<b>Extra haplotypes from trimming.</b> In {sp}, about {d} of its {h} haplotypes match another over the whole stretch they share (at least {bp} bp). As nothing is aligned here, two identical sequences trimmed at different ends count as different haplotypes; it happens mostly when lengths vary a lot. The real number would be closer to {m}, and its [hd_col] somewhat lower.',
                 an_hg_trim: '<b>Extra haplotypes from trimming.</b> In {k} species, some haplotypes match another over the whole stretch they share (at least {bp} bp): {list}. As nothing is aligned here, two identical sequences trimmed at different ends count as different haplotypes; the real numbers would be closer to the second ones, and their [hd_col] somewhat lower.',
                 an_hg_trim_item: ' ({h} → about {m})',
-                an_hg_prov: '{list} are provisional names: they are counted apart from {base}, though they may or may not be the same species. The "{conc}" tab and the tree help to decide.',
-                an_hg_prov_1: '{list} is a provisional name: it is counted apart from {base}, though it may or may not be the same species. The "{conc}" tab and the tree help to decide.',
+                an_hg_prov: '{list} are provisional names: they are counted apart from {base}, though they may or may not be the same species. "{conc}" and "{tree}" help to decide.',
+                an_hg_prov_1: '{list} is a provisional name: it is counted apart from {base}, though it may or may not be the same species. "{conc}" and "{tree}" help to decide.',
                 an_hg_few: '<b>Few sequences.</b> With fewer than {min} sequences the [hd_col] changes a lot with each sequence added: {list}. Take them as indicative.',
                 an_hg_few_unnamed: '{n} unnamed sequences',
                 an_hg_single: ' Another {k} species have a single sequence and no Hd.',
@@ -4197,8 +4207,8 @@
                 an_cg_bin_only_named_1: '; one is in a named BIN of this analysis, so it probably belongs to that species',
                 an_cg_capped: 'There are many BINs: only the {n} most telling were looked up in your database; the rest are judged by these sequences.',
                 an_cg_next_head: '<b>What to do next:</b> ',
-                an_cg_next_strays: 'check the records pointed out (identification, photos, who identified them) and, if you confirm the error, leave them out of the analysis; see also where they fall in the tree in the "{dist}" tab.',
-                an_cg_next_split: 'for split species and shared BINs, check whether they form groups in the tree and in "{motu}" ("{dist}" tab), and look at the haplotype network coloured by BIN and by country.',
+                an_cg_next_strays: 'check the records pointed out (identification, photos, who identified them) and, if you confirm the error, leave them out of the analysis; see also where they fall in "{tree}".',
+                an_cg_next_split: 'for split species and shared BINs, check whether they form groups in "{tree}" and in "{motu}" ("{tab}" tab), and look at the haplotype network ("{net}") coloured by BIN and by country.',
                 an_cg_next_ok: 'names and BINs agree: go on to "{dist}" for the distances and the barcode gap.',
                 an_cg_next_none: 'this comparison needs records with a species name and a BIN, such as those of a search in your database or a FASTA exported by this viewer.',
                 an_dg_title: 'What the distances say',
@@ -4308,7 +4318,7 @@
                 an_g_tag_rec: 'recommended · same over {k} P values', an_g_tag_rec_asap: 'recommended',
                 an_g_tag_same: 'same as ABGD', an_g_tag_near: 'closest to ABGD',
                 an_tree_by_motu: 'By MOTU', an_tree_motu: 'MOTU', an_tree_group_motus: '{n} MOTUs',
-                an_v_network: 'Haplotype network',
+                an_v_network: 'Network',
                 an_net_btn: 'Network', an_net_btn_title: 'Haplotype network of this species',
                 an_net_seqs_label: 'Sequences:', an_net_method_label: 'Method:',
                 an_net_all: 'All in the analysis ({n})', an_net_all_short: 'all sequences',
@@ -4334,7 +4344,7 @@
                 an_net_drag: 'Drag the circles to arrange the figure; the exports keep it as shown. The NEXUS has one sequence per record and the colour chosen as traits (country when there is none), to go on in PopART.',
                 an_net_tip: '{h} · {n} sequence(s)', an_net_tip_intermediate: 'Unsampled intermediate haplotype',
                 an_net_unknown: 'Unknown',
-                an_tree_motu_part: 'MOTUs: {part}. Another partition can be chosen on the "Species (MOTUs)" tab.',
+                an_tree_motu_part: 'MOTUs: {part}. Another partition can be chosen in "{motu}".',
                 an_more_items: 'and {n} more',
                 an_tree_title: 'NJ tree · {n} sequences',
                 an_tree_dropped: '{n} left out for lacking a distance to some other sequence',
@@ -7735,7 +7745,37 @@
 			motuSels: {},      // partition chosen in each group: { method: 'asap'|'abgd'|'abgd_initial', index }
 			distRunning: false,
 			showView: null,
+			tabViews: {},      // view last seen in each tab
 		};
+
+		// Tabs and the views in them; the views of a tab share its options
+		const AN_TABS = [
+			{ id: 'quality', label: 'an_v_quality', views: ['quality'] },
+			{ id: 'haplotypes', label: 'an_v_haplotypes', views: ['haplotypes', 'network'] },
+			{ id: 'concordance', label: 'an_v_concordance', views: ['concordance'] },
+			{ id: 'distance', label: 'an_v_dist_tab', views: ['distance', 'tree', 'delimit'],
+			  controls: body => anDistanceControls(body) },
+		];
+		const AN_VIEW_LABELS = { quality: 'an_v_quality', haplotypes: 'an_v_hap_table', network: 'an_v_network',
+		                         concordance: 'an_v_concordance', distance: 'an_v_distance',
+		                         tree: 'an_v_tree', delimit: 'an_v_delimit' };
+
+		// Name of a view in its tab, and of that tab
+		const anSubName = view => t(AN_VIEW_LABELS[view]);
+		const anTabName = view => t(anTabOf(view).label);
+
+		function anTabOf(view) {
+			return AN_TABS.find(tab => tab.views.includes(view));
+		}
+
+		// A view's name for the readings: "Tab › view" seen from another tab,
+		// the view alone from its own
+		function anViewName(view) {
+			const tab = anTabOf(view);
+			if (tab.views.length === 1) return t(tab.label);
+			return tab === anTabOf(AnState.view) ? t(AN_VIEW_LABELS[view])
+				: `${t(tab.label)} › ${t(AN_VIEW_LABELS[view])}`;
+		}
 
 		function anSource() {
 			return document.querySelector('input[name="anSource"]:checked').value;
@@ -8139,33 +8179,48 @@
 			const views = anEl('div', 'an-views');
 			views.setAttribute('role', 'tablist');
 			const body = anEl('div', 'an-view-body');
-			const renderers = { quality: anRenderQuality, haplotypes: anRenderHaplotypes,
+			const renderers = { quality: anRenderQuality, haplotypes: anRenderHaplotypes, network: anRenderNetwork,
 			                    concordance: anRenderConcordance, distance: anRenderDistance,
-			                    delimit: anRenderDelimit, tree: anRenderTree, network: anRenderNetwork };
-			const labels = { quality: 'an_v_quality', haplotypes: 'an_v_haplotypes',
-			                 concordance: 'an_v_concordance', distance: 'an_v_distance',
-			                 delimit: 'an_v_delimit', tree: 'an_v_tree', network: 'an_v_network' };
+			                    tree: anRenderTree, delimit: anRenderDelimit };
 			const show = view => {
 				AnState.view = view;
+				const tab = anTabOf(view);
+				AnState.tabViews[tab.id] = view;
 				views.querySelectorAll('button').forEach(b => {
-					b.classList.toggle('active', b.dataset.view === view);
-					b.setAttribute('aria-selected', b.dataset.view === view);
+					b.classList.toggle('active', b.dataset.tab === tab.id);
+					b.setAttribute('aria-selected', b.dataset.tab === tab.id);
 				});
 				body.innerHTML = '';
+				// Views of one tab: their own row, under the options they share
+				if (tab.controls) tab.controls(body);
+				if (tab.views.length > 1) {
+					const subs = anEl('div', 'an-subviews');
+					subs.setAttribute('role', 'tablist');
+					tab.views.forEach(v => {
+						const b = anEl('button', v === view ? 'active' : '', t(AN_VIEW_LABELS[v]));
+						b.type = 'button';
+						b.setAttribute('role', 'tab');
+						b.setAttribute('aria-selected', v === view);
+						b.addEventListener('click', () => show(v));
+						subs.append(b);
+					});
+					body.append(subs);
+				}
 				renderers[view](body, r);
 			};
 			AnState.showView = show;
-			Object.keys(renderers).forEach(view => {
-				const b = anEl('button', '', t(labels[view]));
+			AN_TABS.forEach(tab => {
+				const b = anEl('button', '', t(tab.label));
 				b.type = 'button';
-				b.dataset.view = view;
+				b.dataset.tab = tab.id;
 				b.setAttribute('role', 'tab');
-				const badge = badges[view];
+				const badge = badges[tab.id];
 				if (badge && badge[0]) {
 					b.append(anEl('span', 'an-badge' + (badge[1] ? ' warn' : ''), numFmt.format(badge[0])));
 					b.title = t(badge[2], { n: numFmt.format(badge[0]) });
 				}
-				b.addEventListener('click', () => show(view));
+				// Back to the view last seen in that tab
+				b.addEventListener('click', () => show(AnState.tabViews[tab.id] || tab.views[0]));
 				views.append(b);
 			});
 			box.append(views, body);
@@ -8431,7 +8486,6 @@
 		}
 
 		function anRenderDistance(body) {
-			anDistanceControls(body);
 			const d = AnState.dist;
 			if (!d) return;
 			const res = anEl('div', 'an-dist-results');
@@ -8652,7 +8706,6 @@
 		}
 
 		function anRenderDelimit(body) {
-			anDistanceControls(body);
 			const d = AnState.dist;
 			if (!d) return;
 			(d.delimit_notes || []).forEach(note => body.append(anEl('div', 'an-warn mt-2', '⚠ ' + note)));
@@ -9249,7 +9302,11 @@ li li { display: list-item; margin: 0; }
 			const translated = s.translated;
 			const codeText = anGuideJoin(s.codes.map(([c]) => String(c)), ', ');
 			const tab = key => escapeHtml(t(key));
-			const hap = tab('an_v_haplotypes'), dist = tab('an_v_distance');
+			const view = v => escapeHtml(anViewName(v));
+			const hap = view('haplotypes'), dist = view('distance');
+			// Two views of the distance tab, the tab named once
+			const distViews = { dist: escapeHtml(anSubName('distance')), tree: escapeHtml(anSubName('tree')),
+			                    tab: escapeHtml(anTabName('tree')) };
 			// Stops in most sequences: the code, not the sequences
 			const codeWrong = translated && G.stops_n >= 3 && G.stops_n >= 0.5 * translated;
 			const B = G.better_code;
@@ -9397,16 +9454,16 @@ li li { display: list-item; margin: 0; }
 						: S[0][1] >= 0.5 * C.outliers_n ? anGuideText('an_qg_gc_group_most', { sp: anGuideName(S[0][0]) })
 						: anGuideText('an_qg_gc_group_some', { sp: anGuideNames(S.map(x => x[0]), S.length) });
 					text += anGuideText('an_qg_gc_group', { k: num(C.outliers_n), p: pct(C.outliers_n, G.n),
-						lim: anNum(C.limit, 1), med, sp, dist });
+						lim: anNum(C.limit, 1), med, sp, ...distViews });
 				} else if (C && gcOut === 1) {
 					const x = C.outliers[0];
 					kind = 'warn';
 					text += anGuideText('an_qg_gc_out_1', { id: mono(x.id), sp: x.species ? ` (${anGuideName(x.species)})` : '',
-						gc: anNum(x.gc, 1), med, dist });
+						gc: anNum(x.gc, 1), med, ...distViews });
 				} else if (C && gcOut > 1) {
 					kind = 'warn';
 					const list = C.outliers.map(x => `${mono(x.id)} (${x.species ? anGuideName(x.species) + ', ' : ''}${pc(anNum(x.gc, 1))})`);
-					text += anGuideText('an_qg_gc_out', { k: num(gcOut), lim: anNum(C.limit, 1), med, dist,
+					text += anGuideText('an_qg_gc_out', { k: num(gcOut), lim: anNum(C.limit, 1), med, ...distViews,
 						list: gcOut > list.length ? list.join(', ') + anGuideMore(list.length, gcOut) : anGuideJoin(list, ', ') });
 				} else if (C && C.apart_n) {
 					const x = C.apart[0];
@@ -9429,7 +9486,7 @@ li li { display: list-item; margin: 0; }
 
 			// What to do next
 			const tabs = r.concordance.paired_records
-				? anGuideText('an_qg_tabs_2', { a: hap, b: tab('an_v_concordance') })
+				? anGuideText('an_qg_tabs_2', { a: hap, b: view('concordance') })
 				: anGuideText('an_qg_tabs_1', { a: hap });
 			const flagged = tab('an_h_flagged');
 			const next = codeWrong ? anGuideText(B ? 'an_qg_next_code' : 'an_qg_next_code_none')
@@ -9484,7 +9541,7 @@ li li { display: list-item; margin: 0; }
 				});
 				return xs.length > max ? parts.join(', ') + anGuideMore(max, xs.length) : anGuideJoin(parts, ', ');
 			};
-			const conc = escapeHtml(t('an_v_concordance'));
+			const conc = escapeHtml(anViewName('concordance')), tree = escapeHtml(anViewName('tree'));
 			const byHd = [...S].sort((a, b) => a.hd - b.hd);
 			const lowest = byHd[0];
 
@@ -9581,7 +9638,7 @@ li li { display: list-item; margin: 0; }
 				const base = anNetBinomial(prov[0]);
 				const ps = prov.filter(sp => anNetBinomial(sp) === base);
 				add('info', anGuideText(ps.length === 1 ? 'an_hg_prov_1' : 'an_hg_prov',
-										{ list: anGuideNames(ps, ps.length, base), base: anGuideName(base), conc }));
+										{ list: anGuideNames(ps, ps.length, base), base: anGuideName(base), conc, tree }));
 			}
 
 			// Too few sequences for Hd
@@ -9688,7 +9745,6 @@ li li { display: list-item; margin: 0; }
 			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
 			const bin = b => escapeHtml(b);
 			const one = (k, key, vars = {}) => anGuideText(k === 1 ? key + '_1' : key, { k: num(k), ...vars });
-			const tab = key => escapeHtml(t(key));
 			const S1 = G.species_n === 1;
 			// Names in a list, the genus cut to its initial once named
 			const shortener = () => {
@@ -9867,11 +9923,13 @@ li li { display: list-item; margin: 0; }
 			if (G.capped) add('info', anGuideText('an_cg_capped', { n: num(G.looked_up) }));
 
 			// What to do next
-			const motu = tab('an_v_delimit'), dist = tab('an_v_distance');
+			const view = v => escapeHtml(anViewName(v));
+			const dist = view('distance'), tree = view('tree'), net = view('network');
 			const steps = [];
 			if (!G.paired) steps.push(anGuideText('an_cg_next_none'));
-			if (G.paired && G.strays_n) steps.push(anGuideText('an_cg_next_strays', { dist }));
-			if (G.paired && (G.own_split_n || G.shared_n)) steps.push(anGuideText('an_cg_next_split', { motu, dist }));
+			if (G.paired && G.strays_n) steps.push(anGuideText('an_cg_next_strays', { tree }));
+			if (G.paired && (G.own_split_n || G.shared_n)) steps.push(anGuideText('an_cg_next_split', { net,
+				tree: escapeHtml(anSubName('tree')), motu: escapeHtml(anSubName('delimit')), tab: escapeHtml(anTabName('tree')) }));
 			if (G.paired && !G.strays_n && !G.own_split_n && !G.shared_n) steps.push(anGuideText('an_cg_next_ok', { dist }));
 			// Each step a sentence: the first follows the heading in lower case
 			const next = anGuideText('an_cg_next_head') + steps.map((s, i) => i ? s.charAt(0).toUpperCase() + s.slice(1) : s).join(' ');
@@ -9914,7 +9972,6 @@ li li { display: list-item; margin: 0; }
 			const pctNear = x => x < 0.03 ? anPctOf(x, 2) : pct(x);
 			const mono = id => `<span class="an-mono">${escapeHtml(id)}</span>`;
 			const one = (k, key, vars = {}) => anGuideText(k === 1 ? key + '_1' : key, { k: num(k), ...vars });
-			const tab = key => escapeHtml(t(key));
 			const lim = anPctOf(G.lineage, 0), far = anPctOf(G.far, 0);
 			// The marker, at the start of a sentence and inside one
 			const Mk = d.marker ? escapeHtml(d.marker) : t('an_dg_marker_start'), mk = d.marker ? escapeHtml(d.marker) : t('an_dg_marker');
@@ -10027,7 +10084,7 @@ li li { display: list-item; margin: 0; }
 					const pair = shared.map(e => [e, e.nn_with.find(([sp]) => G.partner_bins[sp] && G.partner_bins[sp] === e.bin)])
 						.find(([, w]) => w);
 					if (pair) text += anGuideText('an_dg_ng_same_bin', { a: name(pair[0].species), b: name(pair[1][0]),
-						bin: escapeHtml(pair[0].bin), conc: tab('an_v_concordance') });
+						bin: escapeHtml(pair[0].bin), conc: escapeHtml(anViewName('concordance')) });
 				}
 				add(shared.length ? 'warn' : 'info', text);
 			}
@@ -10114,7 +10171,7 @@ li li { display: list-item; margin: 0; }
 			if (G.n < 10) add('warn', anGuideText('an_dg_few', { n: num(G.n) }));
 
 			// What to do next
-			const tree = tab('an_v_tree'), motu = tab('an_v_delimit');
+			const tree = escapeHtml(anViewName('tree')), motu = escapeHtml(anViewName('delimit'));
 			const steps = [];
 			if (G.isolated_n || farLins.length || (c && c.suspects.length)) steps.push(anGuideText('an_dg_next_check'));
 			if (shared.length) steps.push(anGuideText(shared.length === 1 ? 'an_dg_next_shared_1' : 'an_dg_next_shared', { tree, motu, marker: mk,
@@ -10279,8 +10336,8 @@ li li { display: list-item; margin: 0; }
 			anGuideSection(body, {
 				title: t('an_tg_title'), sub: t('an_tg_sub'), verdict, items,
 				action: colorBy ? { label: t('an_tg_color_species'), run: () => { opts.color = 'species'; anRefreshView(); } } : null,
-				next: anGuideText(cases ? 'an_tg_next' : 'an_tg_next_ok'),
-				nextFile: anGuideText(cases ? 'an_tg_next' : 'an_tg_next_ok'),
+				next: anGuideText(cases ? 'an_tg_next' : 'an_tg_next_ok', { motu: escapeHtml(anViewName('delimit')) }),
+				nextFile: anGuideText(cases ? 'an_tg_next' : 'an_tg_next_ok', { motu: escapeHtml(anViewName('delimit')) }),
 				foot: t('an_tg_foot'),
 				context: anGuideContext(tree.group, tree.tips.length),
 				file: t('an_tg_file') + (AnState.dist.groups.length > 1 ? `_group${tree.group + 1}` : ''),
@@ -10581,7 +10638,7 @@ li li { display: list-item; margin: 0; }
 			else if (G.places >= 2) action = opts.color !== 'country' ? colorTo('country', 'an_ng_color_country') : null;
 
 			const next = anGuideText(main.length < 2 ? 'an_ng_next_one' : bins ? 'an_ng_next' : 'an_ng_next_nobin',
-				{ motu: escapeHtml(t('an_v_delimit')), tree: escapeHtml(t('an_v_tree')) });
+				{ motu: escapeHtml(anSubName('delimit')), tree: escapeHtml(anSubName('tree')), tab: escapeHtml(anTabName('tree')) });
 			const what = net.species || t('an_net_all_short');
 			anGuideSection(body, {
 				title: t('an_ng_title'), sub: t('an_ng_sub'), verdict, items, action, next, nextFile: next,
@@ -11661,7 +11718,6 @@ li li { display: list-item; margin: 0; }
 		}
 
 		function anRenderTree(body) {
-			anDistanceControls(body);
 			const d = AnState.dist;
 			if (!d) return;
 			(d.tree_notes || []).forEach(note => body.append(anEl('div', 'an-warn mt-2', '⚠ ' + note)));
@@ -11705,7 +11761,7 @@ li li { display: list-item; margin: 0; }
 			body.append(head, anEl('p', 'an-muted', t('an_tree_note')));
 			if (hasMotu) {
 				const g = AnState.dist.delimit.find(x => x.group === tree.group);
-				body.append(anEl('p', 'an-muted', t('an_tree_motu_part', { part: anMotuPartition(g).label })));
+				body.append(anEl('p', 'an-muted', t('an_tree_motu_part', { part: anMotuPartition(g).label, motu: anViewName('delimit') })));
 			}
 
 			const wrap = anEl('div', 'an-tree');

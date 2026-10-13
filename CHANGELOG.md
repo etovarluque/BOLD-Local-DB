@@ -84,6 +84,14 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   reads how much it varies.
 
 ### Changed
+- Sequence analysis: the seven views are grouped in four tabs. *Quality*;
+  *Haplotypes* with the table and the network as two views; *Species and
+  BINs*; and *Distances and delimitation* with distances, the NJ tree and the
+  MOTUs as three views under one options block (filled in once instead of on
+  each tab). Each tab goes back to the view last seen in it. The readings
+  point to the views by their new names ("Haplotypes › Table",
+  "Distances and delimitation › NJ tree"), naming the tab once when they cite
+  two views of it.
 - Haplotype network: a species with two sequences (offered by the
   haplotypes table) can now be drawn; alignment groups of two were dropped
   and the network said there were no sequences. The reading only calls the

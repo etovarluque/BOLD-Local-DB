@@ -28,7 +28,9 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   permutations) and a Mantel test of genetic against geographic distance
   for sequences with coordinates, with its isolation-by-distance plot. The
   analysis now reads the coordinates and province of each record. Struck
-  through when the sequences bring no country or only one.
+  through only when there are neither two countries nor ten sequences with
+  coordinates: within one country, the Mantel test still reads isolation by
+  distance.
 - Species delimitation: a *What these results say* section after the ASAP
   and ABGD tables reads the results for users new to them. It proposes the
   partition to start from (ABGD's when it holds over several consecutive

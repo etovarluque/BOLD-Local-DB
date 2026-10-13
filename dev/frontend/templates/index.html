@@ -2522,6 +2522,8 @@
                 an_sg_small_1: '<b>Países con pocas secuencias</b> (menos de {z}) en {list}: ahí [phist_col] tiene mucha incertidumbre; tómalo como orientativo.',
                 an_sg_next_apart: '<b>Qué hacer ahora:</b> para {sp}, mira en «{motu}» si la delimitación separa los mismos grupos de países, y colorea el árbol por país en «{tree}». Si linajes, países y MOTU coinciden, contrasta con la bibliografía del grupo antes de hablar de especies distintas.',
                 an_sg_next_gradient: '<b>Qué hacer ahora:</b> pulsa «Ver» en {sp} para ver su gráfica de aislamiento por distancia: si la nube sube sin saltos, es un continuo; si hay dos nubes separadas, hay grupos distintos.',
+                an_sg_how_mantel: '<b>Cómo se lee.</b> La prueba de Mantel ([mantel_col]) dice si las secuencias más alejadas en el mapa son también las más distintas (aislamiento por distancia): r cerca de 1, mucho; cerca de 0, nada. Solo cuentan los valores con p < 0,05.',
+                an_sg_next_nothing: '<b>Qué hacer ahora:</b> nada que revisar por la geografía: en ninguna especie las secuencias más alejadas son las más distintas.',
                 an_sg_next_none: '<b>Qué hacer ahora:</b> nada que revisar por la geografía. Si quieres más detalle, colorea la red de {sp} por país.',
                 an_sg_foot: 'ΦST y Mantel tratan cada país como una población: los países no siempre coinciden con barreras biológicas, un muestreo concentrado en pocas localidades crea estructura aparente y, con pocas secuencias por país, el resultado tiene mucha incertidumbre.',
                 an_v_structure: 'Estructura geográfica',
@@ -2548,8 +2550,8 @@
                 an_ibd_tip: '{km} km · {d} % de diferencias',
                 an_st_struct_t: '«Estructura geográfica» necesita saber dónde se recogió cada secuencia.',
                 an_st_struct_nocountry: 'Compara la variación genética entre países y con la distancia geográfica, así que necesita el país o las coordenadas, y ninguna secuencia los trae.',
-                an_st_struct_t_two: '«Estructura geográfica» necesita secuencias de al menos dos países.',
-                an_st_struct_one: 'Todas las secuencias con país son del mismo, así que no hay países entre los que comparar.',
+                an_st_struct_t_two: '«Estructura geográfica» necesita secuencias de al menos dos países, o con coordenadas.',
+                an_st_struct_one: 'Todas las secuencias con país son del mismo, y menos de 10 traen coordenadas: no hay países entre los que comparar ni distancias que medir.',
                 an_st_struct_one_how: 'Busca o selecciona secuencias de más de un país.',
                 an_st_partial_tab: 'Con estos datos, alguna sección de esta pestaña queda oculta',
                 an_st_hap_nosp: 'Ninguna secuencia trae nombre de especie: todas se cuentan en un solo grupo, y su diversidad mezcla especies distintas.',
@@ -3700,6 +3702,8 @@
                 an_sg_small_1: '<b>Countries with few sequences</b> (under {z}) in {list}: there [phist_col] is very uncertain; take it as indicative.',
                 an_sg_next_apart: '<b>What to do next:</b> for {sp}, see in "{motu}" whether the delimitation splits the same groups of countries, and colour the tree by country in "{tree}". If lineages, countries and MOTUs agree, compare with the group\'s literature before speaking of different species.',
                 an_sg_next_gradient: '<b>What to do next:</b> press "Show" on {sp} to see its isolation-by-distance plot: if the cloud rises without jumps, it is a continuum; two separate clouds mean distinct groups.',
+                an_sg_how_mantel: '<b>How to read it.</b> The Mantel test ([mantel_col]) says whether the sequences farthest apart on the map are also the most different (isolation by distance): r near 1, strongly; near 0, not at all. Only values with p < 0.05 count.',
+                an_sg_next_nothing: '<b>What to do next:</b> nothing to check on geography: in no species are the sequences farthest apart the most different.',
                 an_sg_next_none: '<b>What to do next:</b> nothing to check on geography. For more detail, colour the network of {sp} by country.',
                 an_sg_foot: 'ΦST and Mantel treat each country as one population: countries don\'t always match biological barriers, sampling concentrated in a few localities creates apparent structure, and with few sequences per country the result is very uncertain.',
                 an_v_structure: 'Geographic structure',
@@ -3726,8 +3730,8 @@
                 an_ibd_tip: '{km} km · {d}% differences',
                 an_st_struct_t: '"Geographic structure" needs to know where each sequence was collected.',
                 an_st_struct_nocountry: 'It compares the genetic variation between countries and with geographic distance, so it needs the country or the coordinates, and no sequence has them.',
-                an_st_struct_t_two: '"Geographic structure" needs sequences from at least two countries.',
-                an_st_struct_one: 'All sequences with a country are from the same one, so there are no countries to compare.',
+                an_st_struct_t_two: '"Geographic structure" needs sequences from at least two countries, or with coordinates.',
+                an_st_struct_one: 'All sequences with a country are from the same one, and fewer than 10 have coordinates: there are no countries to compare nor distances to measure.',
                 an_st_struct_one_how: 'Search or select sequences from more than one country.',
                 an_st_partial_tab: 'With these data, some section of this tab is hidden',
                 an_st_hap_nosp: 'No sequence has a species name: all are counted as one group, and its diversity mixes different species.',
@@ -7968,6 +7972,9 @@
 		                         concordance: 'an_v_concordance', distance: 'an_v_distance',
 		                         tree: 'an_v_tree', delimit: 'an_v_delimit' };
 
+		// Fewest sequences with coordinates for the Mantel test (seq_popgen)
+		const AN_MIN_MANTEL = 10;
+
 		// What a view can show with the data received: ok; partial, with
 		// some sections hidden (why); or off, with nothing to show (what is
 		// missing and how to get it). Decided by the data, not by the source:
@@ -7989,10 +7996,11 @@
 					                : !f.bin ? 'an_st_conc_nobin' : 'an_st_conc_apart'),
 					         how: fasta ? t('an_st_how_fasta') : null };
 				case 'structure':
-					if (!f.country) return { s: 'off', title: t('an_st_struct_t'), why: t('an_st_struct_nocountry'),
-					                         how: fasta ? t('an_st_how_fasta') : null };
-					if (f.countries < 2) return { s: 'off', title: t('an_st_struct_t_two'), why: t('an_st_struct_one'),
-					                              how: t('an_st_struct_one_how') };
+					// Two countries for PhiST, or coordinates for the Mantel test
+					if (!f.country && !f.coords) return { s: 'off', title: t('an_st_struct_t'), why: t('an_st_struct_nocountry'),
+					                                      how: fasta ? t('an_st_how_fasta') : null };
+					if (f.countries < 2 && f.coords < AN_MIN_MANTEL) return { s: 'off', title: t('an_st_struct_t_two'),
+						why: t('an_st_struct_one'), how: t('an_st_struct_one_how') };
 					return { s: 'ok' };
 				case 'distance':
 					return f.species ? { s: 'ok' } : partial('an_st_dist_nosp');
@@ -10006,7 +10014,7 @@ li li { display: list-item; margin: 0; }
 				if (apart.length) verdict += anGuideText('an_sg_v_apart', { sp: anGuideName(apart[0].species), phi: f2(apart[0].phi) });
 			}
 
-			add('info', anGuideText('an_sg_how', { s: f2(G.strong_phi), m: f2(G.moderate_phi) }));
+			add('info', S.length ? anGuideText('an_sg_how', { s: f2(G.strong_phi), m: f2(G.moderate_phi) }) : anGuideText('an_sg_how_mantel'));
 			const phiR = x => ` (ΦST ${f2(x.phi)}${x.r !== null ? `, r ${f2(x.r)}` : ''})`;
 			if (apart.length) {
 				const pi = apart.filter(x => x.high_pi);
@@ -10023,8 +10031,12 @@ li li { display: list-item; margin: 0; }
 			if (small.length) add('warn', anGuideText(small.length === 1 ? 'an_sg_small_1' : 'an_sg_small', {
 				list: list(small, x => ` (${escapeHtml(anGuideJoin(x.small, ', '))})`), z: num(G.small_zone) }));
 
-			const next = anGuideText(apart.length ? 'an_sg_next_apart' : gradient.length ? 'an_sg_next_gradient' : 'an_sg_next_none',
-				{ sp: anGuideName((apart[0] || gradient[0] || S[0] || G.mantel_only[0]).species), motu, tree });
+			// Without countries compared, the plot of the clearest isolation by distance
+			const best = [...within].sort((a, b) => b.r - a.r)[0];
+			const next = apart.length || gradient.length || S.length
+				? anGuideText(apart.length ? 'an_sg_next_apart' : gradient.length ? 'an_sg_next_gradient' : 'an_sg_next_none',
+					{ sp: anGuideName((apart[0] || gradient[0] || S[0]).species), motu, tree })
+				: best ? anGuideText('an_sg_next_gradient', { sp: anGuideName(best.species) }) : anGuideText('an_sg_next_nothing');
 			anGuideSection(body, {
 				title: t('an_sg_title'), sub: t('an_sg_sub'), verdict, items, action: null, next, nextFile: next,
 				foot: t('an_sg_foot'),

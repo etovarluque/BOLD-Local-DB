@@ -51,9 +51,11 @@ MAX_MATRIX_EXPORT = 2000
 class AnalysisLimit(ValueError):
     """The input is too big (or too small) for the analysis requested."""
 
-    def __init__(self, kind, n, limit):
+    def __init__(self, kind, n, limit, stops=0):
         super().__init__(kind)
-        self.kind, self.n, self.limit = kind, n, limit
+        # `stops`: sequences left out for stop codons (a wrong genetic code
+        # leaves out nearly all of them)
+        self.kind, self.n, self.limit, self.stops = kind, n, limit, stops
 
 
 # ── Alignment to a reference ──────────────────────────────────────────────────
@@ -460,8 +462,9 @@ def barcode_gap(D, species, ids):
 SUSPECT_NEAR = 0.01
 # ...and this far from every record of its own species
 SUSPECT_FAR = 0.03
-# Names that don't identify a species
-_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex)\b\.?|\d", re.IGNORECASE)
+# Names that don't identify a species (hybrids included)
+_PROVISIONAL = re.compile(r"\b(sp|spp|cf|aff|nr|gr|complex|indet)\b\.?|\d|\s[x×]\s"
+                          r"|(?-i:^\S+\s+\S+\s+[A-Z])", re.IGNORECASE)
 
 
 def identification_check(D, species, genera, ids, bins):
@@ -777,12 +780,18 @@ def distance_guide(D, species, ids, bins, countries, gap):
             "nn_with": [[s, c] for s, c in x["with"].most_common(3)] if x else [],
         }
 
-    nogap, with_gap, tested = [], [], 0
+    nogap, with_gap, tested, nogap_prov = [], [], 0, []
     for g in gap:
         if g["nn"] is None or g["max_intra"] is None:
             continue
-        tested += 1
         sp = g["species"]
+        if _PROVISIONAL.search(sp):
+            # Not a species yet: no surprise if it doesn't stand apart, and
+            # no merit if it does
+            if g["nn"] <= g["max_intra"]:
+                nogap_prov.append(sp)
+            continue
+        tested += 1
         entry = {"species": sp, "n": g["n"], "max_intra": g["max_intra"], "nn": g["nn"],
                  "nn_species": g["nn_species"]}
         if g["nn"] > g["max_intra"]:
@@ -800,7 +809,10 @@ def distance_guide(D, species, ids, bins, countries, gap):
                                             "isolated_n", "core_max", "bin")})
         nogap.append(entry)
     order = {"shared": 0, "isolated": 1, "overlap": 2, "provisional": 3}
-    nogap.sort(key=lambda e: (order[e["cause"]], -e["n"]))
+    # Those sharing sequences, the worst first: by how many of their
+    # sequences another species reaches as close (then by their share)
+    mixed = lambda e: e.get("nn_tie", 0) + e.get("nn_wrong", 0)
+    nogap.sort(key=lambda e: (order[e["cause"]], -mixed(e), -mixed(e) / e["n"], -e["n"]))
     with_gap.sort(key=lambda e: -e["n"])
     # The main BIN of the species the shared ones are mixed with
     partners = {s for e in nogap for s, _ in e.get("nn_with", [])}
@@ -815,6 +827,7 @@ def distance_guide(D, species, ids, bins, countries, gap):
         "singles": sum(1 for v in members.values() if len(v) == 1),
         "nn_ok": tot["ok"], "nn_tie": tot["tie"], "nn_wrong": tot["wrong"], "nn_alone": alone,
         "tested": tested, "nogap_n": len(nogap), "nogap": nogap[:GUIDE_SPECIES],
+        "nogap_prov": nogap_prov[:GUIDE_SPECIES],
         "gap_n": len(with_gap), "gap": with_gap[:GUIDE_SPECIES],
         "partner_bins": {s: per[s]["bin"] for s in partners if s in per},
         "split_n": len(split), "split": split[:GUIDE_SPECIES],
@@ -1192,7 +1205,7 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     usable, excluded = usable_records(records, forced_code)
 
     if len(usable) < 3:
-        raise AnalysisLimit("too_few", len(usable), 3)
+        raise AnalysisLimit("too_few", len(usable), 3, excluded["stops"])
 
     seqs = [rec["clean"] for rec in usable]
     groups, unplaced = align_groups(seqs)
@@ -1230,6 +1243,13 @@ def run_distance(records, marker, forced_code=None, model="k2p",
     summary, histogram, other = distance_summary(D, species, genera, families)
     guide = distance_guide(D, species, ids, [rec.get("bin") or "" for rec in usable],
                            [rec.get("country") or "" for rec in usable], gap)
+    # The reading's genus/species ratio leaves provisional names out: "Conus
+    # sp." mixes species and swells the distances "within species"
+    named = ["" if _PROVISIONAL.search(sp) else sp for sp in species]
+    by_level = {s["level"]: s["mean"] for s in (
+        distance_summary(D, named, genera, families)[0] if named != species else summary)}
+    guide["ratio"] = {"species": by_level.get("species"), "genus": by_level.get("genus"),
+                      "named_only": named != species}
     # Missing distances within a group (between groups they are all missing)
     no_overlap = int(sum(np.isnan(D[a:b, a:b]).sum() for a, b in blocks) // 2)
 

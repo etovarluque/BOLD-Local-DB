@@ -808,6 +808,7 @@ STRINGS = {
         'analysis_distance_input_too_big': 'La entrada tiene más de {limit} secuencias de este marcador. Acota la búsqueda: un análisis de distancias sobre una parte arbitraria sería engañoso.',
         'analysis_too_many': 'Hay {n} secuencias y el máximo para distancias con este marcador es {limit}. Limita las secuencias por especie o acota la búsqueda.',
         'analysis_too_few': 'Se necesitan al menos {limit} secuencias alineables; hay {n}.',
+        'analysis_too_few_stops': ' Otras {k} quedaron fuera por codones de parada: con tantas, lo más probable es que el código genético elegido no corresponda a este grupo. Revísalo en «Código genético» (o déjalo en automático) y repite.',
         'analysis_tree_too_many': 'Árbol no calculado: hay {n} secuencias y el máximo es {limit}. Limita las secuencias por especie.',
         'analysis_tree_too_few': 'Árbol no calculado: solo {n} secuencias tienen distancias con todas las demás.',
         'analysis_tree_group': 'Grupo {k}: ',
@@ -906,6 +907,7 @@ STRINGS = {
         'analysis_distance_input_too_big': 'The input has more than {limit} sequences of this marker. Narrow the search: a distance analysis of an arbitrary part of it would mislead.',
         'analysis_too_many': 'There are {n} sequences and the most for distances with this marker is {limit}. Limit the sequences per species or narrow the search.',
         'analysis_too_few': 'At least {limit} alignable sequences are needed; there are {n}.',
+        'analysis_too_few_stops': ' Another {k} were left out for stop codons: with so many, the genetic code chosen most likely doesn\'t suit this group. Check it in "Genetic code" (or leave it automatic) and run again.',
         'analysis_tree_too_many': 'No tree: there are {n} sequences and the most is {limit}. Limit the sequences per species.',
         'analysis_tree_too_few': 'No tree: only {n} sequences have distances to all the others.',
         'analysis_tree_group': 'Group {k}: ',
@@ -3925,7 +3927,10 @@ def analysis_distance():
         return jsonify(reply.body), reply.status
     except seq_distance.AnalysisLimit as e:
         key = 'analysis_too_few' if e.kind == 'too_few' else 'analysis_too_many'
-        return jsonify({'error': t(key, n=f'{e.n:,}', limit=f'{e.limit:,}')}), 400
+        message = t(key, n=f'{e.n:,}', limit=f'{e.limit:,}')
+        if e.kind == 'too_few' and e.stops > e.n:
+            message += t('analysis_too_few_stops', k=f'{e.stops:,}')
+        return jsonify({'error': message}), 400
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except sqlite3.Error as e:

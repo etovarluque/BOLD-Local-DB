@@ -8,6 +8,21 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 ## [Unreleased]
 
 ### Added
+- Sequence analysis › Diversity, a fifth tab that counts each sequence's
+  unit (BIN, or species name) in its zone (country, province or state,
+  region, or a 1-degree grid cell from the coordinates), with both options
+  on top and the BIN and zones with variety chosen by default. *Richness
+  and completeness*: per zone, sequences, localities, units, singletons,
+  Chao1 with its 95 % interval, sample coverage, richness rarefied to the
+  smallest zone and exclusive units, with rarefaction and extrapolation
+  curves. *Between zones*: Sorensen similarity (heat map and pairs) split
+  into turnover and nestedness (Baselga), the most widespread units and
+  those of one zone only. Zones under 20 sequences are left out. Each view
+  has its reading (complete, incomplete and poorly sampled zones, richness
+  at equal effort, few species names; turnover or nestedness, the most and
+  least alike zones, nestedness with a poorly sampled zone as a likely
+  artefact). Struck through without zones or units; a struck-through tab
+  no longer shows its options.
 - Readings for the new diversity figures. The haplotype reading adds the
   species whose nucleotide diversity is well above the rest (possible
   hidden lineages, pointing to distances and MOTUs), significant Tajima's D

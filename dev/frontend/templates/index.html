@@ -1462,6 +1462,9 @@
 		.an-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 		.an-legend-item i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
 		.an-scatter { max-width: 560px; }
+		.an-rare { max-width: 640px; }
+		.an-heat { max-width: 640px; }
+		.an-heat text { font-size: 11px; }
 		.an-hist .pt { stroke: #fff; stroke-width: 1.5; }
 		.an-hist .pt.hover { stroke: var(--ink); stroke-width: 2; }
 		.an-hist .diag { stroke: #9aa3b2; stroke-width: 1.5; stroke-dasharray: 5 4; }
@@ -2472,6 +2475,117 @@
                 an_v_quality: 'Calidad',
                 an_v_haplotypes: 'Haplotipos',
                 an_v_hap_table: 'Tabla',
+                an_v_div_tab: 'Diversidad',
+                an_v_richness: 'Riqueza y completitud',
+                an_v_beta: 'Entre zonas',
+                an_div_unit: 'Unidad:',
+                an_div_unit_bin: 'BIN',
+                an_div_unit_species: 'Especie',
+                an_div_zoning: 'Zonas:',
+                an_div_z_country: 'País',
+                an_div_z_province: 'Provincia o estado',
+                an_div_z_region: 'Región',
+                an_div_z_grid: 'Cuadrícula de 1°',
+                an_div_zw_country: 'país',
+                an_div_zw_province: 'provincia o estado',
+                an_div_zw_region: 'región',
+                an_div_zw_grid: 'coordenadas',
+                an_div_units_bin: 'BINs',
+                an_div_units_species: 'especies',
+                an_div_intro: 'Cuenta cada secuencia en su unidad (BIN o especie) y en su zona. Los recuentos reflejan cuánto se ha secuenciado, no la abundancia en el campo. Las zonas con menos de {min} secuencias quedan fuera.',
+                an_div_running: 'Calculando la diversidad por zona…',
+                an_div_error: 'No se pudo calcular la diversidad por zona: {msg}',
+                an_div_none: 'Ninguna zona tiene al menos {min} secuencias con {z}. Prueba con otras zonas (por ejemplo, la cuadrícula si hay coordenadas) o amplía la búsqueda.',
+                an_div_rich_note: 'El número de {u} de cada zona y cuántas unidades faltan por secuenciar. Chao1 estima los que habría con un muestreo completo (entre paréntesis, su intervalo del 95 %); la cobertura, la parte de las secuencias de la zona que pertenece a unidades ya vistas. «A igual esfuerzo» compara todas las zonas con {m} secuencias, las de la más pequeña.',
+                an_c_zone: 'Zona',
+                an_c_zone_pair: 'Par de zonas',
+                an_c_places: 'Localidades',
+                an_c_f1: 'Con 1 secuencia',
+                an_c_coverage: 'Cobertura',
+                an_c_rarefied: 'A igual esfuerzo ({m})',
+                an_c_exclusive: 'Exclusivos',
+                an_div_small: '{k} zonas con menos de {min} secuencias ({n} secuencias en total) quedan fuera.',
+                an_h_rarefaction: 'Curvas de rarefacción y extrapolación',
+                an_rarefaction_note: 'Unidades ({u}) esperadas según el número de secuencias. Línea continua: muestreado; punto: el esfuerzo actual; discontinua: extrapolado hasta el doble. Una curva que sigue subiendo indica que faltan unidades por secuenciar.',
+                an_rare_tip: '{z}: {s} {u} en {n} secuencias',
+                an_rare_more: 'Solo se dibujan las {k} zonas con más secuencias.',
+                an_beta_one: 'Solo una zona tiene al menos {min} secuencias con {z}: no hay zonas que comparar. Prueba con otras zonas o amplía la búsqueda.',
+                an_beta_note: 'Cuánto se parecen las zonas por las unidades ({u}) que comparten, solo por presencia o ausencia. La disimilitud total se separa en recambio (cada zona tiene unidades que la otra no) y anidamiento (la más pobre es un subconjunto de la más rica).',
+                an_t_beta_sor: 'Disimilitud total (Sørensen)',
+                an_t_turnover: 'Por recambio',
+                an_t_nested: 'Por anidamiento',
+                an_t_exclusive: 'Unidades en una sola zona',
+                an_h_sorensen: 'Similitud de Sørensen entre zonas',
+                an_h_pairs: 'Pares de zonas',
+                an_c_shared: 'Compartidas',
+                an_c_only_first: 'Solo en la primera',
+                an_c_only_second: 'Solo en la segunda',
+                an_c_turnover: 'Recambio',
+                an_c_nested: 'Anidamiento',
+                an_c_zones_n: 'Zonas',
+                an_c_found_in: 'Presente en',
+                an_h_widespread: 'Unidades más repartidas',
+                an_h_exclusive: 'Unidades de una sola zona ({n})',
+                an_st_div_t: '«Diversidad» necesita saber dónde se recogió cada secuencia.',
+                an_st_div_nozone: 'Cuenta la riqueza por zona (país, provincia, región o cuadrícula), así que necesita el país, la provincia o las coordenadas, y ninguna secuencia los trae.',
+                an_st_div_t_unit: '«Diversidad» necesita el BIN o el nombre de especie de cada secuencia.',
+                an_st_div_nounit: 'Cuenta unidades (BINs o especies) por zona, y ninguna secuencia trae BIN ni nombre de especie.',
+                an_st_beta_t: '«Entre zonas» necesita al menos dos zonas.',
+                an_st_beta_one: 'Todas las secuencias son del mismo país y provincia, y menos de 10 traen coordenadas: no hay zonas que comparar. La riqueza de esa zona sí está en «Riqueza y completitud».',
+                an_rg_title: 'Qué dicen la riqueza y la completitud',
+                an_rg_sub: 'Lectura automática y orientativa de la riqueza por zona',
+                an_rg_file: 'interpretacion_riqueza',
+                an_rg_meta: 'Marcador: {marker} · unidad: {u} · zonas: {z} ({n}) · {date}',
+                an_rg_chao: '{c}, faltan unos {m}',
+                an_rg_chao_1: '{c}, falta 1',
+                an_rg_v_equal_same: ' A igual esfuerzo ({m} secuencias), todas tienen una riqueza parecida (unos {r} {u}).',
+                an_bg_v_same: '<b>Todas las zonas tienen los mismos {u}:</b> no hay diferencias de composición entre ellas.',
+                an_bg_v_two_same: '<b>{a} y {b} tienen los mismos {u} ({k}):</b> no hay diferencias de composición entre ellas.',
+                an_rg_v_one_complete: '<b>{z} está casi completa: {s} {u} en {n} secuencias</b>, con una cobertura del {c} (Chao1 estima {chao}). Más secuencias del mismo grupo apenas añadirían unidades.',
+                an_rg_v_one_incomplete: '<b>{z}: {s} {u} en {n} secuencias, pero el muestreo no está completo</b>: la cobertura es del {c} y Chao1 estima {chao} (faltarían unos {m}).',
+                an_rg_v_one_poor: '<b>{z} está poco muestreada: {s} {u} en {n} secuencias</b>, con una cobertura del {c}; Chao1 estima {chao}, así que faltan unos {m} por secuenciar.',
+                an_rg_v_all: '<b>Las {n} zonas están casi completas:</b> más secuencias del mismo grupo apenas añadirían {u}.',
+                an_rg_v_none: '<b>Ninguna de las {n} zonas está completa:</b> en todas faltan {u} por secuenciar.',
+                an_rg_v_mixed: '<b>{ok} están casi completas; {bad}, no.</b>',
+                an_rg_v_mixed_1: '<b>{ok} está casi completa; {bad}, no.</b>',
+                an_rg_v_equal: ' A igual esfuerzo ({m} secuencias), la más rica es {a} ({ra} {u}) y la más pobre {b} ({rb}).',
+                an_rg_v_obs: ' La que más {u} tiene en bruto es {z}, pero porque tiene más secuencias.',
+                an_rg_how: '<b>Cómo se lee.</b> Chao1 estima cuántas unidades ({u}) habría con un muestreo completo a partir de los que tienen una y dos secuencias: cuantos más de una sola, más faltan. La cobertura es la parte de las secuencias que pertenece a unidades ya vistas: desde el {c} la zona está casi completa; por debajo del {p}, poco muestreada. Para comparar zonas, mira la riqueza a igual esfuerzo, no la observada: una zona con más secuencias siempre tiene más unidades.',
+                an_rg_poor: '<b>Zonas poco muestreadas:</b> {list}. Sus curvas siguen subiendo: faltan {u} por secuenciar.',
+                an_rg_poor_1: '<b>Zona poco muestreada:</b> {list}. Su curva sigue subiendo: faltan {u} por secuenciar.',
+                an_rg_incomplete: '<b>Zonas incompletas:</b> {list}. La curva empieza a aplanarse, pero aún faltan unidades.',
+                an_rg_incomplete_1: '<b>Zona incompleta:</b> {list}. La curva empieza a aplanarse, pero aún faltan unidades.',
+                an_rg_complete: '<b>Zonas casi completas:</b> {list}. Sus curvas están en la asíntota.',
+                an_rg_complete_1: '<b>Zona casi completa:</b> {list}. Su curva está en la asíntota.',
+                an_rg_small: '{k} zonas con menos de {min} secuencias ({n} secuencias en total) quedan fuera: con tan pocas, ni la riqueza ni la completitud se pueden estimar.',
+                an_rg_nozone: '{k} secuencias no tienen {z} y quedan fuera.',
+                an_rg_few_names: '<b>Pocos nombres:</b> solo el {p} de las secuencias tiene nombre de especie, así que contar especies deja fuera la mayoría. Con la unidad «BIN» se usan casi todas.',
+                an_rg_nobin: '{k} secuencias no tienen BIN y quedan fuera del recuento.',
+                an_rg_next_gap: '<b>Qué hacer ahora:</b> si buscas huecos en la biblioteca de barcodes, {z} es la zona prioritaria: es la que más {u} tiene por secuenciar.',
+                an_rg_next_beta: ' Para ver cuánto se parecen las zonas, pasa a «{beta}».',
+                an_rg_next_ok: '<b>Qué hacer ahora:</b> las zonas están bien muestreadas; pasa a «{beta}» para ver cuánto se parecen.',
+                an_rg_next_one: '<b>Qué hacer ahora:</b> para comparar zonas, cambia «Zonas» a provincia o cuadrícula, o amplía la búsqueda a más países.',
+                an_rg_foot: 'Los recuentos reflejan cuánto se ha secuenciado, no la abundancia en el campo: por eso no se calculan Shannon ni Simpson. Chao1 es un mínimo: con muchas unidades de una sola secuencia, la riqueza real puede ser mayor.',
+                an_bg_title: 'Qué dice la comparación entre zonas',
+                an_bg_sub: 'Lectura automática y orientativa de la diversidad beta',
+                an_bg_file: 'interpretacion_entre_zonas',
+                an_bg_v_turnover: '<b>Las zonas se diferencian sobre todo por recambio</b> ({p} de la disimilitud total): tienen {u} distintos, no versiones reducidas de la misma fauna.',
+                an_bg_v_nested: '<b>Las zonas se diferencian sobre todo por anidamiento</b> ({q} de la disimilitud total): las más pobres tienen un subconjunto de las unidades de las más ricas.',
+                an_bg_v_similar: ' Las más parecidas son {a} y {b} (Sørensen {s}).',
+                an_bg_v_two_turnover: '<b>{a} y {b} comparten {k} de {t} {u}</b> (Sørensen {s}); la diferencia es sobre todo recambio: cada una tiene unidades que la otra no.',
+                an_bg_v_two_nested: '<b>{a} y {b} comparten {k} de {t} {u}</b> (Sørensen {s}); la diferencia es sobre todo anidamiento: la más pobre es casi un subconjunto de la otra.',
+                an_bg_how: '<b>Cómo se lee.</b> Sørensen va de 0 (nada en común) a 1 (las mismas unidades). La disimilitud se separa en recambio, cuando cada zona tiene unidades que la otra no, y anidamiento, cuando una zona solo tiene parte de las de otra (Baselga, 2010).',
+                an_bg_least: '{a} y {b} son las más distintas (Sørensen {s}, {k} {u} en común).',
+                an_bg_nested_poor: '<b>Anidamiento con zonas poco muestreadas:</b> {list}. Que {z} parezca un subconjunto de otra es probablemente falta de muestreo, no una fauna más pobre.',
+                an_bg_nested_poor_1: '<b>Anidamiento con una zona poco muestreada:</b> {list}. Que {z} parezca un subconjunto de la otra es probablemente falta de muestreo, no una fauna más pobre.',
+                an_bg_nested: '<b>Pares anidados:</b> {list}. La zona más pobre tiene sobre todo {u} que también están en la otra.',
+                an_bg_nested_1: '<b>Par anidado:</b> {list}. La zona más pobre tiene sobre todo {u} que también están en la otra.',
+                an_bg_exclusive: '{k} de {t} {u} aparecen en una sola zona; {z} es la que más tiene ({n}).',
+                an_bg_widespread_named: 'El más repartido es {u} ({sp}), en {k} de las {n} zonas.',
+                an_bg_widespread: 'El más repartido es {u}, en {k} de las {n} zonas.',
+                an_bg_next: '<b>Qué hacer ahora:</b> revisa en la tabla las unidades de una sola zona: si tienen una sola secuencia, pueden deberse al muestreo y no a una distribución restringida.',
+                an_bg_next_none: '<b>Qué hacer ahora:</b> todas las unidades aparecen en más de una zona; para más detalle, prueba con zonas más pequeñas.',
+                an_bg_foot: 'Se usa presencia o ausencia: el número de secuencias no cuenta. El anidamiento entre una zona bien muestreada y otra mal muestreada suele ser un artefacto del esfuerzo, y las zonas administrativas no siempre coinciden con regiones biogeográficas.',
                 an_hg_pg_running: 'La diversidad nucleotídica (π) y la D de Tajima de cada especie se están calculando; esta lectura las añadirá al terminar.',
                 an_hg_pi_high: '<b>{k} de {n} especies tienen una diversidad nucleotídica muy por encima del resto</b> (mediana {m}): {list}. Una [pi_col] tan alta dentro de un nombre suele indicar dos o más linajes, o especies crípticas.',
                 an_hg_pi_high_1: '<b>Una especie tiene una diversidad nucleotídica muy por encima del resto</b> (mediana {m} en {n} especies): {list}. Una [pi_col] tan alta dentro de un nombre suele indicar dos o más linajes, o especies crípticas.',
@@ -3652,6 +3766,117 @@
                 an_v_quality: 'Quality',
                 an_v_haplotypes: 'Haplotypes',
                 an_v_hap_table: 'Table',
+                an_v_div_tab: 'Diversity',
+                an_v_richness: 'Richness and completeness',
+                an_v_beta: 'Between zones',
+                an_div_unit: 'Unit:',
+                an_div_unit_bin: 'BIN',
+                an_div_unit_species: 'Species',
+                an_div_zoning: 'Zones:',
+                an_div_z_country: 'Country',
+                an_div_z_province: 'Province or state',
+                an_div_z_region: 'Region',
+                an_div_z_grid: '1° grid',
+                an_div_zw_country: 'a country',
+                an_div_zw_province: 'a province or state',
+                an_div_zw_region: 'a region',
+                an_div_zw_grid: 'coordinates',
+                an_div_units_bin: 'BINs',
+                an_div_units_species: 'species',
+                an_div_intro: 'Counts each sequence in its unit (BIN or species) and its zone. Counts reflect how much has been sequenced, not field abundance. Zones with fewer than {min} sequences are left out.',
+                an_div_running: 'Computing the diversity by zone…',
+                an_div_error: 'The diversity by zone couldn\'t be computed: {msg}',
+                an_div_none: 'No zone has at least {min} sequences with {z}. Try other zones (the grid, if there are coordinates) or widen the search.',
+                an_div_rich_note: 'How many {u} each zone holds and how many are still to be sequenced. Chao1 estimates those a complete sampling would find (its 95% interval in brackets); coverage, the share of the zone\'s sequences that belong to units already seen. "At equal effort" compares every zone at {m} sequences, those of the smallest.',
+                an_c_zone: 'Zone',
+                an_c_zone_pair: 'Pair of zones',
+                an_c_places: 'Localities',
+                an_c_f1: 'With 1 sequence',
+                an_c_coverage: 'Coverage',
+                an_c_rarefied: 'At equal effort ({m})',
+                an_c_exclusive: 'Exclusive',
+                an_div_small: '{k} zones with fewer than {min} sequences ({n} sequences in all) are left out.',
+                an_h_rarefaction: 'Rarefaction and extrapolation curves',
+                an_rarefaction_note: 'Units ({u}) expected by number of sequences. Solid line: sampled; dot: current effort; dashed: extrapolated to twice as many. A curve still rising means units remain to be sequenced.',
+                an_rare_tip: '{z}: {s} {u} in {n} sequences',
+                an_rare_more: 'Only the {k} zones with the most sequences are drawn.',
+                an_beta_one: 'Only one zone has at least {min} sequences with {z}: there are no zones to compare. Try other zones or widen the search.',
+                an_beta_note: 'How alike the zones are by the {u} they share, by presence or absence only. Total dissimilarity splits into turnover (each zone has units the other lacks) and nestedness (the poorer one is a subset of the richer).',
+                an_t_beta_sor: 'Total dissimilarity (Sørensen)',
+                an_t_turnover: 'From turnover',
+                an_t_nested: 'From nestedness',
+                an_t_exclusive: 'Units in one zone only',
+                an_h_sorensen: 'Sørensen similarity between zones',
+                an_h_pairs: 'Pairs of zones',
+                an_c_shared: 'Shared',
+                an_c_only_first: 'Only in the first',
+                an_c_only_second: 'Only in the second',
+                an_c_turnover: 'Turnover',
+                an_c_nested: 'Nestedness',
+                an_c_zones_n: 'Zones',
+                an_c_found_in: 'Found in',
+                an_h_widespread: 'Most widespread units',
+                an_h_exclusive: 'Units of one zone only ({n})',
+                an_st_div_t: '"Diversity" needs to know where each sequence was collected.',
+                an_st_div_nozone: 'It counts richness by zone (country, province, region or grid), so it needs the country, the province or the coordinates, and no sequence has them.',
+                an_st_div_t_unit: '"Diversity" needs the BIN or the species name of each sequence.',
+                an_st_div_nounit: 'It counts units (BINs or species) by zone, and no sequence has a BIN or a species name.',
+                an_st_beta_t: '"Between zones" needs at least two zones.',
+                an_st_beta_one: 'All sequences are from the same country and province, and fewer than 10 have coordinates: there are no zones to compare. That zone\'s richness is in "Richness and completeness".',
+                an_rg_title: 'What richness and completeness say',
+                an_rg_sub: 'An automatic, indicative reading of richness by zone',
+                an_rg_file: 'richness_reading',
+                an_rg_meta: 'Marker: {marker} · unit: {u} · zones: {z} ({n}) · {date}',
+                an_rg_chao: '{c}, some {m} missing',
+                an_rg_chao_1: '{c}, 1 missing',
+                an_rg_v_equal_same: ' At equal effort ({m} sequences), all have a similar richness (some {r} {u}).',
+                an_bg_v_same: '<b>All zones hold the same {u}:</b> there are no differences in composition between them.',
+                an_bg_v_two_same: '<b>{a} and {b} hold the same {u} ({k}):</b> there are no differences in composition between them.',
+                an_rg_v_one_complete: '<b>{z} is nearly complete: {s} {u} in {n} sequences</b>, with {c} coverage (Chao1 estimates {chao}). More sequences of the same group would hardly add units.',
+                an_rg_v_one_incomplete: '<b>{z}: {s} {u} in {n} sequences, but sampling isn\'t complete</b>: coverage is {c} and Chao1 estimates {chao} (some {m} missing).',
+                an_rg_v_one_poor: '<b>{z} is poorly sampled: {s} {u} in {n} sequences</b>, with {c} coverage; Chao1 estimates {chao}, so some {m} remain to be sequenced.',
+                an_rg_v_all: '<b>All {n} zones are nearly complete:</b> more sequences of the same group would hardly add {u}.',
+                an_rg_v_none: '<b>None of the {n} zones is complete:</b> {u} remain to be sequenced in all of them.',
+                an_rg_v_mixed: '<b>{ok} are nearly complete; {bad}, not.</b>',
+                an_rg_v_mixed_1: '<b>{ok} is nearly complete; {bad}, not.</b>',
+                an_rg_v_equal: ' At equal effort ({m} sequences), the richest is {a} ({ra} {u}) and the poorest {b} ({rb}).',
+                an_rg_v_obs: ' The one with the most {u} as counted is {z}, but because it has more sequences.',
+                an_rg_how: '<b>How to read it.</b> Chao1 estimates how many {u} a complete sampling would find from those with one and two sequences: the more with only one, the more are missing. Coverage is the share of sequences that belong to units already seen: from {c} a zone is nearly complete; under {p}, poorly sampled. To compare zones, look at richness at equal effort, not as counted: a zone with more sequences always has more units.',
+                an_rg_poor: '<b>Poorly sampled zones:</b> {list}. Their curves are still rising: {u} remain to be sequenced.',
+                an_rg_poor_1: '<b>Poorly sampled zone:</b> {list}. Its curve is still rising: {u} remain to be sequenced.',
+                an_rg_incomplete: '<b>Incomplete zones:</b> {list}. The curve starts to level off, but some {u} are still missing.',
+                an_rg_incomplete_1: '<b>Incomplete zone:</b> {list}. The curve starts to level off, but some {u} are still missing.',
+                an_rg_complete: '<b>Nearly complete zones:</b> {list}. Their curves have reached the asymptote.',
+                an_rg_complete_1: '<b>Nearly complete zone:</b> {list}. Its curve has reached the asymptote.',
+                an_rg_small: '{k} zones with fewer than {min} sequences ({n} sequences in all) are left out: with so few, neither richness nor completeness can be estimated.',
+                an_rg_nozone: '{k} sequences have no {z} and are left out.',
+                an_rg_few_names: '<b>Few names:</b> only {p} of the sequences have a species name, so counting species leaves most out. The "BIN" unit uses nearly all of them.',
+                an_rg_nobin: '{k} sequences have no BIN and are left out of the count.',
+                an_rg_next_gap: '<b>What to do next:</b> if you are looking for gaps in the barcode library, {z} is the priority zone: it has the most {u} still to sequence.',
+                an_rg_next_beta: ' To see how alike the zones are, go to "{beta}".',
+                an_rg_next_ok: '<b>What to do next:</b> the zones are well sampled; go to "{beta}" to see how alike they are.',
+                an_rg_next_one: '<b>What to do next:</b> to compare zones, switch "Zones" to province or grid, or widen the search to more countries.',
+                an_rg_foot: 'Counts reflect how much has been sequenced, not field abundance: that is why Shannon and Simpson aren\'t computed. Chao1 is a lower bound: with many single-sequence units, true richness may be higher.',
+                an_bg_title: 'What the comparison between zones says',
+                an_bg_sub: 'An automatic, indicative reading of beta diversity',
+                an_bg_file: 'between_zones_reading',
+                an_bg_v_turnover: '<b>Zones differ mostly by turnover</b> ({p} of total dissimilarity): they hold different {u}, not reduced versions of the same fauna.',
+                an_bg_v_nested: '<b>Zones differ mostly by nestedness</b> ({q} of total dissimilarity): the poorer ones hold a subset of the richer ones\' {u}.',
+                an_bg_v_similar: ' The most alike are {a} and {b} (Sørensen {s}).',
+                an_bg_v_two_turnover: '<b>{a} and {b} share {k} of {t} {u}</b> (Sørensen {s}); the difference is mostly turnover: each has units the other lacks.',
+                an_bg_v_two_nested: '<b>{a} and {b} share {k} of {t} {u}</b> (Sørensen {s}); the difference is mostly nestedness: the poorer is nearly a subset of the other.',
+                an_bg_how: '<b>How to read it.</b> Sørensen goes from 0 (no {u} in common) to 1 (the same ones). Dissimilarity splits into turnover, when each zone has units the other lacks, and nestedness, when a zone holds only part of another\'s (Baselga, 2010).',
+                an_bg_least: '{a} and {b} are the most different (Sørensen {s}, {k} {u} in common).',
+                an_bg_nested_poor: '<b>Nestedness with poorly sampled zones:</b> {list}. That {z} looks like a subset of another is probably lack of sampling, not a poorer fauna.',
+                an_bg_nested_poor_1: '<b>Nestedness with a poorly sampled zone:</b> {list}. That {z} looks like a subset of the other is probably lack of sampling, not a poorer fauna.',
+                an_bg_nested: '<b>Nested pairs:</b> {list}. The poorer zone holds mostly {u} also found in the other.',
+                an_bg_nested_1: '<b>Nested pair:</b> {list}. The poorer zone holds mostly {u} also found in the other.',
+                an_bg_exclusive: '{k} of the {t} {u} occur in one zone only; {z} has the most ({n}).',
+                an_bg_widespread_named: 'The most widespread is {u} ({sp}), in {k} of the {n} zones.',
+                an_bg_widespread: 'The most widespread is {u}, in {k} of the {n} zones.',
+                an_bg_next: '<b>What to do next:</b> check the {u} of one zone only in the table: if they have a single sequence, sampling rather than a narrow range may explain them.',
+                an_bg_next_none: '<b>What to do next:</b> every unit occurs in more than one zone; for more detail, try smaller zones.',
+                an_bg_foot: 'Presence or absence is used: the number of sequences doesn\'t count. Nestedness between a well-sampled zone and a poorly sampled one is usually an artefact of effort, and administrative zones don\'t always match biogeographic regions.',
                 an_hg_pg_running: 'Each species\' nucleotide diversity (π) and Tajima\'s D are being computed; this reading will add them when done.',
                 an_hg_pi_high: '<b>{k} of {n} species have a nucleotide diversity well above the rest</b> (median {m}): {list}. Such a high [pi_col] within one name usually means two or more lineages, or cryptic species.',
                 an_hg_pi_high_1: '<b>One species has a nucleotide diversity well above the rest</b> (median {m} over {n} species): {list}. Such a high [pi_col] within one name usually means two or more lineages, or cryptic species.',
@@ -7957,6 +8182,11 @@
 			popgenRunning: false,
 			popgenError: null,
 			structSpecies: null, // species whose isolation by distance is drawn
+			divOpts: null,     // { unit: 'bin'|'species', zoning: 'country'|'province'|'region'|'grid' }
+			div: null,         // diversity by zone for divOpts
+			divFor: null,      // the request and options `div` answers
+			divRunning: false,
+			divError: null,
 		};
 
 		// Tabs and the views in them; the views of a tab share its options
@@ -7966,11 +8196,14 @@
 			{ id: 'concordance', label: 'an_v_concordance', views: ['concordance'] },
 			{ id: 'distance', label: 'an_v_dist_tab', views: ['distance', 'tree', 'delimit'],
 			  controls: body => anDistanceControls(body) },
+			{ id: 'diversity', label: 'an_v_div_tab', views: ['richness', 'beta'],
+			  controls: body => anDivControls(body) },
 		];
 		const AN_VIEW_LABELS = { quality: 'an_v_quality', haplotypes: 'an_v_hap_table', network: 'an_v_network',
 		                         structure: 'an_v_structure',
 		                         concordance: 'an_v_concordance', distance: 'an_v_distance',
-		                         tree: 'an_v_tree', delimit: 'an_v_delimit' };
+		                         tree: 'an_v_tree', delimit: 'an_v_delimit',
+		                         richness: 'an_v_richness', beta: 'an_v_beta' };
 
 		// Fewest sequences with coordinates for the Mantel test (seq_popgen)
 		const AN_MIN_MANTEL = 10;
@@ -8002,6 +8235,16 @@
 					if (f.countries < 2 && f.coords < AN_MIN_MANTEL) return { s: 'off', title: t('an_st_struct_t_two'),
 						why: t('an_st_struct_one'), how: t('an_st_struct_one_how') };
 					return { s: 'ok' };
+				case 'richness':
+				case 'beta': {
+					if (!f.country && !f.coords && !f.provinces) return { s: 'off', title: t('an_st_div_t'), why: t('an_st_div_nozone'),
+					                                                      how: fasta ? t('an_st_how_fasta') : null };
+					if (!f.bin && !f.species) return { s: 'off', title: t('an_st_div_t_unit'), why: t('an_st_div_nounit'),
+					                                   how: fasta ? t('an_st_how_fasta') : null };
+					if (view === 'beta' && f.countries < 2 && f.provinces < 2 && f.coords < AN_MIN_MANTEL)
+						return { s: 'off', title: t('an_st_beta_t'), why: t('an_st_beta_one'), how: t('an_st_struct_one_how') };
+					return { s: 'ok' };
+				}
 				case 'distance':
 					return f.species ? { s: 'ok' } : partial('an_st_dist_nosp');
 				case 'tree':
@@ -8144,7 +8387,7 @@
 				species: v('col_species'), genus: v('col_genus'), family: v('col_family'),
 				order: v('col_order'), class: v('col_class'), phylum: v('col_phylum'),
 				kingdom: v('col_kingdom'), country: v('col_country_ocean'),
-				province: v('col_province_state'), coord: v('col_coord'),
+				province: v('col_province_state'), region: v('col_region'), coord: v('col_coord'),
 				marker: v('col_marker_code'), seq: row[SEQ_COL],
 			};
 		}
@@ -8219,6 +8462,10 @@
 				AnState.popgen = null;
 				AnState.popgenError = null;
 				AnState.structSpecies = null;
+				AnState.div = null;
+				AnState.divFor = null;
+				AnState.divOpts = null;
+				AnState.divError = null;
 				anRender();
 				anSummariseInput(data);
 				anSetInputOpen(false);
@@ -8457,7 +8704,8 @@
 			const renderers = { quality: anRenderQuality, haplotypes: anRenderHaplotypes, network: anRenderNetwork,
 			                    structure: anRenderStructure,
 			                    concordance: anRenderConcordance, distance: anRenderDistance,
-			                    tree: anRenderTree, delimit: anRenderDelimit };
+			                    tree: anRenderTree, delimit: anRenderDelimit,
+			                    richness: anRenderRichness, beta: anRenderBeta };
 			const show = view => {
 				AnState.view = view;
 				const tab = anTabOf(view);
@@ -8468,7 +8716,7 @@
 				});
 				body.innerHTML = '';
 				// Views of one tab: their own row, under the options they share
-				if (tab.controls) tab.controls(body);
+				if (tab.controls && anTabState(tab) !== 'off') tab.controls(body);
 				if (tab.views.length > 1) {
 					const subs = anEl('div', 'an-subviews');
 					subs.setAttribute('role', 'tablist');
@@ -8679,6 +8927,361 @@
 				return { mark: hit, text: t('an_ibd_tip', { km: numFmt.format(Math.round(km)), d: anNum(d, 2) }) };
 			});
 			return wrap;
+		}
+
+		// ── Diversity by zone ──
+		// /api/analysis/diversity (seq_diversity.py) counts each sequence's
+		// unit (BIN or species) in its zone; asked for when the tab is shown
+		// and whenever the unit or the zones change.
+
+		const AN_DIV_ZONINGS = ['country', 'province', 'region', 'grid'];
+
+		// Options that fit the data: BINs when there are, zones with variety
+		function anDivOpts() {
+			if (AnState.divOpts) return AnState.divOpts;
+			const f = (AnState.result && AnState.result.fields) || {};
+			AnState.divOpts = {
+				unit: f.bin ? 'bin' : 'species',
+				zoning: f.countries >= 2 ? 'country' : f.provinces >= 2 ? 'province' : f.coords ? 'grid' : 'country',
+			};
+			return AnState.divOpts;
+		}
+
+		function anDivControls(body) {
+			const opts = anDivOpts();
+			const box = anEl('div', 'an-dist-controls');
+			const row = anEl('div', 'an-options');
+			const sel = (labelKey, id, options, value, onChange) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				const s = anEl('select', 'form-select form-select-sm');
+				s.id = id;
+				options.forEach(([v, key]) => {
+					const o = anEl('option', '', t(key));
+					o.value = v;
+					s.append(o);
+				});
+				s.value = value;
+				s.disabled = AnState.divRunning;
+				s.addEventListener('change', () => onChange(s.value));
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), s);
+				return l;
+			};
+			row.append(
+				sel('an_div_unit', 'anDivUnit', [['bin', 'an_div_unit_bin'], ['species', 'an_div_unit_species']], opts.unit,
+					v => { opts.unit = v; anRunDiversity(); }),
+				sel('an_div_zoning', 'anDivZoning', AN_DIV_ZONINGS.map(z => [z, 'an_div_z_' + z]), opts.zoning,
+					v => { opts.zoning = v; anRunDiversity(); }),
+				anEl('span', 'an-muted ms-auto', AnState.divRunning ? t('an_div_running') : ''));
+			box.append(row, anEl('p', 'an-muted mt-2 mb-0', t('an_div_intro', { min: 20 })));
+			body.append(box);
+			// First look at the tab, or options that changed since
+			if (!AnState.divRunning && !AnState.divError && AnState.divFor !== anDivKey()) setTimeout(anRunDiversity);
+		}
+
+		const anDivKey = () => AnState.lastBody ? JSON.stringify([AnState.lastBody.marker, anDivOpts()]) + AnState.result.summary.analysed : null;
+
+		async function anRunDiversity() {
+			if (AnState.divRunning || !AnState.lastBody) return;
+			const asked = AnState.lastBody, key = anDivKey();
+			AnState.divRunning = true;
+			AnState.divError = null;
+			anRefreshView();
+			try {
+				const response = await fetch('/api/analysis/diversity', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(Object.assign({}, asked, anDivOpts())),
+				});
+				const data = await response.json().catch(() => ({}));
+				if (AnState.lastBody !== asked) return;
+				if (!response.ok || data.error) throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
+				AnState.div = data;
+				AnState.divFor = key;
+			} catch (e) {
+				if (AnState.lastBody === asked) AnState.divError = e.message;
+			} finally {
+				if (AnState.lastBody === asked) {
+					AnState.divRunning = false;
+					// Options changed while it ran: ask again
+					if (!AnState.divError && AnState.divFor !== anDivKey()) anRunDiversity();
+					else if (['richness', 'beta'].includes(AnState.view)) anRefreshView();
+				}
+			}
+		}
+
+		// Results on screen, or why there are none; null when nothing to draw
+		function anDivReady(body) {
+			if (AnState.divError) {
+				body.append(anEl('div', 'an-warn', '⚠ ' + t('an_div_error', { msg: AnState.divError })));
+				return null;
+			}
+			const d = AnState.div;
+			if (!d || AnState.divRunning) {
+				if (!d) body.append(anEl('p', 'an-muted', t('an_div_running')));
+				if (!d) return null;
+			}
+			if (!d.zones.length) {
+				body.append(anEl('p', 'an-muted', t('an_div_none', { min: numFmt.format(d.min_zone),
+					z: t('an_div_zw_' + d.zoning) })));
+				return null;
+			}
+			return d;
+		}
+
+		const anDivUnits = d => t(d.unit === 'bin' ? 'an_div_units_bin' : 'an_div_units_species');
+
+		function anRenderRichness(body) {
+			const d = anDivReady(body);
+			if (!d) return;
+			const units = anDivUnits(d);
+			const pc = x => anPctOf(x, 1);
+			body.append(anEl('p', 'an-muted', t('an_div_rich_note', { u: units, m: numFmt.format(d.common_n) })));
+			body.append(anTable([
+				{ label: t('an_c_zone'), get: z => z.zone },
+				{ label: t('an_c_seqs'), cls: 'num', get: z => numFmt.format(z.n) },
+				{ label: t('an_c_places'), cls: 'num', get: z => z.places ? numFmt.format(z.places) : '—' },
+				{ label: units.charAt(0).toUpperCase() + units.slice(1), cls: 'num', get: z => numFmt.format(z.units) },
+				{ label: t('an_c_f1'), cls: 'num', get: z => numFmt.format(z.f1) },
+				{ label: 'Chao1', cls: 'num', get: z => z.chao1 - z.units < 0.05 ? anNum(z.chao1, 0)
+					: `${anNum(z.chao1, 0)} (${anNum(z.chao1_lo, 0)}–${anNum(z.chao1_hi, 0)})` },
+				{ label: t('an_c_coverage'), cls: 'num', get: z => pc(z.coverage) },
+				{ label: t('an_c_rarefied', { m: numFmt.format(d.common_n) }), cls: 'num', get: z => z.rarefied === null ? '—' : anNum(z.rarefied, 1) },
+				{ label: t('an_c_exclusive'), cls: 'num', get: z => d.zones.length > 1 ? numFmt.format(z.exclusive) : '—' },
+			], d.zones.slice(0, AN_TABLE_ROWS)));
+			if (d.small_zones.length) body.append(anEl('p', 'an-muted mt-2', t('an_div_small', {
+				k: numFmt.format(d.small_zones.length), min: numFmt.format(d.min_zone),
+				n: numFmt.format(d.small_zones.reduce((a, [, n]) => a + n, 0)) })));
+			body.append(anEl('div', 'an-h', t('an_h_rarefaction')));
+			body.append(anEl('p', 'an-muted', t('an_rarefaction_note', { u: units })));
+			body.append(anRarefactionChart(d, units));
+			anRenderRichGuide(body, d);
+		}
+
+		// Rarefaction (solid) and extrapolation (dashed) of the largest zones
+		function anRarefactionChart(d, units) {
+			const zones = d.zones.slice(0, AN_PALETTE.length);
+			const W = 640, H = 340, L = 50, R = 16, T = 12, B = 46;
+			const pw = W - L - R, ph = H - T - B;
+			const maxX = Math.max(...zones.map(z => z.curve[z.curve.length - 1][0]));
+			const maxY = Math.max(1, ...zones.map(z => Math.max(...z.curve.map(c => c[1]))));
+			const sx = anStep(maxX), sy = anStep(maxY);
+			const topX = Math.ceil(maxX / sx) * sx, topY = Math.ceil(maxY / sy) * sy;
+			const x = v => L + v / topX * pw, y = v => T + ph - v / topY * ph;
+			const parts = [];
+			for (let v = 0; v <= topY + 1e-9; v += sy) parts.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`,
+				`<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${numFmt.format(v)}</text>`);
+			for (let v = 0; v <= topX + 1e-9; v += sx) parts.push(
+				`<text x="${x(v)}" y="${T + ph + 16}" text-anchor="middle">${numFmt.format(v)}</text>`);
+			zones.forEach((z, i) => {
+				const color = AN_PALETTE[i];
+				const path = pts => pts.map((c, k) => `${k ? 'L' : 'M'}${x(c[0]).toFixed(1)},${y(c[1]).toFixed(1)}`).join('');
+				const obs = [[0, 0], ...z.curve.filter(c => !c[2])];
+				const ext = z.curve.filter(c => c[0] >= z.n);
+				parts.push(`<path d="${path(obs)}" fill="none" stroke="${color}" stroke-width="2"/>`,
+				           `<path d="${path(ext)}" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="4 4"/>`,
+				           `<circle class="pt" data-i="${i}" cx="${x(z.n)}" cy="${y(z.units)}" r="4.5" fill="${color}"/>`);
+			});
+			parts.push(`<line class="axis" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>`,
+			           `<line class="axis" x1="${L}" x2="${L}" y1="${T}" y2="${T + ph}"/>`,
+			           `<text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">${escapeHtml(t('an_c_seqs'))}</text>`,
+			           `<text transform="translate(14 ${T + ph / 2}) rotate(-90)" text-anchor="middle">${escapeHtml(units.charAt(0).toUpperCase() + units.slice(1))}</text>`);
+			const wrap = anEl('div', 'an-hist an-rare');
+			wrap.append(anLegend(zones.map((z, i) => [AN_PALETTE[i], z.zone])));
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(t('an_h_rarefaction'))}">${parts.join('')}</svg>`);
+			anAttachTip(wrap, wrap.querySelector('svg'), (i, hit) => {
+				const z = zones[i];
+				return { mark: hit, text: t('an_rare_tip', { z: z.zone, n: numFmt.format(z.n), s: numFmt.format(z.units), u: units }) };
+			});
+			if (d.zones.length > zones.length) wrap.append(anEl('p', 'an-muted', t('an_rare_more', { k: numFmt.format(zones.length) })));
+			return wrap;
+		}
+
+		function anRenderBeta(body) {
+			const d = anDivReady(body);
+			if (!d) return;
+			const units = anDivUnits(d);
+			if (d.zones.length < 2) {
+				body.append(anEl('p', 'an-muted', t('an_beta_one', { min: numFmt.format(d.min_zone), z: t('an_div_zw_' + d.zoning) })));
+				return;
+			}
+			const f2 = x => anNum(x, 2);
+			const m = d.multi;
+			body.append(anEl('p', 'an-muted', t('an_beta_note', { u: units })));
+			const tiles = anEl('div', 'an-tiles');
+			tiles.append(anTile(f2(m.beta_sor), t('an_t_beta_sor')),
+			             anTile(anPct(m.beta_sim, m.beta_sor || 1), t('an_t_turnover')),
+			             anTile(anPct(m.beta_sne, m.beta_sor || 1), t('an_t_nested')),
+			             anTile(numFmt.format(d.exclusive_n), t('an_t_exclusive'), t('an_t_of', { n: numFmt.format(d.units_total) })));
+			body.append(tiles);
+			if (d.zones.length <= 12) {
+				body.append(anEl('div', 'an-h', t('an_h_sorensen')));
+				body.append(anSorensenMap(d));
+			}
+			body.append(anEl('div', 'an-h', t('an_h_pairs')));
+			const pairs = [...d.pairs].sort((a, b) => b.sorensen - a.sorensen);
+			if (pairs.length > AN_TABLE_ROWS) body.append(anEl('p', 'an-muted',
+				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(pairs.length) })));
+			body.append(anTable([
+				{ label: t('an_c_zone_pair'), get: p => `${p.a} · ${p.b}` },
+				{ label: t('an_c_shared'), cls: 'num', get: p => numFmt.format(p.shared) },
+				{ label: t('an_c_only_first'), cls: 'num', get: p => numFmt.format(p.only_a) },
+				{ label: t('an_c_only_second'), cls: 'num', get: p => numFmt.format(p.only_b) },
+				{ label: 'Sørensen', cls: 'num', get: p => f2(p.sorensen) },
+				{ label: t('an_c_turnover'), cls: 'num', get: p => f2(p.beta_sim) },
+				{ label: t('an_c_nested'), cls: 'num', get: p => f2(p.beta_sne) },
+			], pairs.slice(0, AN_TABLE_ROWS)));
+			const unitList = rows => anTable([
+				{ label: d.unit === 'bin' ? 'BIN' : t('an_c_species'), cls: d.unit === 'bin' ? 'mono' : 'sp', get: x => x.unit },
+				...(d.unit === 'bin' ? [{ label: t('an_c_species'), cls: 'sp', get: x => x.name || '—' }] : []),
+				{ label: t('an_c_seqs'), cls: 'num', get: x => numFmt.format(x.n) },
+				{ label: t('an_c_zones_n'), cls: 'num', get: x => numFmt.format(x.zones.length) },
+				{ label: t('an_c_found_in'), get: x => x.zones.join(', ') },
+			], rows);
+			if (d.widespread.length) {
+				body.append(anEl('div', 'an-h', t('an_h_widespread')));
+				body.append(unitList(d.widespread.slice(0, 15)));
+			}
+			if (d.exclusive.length) {
+				body.append(anEl('div', 'an-h', t('an_h_exclusive', { n: numFmt.format(d.exclusive_n) })));
+				body.append(unitList(d.exclusive));
+			}
+			anRenderBetaGuide(body, d);
+		}
+
+		// Sørensen similarity of every two zones
+		function anSorensenMap(d) {
+			const zones = d.zones.map(z => z.zone);
+			const sim = new Map(d.pairs.flatMap(p => [[`${p.a}\u0000${p.b}`, p.sorensen], [`${p.b}\u0000${p.a}`, p.sorensen]]));
+			const c = 40, L = 150, T = 110;
+			const cut = s => s.length > 22 ? s.slice(0, 21) + '…' : s;
+			const parts = [];
+			zones.forEach((a, i) => {
+				parts.push(`<text x="${L - 6}" y="${T + i * c + c / 2 + 4}" text-anchor="end">${escapeHtml(cut(a))}</text>`,
+				           `<text transform="translate(${L + i * c + c / 2} ${T - 6}) rotate(-45)">${escapeHtml(cut(a))}</text>`);
+				zones.forEach((b, j) => {
+					const v = i === j ? null : sim.get(`${a}\u0000${b}`);
+					const fill = v === null ? 'var(--tint)' : AN_PALETTE[0];
+					parts.push(`<rect x="${L + j * c}" y="${T + i * c}" width="${c - 2}" height="${c - 2}" rx="3" fill="${fill}" fill-opacity="${v === null ? 1 : (0.1 + 0.85 * v).toFixed(2)}"/>`,
+					           `<text x="${L + j * c + c / 2 - 1}" y="${T + i * c + c / 2 + 4}" text-anchor="middle" style="fill:${v !== null && v > 0.5 ? '#fff' : 'var(--ink)'}">${v === null ? '—' : v.toFixed(2)}</text>`);
+				});
+			});
+			const wrap = anEl('div', 'an-hist an-heat');
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${L + zones.length * c + 10} ${T + zones.length * c + 6}" role="img" aria-label="${escapeHtml(t('an_h_sorensen'))}">${parts.join('')}</svg>`);
+			return wrap;
+		}
+
+		// ── Readings of the diversity views ──
+		// Facts from seq_diversity.guide; zones are nearly complete from
+		// 95 % coverage and poorly sampled under 80 % (or 50 sequences).
+
+		function anRenderRichGuide(body, d) {
+			const G = d.guide;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const pc = x => anPctOf(x, 1);
+			const units = escapeHtml(anDivUnits(d));
+			const zn = z => `<b>${escapeHtml(z)}</b>`;
+			const zlist = (xs, fmt, max = 6) => anGuideList(xs.slice(0, max).map(x => escapeHtml(x.zone) + fmt(x)), xs.length);
+			const Z = G.zones;
+			const complete = Z.filter(z => z.state === 'complete'), poor = Z.filter(z => z.state === 'poor'),
+			      incomplete = Z.filter(z => z.state === 'incomplete');
+			const chao = z => Math.round(z.missing) < 1 ? anNum(z.chao1, 0)
+				: t(Math.round(z.missing) === 1 ? 'an_rg_chao_1' : 'an_rg_chao', { c: anNum(z.chao1, 0), m: anNum(z.missing, 0) });
+
+			let verdict;
+			if (Z.length === 1) {
+				const z = Z[0];
+				verdict = anGuideText('an_rg_v_one_' + z.state, { z: escapeHtml(z.zone), s: num(z.units), u: units, n: num(z.n),
+					c: pc(z.coverage), chao: anNum(z.chao1, 0), m: anNum(z.missing, 0) });
+			} else {
+				verdict = complete.length === Z.length ? anGuideText('an_rg_v_all', { n: num(Z.length), u: units })
+					: !complete.length ? anGuideText('an_rg_v_none', { n: num(Z.length), u: units })
+					: anGuideText(complete.length === 1 ? 'an_rg_v_mixed_1' : 'an_rg_v_mixed', { ok: zlist(complete, () => ''), bad: zlist([...poor, ...incomplete], () => '') });
+				const R = G.rarefied_order;
+				if (G.rarefied_alike) verdict += anGuideText('an_rg_v_equal_same', { m: num(G.common_n), r: anNum(R[0][1], 1), u: units });
+				else if (R.length >= 2) {
+					const [top, low] = [R[0], R[R.length - 1]];
+					verdict += anGuideText('an_rg_v_equal', { m: num(G.common_n), a: escapeHtml(top[0]), ra: anNum(top[1], 1),
+						b: escapeHtml(low[0]), rb: anNum(low[1], 1), u: units });
+					if (G.richest_obs !== top[0]) verdict += anGuideText('an_rg_v_obs', { z: escapeHtml(G.richest_obs), u: units });
+				}
+			}
+
+			add('info', anGuideText('an_rg_how', { u: units, c: pc(G.complete), p: pc(G.poor) }));
+			if (Z.length > 1) {
+				if (poor.length) add('warn', anGuideText(poor.length === 1 ? 'an_rg_poor_1' : 'an_rg_poor', { u: units,
+					list: zlist(poor, z => ` (${pc(z.coverage)}, Chao1 ${chao(z)})`) }));
+				if (incomplete.length) add('info', anGuideText(incomplete.length === 1 ? 'an_rg_incomplete_1' : 'an_rg_incomplete', { u: units,
+					list: zlist(incomplete, z => ` (${pc(z.coverage)}, Chao1 ${chao(z)})`) }));
+				if (complete.length) add('ok', anGuideText(complete.length === 1 ? 'an_rg_complete_1' : 'an_rg_complete', { u: units,
+					list: zlist(complete, z => ` (${pc(z.coverage)})`) }));
+			}
+			if (G.small_n) add('info', anGuideText('an_rg_small', { k: num(G.small_n), n: num(G.small_seqs), min: num(d.min_zone) }));
+			if (G.no_zone) add('info', anGuideText('an_rg_nozone', { k: num(G.no_zone), z: escapeHtml(t('an_div_zw_' + d.zoning)) }));
+			if (G.few_names) add('warn', anGuideText('an_rg_few_names', { p: pc(G.named_share) }));
+			else if (d.unit === 'bin' && G.no_unit) add('info', anGuideText('an_rg_nobin', { k: num(G.no_unit) }));
+
+			const worst = [...poor, ...incomplete].sort((a, b) => a.coverage - b.coverage)[0];
+			const next = worst ? anGuideText('an_rg_next_gap', { z: zn(worst.zone), u: units })
+				+ (Z.length > 1 && !anViewOff('beta') ? anGuideText('an_rg_next_beta', { beta: escapeHtml(anViewName('beta')) }) : '')
+				: Z.length > 1 ? anGuideText('an_rg_next_ok', { beta: escapeHtml(anViewName('beta')) }) : anGuideText('an_rg_next_one');
+			anGuideSection(body, {
+				title: t('an_rg_title'), sub: t('an_rg_sub'), verdict, items, action: null, next, nextFile: next,
+				foot: t('an_rg_foot'),
+				context: [t('an_rg_meta', { marker: d.marker || '—', u: anDivUnits(d), z: t('an_div_z_' + d.zoning), n: num(Z.length),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_rg_file'),
+				stem: `${anFileStem()}_${t('an_rg_file')}`,
+			});
+		}
+
+		function anRenderBetaGuide(body, d) {
+			const G = d.guide;
+			const items = [];
+			const add = (kind, html) => items.push([kind, html]);
+			const num = n => numFmt.format(n);
+			const f2 = x => anNum(x, 2);
+			const units = escapeHtml(anDivUnits(d));
+			const z = s => escapeHtml(s);
+			const m = G.multi;
+			const share = m.beta_sor ? m.beta_sim / m.beta_sor : 0;
+			const M = G.most_similar, Lp = G.least_similar;
+
+			let verdict;
+			if (m.beta_sor === 0) {
+				verdict = anGuideText(G.n_zones === 2 ? 'an_bg_v_two_same' : 'an_bg_v_same', { a: z(M.a), b: z(M.b), k: num(M.shared), u: units });
+			} else if (G.n_zones === 2) {
+				verdict = anGuideText(share >= 0.5 ? 'an_bg_v_two_turnover' : 'an_bg_v_two_nested', { a: z(M.a), b: z(M.b),
+					k: num(M.shared), t: num(M.shared + M.only_a + M.only_b), s: f2(M.sorensen), u: units });
+			} else {
+				verdict = anGuideText(share >= 0.5 ? 'an_bg_v_turnover' : 'an_bg_v_nested', { p: anPct(m.beta_sim, m.beta_sor || 1),
+					q: anPct(m.beta_sne, m.beta_sor || 1), u: units })
+					+ anGuideText('an_bg_v_similar', { a: z(M.a), b: z(M.b), s: f2(M.sorensen) });
+			}
+			add('info', anGuideText('an_bg_how', { u: units }));
+			if (Lp && G.n_zones > 2) add('info', anGuideText('an_bg_least', { a: z(Lp.a), b: z(Lp.b), s: f2(Lp.sorensen), k: num(Lp.shared), u: units }));
+			const nestedPoor = G.nested.filter(p => p.poor.length), nestedOk = G.nested.filter(p => !p.poor.length);
+			const pairList = (xs, fmt) => anGuideList(xs.slice(0, 4).map(p => `${z(p.a)}–${z(p.b)}${fmt(p)}`), xs.length, '; ');
+			if (nestedPoor.length) add('warn', anGuideText(nestedPoor.length === 1 ? 'an_bg_nested_poor_1' : 'an_bg_nested_poor', {
+				list: pairList(nestedPoor, p => ` (${f2(p.sne)})`), z: z(nestedPoor[0].poor[0]) }));
+			if (nestedOk.length) add('info', anGuideText(nestedOk.length === 1 ? 'an_bg_nested_1' : 'an_bg_nested', {
+				list: pairList(nestedOk, p => ` (${f2(p.sne)})`), u: units }));
+			const ex = G.exclusive_by_zone.filter(x => x[1] > 0);
+			if (G.exclusive_n) add('info', anGuideText('an_bg_exclusive', { k: num(G.exclusive_n), t: num(G.units_total), u: units,
+				z: z(ex[0][0]), n: num(ex[0][1]) }));
+			const w = G.widespread[0];
+			if (w && w.zones.length > 1) add('info', anGuideText(w.name ? 'an_bg_widespread_named' : 'an_bg_widespread', {
+				u: z(w.unit), sp: w.name ? anGuideName(w.name) : '', k: num(w.zones.length), n: num(G.n_zones) }));
+			const next = anGuideText(G.exclusive_n ? 'an_bg_next' : 'an_bg_next_none', { u: units });
+			anGuideSection(body, {
+				title: t('an_bg_title'), sub: t('an_bg_sub'), verdict, items, action: null, next, nextFile: next,
+				foot: t('an_bg_foot'),
+				context: [t('an_rg_meta', { marker: d.marker || '—', u: anDivUnits(d), z: t('an_div_z_' + d.zoning), n: num(G.n_zones),
+					date: new Date().toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-GB') })],
+				file: t('an_bg_file'),
+				stem: `${anFileStem()}_${t('an_bg_file')}`,
+			});
 		}
 
 		function anRenderHaplotypes(body, r) {

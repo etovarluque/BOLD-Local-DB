@@ -2508,6 +2508,20 @@
                 an_h_rarefaction: 'Curvas de rarefacción y extrapolación',
                 an_rarefaction_note: 'Unidades ({u}) esperadas según el número de secuencias. Línea continua: muestreado; punto: el esfuerzo actual; discontinua: extrapolado hasta el doble. Una curva que sigue subiendo indica que faltan unidades por secuenciar.',
                 an_rare_tip: '{z}: {s} {u} en {n} secuencias',
+                an_h_distinct: 'Distinción taxonómica',
+                an_distinct_note: 'Δ⁺ es la distancia taxonómica media entre dos {u} de la zona, por género, familia, orden, clase y filo (100 = la separación más profunda del análisis; si todo es de un orden, familias distintas), y Λ⁺ su varianza: cuánto más pobladas están unas ramas que otras. No depende del número de unidades, así que compara zonas con distinto esfuerzo. La banda recoge el 95 % de {d} conjuntos al azar de cada tamaño tomados de las {k} unidades del análisis; una zona por debajo reúne linajes más cercanos de lo esperado y una por encima, más lejanos.',
+                an_distinct_skip: 'No se calcula: todas las unidades son del mismo género ({g}).',
+                an_c_taxed: 'Con género',
+                an_c_expected: 'Δ⁺ esperado',
+                an_c_funnel: 'Frente al azar',
+                an_dst_low: 'por debajo',
+                an_dst_high: 'por encima',
+                an_dst_inside: 'dentro',
+                an_dst_uneven: 'Λ⁺ alto',
+                an_funnel_x: 'Unidades ({u}) con género',
+                an_funnel_band: '95 % de conjuntos al azar (discontinua: media)',
+                an_funnel_out: 'Zona fuera de la banda',
+                an_funnel_tip: '{z}: Δ⁺ {d} con {s} {u} (esperado {e})',
                 an_rare_more: 'Solo se dibujan las {k} zonas con más secuencias.',
                 an_beta_one: 'Solo una zona tiene al menos {min} secuencias con {z}: no hay zonas que comparar. Prueba con otras zonas o amplía la búsqueda.',
                 an_beta_note: 'Cuánto se parecen las zonas por las unidades ({u}) que comparten, solo por presencia o ausencia. La disimilitud total se separa en recambio (cada zona tiene unidades que la otra no) y anidamiento (la más pobre es un subconjunto de la más rica).',
@@ -2561,6 +2575,16 @@
                 an_rg_nozone: '{k} secuencias no tienen {z} y quedan fuera.',
                 an_rg_few_names: '<b>Pocos nombres:</b> solo el {p} de las secuencias tiene nombre de especie, así que contar especies deja fuera la mayoría. Con la unidad «BIN» se usan casi todas.',
                 an_rg_nobin: '{k} secuencias no tienen BIN y quedan fuera del recuento.',
+                an_rg_dst_item: '{z} (Δ⁺ {d} frente a {e})',
+                an_rg_dst_low: '<b>Zonas taxonómicamente más pobres de lo esperado:</b> {list}. Sus {u} se concentran en pocos géneros o familias: puede ser un ambiente que favorece a ciertos linajes, o un muestreo centrado en un grupo.',
+                an_rg_dst_low_1: '<b>Zona taxonómicamente más pobre de lo esperado:</b> {list}. Sus {u} se concentran en pocos géneros o familias: puede ser un ambiente que favorece a ciertos linajes, o un muestreo centrado en un grupo.',
+                an_rg_dst_low_most: '<b>{k} de las {n} zonas quedan por debajo de la banda</b> (Δ⁺ de todo el análisis: {m}): cada una reúne {u} más cercanos entre sí que el conjunto. Es lo habitual cuando el análisis junta regiones con faunas distintas; para comparar zonas entre sí, mira cuáles se alejan más de su Δ⁺ esperado.',
+                an_rg_dst_low_all: '<b>Las {n} zonas quedan por debajo de la banda</b> (Δ⁺ de todo el análisis: {m}): cada una reúne {u} más cercanos entre sí que el conjunto. Es lo habitual cuando el análisis junta regiones con faunas distintas; para comparar zonas entre sí, mira cuáles se alejan más de su Δ⁺ esperado.',
+                an_rg_dst_high: '<b>Zonas taxonómicamente más variadas de lo esperado:</b> {list}. Sus {u} se reparten por ramas más lejanas del árbol que en conjuntos al azar del mismo tamaño.',
+                an_rg_dst_high_1: '<b>Zona taxonómicamente más variada de lo esperado:</b> {list}. Sus {u} se reparten por ramas más lejanas del árbol que en conjuntos al azar del mismo tamaño.',
+                an_rg_dst_ok: '<b>Distinción taxonómica:</b> todas las zonas quedan dentro de la banda (Δ⁺ de todo el análisis: {m}); su composición es la esperada para su número de unidades.',
+                an_rg_dst_uneven: '<b>Árbol desigual (Λ⁺ alto):</b> {list}. Unos géneros o familias reúnen muchas unidades y otros solo una.',
+                an_rg_dst_skip: '<b>Distinción taxonómica:</b> no se calcula porque todas las unidades son del género <i>{g}</i>, así que entre ellas solo cambia la especie.',
                 an_rg_next_gap: '<b>Qué hacer ahora:</b> si buscas huecos en la biblioteca de barcodes, {z} es la zona prioritaria: es la que más {u} tiene por secuenciar.',
                 an_rg_next_beta: ' Para ver cuánto se parecen las zonas, pasa a «{beta}».',
                 an_rg_next_ok: '<b>Qué hacer ahora:</b> las zonas están bien muestreadas; pasa a «{beta}» para ver cuánto se parecen.',
@@ -3799,6 +3823,20 @@
                 an_h_rarefaction: 'Rarefaction and extrapolation curves',
                 an_rarefaction_note: 'Units ({u}) expected by number of sequences. Solid line: sampled; dot: current effort; dashed: extrapolated to twice as many. A curve still rising means units remain to be sequenced.',
                 an_rare_tip: '{z}: {s} {u} in {n} sequences',
+                an_h_distinct: 'Taxonomic distinctness',
+                an_distinct_note: 'Δ⁺ is the average taxonomic distance between two {u} of a zone, by genus, family, order, class and phylum (100 = the deepest split in the analysis; if all is one order, different families), and Λ⁺ its variance: how much more crowded some branches are than others. It doesn\'t depend on the number of units, so it compares zones sampled with different effort. The band holds 95% of {d} random sets of each size taken from the analysis\' {k} units; a zone below it gathers closer lineages than expected, one above it, more distant ones.',
+                an_distinct_skip: 'Not computed: every unit belongs to the same genus ({g}).',
+                an_c_taxed: 'With a genus',
+                an_c_expected: 'Expected Δ⁺',
+                an_c_funnel: 'Against chance',
+                an_dst_low: 'below',
+                an_dst_high: 'above',
+                an_dst_inside: 'inside',
+                an_dst_uneven: 'high Λ⁺',
+                an_funnel_x: 'Units ({u}) with a genus',
+                an_funnel_band: '95% of random sets (dashed: mean)',
+                an_funnel_out: 'Zone outside the band',
+                an_funnel_tip: '{z}: Δ⁺ {d} with {s} {u} (expected {e})',
                 an_rare_more: 'Only the {k} zones with the most sequences are drawn.',
                 an_beta_one: 'Only one zone has at least {min} sequences with {z}: there are no zones to compare. Try other zones or widen the search.',
                 an_beta_note: 'How alike the zones are by the {u} they share, by presence or absence only. Total dissimilarity splits into turnover (each zone has units the other lacks) and nestedness (the poorer one is a subset of the richer).',
@@ -3849,9 +3887,19 @@
                 an_rg_complete: '<b>Nearly complete zones:</b> {list}. Their curves have reached the asymptote.',
                 an_rg_complete_1: '<b>Nearly complete zone:</b> {list}. Its curve has reached the asymptote.',
                 an_rg_small: '{k} zones with fewer than {min} sequences ({n} sequences in all) are left out: with so few, neither richness nor completeness can be estimated.',
-                an_rg_nozone: '{k} sequences have no {z} and are left out.',
+                an_rg_nozone: '{k} sequences lack {z} and are left out.',
                 an_rg_few_names: '<b>Few names:</b> only {p} of the sequences have a species name, so counting species leaves most out. The "BIN" unit uses nearly all of them.',
                 an_rg_nobin: '{k} sequences have no BIN and are left out of the count.',
+                an_rg_dst_item: '{z} (Δ⁺ {d} vs {e})',
+                an_rg_dst_low: '<b>Zones taxonomically poorer than expected:</b> {list}. Their {u} gather in few genera or families: an environment that favours some lineages, or sampling focused on one group.',
+                an_rg_dst_low_1: '<b>Zone taxonomically poorer than expected:</b> {list}. Its {u} gather in few genera or families: an environment that favours some lineages, or sampling focused on one group.',
+                an_rg_dst_low_most: '<b>{k} of the {n} zones fall below the band</b> (Δ⁺ of the whole analysis: {m}): each holds {u} closer to one another than the whole set. That is usual when the analysis joins regions with different faunas; to compare the zones, look at which fall furthest below their expected Δ⁺.',
+                an_rg_dst_low_all: '<b>All {n} zones fall below the band</b> (Δ⁺ of the whole analysis: {m}): each holds {u} closer to one another than the whole set. That is usual when the analysis joins regions with different faunas; to compare the zones, look at which fall furthest below their expected Δ⁺.',
+                an_rg_dst_high: '<b>Zones taxonomically more varied than expected:</b> {list}. Their {u} spread over more distant branches of the tree than random sets of the same size.',
+                an_rg_dst_high_1: '<b>Zone taxonomically more varied than expected:</b> {list}. Its {u} spread over more distant branches of the tree than random sets of the same size.',
+                an_rg_dst_ok: '<b>Taxonomic distinctness:</b> every zone falls inside the band (Δ⁺ of the whole analysis: {m}); its make-up is what its number of units would give.',
+                an_rg_dst_uneven: '<b>Uneven tree (high Λ⁺):</b> {list}. Some genera or families hold many units and others just one.',
+                an_rg_dst_skip: '<b>Taxonomic distinctness:</b> not computed because every unit belongs to the genus <i>{g}</i>, so they differ only at the species level.',
                 an_rg_next_gap: '<b>What to do next:</b> if you are looking for gaps in the barcode library, {z} is the priority zone: it has the most {u} still to sequence.',
                 an_rg_next_beta: ' To see how alike the zones are, go to "{beta}".',
                 an_rg_next_ok: '<b>What to do next:</b> the zones are well sampled; go to "{beta}" to see how alike they are.',
@@ -9054,7 +9102,75 @@
 			body.append(anEl('div', 'an-h', t('an_h_rarefaction')));
 			body.append(anEl('p', 'an-muted', t('an_rarefaction_note', { u: units })));
 			body.append(anRarefactionChart(d, units));
+			anRenderDistinct(body, d, units);
 			anRenderRichGuide(body, d);
+		}
+
+		// Taxonomic distinctness (seq_diversity.distinctness): a table and
+		// the funnel of random sets; nothing with a single zone
+		function anRenderDistinct(body, d, units) {
+			const T = d.distinctness;
+			if (!T) return;
+			body.append(anEl('div', 'an-h', t('an_h_distinct')));
+			if (T.skipped) {
+				body.append(anEl('p', 'an-muted', t('an_distinct_skip', { g: T.genus })));
+				return;
+			}
+			body.append(anEl('p', 'an-muted', t('an_distinct_note', { u: units, d: numFmt.format(T.draws), k: numFmt.format(T.units) })));
+			const rows = d.zones.filter(z => z.distinct && z.distinct.delta !== null);
+			const state = z => [t('an_dst_' + z.distinct.delta_state),
+				z.distinct.lambda_state === 'high' ? t('an_dst_uneven') : ''].filter(Boolean).join('; ');
+			body.append(anTable([
+				{ label: t('an_c_zone'), get: z => z.zone },
+				{ label: t('an_c_taxed'), cls: 'num', get: z => numFmt.format(z.distinct.taxed) },
+				{ label: 'Δ⁺', cls: 'num', get: z => anNum(z.distinct.delta, 1) },
+				{ label: t('an_c_expected'), cls: 'num', get: z => anNum(z.distinct.expected, 1) },
+				{ label: 'Λ⁺', cls: 'num', get: z => anNum(z.distinct.lambda, 0) },
+				{ label: t('an_c_funnel'), get: state },
+			], rows.slice(0, AN_TABLE_ROWS)));
+			body.append(anFunnelChart(T, rows, units));
+		}
+
+		// Delta+ of each zone against the 95 % band of random sets
+		function anFunnelChart(T, rows, units) {
+			const F = T.funnel;
+			const W = 640, H = 320, L = 50, R = 16, T0 = 12, B = 46;
+			const pw = W - L - R, ph = H - T0 - B;
+			const maxX = F[F.length - 1].s;
+			const vals = [...F.flatMap(f => [f.lo, f.hi]), ...rows.map(z => z.distinct.delta)];
+			const sy = anStep(Math.max(...vals) - Math.min(...vals) || 10);
+			const lowY = Math.max(0, Math.floor(Math.min(...vals) / sy) * sy), topY = Math.ceil(Math.max(...vals) / sy) * sy;
+			const sx = anStep(maxX), topX = Math.ceil(maxX / sx) * sx;
+			const x = v => L + v / topX * pw, y = v => T0 + ph - (v - lowY) / (topY - lowY || 1) * ph;
+			const parts = [];
+			for (let v = lowY; v <= topY + 1e-9; v += sy) parts.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`,
+				`<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${numFmt.format(v)}</text>`);
+			for (let v = 0; v <= topX + 1e-9; v += sx) parts.push(
+				`<text x="${x(v)}" y="${T0 + ph + 16}" text-anchor="middle">${numFmt.format(v)}</text>`);
+			const line = key => F.map((f, k) => `${k ? 'L' : 'M'}${x(f.s).toFixed(1)},${y(f[key]).toFixed(1)}`).join('');
+			const band = line('hi') + [...F].reverse().map(f => `L${x(f.s).toFixed(1)},${y(f.lo).toFixed(1)}`).join('') + 'Z';
+			parts.push(`<path d="${band}" fill="${AN_PALETTE[0]}" fill-opacity="0.15" stroke="none"/>`,
+			           `<path d="${line('lo')}" fill="none" stroke="${AN_PALETTE[0]}" stroke-width="1"/>`,
+			           `<path d="${line('hi')}" fill="none" stroke="${AN_PALETTE[0]}" stroke-width="1"/>`,
+			           `<path d="${line('mean')}" fill="none" stroke="${AN_PALETTE[0]}" stroke-width="1.5" stroke-dasharray="4 4"/>`);
+			rows.forEach((z, i) => {
+				const off = z.distinct.delta_state !== 'inside';
+				parts.push(`<circle class="pt" data-i="${i}" cx="${x(z.distinct.taxed)}" cy="${y(z.distinct.delta)}" r="5"
+					fill="${off ? AN_PALETTE[1] : 'var(--ink)'}" fill-opacity="${off ? 1 : 0.55}"/>`);
+			});
+			parts.push(`<line class="axis" x1="${L}" x2="${W - R}" y1="${T0 + ph}" y2="${T0 + ph}"/>`,
+			           `<line class="axis" x1="${L}" x2="${L}" y1="${T0}" y2="${T0 + ph}"/>`,
+			           `<text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">${escapeHtml(t('an_funnel_x', { u: units }))}</text>`,
+			           `<text transform="translate(14 ${T0 + ph / 2}) rotate(-90)" text-anchor="middle">Δ⁺</text>`);
+			const wrap = anEl('div', 'an-hist an-rare');
+			wrap.append(anLegend([[AN_PALETTE[0], t('an_funnel_band')], [AN_PALETTE[1], t('an_funnel_out')]]));
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(t('an_h_distinct'))}">${parts.join('')}</svg>`);
+			anAttachTip(wrap, wrap.querySelector('svg'), (i, hit) => {
+				const z = rows[i];
+				return { mark: hit, text: t('an_funnel_tip', { z: z.zone, d: anNum(z.distinct.delta, 1),
+					s: numFmt.format(z.distinct.taxed), u: units, e: anNum(z.distinct.expected, 1) }) };
+			});
+			return wrap;
 		}
 
 		// Rarefaction (solid) and extrapolation (dashed) of the largest zones
@@ -9127,6 +9243,7 @@
 				{ label: t('an_c_only_first'), cls: 'num', get: p => numFmt.format(p.only_a) },
 				{ label: t('an_c_only_second'), cls: 'num', get: p => numFmt.format(p.only_b) },
 				{ label: 'Sørensen', cls: 'num', get: p => f2(p.sorensen) },
+				{ label: 'Jaccard', cls: 'num', get: p => f2(p.jaccard) },
 				{ label: t('an_c_turnover'), cls: 'num', get: p => f2(p.beta_sim) },
 				{ label: t('an_c_nested'), cls: 'num', get: p => f2(p.beta_sne) },
 			], pairs.slice(0, AN_TABLE_ROWS)));
@@ -9221,6 +9338,21 @@
 			if (G.no_zone) add('info', anGuideText('an_rg_nozone', { k: num(G.no_zone), z: escapeHtml(t('an_div_zw_' + d.zoning)) }));
 			if (G.few_names) add('warn', anGuideText('an_rg_few_names', { p: pc(G.named_share) }));
 			else if (d.unit === 'bin' && G.no_unit) add('info', anGuideText('an_rg_nobin', { k: num(G.no_unit) }));
+			const D = G.distinct;
+			if (D && D.skipped) add('info', anGuideText('an_rg_dst_skip', { g: escapeHtml(D.genus) }));
+			else if (D) {
+				const byZone = new Map(D.zones.map(x => [x.zone, x]));
+				const dlist = zs => anGuideList(zs.slice(0, 6).map(z => t('an_rg_dst_item', { z: escapeHtml(z),
+					d: anNum(byZone.get(z).delta, 1), e: anNum(byZone.get(z).expected, 1) })), zs.length);
+				// Most zones below: the pool joins faunas no single zone holds
+				if (D.zones.length >= 3 && D.low.length >= 0.75 * D.zones.length) add('info', anGuideText(
+					D.low.length === D.zones.length ? 'an_rg_dst_low_all' : 'an_rg_dst_low_most',
+					{ k: num(D.low.length), n: num(D.zones.length), u: units, m: anNum(D.master, 1) }));
+				else if (D.low.length) add('warn', anGuideText(D.low.length === 1 ? 'an_rg_dst_low_1' : 'an_rg_dst_low', { list: dlist(D.low), u: units }));
+				if (D.high.length) add('info', anGuideText(D.high.length === 1 ? 'an_rg_dst_high_1' : 'an_rg_dst_high', { list: dlist(D.high), u: units }));
+				if (!D.low.length && !D.high.length && D.zones.length) add('ok', anGuideText('an_rg_dst_ok', { m: anNum(D.master, 1) }));
+				if (D.uneven.length) add('info', anGuideText('an_rg_dst_uneven', { list: anGuideList(D.uneven.slice(0, 6).map(escapeHtml), D.uneven.length) }));
+			}
 
 			const worst = [...poor, ...incomplete].sort((a, b) => a.coverage - b.coverage)[0];
 			const next = worst ? anGuideText('an_rg_next_gap', { z: zn(worst.zone), u: units })

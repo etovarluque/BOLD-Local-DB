@@ -11,7 +11,12 @@ only richness and composition are read from them:
   coverage (Chao & Jost 2012) and the individual-based rarefaction and
   extrapolation curve (Chao et al. 2014), with every zone rarefied to the
   smallest one for a comparison at equal effort.
-- Between zones (presence/absence): Sorensen similarity and Baselga's
+- Taxonomic distinctness per zone (Clarke & Warwick 1998): the average
+  taxonomic distance between two units (delta+) and its variance (lambda+),
+  along the genus, family, order, class and phylum of each unit, compared
+  with the values of random sets of the same richness taken from all the
+  units of the analysis (the funnel). Skipped when every unit shares a genus.
+- Between zones (presence/absence): Jaccard and Sorensen similarity and Baselga's
   (2010) split of Sorensen dissimilarity into turnover (beta-sim) and
   nestedness (beta-sne), per pair and over all zones; units found in one
   zone only and the most widespread ones.
@@ -22,6 +27,8 @@ Zones with fewer than MIN_ZONE_SEQUENCES sequences are left out.
 import math
 import time
 from collections import Counter, defaultdict
+
+import numpy as np
 
 import seq_analysis
 import seq_popgen
@@ -42,6 +49,14 @@ GUIDE_COMPLETE = 0.95
 GUIDE_POOR = 0.8
 GUIDE_NESTED = 0.5
 GUIDE_FEW_NAMES = 0.5
+
+# Taxonomic distinctness: ranks above the unit, nearest first; random sets
+# drawn per funnel size, and the sizes; a fixed seed so a rerun is identical
+RANKS = ("genus", "family", "order", "class", "phylum")
+FUNNEL_DRAWS = 500
+FUNNEL_SIZES = 30
+FUNNEL_SEED = 20240613
+MIN_DISTINCT_UNITS = 3
 GUIDE_SAME_RICHNESS = 0.5
 
 
@@ -153,7 +168,9 @@ def beta_pair(a_set, b_set):
     c = len(b_set - a_set)
     sor = (b + c) / (2 * a + b + c) if (a + b + c) else 0.0
     sim = min(b, c) / (a + min(b, c)) if (a + min(b, c)) else 0.0
+    union = a + b + c
     return {"shared": a, "only_a": b, "only_b": c, "sorensen": 1 - sor,
+            "jaccard": a / union if union else 1.0,
             "beta_sor": sor, "beta_sim": sim, "beta_sne": sor - sim}
 
 
@@ -175,6 +192,139 @@ def beta_multi(sets):
     return {"beta_sor": sor, "beta_sim": sim, "beta_sne": sor - sim}
 
 
+def _lineage(rec):
+    """Genus up to phylum of a record; "" for a missing rank."""
+    genus = (rec.get("genus") or "").strip()
+    if not genus and rec.get("species"):
+        genus = rec["species"].split()[0]
+    return tuple([genus] + [(rec.get(r) or "").strip() for r in RANKS[1:]])
+
+
+def _distances(codes):
+    """Pairs of units at each taxonomic distance: 1 = same genus, up to
+    len(RANKS) + 1 = no rank in common. codes has one row per unit and one
+    column per rank (-1 = unknown, matches nothing)."""
+    s = len(codes)
+    shared = []
+    for k in range(codes.shape[1]):
+        col = codes[:, k]
+        col = col[col >= 0]
+        counts = np.bincount(col) if len(col) else np.zeros(1, dtype=np.int64)
+        shared.append(int((counts * (counts - 1) // 2).sum()))
+    # Pairs sharing a rank also share the ones above; unknown ranks can
+    # break that, so keep the cumulative counts non-decreasing
+    for k in range(1, len(shared)):
+        shared[k] = max(shared[k], shared[k - 1])
+    out, prev = [], 0
+    for v in shared:
+        out.append(v - prev)
+        prev = v
+    out.append(s * (s - 1) // 2 - prev)
+    return out
+
+
+def _delta(dist):
+    """Delta+ and lambda+ from the pairs per distance, scaled so the
+    largest distance weighs 100."""
+    total = sum(dist)
+    if not total:
+        return None, None
+    w = [100 * (i + 1) / len(dist) for i in range(len(dist))]
+    mean = sum(n * x for n, x in zip(dist, w)) / total
+    return mean, sum(n * (x - mean) ** 2 for n, x in zip(dist, w)) / total
+
+
+def _draws(codes, m, rng):
+    """Delta+ and lambda+ of FUNNEL_DRAWS random sets of m units, all at
+    once: the same steps as _distances and _delta, one row per set."""
+    top, nranks = codes.shape
+    picks = np.argpartition(rng.random((FUNNEL_DRAWS, top)), m - 1, axis=1)[:, :m] if m < top \
+        else np.tile(np.arange(top), (FUNNEL_DRAWS, 1))
+    total = m * (m - 1) // 2
+    shared = np.zeros((FUNNEL_DRAWS, nranks), dtype=np.int64)
+    for k in range(nranks):
+        sub = codes[picks, k]
+        width = int(codes[:, k].max()) + 2
+        # One bin per (set, code); unknown (-1) goes to a bin left out
+        flat = (sub + 1) + np.arange(FUNNEL_DRAWS)[:, None] * width
+        counts = np.bincount(flat.ravel(), minlength=FUNNEL_DRAWS * width).reshape(FUNNEL_DRAWS, width)[:, 1:]
+        shared[:, k] = (counts * (counts - 1) // 2).sum(axis=1)
+    shared = np.maximum.accumulate(shared, axis=1)
+    dist = np.diff(np.hstack([np.zeros((FUNNEL_DRAWS, 1), dtype=np.int64), shared,
+                              np.full((FUNNEL_DRAWS, 1), total)]), axis=1)
+    w = 100 * np.arange(1, nranks + 2) / (nranks + 1)
+    mean = dist @ w / total
+    var = (dist * (w[None, :] - mean[:, None]) ** 2).sum(axis=1) / total
+    return mean, var
+
+
+def _funnel_at(funnel, s):
+    """The funnel's values at s units, linear between the sizes drawn."""
+    for lo, hi in zip(funnel, funnel[1:]):
+        if lo["s"] <= s <= hi["s"]:
+            k = (s - lo["s"]) / (hi["s"] - lo["s"])
+            return {key: lo[key] + k * (hi[key] - lo[key]) for key in lo}
+    return funnel[-1] if s >= funnel[-1]["s"] else funnel[0]
+
+
+def distinctness(unit_rows, zone_sets):
+    """Delta+ / lambda+ of each zone and the funnel of random sets.
+
+    unit_rows: {unit: lineage}; zone_sets: {zone: set of units}. None when
+    there is nothing to compare (fewer than MIN_DISTINCT_UNITS units with a
+    genus); "skipped" when they all share one genus."""
+    units = sorted(u for u, lin in unit_rows.items() if lin[0])
+    if len(units) < MIN_DISTINCT_UNITS:
+        return None
+    if len({unit_rows[u][0] for u in units}) < 2:
+        return {"skipped": "one_genus", "genus": unit_rows[units[0]][0], "units": len(units)}
+    index = {u: i for i, u in enumerate(units)}
+    codes = np.full((len(units), len(RANKS)), -1, dtype=np.int64)
+    for k in range(len(RANKS)):
+        seen = {}
+        for u in units:
+            v = unit_rows[u][k]
+            if v:
+                codes[index[u], k] = seen.setdefault(v, len(seen))
+    # A rank every unit shares adds nothing: drop it, so the largest
+    # distance (100) is the deepest split in the analysis (Clarke & Warwick)
+    codes = codes[:, [k for k in range(len(RANKS)) if (codes[:, k] != 0).any()]]
+
+    def measure(rows):
+        return _delta(_distances(codes[rows]))
+
+    zones = {}
+    for z, us in zone_sets.items():
+        rows = np.array(sorted(index[u] for u in us if u in index), dtype=np.int64)
+        d, lam = measure(rows) if len(rows) >= 2 else (None, None)
+        zones[z] = {"taxed": len(rows), "delta": d, "lambda": lam}
+    top = len(units)
+    biggest = max((v["taxed"] for v in zones.values()), default=0)
+    span = min(top, max(biggest, 3)) - 2
+    # Denser at small sizes, where the funnel widens fast
+    sizes = sorted({2 + round(span * (i / FUNNEL_SIZES) ** 2) for i in range(FUNNEL_SIZES + 1)})
+    rng = np.random.default_rng(FUNNEL_SEED)
+    funnel = []
+    for m in sizes:
+        ds, ls = _draws(codes, m, rng)
+        dlo, dhi = np.percentile(ds, [2.5, 97.5])
+        llo, lhi = np.percentile(ls, [2.5, 97.5])
+        funnel.append({"s": m, "mean": float(np.mean(ds)), "lo": float(dlo), "hi": float(dhi),
+                       "l_mean": float(np.mean(ls)), "l_lo": float(llo), "l_hi": float(lhi)})
+    for v in zones.values():
+        v["delta_state"] = v["lambda_state"] = None
+        if v["delta"] is not None:
+            f = _funnel_at(funnel, v["taxed"])
+            v["expected"] = f["mean"]
+            v["delta_state"] = "low" if v["delta"] < f["lo"] else "high" if v["delta"] > f["hi"] else "inside"
+            # With a single rank left, lambda+ follows from delta+ alone
+            if codes.shape[1] > 1:
+                v["lambda_state"] = "high" if v["lambda"] > f["l_hi"] else "low" if v["lambda"] < f["l_lo"] else "inside"
+    master = measure(np.arange(top))
+    return {"skipped": None, "units": top, "master_delta": master[0], "master_lambda": master[1],
+            "draws": FUNNEL_DRAWS, "funnel": funnel, "zones": zones}
+
+
 def run_diversity(records, marker, unit="bin", zoning="country"):
     """Richness, completeness and between-zone composition of the records."""
     if unit not in UNITS or zoning not in ZONINGS:
@@ -184,6 +334,7 @@ def run_diversity(records, marker, unit="bin", zoning="country"):
     places = defaultdict(set)
     no_unit = no_zone = 0
     names = Counter()   # species names under each BIN, for the lists
+    lineage = defaultdict(Counter)   # lineages seen for each unit
     named = 0
     for rec in records:
         if not rec.get("seq"):
@@ -199,6 +350,7 @@ def run_diversity(records, marker, unit="bin", zoning="country"):
             no_zone += 1
             continue
         by_zone[z][u] += 1
+        lineage[u][_lineage(rec)] += 1
         c = seq_popgen.coord_of(rec)
         if c:
             places[z].add(c)
@@ -237,6 +389,16 @@ def run_diversity(records, marker, unit="bin", zoning="country"):
     for i, a in enumerate(kept):
         for b in kept[i + 1:]:
             pairs.append({"a": a, "b": b, **beta_pair(sets[a], sets[b])})
+    unit_rows = {}
+    for u in presence:
+        # The commonest lineage with a genus, else the commonest
+        ranked = lineage[u].most_common()
+        unit_rows[u] = next((lin for lin, _ in ranked if lin[0]), ranked[0][0])
+    # With one zone the funnel would compare it with itself
+    taxo = distinctness(unit_rows, sets) if len(kept) > 1 else None
+    if taxo and not taxo["skipped"]:
+        for row in zones:
+            row["distinct"] = taxo["zones"][row["zone"]]
     top_name = {}
     for (u, sp), n in names.most_common():
         top_name.setdefault(u, sp)
@@ -255,7 +417,7 @@ def run_diversity(records, marker, unit="bin", zoning="country"):
         "received": len(records), "no_unit": no_unit, "no_zone": no_zone, "named": named,
         "zones": zones, "common_n": common,
         "small_zones": [[z, sizes[z]] for z in small],
-        "pairs": pairs,
+        "pairs": pairs, "distinctness": taxo,
         "multi": beta_multi([sets[z] for z in kept]) if len(kept) > 1 else None,
         "exclusive": listed(exclusive[:MAX_LIST]), "exclusive_n": len(exclusive),
         "widespread": listed(widespread[:MAX_LIST]), "units_total": len(presence),
@@ -298,4 +460,23 @@ def guide(r):
         "exclusive_by_zone": sorted([[z["zone"], z["exclusive"]] for z in zones], key=lambda x: -x[1]),
         "widespread": r["widespread"][:3],
         "complete": GUIDE_COMPLETE, "poor": GUIDE_POOR,
+        "distinct": _distinct_guide(r),
     }
+
+
+def _distinct_guide(r):
+    """Facts for the reading of delta+ / lambda+, or None without them."""
+    t = r.get("distinctness")
+    if not t:
+        return None
+    if t["skipped"]:
+        return {"skipped": t["skipped"], "genus": t.get("genus")}
+    rows = [{"zone": z["zone"], "units": z["distinct"]["taxed"], "delta": z["distinct"]["delta"],
+             "expected": z["distinct"].get("expected"), "state": z["distinct"]["delta_state"],
+             "lambda_state": z["distinct"]["lambda_state"]}
+            for z in r["zones"] if z["distinct"]["delta"] is not None]
+    return {"skipped": None, "zones": rows, "master": t["master_delta"],
+            "low": [x["zone"] for x in rows if x["state"] == "low"],
+            "high": [x["zone"] for x in rows if x["state"] == "high"],
+            "inside": [x["zone"] for x in rows if x["state"] == "inside"],
+            "uneven": [x["zone"] for x in rows if x["lambda_state"] == "high"]}

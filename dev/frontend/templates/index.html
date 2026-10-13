@@ -1477,6 +1477,40 @@
 		.an-net .net-node { cursor: grab; }
 		.an-net-legend .an-legend { margin-bottom: 6px; }
 		.an-net-legend.italic .an-legend-item { font-style: italic; }
+		.an-net-legend.italic .an-legend-item.plain { font-style: normal; }
+		.an-tree { position: relative; }
+
+		/* Floating viewer for the tree and the network: figure on the left with
+		   zoom and pan, its options, colours and exports on the right */
+		/* Below Bootstrap's modals (1050+), so its dialogs show on top */
+		.an-viewer { position: fixed; inset: 0; z-index: 1045; display: flex; padding: 16px; background: rgba(24, 33, 58, .55); }
+		.an-viewer-box { display: flex; flex-direction: column; flex: 1; min-width: 0; border-radius: 10px; background: var(--bg, #f6f7f9); box-shadow: 0 10px 40px rgba(0, 0, 0, .3); overflow: hidden; }
+		.an-viewer-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: #fff; }
+		.an-viewer-head .an-title { margin-right: auto; }
+		.an-viewer-pct { min-width: 3.5em; text-align: center; font-variant-numeric: tabular-nums; }
+		.an-viewer-body { display: flex; flex: 1; min-height: 0; }
+		.an-viewer-main { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 10px; }
+		.an-viewer-main .an-tree { flex: 1; max-height: none; overflow: auto; cursor: grab; touch-action: none; }
+		.an-viewer-main .an-tree.panning { cursor: grabbing; user-select: none; }
+		.an-viewer-main .an-tree svg { max-width: none; margin: 0 auto; }
+		.an-viewer-hint { margin: 6px 0 0; font-size: .78rem; color: var(--mute); }
+		.an-viewer-side { width: 360px; flex-shrink: 0; overflow-y: auto; padding: 10px 12px 16px 2px; }
+		.an-viewer-side .an-tree-tools { margin-bottom: 10px; }
+		.an-viewer-side .an-options { flex-direction: column; align-items: stretch; gap: 10px; }
+		.an-viewer-side .an-options > label { justify-content: space-between; }
+		.an-viewer-side .an-tree-find { width: 100%; }
+		.an-viewer-side h6 { margin: 0 0 8px; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--mute); }
+		.an-viewer .an-open-viewer { display: none; }
+		.an-viewer-colors { padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+		.an-viewer-color { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: .82rem; }
+		.an-viewer-color input[type="color"] { width: 28px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: none; cursor: pointer; flex-shrink: 0; }
+		.an-viewer-color span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+		.an-viewer-color.italic span { font-style: italic; }
+		@media (max-width: 900px) {
+			.an-viewer { padding: 0; }
+			.an-viewer-body { flex-direction: column; }
+			.an-viewer-side { width: auto; max-height: 40vh; padding: 0 10px 10px; }
+		}
 		.an-net-species { max-width: 420px; }
 		.an-tree .node-hit { cursor: pointer; }
 		.an-tree .node-hit:hover { fill: rgba(232, 131, 26, .55); }
@@ -2994,7 +3028,7 @@
                 an_tg_species_broken_many: '<b>{sp} no forma un grupo propio:</b> sus secuencias se reparten por un [clade] que incluye otras {n} especies ({others}), la más cercana a {d}. Puede esconder más de una especie, tener secuencias mal identificadas o pertenecer a un grupo que el marcador no resuelve.',
                 an_tg_species_broken_outlier_1: '<b>{sp} solo deja de formar un grupo propio por la secuencia {id}</b>, muy alejada del resto de su especie (ver abajo). Sin ella, la especie es monofilética.',
                 an_tg_species_broken_outlier: '<b>{sp} solo deja de formar un grupo propio por las secuencias {id}</b>, muy alejadas del resto de su especie (ver abajo). Sin ellas, la especie es monofilética.',
-                an_tg_species_list: '<b>{n} especies no forman un grupo propio:</b> {list}. Pueden ser identificaciones a revisar, especies que el marcador no separa o nombres que agrupan varias especies; colorea el árbol por especie para verlas.',
+                an_tg_species_list: '<b>{n} especies no forman un grupo propio:</b> {list}. Pueden ser identificaciones a revisar, especies que el marcador no separa o nombres que agrupan varias especies; colorea el árbol con «Especies no monofiléticas» para verlas.',
                 an_tg_species_item: '{sp} con {others} ({d})',
                 an_tg_species_item_outlier: '{sp} (solo por {id})',
                 an_tg_outlier_item: '{sp} {id} ({d}, frente a {rest} en el resto)',
@@ -3504,7 +3538,7 @@
                 an_t_tajima: 'D de Tajima', an_t_intermediates: 'Haplotipos no muestreados',
                 an_net_note_tcs: 'TCS une los grupos de haplotipos de menor a mayor distancia, a través de haplotipos intermedios no muestreados (puntos negros) colocados para que los caminos de la red reproduzcan las diferencias observadas, como PopART. Cada marca en una línea es una mutación; el tamaño de cada círculo, el número de secuencias.',
                 an_net_note_msn: 'La red de expansión mínima (MSN) une los haplotipos directamente con el menor número total de mutaciones, incluyendo todas las alternativas igual de cortas (de ahí los ciclos). Cada marca en una línea es una mutación; el tamaño de cada círculo, el número de secuencias.',
-                an_net_size: 'Tamaño', an_net_ticks: 'Marcas de mutación',
+                an_net_size: 'Escala', an_net_ticks: 'Marcas de mutación',
                 an_net_lbl_none: 'Ninguna', an_net_lbl_hap: 'Haplotipo', an_net_lbl_hap_n: 'Haplotipo y secuencias',
                 an_net_data: 'Datos:', an_net_dl_csv: 'Haplotipos (CSV)', an_net_dl_fasta: 'Haplotipos (FASTA)', an_net_dl_nexus: 'NEXUS (PopART)',
                 an_net_reset: 'Restablecer disposición',
@@ -3524,6 +3558,7 @@
                 an_tree_by_bin: 'Por BIN',
                 an_tree_by_genus: 'Por género',
                 an_tree_by_country: 'Por país',
+                an_tree_by_nonmono: 'Especies no monofiléticas',
                 an_tree_by_discordance: 'Discordancias especie–BIN',
                 an_tree_color: 'Color:',
                 an_tree_color_none: 'Sin color',
@@ -3540,6 +3575,15 @@
                 an_tree_export_hint: 'tal como se ve (colapsos, colores y etiquetas). PDF: se abre el diálogo de impresión; elige «Guardar como PDF».',
                 an_tree_rows: '{n} filas',
                 an_tree_other: 'Otros ({n} grupos)',
+                an_tree_other_nonmono: 'Otras {n} no monofiléticas',
+                an_fig_open: 'Abrir en ventana', an_fig_close: 'Cerrar', an_fig_options: 'Opciones',
+                an_fig_zoom_in: 'Acercar', an_fig_zoom_out: 'Alejar', an_fig_fit: 'Ajustar', an_fig_fit_width: 'Ajustar al ancho',
+                an_fig_hint_net: 'Rueda: zoom · arrastra el fondo para moverte · arrastra los círculos para recolocarlos · + / − / 0 · Esc para cerrar',
+                an_fig_hint_tree: 'Ctrl + rueda: zoom · arrastra el fondo para moverte · clic en un nodo para plegarlo o desplegarlo · + / − / 0 · Esc para cerrar',
+                an_fig_colors: 'Colores', an_fig_colors_none: 'Elige un criterio en «Color» para cambiar sus colores.',
+                an_fig_colors_reset: 'Restablecer colores',
+                an_fig_lines: 'Líneas', an_fig_text: 'Texto', an_fig_legend: 'Leyenda', an_fig_legend_export: 'Leyenda al exportar',
+                an_net_node_size: 'Círculos',
                 an_tree_group_species: '{n} especies',
                 an_tree_group_bins: '{n} BINs',
                 an_tree_group_countries: '{n} países',
@@ -4311,7 +4355,7 @@
                 an_tg_species_broken_many: '<b>{sp} doesn\'t form its own group:</b> its sequences are spread over a [clade] holding {n} other species ({others}), the closest {d} away. It may hide more than one species, have misidentified sequences or belong to a group the marker doesn\'t resolve.',
                 an_tg_species_broken_outlier_1: '<b>{sp} only fails to form its own group because of sequence {id}</b>, far from the rest of its species (see below). Without it, the species is monophyletic.',
                 an_tg_species_broken_outlier: '<b>{sp} only fails to form its own group because of sequences {id}</b>, far from the rest of its species (see below). Without them, the species is monophyletic.',
-                an_tg_species_list: '<b>{n} species don\'t form their own group:</b> {list}. They may be identifications to check, species the marker doesn\'t separate or names that lump several species; colour the tree by species to see them.',
+                an_tg_species_list: '<b>{n} species don\'t form their own group:</b> {list}. They may be identifications to check, species the marker doesn\'t separate or names that lump several species; colour the tree with "Non-monophyletic species" to see them.',
                 an_tg_species_item: '{sp} with {others} ({d})',
                 an_tg_species_item_outlier: '{sp} (only because of {id})',
                 an_tg_outlier_item: '{sp} {id} ({d}, against {rest} in the rest)',
@@ -4821,7 +4865,7 @@
                 an_t_tajima: 'Tajima\'s D', an_t_intermediates: 'Unsampled haplotypes',
                 an_net_note_tcs: 'TCS joins groups of haplotypes from the closest to the farthest, through unsampled intermediate haplotypes (black dots) placed so that the network\'s paths match the observed differences, as PopART does. Each tick on a line is a mutation; the size of each circle, the number of sequences.',
                 an_net_note_msn: 'The minimum spanning network (MSN) joins the haplotypes directly with the fewest mutations overall, keeping every equally short alternative (hence the loops). Each tick on a line is a mutation; the size of each circle, the number of sequences.',
-                an_net_size: 'Size', an_net_ticks: 'Mutation ticks',
+                an_net_size: 'Scale', an_net_ticks: 'Mutation ticks',
                 an_net_lbl_none: 'None', an_net_lbl_hap: 'Haplotype', an_net_lbl_hap_n: 'Haplotype and sequences',
                 an_net_data: 'Data:', an_net_dl_csv: 'Haplotypes (CSV)', an_net_dl_fasta: 'Haplotypes (FASTA)', an_net_dl_nexus: 'NEXUS (PopART)',
                 an_net_reset: 'Reset layout',
@@ -4841,6 +4885,7 @@
                 an_tree_by_bin: 'By BIN',
                 an_tree_by_genus: 'By genus',
                 an_tree_by_country: 'By country',
+                an_tree_by_nonmono: 'Non-monophyletic species',
                 an_tree_by_discordance: 'Species–BIN discordances',
                 an_tree_color: 'Colour:',
                 an_tree_color_none: 'No colour',
@@ -4857,6 +4902,15 @@
                 an_tree_export_hint: 'as shown (collapses, colours and labels). PDF: the print dialog opens; choose "Save as PDF".',
                 an_tree_rows: '{n} rows',
                 an_tree_other: 'Other ({n} groups)',
+                an_tree_other_nonmono: '{n} other non-monophyletic',
+                an_fig_open: 'Open in a window', an_fig_close: 'Close', an_fig_options: 'Options',
+                an_fig_zoom_in: 'Zoom in', an_fig_zoom_out: 'Zoom out', an_fig_fit: 'Fit', an_fig_fit_width: 'Fit width',
+                an_fig_hint_net: 'Wheel: zoom · drag the background to move around · drag the circles to rearrange them · + / − / 0 · Esc to close',
+                an_fig_hint_tree: 'Ctrl + wheel: zoom · drag the background to move around · click a node to collapse or expand it · + / − / 0 · Esc to close',
+                an_fig_colors: 'Colours', an_fig_colors_none: 'Choose a criterion in "Colour" to change its colours.',
+                an_fig_colors_reset: 'Reset colours',
+                an_fig_lines: 'Lines', an_fig_text: 'Text', an_fig_legend: 'Legend', an_fig_legend_export: 'Legend when exporting',
+                an_net_node_size: 'Circles',
                 an_tree_group_species: '{n} species',
                 an_tree_group_bins: '{n} BINs',
                 an_tree_group_countries: '{n} countries',
@@ -11991,8 +12045,9 @@ li li { display: list-item; margin: 0; }
 
 		function anLegend(items) {
 			const legend = anEl('div', 'an-legend');
-			items.forEach(([color, label]) => {
-				const item = anEl('span', 'an-legend-item');
+			items.forEach(([color, label, key]) => {
+				// '#other', '#nodata': not a name, never in italics
+				const item = anEl('span', 'an-legend-item' + (key && key[0] === '#' ? ' plain' : ''));
 				const sw = anEl('i');
 				sw.style.background = color;
 				item.append(sw, label);
@@ -12022,8 +12077,9 @@ li li { display: list-item; margin: 0; }
 				if (current) current.classList.add('hover');
 				tip.textContent = info.text;
 				const box = (info.anchor || hit).getBoundingClientRect(), outer = wrap.getBoundingClientRect();
-				tip.style.left = `${box.left - outer.left + box.width / 2}px`;
-				tip.style.top = `${box.top - outer.top}px`;
+				// Scroll offsets: the floating viewer scrolls the figure
+				tip.style.left = `${box.left - outer.left + wrap.scrollLeft + box.width / 2}px`;
+				tip.style.top = `${box.top - outer.top + wrap.scrollTop}px`;
 				tip.hidden = false;
 			});
 			svg.addEventListener('mouseleave', clear);
@@ -12125,7 +12181,8 @@ li li { display: list-item; margin: 0; }
 		const AN_NET_UNIT = 16;
 
 		function anNetOpts() {
-			if (!AnState.netOpts) AnState.netOpts = { species: '', method: 'tcs', color: 'country', labels: 'hap', ticks: true, scale: 1 };
+			if (!AnState.netOpts) AnState.netOpts = { species: '', method: 'tcs', color: 'country', labels: 'hap', ticks: true, scale: 1,
+				                                       nodeScale: 1, labelSize: 10, lineWidth: 1.2, legend: true };
 			return AnState.netOpts;
 		}
 
@@ -12230,10 +12287,11 @@ li li { display: list-item; margin: 0; }
 			net.seqs.forEach((s, i) => { const k = cat(i) || t('an_net_unknown'); counts.set(k, (counts.get(k) || 0) + 1); });
 			const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 			const slots = ranked.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
-			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, AN_PALETTE[i]]));
-			const legend = ranked.slice(0, slots).map(([k, n]) => [colorOf.get(k), `${k} (${numFmt.format(n)})`]);
-			if (ranked.length > slots) legend.push([AN_OTHER, t('an_tree_other', { n: numFmt.format(ranked.length - slots) })]);
-			return { of: i => colorOf.get(cat(i) || t('an_net_unknown')) || AN_OTHER, cat, legend, italic: attr === 'species' };
+			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, anColor('net', attr, k, AN_PALETTE[i])]));
+			const other = anColor('net', attr, '#other', AN_OTHER);
+			const legend = ranked.slice(0, slots).map(([k, n]) => [colorOf.get(k), `${k} (${numFmt.format(n)})`, k]);
+			if (ranked.length > slots) legend.push([other, t('an_tree_other', { n: numFmt.format(ranked.length - slots) }), '#other']);
+			return { of: i => colorOf.get(cat(i) || t('an_net_unknown')) || other, cat, legend, italic: attr === 'species' };
 		}
 
 		// The network as SVG text; `forExport` leaves out the drag targets
@@ -12243,23 +12301,24 @@ li li { display: list-item; margin: 0; }
 			const colors = anNetColors(net, opts.color);
 			const xs = pos.map(p => p[0]), ys = pos.map(p => p[1]);
 			const pad = 3;
-			const minX = Math.min(...xs.map((x, i) => x - net.vertices[i].r)) - pad;
-			const maxX = Math.max(...xs.map((x, i) => x + net.vertices[i].r)) + pad;
-			const minY = Math.min(...ys.map((y, i) => y - net.vertices[i].r)) - pad;
-			const maxY = Math.max(...ys.map((y, i) => y + net.vertices[i].r)) + pad;
+			const ns = opts.nodeScale || 1;
+			const minX = Math.min(...xs.map((x, i) => x - net.vertices[i].r * ns)) - pad;
+			const maxX = Math.max(...xs.map((x, i) => x + net.vertices[i].r * ns)) + pad;
+			const minY = Math.min(...ys.map((y, i) => y - net.vertices[i].r * ns)) - pad;
+			const maxY = Math.max(...ys.map((y, i) => y + net.vertices[i].r * ns)) + pad;
 
 			// Legend on top, wrapped to the width
 			let W = Math.max(480, Math.ceil((maxX - minX) * S));
 			const legendParts = [];
 			let top = 10;
 			// On screen the legend goes above the figure, readable at any size
-			if (forExport && colors.legend.length) {
+			if (forExport && opts.legend && colors.legend.length) {
 				let lx = 12, ly = top + 6;
-				colors.legend.forEach(([c, label]) => {
+				colors.legend.forEach(([c, label, key]) => {
 					const w = 18 + label.length * 6.4 + 18;
 					if (lx + w > W - 12 && lx > 12) { lx = 12; ly += 18; }
-					legendParts.push(`<rect x="${lx}" y="${ly - 5}" width="10" height="10" rx="2" fill="${c}"/>`,
-					                 `<text x="${lx + 15}" y="${ly + 4}" font-size="11" fill="${AN_MUTE}"${colors.italic && c !== AN_OTHER ? ' font-style="italic"' : ''}>${anSvgEsc(label)}</text>`);
+					legendParts.push(`<rect x="${lx}" y="${ly - 5}" width="10" height="10" rx="2" fill="${c}"${c === AN_NODATA ? ` stroke="${AN_MUTE}"` : ''}/>`,
+					                 `<text x="${lx + 15}" y="${ly + 4}" font-size="11" fill="${AN_MUTE}"${colors.italic && !(key && key[0] === '#') ? ' font-style="italic"' : ''}>${anSvgEsc(label)}</text>`);
 					lx += w;
 				});
 				top = ly + 18;
@@ -12267,7 +12326,7 @@ li li { display: list-item; margin: 0; }
 			const X = x => (x - minX) * S + Math.max(0, (W - (maxX - minX) * S) / 2);
 			const Y = y => (y - minY) * S + top;
 			const H = Math.ceil((maxY - minY) * S + top + 8);
-			const R = v => v.r * S;
+			const R = v => v.r * S * ns;
 
 			// Edges, with a tick per mutation (a number past ten)
 			const lines = [], ticks = [], counts = [];
@@ -12320,13 +12379,13 @@ li li { display: list-item; margin: 0; }
 				nodes.push(parts.join(''));
 				if (opts.labels !== 'none') {
 					const text = opts.labels === 'hap_n' ? `${v.hap} (${v.n})` : v.hap;
-					labels.push(`<text x="${(cx + r + 2).toFixed(1)}" y="${(cy - r * 0.6).toFixed(1)}" font-size="10" fill="${AN_INK}" stroke="#fff" stroke-width="3" paint-order="stroke">${anSvgEsc(text)}</text>`);
+					labels.push(`<text x="${(cx + r + 2).toFixed(1)}" y="${(cy - r * 0.6).toFixed(1)}" font-size="${opts.labelSize || 10}" fill="${AN_INK}" stroke="#fff" stroke-width="3" paint-order="stroke">${anSvgEsc(text)}</text>`);
 				}
 			});
 
 			const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${AN_FONT}">` +
 				`<rect width="${W}" height="${H}" fill="#ffffff"/>` + legendParts.join('') +
-				`<path d="${lines.join('')}" stroke="${AN_MUTE}" stroke-width="1.2" fill="none"/>` +
+				`<path d="${lines.join('')}" stroke="${AN_MUTE}" stroke-width="${opts.lineWidth || 1.2}" fill="none"/>` +
 				(ticks.length ? `<path d="${ticks.join('')}" stroke="${AN_INK}" stroke-width="1" fill="none"/>` : '') +
 				counts.join('') + nodes.join('') + labels.join('') + `</svg>`;
 			return { svg, W, H, X, Y, S, minX, minY, top, legend: colors.legend, italic: colors.italic };
@@ -12434,13 +12493,31 @@ li li { display: list-item; margin: 0; }
 			tick.type = 'checkbox'; tick.checked = opts.ticks;
 			tick.addEventListener('change', () => { opts.ticks = tick.checked; redraw(); });
 			tickLbl.append(tick, anEl('span', 'small', t('an_net_ticks')));
+			const slider = (labelKey, key, min, max, step, fmt) => {
+				const l = anEl('label', 'd-flex align-items-center gap-2');
+				const r = anEl('input', 'form-range');
+				r.type = 'range'; r.min = min; r.max = max; r.step = step; r.value = opts[key];
+				const out = anEl('span', 'an-muted an-range-v', fmt(opts[key]));
+				r.addEventListener('input', () => { opts[key] = +r.value; out.textContent = fmt(opts[key]); redraw(); });
+				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), r, out);
+				return l;
+			};
+			const legLbl = anEl('label', 'form-check d-inline-flex align-items-center gap-1 mb-0');
+			const leg = anEl('input', 'form-check-input mt-0');
+			leg.type = 'checkbox'; leg.checked = opts.legend;
+			leg.addEventListener('change', () => { opts.legend = leg.checked; });
+			legLbl.append(leg, anEl('span', 'small', t('an_fig_legend_export')));
 			row1.append(
 				sel('an_tree_color', opts.color, [['none', 'an_tree_color_none'], ['country', 'an_tree_by_country'],
 					['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'], ...(hasMotu ? [['motu', 'an_tree_by_motu']] : [])],
 					v => { opts.color = v; redraw(); }),
 				sel('an_tree_labels', opts.labels, [['none', 'an_net_lbl_none'], ['hap', 'an_net_lbl_hap'], ['hap_n', 'an_net_lbl_hap_n']],
 					v => { opts.labels = v; redraw(); }),
-				sizeLbl, tickLbl);
+				sizeLbl,
+				slider('an_net_node_size', 'nodeScale', 0.3, 3, 0.1, v => `${v.toFixed(1)}×`),
+				slider('an_fig_text', 'labelSize', 6, 24, 1, v => String(v)),
+				slider('an_fig_lines', 'lineWidth', 0.5, 5, 0.1, v => v.toFixed(1)),
+				tickLbl, legLbl);
 			const button = (label, fn, cls = 'btn-emerald') => {
 				const b = anEl('button', 'btn btn-sm ' + cls, label);
 				b.type = 'button';
@@ -12458,6 +12535,7 @@ li li { display: list-item; margin: 0; }
 			            button(t('an_net_dl_nexus'), dls.nexus),
 			            button(t('an_net_reset'), () => { AnState.netPos = net.vertices.map(v => [v.x, v.y]); redraw(); },
 			                   'btn-link text-muted p-0 ms-auto'));
+			row1.append(button('⤢ ' + t('an_fig_open'), () => openViewer(), 'btn-outline-primary an-open-viewer'));
 			tools.append(row1, row2);
 			body.append(tools, anEl('p', 'an-muted', t('an_net_drag')));
 
@@ -12470,6 +12548,7 @@ li li { display: list-item; margin: 0; }
 				legendBox.replaceChildren(...(fig.legend.length ? [anLegend(fig.legend)] : []));
 				legendBox.classList.toggle('italic', fig.italic);
 				wrap.innerHTML = fig.svg;
+				if (AnState.viewer && AnState.viewer.kind === 'net') AnState.viewer.update();
 				const svg = wrap.querySelector('svg');
 				anAttachTip(wrap, svg, i => {
 					const v = net.vertices[i];
@@ -12484,7 +12563,11 @@ li li { display: list-item; margin: 0; }
 					return { text: t('an_net_tip', { h: v.hap, n: numFmt.format(v.n) }) + detail };
 				});
 			}
+			const openViewer = () => anOpenViewer({
+				kind: 'net', title: head.firstChild.textContent, wrap, tools, legendBox, size: () => fig,
+				legend: () => fig.legend, attr: () => opts.color, italic: () => fig.italic, redraw, wheelZoom: true });
 			redraw();
+			if (AnState.viewerOpen === 'net') openViewer();
 			anRenderNetGuide(body, net);
 
 			// Drag nodes; the layout is kept until the next network
@@ -12562,6 +12645,7 @@ li li { display: list-item; margin: 0; }
 		// order); groups past the eighth fold into "Other"
 		const AN_PALETTE = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'];
 		const AN_OTHER = '#b8bec9';
+		const AN_NODATA = '#ffffff';  // tips without a value: white with an outline
 		const AN_INK = '#18213a';
 		const AN_MUTE = '#67718a';
 		const AN_HL = '#c2610c';
@@ -12574,7 +12658,7 @@ li li { display: list-item; margin: 0; }
 				AnState.treeOpts = {
 					collapse: 'none', color: 'none', mode: 'phylo', row: 15, font: 11, query: '',
 					labels: { species: true, id: true, bin: true, country: false, motu: false },
-					colorLabels: false,
+					colorLabels: false, lineWidth: 1, legend: true,
 					touched: false,
 				};
 			}
@@ -12625,7 +12709,9 @@ li li { display: list-item; margin: 0; }
 				const shared = m.bin && speciesOf.has(m.bin) && speciesOf.get(m.bin).size > 1;
 				return split && shared ? 'both' : split ? 'split' : shared ? 'shared' : '';
 			});
-			return { root, nodes, meta, discordance, keys: {}, manual: new Map() };
+			// Species that aren't a clade, as the reading tells them (server side)
+			const nonmono = (tree.guide && tree.guide.species && tree.guide.species.nonmono) || [];
+			return { root, nodes, meta, discordance, nonmono, keys: {}, manual: new Map() };
 		}
 
 		// Per node, the value of `attr` its tips all share (null if they differ)
@@ -12657,24 +12743,45 @@ li li { display: list-item; margin: 0; }
 		function anTreeColors(T, opts) {
 			if (opts.color === 'none') return { tip: () => null, legend: [] };
 			if (opts.color === 'discordance') {
-				const colors = { shared: AN_PALETTE[0], split: AN_PALETTE[1], both: AN_PALETTE[2] };
+				const colors = { shared: anColor('tree', 'discordance', '#shared', AN_PALETTE[0]),
+				                 split: anColor('tree', 'discordance', '#split', AN_PALETTE[1]),
+				                 both: anColor('tree', 'discordance', '#both', AN_PALETTE[2]) };
 				const present = new Set(T.discordance);
 				return {
 					tip: i => colors[T.discordance[i]] || null,
 					legend: ['shared', 'split', 'both'].filter(k => present.has(k))
-						.map(k => [colors[k], t('an_tree_disc_' + k)]),
+						.map(k => [colors[k], t('an_tree_disc_' + k), '#' + k]),
+				};
+			}
+			if (opts.color === 'nonmono') {
+				// Only the species that aren't a clade; the worst take the colours
+				const slots = T.nonmono.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
+				const colorOf = new Map(T.nonmono.slice(0, slots).map((sp, i) => [sp, anColor('tree', 'nonmono', sp, AN_PALETTE[i])]));
+				const other = anColor('tree', 'nonmono', '#other', AN_OTHER);
+				const rest = new Set(T.nonmono.slice(slots));
+				const counts = new Map();
+				T.meta.forEach(m => { if (colorOf.has(m.species)) counts.set(m.species, (counts.get(m.species) || 0) + 1); });
+				const legend = [...colorOf].map(([sp, c]) => [c, `${sp} (${numFmt.format(counts.get(sp) || 0)})`, sp]);
+				if (rest.size) legend.push([other, t('an_tree_other_nonmono', { n: numFmt.format(rest.size) }), '#other']);
+				return {
+					tip: i => { const sp = T.meta[i].species; return colorOf.get(sp) || (rest.has(sp) ? other : null); },
+					legend,
+					italic: true,
 				};
 			}
 			const attr = opts.color;
 			const counts = new Map();
-			T.meta.forEach(m => { const k = m[attr]; if (k) counts.set(k, (counts.get(k) || 0) + 1); });
+			let missing = 0;
+			T.meta.forEach(m => { const k = m[attr]; if (k) counts.set(k, (counts.get(k) || 0) + 1); else missing++; });
 			const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 			const slots = ranked.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
-			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, AN_PALETTE[i]]));
-			const legend = ranked.slice(0, slots).map(([k, n]) => [colorOf.get(k), `${k} (${numFmt.format(n)})`]);
-			if (ranked.length > slots) legend.push([AN_OTHER, t('an_tree_other', { n: numFmt.format(ranked.length - slots) })]);
+			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, anColor('tree', attr, k, AN_PALETTE[i])]));
+			const other = anColor('tree', attr, '#other', AN_OTHER), nodata = anColor('tree', attr, '#nodata', AN_NODATA);
+			const legend = ranked.slice(0, slots).map(([k, n]) => [colorOf.get(k), `${k} (${numFmt.format(n)})`, k]);
+			if (ranked.length > slots) legend.push([other, t('an_tree_other', { n: numFmt.format(ranked.length - slots) }), '#other']);
+			if (missing) legend.push([nodata, `${t('an_net_unknown')} (${numFmt.format(missing)})`, '#nodata']);
 			return {
-				tip: i => { const k = T.meta[i][attr]; return k ? (colorOf.get(k) || AN_OTHER) : null; },
+				tip: i => { const k = T.meta[i][attr]; return k ? (colorOf.get(k) || other) : nodata; },
 				legend,
 				italic: attr === 'species' || attr === 'genus',
 			};
@@ -12765,13 +12872,13 @@ li li { display: list-item; margin: 0; }
 			// Legend on top, wrapped to the width
 			const legendParts = [];
 			let top = 10;
-			if (colors.legend.length) {
+			if (opts.legend && colors.legend.length) {
 				let lx = L, ly = top + 6;
-				colors.legend.forEach(([c, label]) => {
+				colors.legend.forEach(([c, label, key]) => {
 					const w = 18 + label.length * 6.4 + 18;
 					if (lx + w > W - 12 && lx > L) { lx = L; ly += 18; }
-					legendParts.push(`<rect x="${lx}" y="${ly - 5}" width="10" height="10" rx="2" fill="${c}"/>`,
-					                 `<text x="${lx + 15}" y="${ly + 4}" font-size="11" fill="${AN_MUTE}"${colors.italic && c !== AN_OTHER ? ' font-style="italic"' : ''}>${anSvgEsc(label)}</text>`);
+					legendParts.push(`<rect x="${lx}" y="${ly - 5}" width="10" height="10" rx="2" fill="${c}"${c === AN_NODATA ? ` stroke="${AN_MUTE}"` : ''}/>`,
+					                 `<text x="${lx + 15}" y="${ly + 4}" font-size="11" fill="${AN_MUTE}"${colors.italic && !(key && key[0] === '#') ? ' font-style="italic"' : ''}>${anSvgEsc(label)}</text>`);
 					lx += w;
 				});
 				top = ly + 18;
@@ -12817,7 +12924,7 @@ li li { display: list-item; margin: 0; }
 					x = X(n);
 					const c = colors.tip(n.tip);
 					labelColor = c;
-					if (c) marks.push(`<circle cx="${(x + dot + 2).toFixed(1)}" cy="${y.toFixed(1)}" r="${dot.toFixed(1)}" fill="${c}"/>`);
+					if (c) marks.push(`<circle cx="${(x + dot + 2).toFixed(1)}" cy="${y.toFixed(1)}" r="${dot.toFixed(1)}" fill="${c}"${c === AN_NODATA ? ` stroke="${AN_MUTE}" stroke-width=".8"` : ''}/>`);
 					x += dot ? dot * 2 + 6 : 4;
 				} else {
 					const x0 = X(n), x1 = XEnd(n), h = Math.max(row * 0.8, 3);
@@ -12848,7 +12955,7 @@ li li { display: list-item; margin: 0; }
 
 			const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${AN_FONT}">` +
 				`<rect width="${W}" height="${H}" fill="#ffffff"/>` + legendParts.join('') +
-				`<path d="${path.join('')}" stroke="${AN_INK}" stroke-width="1" fill="none"/>` +
+				`<path d="${path.join('')}" stroke="${AN_INK}" stroke-width="${opts.lineWidth || 1}" fill="none"/>` +
 				marks.join('') +
 				`<g font-size="${font}" fill="${AN_INK}">${texts.join('')}</g>` + scale + hits.join('') + `</svg>`;
 			return { svg, W, H, firstHit, matches: query ? items.filter(it => it.text.toLowerCase().includes(query)).length : 0,
@@ -12915,7 +13022,220 @@ li li { display: list-item; margin: 0; }
 			img.src = url;
 		}
 
-		function anTreeToolbar(redraw, hasMotu) {
+		// Colour picked by the user for a value of a figure's colouring
+		// (kind: 'tree' or 'net'), or the default one
+		function anColor(kind, attr, key, fallback) {
+			const c = AnState.customColors && AnState.customColors.get(`${kind}|${attr}|${key}`);
+			return c || fallback;
+		}
+
+		// Floating viewer for a figure (tree, network). The figure and its
+		// toolbar move into it, so every option keeps working; it adds zoom,
+		// pan and the legend's colours, and on closing they go back.
+		// h: { kind, title, wrap, tools, legendBox?, size(), legend(), attr(),
+		//      redraw(), wheelZoom }
+		function anOpenViewer(h) {
+			const prev = AnState.viewer;
+			const keep = prev && prev.kind === h.kind ? prev.state() : null;
+			if (prev) prev.close(true);
+			AnState.viewerOpen = h.kind;
+			const ac = new AbortController();
+			const on = (el, type, fn, o = {}) => el.addEventListener(type, fn, Object.assign({ signal: ac.signal }, o));
+
+			const overlay = anEl('div', 'an-viewer');
+			overlay.setAttribute('role', 'dialog');
+			overlay.setAttribute('aria-modal', 'true');
+			const box = anEl('div', 'an-viewer-box');
+			const head = anEl('div', 'an-viewer-head');
+			const btn = (label, title, fn) => {
+				const b = anEl('button', 'btn btn-sm btn-outline-secondary', label);
+				b.type = 'button';
+				if (title) { b.title = title; b.setAttribute('aria-label', title); }
+				b.addEventListener('click', fn);
+				return b;
+			};
+			const pct = anEl('span', 'an-muted an-viewer-pct');
+			const main = anEl('div', 'an-viewer-main');
+			const side = anEl('div', 'an-viewer-side');
+			const body = anEl('div', 'an-viewer-body');
+			body.append(main, side);
+			box.append(head, body);
+			overlay.append(box);
+
+			// Move the figure and its tools in, leaving a placeholder each
+			const moved = [];
+			const move = (el, into) => {
+				if (!el) return;
+				const ph = document.createComment('an-viewer');
+				if (el.parentNode) el.parentNode.replaceChild(ph, el);
+				moved.push([el, ph]);
+				into.append(el);
+			};
+			move(h.legendBox, main);
+			move(h.wrap, main);
+			main.append(anEl('p', 'an-viewer-hint', t(h.wheelZoom ? 'an_fig_hint_net' : 'an_fig_hint_tree')));
+			const optsHead = anEl('h6', '', t('an_fig_options'));
+			side.append(optsHead);
+			move(h.tools, side);
+			const colorsBox = anEl('div', 'an-viewer-colors');
+			side.append(colorsBox);
+
+			// Zoom: the svg is drawn bigger or smaller (it scales with its
+			// viewBox) and the wrapper scrolls, so tooltips and drags still work
+			const wrap = h.wrap;
+			let k = 1;
+			const apply = () => {
+				const svg = wrap.querySelector('svg');
+				if (!svg) return;
+				const { W, H } = h.size();
+				svg.style.width = `${(W * k).toFixed(1)}px`;
+				svg.style.height = `${(H * k).toFixed(1)}px`;
+				pct.textContent = `${Math.round(k * 100)} %`;
+			};
+			const zoomTo = (nk, cx, cy) => {
+				nk = Math.min(8, Math.max(0.03, nk));
+				if (cx === undefined) { cx = wrap.clientWidth / 2; cy = wrap.clientHeight / 2; }
+				const fx = (wrap.scrollLeft + cx) / k, fy = (wrap.scrollTop + cy) / k;
+				k = nk;
+				apply();
+				wrap.scrollLeft = fx * k - cx;
+				wrap.scrollTop = fy * k - cy;
+			};
+			const fit = () => {
+				const { W, H } = h.size();
+				k = Math.min(8, Math.max(0.03, Math.min((wrap.clientWidth - 16) / W, (wrap.clientHeight - 16) / H)));
+				apply();
+				wrap.scrollLeft = 0; wrap.scrollTop = 0;
+			};
+			const fitWidth = () => {
+				const { W } = h.size();
+				k = Math.min(8, Math.max(0.03, (wrap.clientWidth - 16) / W));
+				apply();
+				wrap.scrollLeft = 0; wrap.scrollTop = 0;
+			};
+			head.append(anEl('span', 'an-title', h.title),
+			            btn('−', t('an_fig_zoom_out'), () => zoomTo(k / 1.25)), pct,
+			            btn('+', t('an_fig_zoom_in'), () => zoomTo(k * 1.25)),
+			            btn(t('an_fig_fit'), '', fit), btn(t('an_fig_fit_width'), '', fitWidth),
+			            btn('100 %', '', () => zoomTo(1)),
+			            btn('✕', t('an_fig_close'), () => close()));
+
+			// Redraws replace the svg: size it again
+			const observer = new MutationObserver(apply);
+			observer.observe(wrap, { childList: true });
+
+			on(wrap, 'wheel', e => {
+				if (!h.wheelZoom && !e.ctrlKey && !e.metaKey) return;
+				e.preventDefault();
+				const r = wrap.getBoundingClientRect();
+				zoomTo(k * Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top);
+			}, { passive: false });
+
+			// Pan by dragging the background; nodes keep their own drag/click
+			let pan = null, panned = false;
+			on(wrap, 'pointerdown', e => {
+				if (e.button !== 0 || e.target.closest('.net-node, [data-node]')) return;
+				pan = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop, id: e.pointerId, on: false };
+				panned = false;
+			});
+			on(wrap, 'pointermove', e => {
+				if (!pan) return;
+				const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
+				if (!pan.on && Math.hypot(dx, dy) < 4) return;
+				if (!pan.on) {
+					pan.on = panned = true;
+					wrap.setPointerCapture(pan.id);
+					wrap.classList.add('panning');
+				}
+				wrap.scrollLeft = pan.sl - dx;
+				wrap.scrollTop = pan.st - dy;
+			});
+			const endPan = () => { pan = null; wrap.classList.remove('panning'); };
+			on(wrap, 'pointerup', endPan);
+			on(wrap, 'pointercancel', endPan);
+			// A pan isn't a click on a node
+			on(wrap, 'click', e => { if (panned) { e.stopImmediatePropagation(); e.preventDefault(); panned = false; } }, { capture: true });
+
+			// Colours of the legend, one picker each
+			let colorsSig = null;
+			const buildColors = () => {
+				const legend = h.legend();
+				const sig = h.attr() + '|' + legend.map(x => x[2] + '\u0001' + x[1]).join('\u0002');
+				if (sig === colorsSig) return;
+				colorsSig = sig;
+				colorsBox.replaceChildren(anEl('h6', '', t('an_fig_colors')));
+				if (!legend.length) {
+					colorsBox.append(anEl('p', 'an-muted small mb-0', t('an_fig_colors_none')));
+					return;
+				}
+				const italic = h.italic && h.italic();
+				legend.forEach(([color, label, key]) => {
+					const row = anEl('label', 'an-viewer-color' + (italic && key[0] !== '#' ? ' italic' : ''));
+					const input = anEl('input');
+					input.type = 'color';
+					input.value = /^#[0-9a-f]{6}$/i.test(color) ? color : '#cccccc';
+					on(input, 'input', () => {
+						if (!AnState.customColors) AnState.customColors = new Map();
+						AnState.customColors.set(`${h.kind}|${h.attr()}|${key}`, input.value);
+						h.redraw();
+					});
+					row.append(input, anEl('span', '', label));
+					row.title = label;
+					colorsBox.append(row);
+				});
+				const reset = anEl('button', 'btn btn-link btn-sm text-muted p-0 mt-1', t('an_fig_colors_reset'));
+				reset.type = 'button';
+				on(reset, 'click', () => {
+					const prefix = `${h.kind}|${h.attr()}|`;
+					if (AnState.customColors) [...AnState.customColors.keys()].filter(x => x.startsWith(prefix)).forEach(x => AnState.customColors.delete(x));
+					colorsSig = null;
+					h.redraw();
+				});
+				colorsBox.append(reset);
+			};
+
+			const close = silent => {
+				ac.abort();
+				observer.disconnect();
+				endPan();
+				const svg = wrap.querySelector('svg');
+				if (svg) { svg.style.width = ''; svg.style.height = ''; }
+				moved.forEach(([el, ph]) => { if (ph.parentNode) ph.parentNode.replaceChild(el, ph); });
+				overlay.remove();
+				document.body.style.overflow = '';
+				if (AnState.viewer === viewer) AnState.viewer = null;
+				if (!silent) AnState.viewerOpen = null;
+			};
+			on(document, 'keydown', e => {
+				if (document.querySelector('dialog[open]')) return;     // a message on top answers first
+				if (e.key === 'Escape') { e.preventDefault(); close(); }
+				else if (e.target.closest && e.target.closest('input, select, textarea')) return;
+				else if (e.key === '+' || e.key === '=') zoomTo(k * 1.25);
+				else if (e.key === '-') zoomTo(k / 1.25);
+				else if (e.key === '0') fit();
+			});
+			on(overlay, 'pointerdown', e => { if (e.target === overlay) close(); });
+
+			const viewer = {
+				kind: h.kind,
+				close,
+				state: () => ({ k, sl: wrap.scrollLeft, st: wrap.scrollTop }),
+				// Called after each redraw of the figure
+				update: () => { apply(); buildColors(); },
+			};
+			AnState.viewer = viewer;
+			document.body.append(overlay);
+			document.body.style.overflow = 'hidden';
+			buildColors();
+			if (keep) {
+				k = keep.k;
+				apply();
+				wrap.scrollLeft = keep.sl; wrap.scrollTop = keep.st;
+			} else if (h.wheelZoom) fit();
+			else fitWidth();
+		}
+
+		function anTreeToolbar(redraw, hasMotu, openViewer) {
 			const opts = anTreeOpts();
 			const box = anEl('div', 'an-tree-tools');
 			const sel = (labelKey, value, options, onChange) => {
@@ -12927,10 +13247,10 @@ li li { display: list-item; margin: 0; }
 				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), s);
 				return l;
 			};
-			const range = (labelKey, value, min, max, onChange) => {
+			const range = (labelKey, value, min, max, onChange, step = 1) => {
 				const l = anEl('label', 'd-flex align-items-center gap-2');
 				const r = anEl('input', 'form-range');
-				r.type = 'range'; r.min = min; r.max = max; r.value = value;
+				r.type = 'range'; r.min = min; r.max = max; r.step = step; r.value = value;
 				const out = anEl('span', 'an-muted an-range-v', String(value));
 				r.addEventListener('input', () => { out.textContent = r.value; onChange(+r.value); });
 				l.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), r, out);
@@ -12960,12 +13280,15 @@ li li { display: list-item; margin: 0; }
 				    v => { opts.collapse = v; opts.touched = true; AnState.tree.manual.clear(); redraw(); }),
 				sel('an_tree_color', opts.color,
 				    [['none', 'an_tree_color_none'], ['species', 'an_tree_by_species'], ['bin', 'an_tree_by_bin'], ...motuOpt,
-				     ['genus', 'an_tree_by_genus'], ['country', 'an_tree_by_country'], ['discordance', 'an_tree_by_discordance']],
+				     ['genus', 'an_tree_by_genus'], ['country', 'an_tree_by_country'], ['nonmono', 'an_tree_by_nonmono'], ['discordance', 'an_tree_by_discordance']],
 				    v => { opts.color = v; redraw(); }),
 				sel('an_tree_mode', opts.mode, [['phylo', 'an_tree_phylo'], ['clado', 'an_tree_clado']],
 				    v => { opts.mode = v; redraw(); }),
 				range('an_tree_row', opts.row, 3, 28, v => { opts.row = v; redraw(); }),
-				range('an_tree_font', opts.font, 4, 18, v => { opts.font = v; redraw(); }));
+				range('an_tree_font', opts.font, 4, 18, v => { opts.font = v; redraw(); }),
+				range('an_fig_lines', opts.lineWidth, 0.5, 4, v => { opts.lineWidth = v; redraw(); }, 0.1),
+				check('an_fig_legend', opts.legend, v => { opts.legend = v; redraw(); }),
+				button('⤢ ' + t('an_fig_open'), openViewer, 'btn-outline-primary an-open-viewer'));
 
 			const row2 = anEl('div', 'an-options mt-2');
 			const labels = anEl('div', 'd-flex flex-wrap align-items-center gap-3');
@@ -13045,15 +13368,25 @@ li li { display: list-item; margin: 0; }
 			}
 
 			const wrap = anEl('div', 'an-tree');
-			let tools;
+			let tools, fig;
 			const redraw = (scrollToMatch) => {
-				const fig = anTreeSvg(T, opts, false);
+				fig = anTreeSvg(T, opts, false);
 				wrap.innerHTML = fig.svg;
 				rowsInfo.textContent = t('an_tree_rows', { n: numFmt.format(fig.rows) });
 				tools.found.textContent = opts.query.trim() ? t('an_tree_found', { n: numFmt.format(fig.matches) }) : '';
-				if (scrollToMatch && fig.firstHit !== null) wrap.scrollTop = fig.firstHit - wrap.clientHeight / 2;
+				const viewer = AnState.viewer && AnState.viewer.kind === 'tree' ? AnState.viewer : null;
+				if (viewer) viewer.update();
+				if (scrollToMatch && fig.firstHit !== null) {
+					const svg = wrap.querySelector('svg');
+					const zoom = svg && svg.style.height ? parseFloat(svg.style.height) / fig.H : 1;
+					wrap.scrollTop = fig.firstHit * zoom - wrap.clientHeight / 2;
+				}
 			};
-			tools = anTreeToolbar(redraw, hasMotu);
+			const openViewer = () => anOpenViewer({
+				kind: 'tree', title: t('an_tree_title', { n: numFmt.format(tree.tips.length) }),
+				wrap, tools: tools.box, size: () => fig, legend: () => anTreeColors(T, opts).legend,
+				attr: () => opts.color, italic: () => anTreeColors(T, opts).italic, redraw: () => redraw(), wheelZoom: false });
+			tools = anTreeToolbar(redraw, hasMotu, openViewer);
 			// Rebuilding the toolbar too (its selects change with "expand all")
 			AnState.treeRebuild = () => anRefreshView();
 			body.append(tools.box, wrap);
@@ -13076,6 +13409,8 @@ li li { display: list-item; margin: 0; }
 				target.replaceChildren(title);
 			});
 			redraw();
+			// A rebuild of the view (e.g. "expand all") reopens the viewer
+			if (AnState.viewerOpen === 'tree') openViewer();
 			anRenderTreeGuide(body, tree, T, hasMotu);
 		}
 

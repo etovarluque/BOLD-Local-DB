@@ -77,6 +77,17 @@ def parse_coord(value):
     return lat, lon
 
 
+def coord_of(rec):
+    """(lat, lon) of a record: its coordinates field, or separate latitude
+    and longitude (as the LGC database keeps them)."""
+    if rec.get("lat") not in (None, "") and rec.get("lon") not in (None, ""):
+        try:
+            return parse_coord(f"{float(rec['lat'])}, {float(rec['lon'])}")
+        except (TypeError, ValueError):
+            return None
+    return parse_coord(rec.get("coord"))
+
+
 def mixed_name(species):
     """A name that may lump several species: none, the genus alone, or a
     bare "Genus sp.", "spp." or "indet." ("Astyanax sp. 2 RSS-2016" names
@@ -212,7 +223,7 @@ def _structure(species, codes, recs, d):
             out["zones"].append({"zone": z, "n": k,
                                  "pi": float(m.sum() / (k * (k - 1)) / sites) if k > 1 else 0.0})
 
-    coords = [parse_coord(r.get("coord")) for r in recs]
+    coords = [coord_of(r) for r in recs]
     idx = [i for i, c in enumerate(coords) if c]
     places = {coords[i] for i in idx}
     if len(idx) >= MIN_MANTEL_SEQUENCES and len(places) >= MIN_MANTEL_PLACES:

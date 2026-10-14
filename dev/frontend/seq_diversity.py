@@ -82,8 +82,8 @@ def zone_of(rec, zoning):
 def _unit(rec, unit):
     if unit == "bin":
         return (rec.get("bin") or "").strip()
-    sp = (rec.get("species") or "").strip()
-    return "" if seq_popgen.mixed_name(sp) else sp
+    # Settled species only, by genus and epithet, as counted elsewhere
+    return seq_analysis.species_key(rec.get("species"))
 
 
 def chao1(counts):

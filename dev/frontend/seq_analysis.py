@@ -639,21 +639,29 @@ def concordance(records):
 
     A BIN holding more than one species, or a species spread over several
     BINs, is where an identification or the BIN itself deserves a look.
+    Species are the settled names (species_key): a provisional one ("sp.",
+    "cf.") is no species of its own, so it neither counts nor makes a BIN
+    shared, though the BIN lists it.
     """
     bins_of = defaultdict(Counter)
     species_of = defaultdict(Counter)
+    names_of = defaultdict(Counter)
     countries_of = defaultdict(set)
     n_species_only = n_bin_only = 0
     for rec in records:
         if len(rec["clean"]) < MIN_LENGTH:
             continue
-        sp, b = rec.get("species") or "", rec.get("bin") or ""
+        name, b = rec.get("species") or "", rec.get("bin") or ""
+        sp = species_key(name)
         if sp and not no_place(rec.get("country")):
             countries_of[sp].add(rec["country"])
         if sp and b:
             bins_of[sp][b] += 1
-            species_of[b][sp] += 1
-        elif sp:
+        if name and b:
+            names_of[b][name] += 1
+            if sp:
+                species_of[b][sp] += 1
+        elif name:
             n_species_only += 1
         elif b:
             n_bin_only += 1
@@ -661,7 +669,7 @@ def concordance(records):
     def listing(counter):
         return [{"name": k, "n": v} for k, v in counter.most_common()]
 
-    shared_bins = [{"bin": b, "n": sum(c.values()), "species": listing(c)}
+    shared_bins = [{"bin": b, "n": sum(names_of[b].values()), "species": listing(names_of[b])}
                    for b, c in species_of.items() if len(c) > 1]
     split_species = [{"species": s, "n": sum(c.values()), "bins": listing(c)}
                      for s, c in bins_of.items() if len(c) > 1]
@@ -670,8 +678,8 @@ def concordance(records):
 
     return {
         "species": len(bins_of),
-        "bins": len(species_of),
-        "paired_records": sum(sum(c.values()) for c in bins_of.values()),
+        "bins": len(names_of),
+        "paired_records": sum(sum(c.values()) for c in names_of.values()),
         "species_only": n_species_only,
         "bin_only": n_bin_only,
         "concordant_species": sum(
@@ -708,7 +716,16 @@ def _provisional(species):
     words = species.split()
     return (len(words) < 2 or words[1].rstrip(".").lower() in _PROVISIONAL_WORDS
             or any(c.isdigit() or c == "?" for c in species) or (len(words) > 2 and words[2][:1].isupper())
-            or any(w.lower() in ("x", "×") for w in words[2:]))
+            or any(w.rstrip(".").lower() in _PROVISIONAL_WORDS | {"x", "×", "complex"} for w in words[1:]))
+
+
+def species_key(species):
+    """The species a name settles, by genus and epithet ("Carollia
+    perspicillata azteca" is Carollia perspicillata), or "" for a
+    provisional one ("Myotis sp.", "Sturnira cf. ludovici"): what counts
+    as a species wherever species are counted."""
+    species = (species or "").strip()
+    return "" if not species or _provisional(species) else _binomial(species)
 
 
 def _species_bins(records):
@@ -867,10 +884,13 @@ def concordance_guide(records, conc, bin_species=None, capped=False):
         s["genera"] = len({_binomial(x[0]).split()[0] for x in s["others"] + s["species"]})
     in_shared = {sp for s in shared.values() for sp, _ in s["species"]}
     elsewhere = {x["species"] for x in strays} | {sp for p in provisional.values() for sp, _ in p["names"]}
-    concordant = sorted(sp for sp, counts in bins.items()
-                        if len(counts) == 1 and len(in_data[next(iter(counts))]) == 1
-                        and sp not in in_shared and sp not in elsewhere
-                        and _binomial(owner(next(iter(counts)))[0] or sp) == _binomial(sp))
+    # Species, as species_key: a provisional name is never concordant, nor
+    # keeps the species of its BIN from being so
+    concordant = sorted({species_key(sp) for sp, counts in bins.items()
+                         if species_key(sp) and len(counts) == 1
+                         and {species_key(s) for s in in_data[next(iter(counts))]} - {""} == {species_key(sp)}
+                         and sp not in in_shared and sp not in elsewhere
+                         and _binomial(owner(next(iter(counts)))[0] or sp) == _binomial(sp)})
     for s in shared.values():
         s["provisional"] = provisional.pop(s["bin"], {"names": []})["names"]
     return {
@@ -901,9 +921,19 @@ def concordance_guide(records, conc, bin_species=None, capped=False):
 
 
 def taxonomy_overview(records):
-    """How many distinct taxa per rank the records hold."""
-    ranks = ("kingdom", "phylum", "class", "order", "family", "genus", "species", "bin")
-    return {r: len({rec.get(r) for rec in records if rec.get(r)}) for r in ranks}
+    """How many distinct taxa per rank the records hold. Species are the
+    settled names by genus and epithet (a subspecies is its species); the
+    provisional ones ("sp.", "cf.", "PS1"...) are counted apart."""
+    ranks = ("kingdom", "phylum", "class", "order", "family", "genus", "bin")
+    out = {r: len({rec.get(r) for rec in records if rec.get(r)}) for r in ranks}
+    names = {rec.get("species") for rec in records if rec.get("species")}
+    out["species"] = len({species_key(s) for s in names} - {""})
+    # Taxa: the finest rank each record names, as the viewer's header counts them
+    fine = ("species", "genus", "family", "order", "class", "phylum", "kingdom")
+    out["taxa"] = len({next(((r, rec[r].strip()) for r in fine if (rec.get(r) or "").strip()), None)
+                       for rec in records} - {None})
+    out["species_provisional"] = sum(1 for s in names if not species_key(s))
+    return out
 
 
 def marker_counts(records):
@@ -1063,7 +1093,7 @@ def guide(records, rows, forced_code=None):
         "reversed": reversed_ids[:GUIDE_LIST],
         # Left out of the haplotypes: any N or ambiguity
         "with_n": sum(1 for rec, _ in pairs if set(rec["clean"]) - set("ACGT")),
-        "species_n": len({row["species"] for row in rows if row["species"]}),
+        "species_n": len({species_key(row["species"]) for row in rows} - {""}),
     }
 
 

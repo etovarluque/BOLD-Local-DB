@@ -1506,10 +1506,12 @@
 		.an-viewer-main .an-tree.panning { cursor: grabbing; user-select: none; }
 		.an-viewer-main .an-tree svg { max-width: none; margin: 0 auto; }
 		.an-viewer-hint { margin: 6px 0 0; font-size: .78rem; color: var(--mute); }
-		.an-viewer-side { width: 360px; flex-shrink: 0; overflow-y: auto; padding: 10px 12px 16px 2px; }
+		.an-viewer-side { width: 360px; flex-shrink: 0; overflow-y: auto; overflow-x: hidden; padding: 10px 12px 16px 2px; }
 		.an-viewer-side .an-tree-tools { margin-bottom: 10px; }
 		.an-viewer-side .an-options { flex-direction: column; align-items: stretch; gap: 10px; }
-		.an-viewer-side .an-options > label { justify-content: space-between; }
+		.an-viewer-side .an-options > label { justify-content: space-between; min-width: 0; }
+		/* Long option texts (species in Subtree) must not widen the panel */
+		.an-viewer-side .an-options select { flex: 1 1 0; width: 0; min-width: 0; max-width: 220px; text-overflow: ellipsis; }
 		.an-viewer-side .an-tree-find { width: 100%; }
 		.an-viewer-side h6 { margin: 0 0 8px; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--mute); }
 		.an-viewer .an-open-viewer { display: none; }
@@ -1532,6 +1534,12 @@
 		.an-tree-tools .form-range { width: 110px; }
 		.an-tree-tools select { min-width: 0; }
 		.an-range-v { min-width: 1.5em; font-variant-numeric: tabular-nums; }
+		/* Reset buttons: orange with a dot while something differs from the
+		   defaults, faded and disabled once everything is back to them */
+		.reset-btn.is-dirty { color: var(--orange) !important; font-weight: 600; }
+		.reset-btn.is-dirty::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 5px;
+			border-radius: 50%; background: var(--orange); vertical-align: middle; }
+		.reset-btn:disabled { opacity: .45; }
 		.an-tree-find { width: 230px; }
 		#identifyPanel { border-top: 0; border-radius: 0 0 10px 10px; }
 		#identifyPanel > .card-header { border-radius: 0; }
@@ -1779,7 +1787,7 @@
                             ⚙ Personalizar reporte resumen ▼
                         </button>
                         <span id="reportHint" class="text-muted" style="font-size:.82rem;"></span>
-                        <button id="reportResetBtn" class="btn btn-sm btn-link text-muted p-0 ms-auto"
+                        <button id="reportResetBtn" class="btn btn-sm btn-link text-muted p-0 ms-auto reset-btn is-dirty"
                                 onclick="resetReportSpec()" title="Quitar toda la personalización" data-i18n-title="report_reset_title"
                                 style="display:none;" data-i18n="reset_btn">↺ Restablecer</button>
                     </div>
@@ -1949,7 +1957,7 @@
                         <button id="gbReportToggleBtn" class="btn btn-sm btn-outline-secondary" type="button"
                                 onclick="gbToggleReportPanel()"></button>
                         <span id="gbReportHint" class="text-muted" style="font-size:.82rem;"></span>
-                        <button id="gbReportResetBtn" class="btn btn-sm btn-link text-muted p-0 ms-auto"
+                        <button id="gbReportResetBtn" class="btn btn-sm btn-link text-muted p-0 ms-auto reset-btn is-dirty"
                                 onclick="gbResetReportSpec()" data-i18n-title="report_reset_title"
                                 style="display:none;" data-i18n="reset_btn">↺ Restablecer</button>
                     </div>
@@ -2248,7 +2256,7 @@
 				     it each time, and this hidden holder is their home until then. -->
 				<div id="colOrderHome" style="display:none;">
 					<span id="colOrderControls" class="d-inline-flex align-items-center gap-2">
-						<button id="resetColOrderBtn" class="btn btn-sm btn-link text-muted p-0"
+						<button id="resetColOrderBtn" class="btn btn-sm btn-link text-muted p-0 reset-btn is-dirty"
 								onclick="resetColOrder()" title="Restablecer orden predeterminado" data-i18n-title="col_order_reset_title" style="display:none;" data-i18n="reset_btn">
 							↺ Restablecer
 						</button>
@@ -3604,6 +3612,7 @@
                 an_fig_hint_tree: 'Ctrl + rueda: zoom · arrastra el fondo para moverte · clic en un nodo para plegarlo o desplegarlo · + / − / 0 · Esc para cerrar',
                 an_fig_colors: 'Colores', an_fig_colors_none: 'Elige un criterio en «Color» para cambiar sus colores.',
                 an_fig_colors_reset: 'Restablecer colores',
+                reset_dirty: 'Hay cambios respecto a los valores por defecto', reset_clean: 'Todo está en los valores por defecto',
                 an_fig_lines: 'Líneas', an_fig_text: 'Texto', an_fig_legend: 'Leyenda', an_fig_legend_export: 'Leyenda al exportar',
                 an_net_node_size: 'Círculos',
                 an_tree_group_species: '{n} especies',
@@ -4941,6 +4950,7 @@
                 an_fig_hint_tree: 'Ctrl + wheel: zoom · drag the background to move around · click a node to collapse or expand it · + / − / 0 · Esc to close',
                 an_fig_colors: 'Colours', an_fig_colors_none: 'Choose a criterion in "Colour" to change its colours.',
                 an_fig_colors_reset: 'Reset colours',
+                reset_dirty: 'Some settings differ from the defaults', reset_clean: 'Everything is at its defaults',
                 an_fig_lines: 'Lines', an_fig_text: 'Text', an_fig_legend: 'Legend', an_fig_legend_export: 'Legend when exporting',
                 an_net_node_size: 'Circles',
                 an_tree_group_species: '{n} species',
@@ -5240,6 +5250,14 @@
 
                 list.appendChild(li);
             });
+        }
+
+        // Shows whether a reset button has anything to undo
+        function markReset(btn, dirty) {
+            btn.classList.add('reset-btn');
+            btn.classList.toggle('is-dirty', !!dirty);
+            btn.disabled = !dirty;
+            btn.title = t(dirty ? 'reset_dirty' : 'reset_clean');
         }
 
         function resetColOrder() {
@@ -12560,7 +12578,7 @@ li li { display: list-item; margin: 0; }
 			const legLbl = anEl('label', 'form-check d-inline-flex align-items-center gap-1 mb-0');
 			const leg = anEl('input', 'form-check-input mt-0');
 			leg.type = 'checkbox'; leg.checked = opts.legend;
-			leg.addEventListener('change', () => { opts.legend = leg.checked; });
+			leg.addEventListener('change', () => { opts.legend = leg.checked; markNetResets(); });
 			legLbl.append(leg, anEl('span', 'small', t('an_fig_legend_export')));
 			row1.append(
 				sel('an_tree_color', opts.color, [['none', 'an_tree_color_none'], ['country', 'an_tree_by_country'],
@@ -12586,6 +12604,15 @@ li li { display: list-item; margin: 0; }
 			};
 			const dls = anNetDownloads(net, opts);
 			const exportFig = (format, scale) => anExportFigure(anNetSvg(net, opts, true), anNetFileStem(), format, scale);
+			const layoutReset = button(t('an_net_reset'), () => { AnState.netPos = net.vertices.map(v => [v.x, v.y]); redraw(); },
+			                           'btn-link text-muted p-0 ms-auto');
+			const optsReset = button(t('an_fig_reset'), () => { Object.assign(opts, anNetDrawDefaults()); anRefreshView(); },
+			                         'btn-link text-muted p-0 ms-auto');
+			const markNetResets = () => {
+				const def = anNetDrawDefaults();
+				markReset(optsReset, Object.keys(def).some(k => opts[k] !== def[k]));
+				markReset(layoutReset, AnState.netPos.some((p, i) => p[0] !== net.vertices[i].x || p[1] !== net.vertices[i].y));
+			};
 			const row2 = anEl('div', 'an-options mt-2');
 			row2.append(anEl('span', 'text-secondary small', t('an_tree_export')),
 			            button('SVG', () => exportFig('svg')), button('PNG 2×', () => exportFig('png', 2)),
@@ -12593,10 +12620,8 @@ li li { display: list-item; margin: 0; }
 			            anEl('span', 'text-secondary small ms-3', t('an_net_data')),
 			            button(t('an_net_dl_csv'), dls.csv), button(t('an_net_dl_fasta'), dls.fasta),
 			            button(t('an_net_dl_nexus'), dls.nexus),
-			            button(t('an_net_reset'), () => { AnState.netPos = net.vertices.map(v => [v.x, v.y]); redraw(); },
-			                   'btn-link text-muted p-0 ms-auto'));
-			row1.append(button(t('an_fig_reset'), () => { Object.assign(opts, anNetDrawDefaults()); anRefreshView(); },
-			                   'btn-link text-muted p-0 ms-auto'));
+			            layoutReset);
+			row1.append(optsReset);
 			tools.append(row1, rowSize, row2);
 			body.append(tools, anEl('p', 'an-muted', t('an_net_drag')));
 
@@ -12610,6 +12635,7 @@ li li { display: list-item; margin: 0; }
 				legendBox.classList.toggle('italic', fig.italic);
 				wrap.innerHTML = fig.svg;
 				if (AnState.viewer && AnState.viewer.kind === 'net') AnState.viewer.update();
+				markNetResets();
 				const svg = wrap.querySelector('svg');
 				anAttachTip(wrap, svg, i => {
 					const v = net.vertices[i];
@@ -13336,12 +13362,18 @@ li li { display: list-item; margin: 0; }
 			on(wrap, 'click', e => { if (panned) { e.stopImmediatePropagation(); e.preventDefault(); panned = false; } }, { capture: true });
 
 			// Colours of the legend, one picker each
-			let colorsSig = null;
+			let colorsSig = null, colorsReset = null;
+			const markColors = () => {
+				if (!colorsReset) return;
+				const prefix = `${h.kind}|${h.attr()}|`;
+				markReset(colorsReset, !!AnState.customColors && [...AnState.customColors.keys()].some(x => x.startsWith(prefix)));
+			};
 			const buildColors = () => {
 				const legend = h.legend();
 				const sig = h.attr() + '|' + legend.map(x => x[2] + '\u0001' + x[1]).join('\u0002');
-				if (sig === colorsSig) return;
+				if (sig === colorsSig) return markColors();
 				colorsSig = sig;
+				colorsReset = null;
 				colorsBox.replaceChildren(anEl('h6', '', t('an_fig_colors')));
 				if (!legend.length) {
 					colorsBox.append(anEl('p', 'an-muted small mb-0', t('an_fig_colors_none')));
@@ -13371,6 +13403,8 @@ li li { display: list-item; margin: 0; }
 					h.redraw();
 				});
 				colorsBox.append(reset);
+				colorsReset = reset;
+				markColors();
 			};
 
 			const close = silent => {
@@ -13608,6 +13642,19 @@ li li { display: list-item; margin: 0; }
 				redraw();
 			}, 'btn-outline-secondary an-toggle' + (opts.paintMode ? ' active' : ''));
 			paintBtn.setAttribute('aria-pressed', !!opts.paintMode);
+			// Back to the defaults, folds by hand included (collapsing
+			// follows the tree's size again)
+			const resetBtn = button(t('an_fig_reset'), () => {
+				Object.assign(opts, anTreeDefaults());
+				AnState.tree.manual.clear(); AnState.treeRebuild();
+			}, 'btn-link text-muted p-0 ms-auto');
+			// The collapse chosen by hand shows in `touched` (left alone it
+			// follows the tree's size)
+			const mark = () => {
+				const def = anTreeDefaults();
+				const changed = Object.keys(def).some(k => k !== 'collapse' && JSON.stringify(opts[k]) !== JSON.stringify(def[k]));
+				markReset(resetBtn, changed || AnState.tree.manual.size > 0);
+			};
 			const row1 = anEl('div', 'an-options');
 			const motuOpt = hasMotu ? [['motu', 'an_tree_by_motu']] : [];
 			row1.append(
@@ -13622,12 +13669,7 @@ li li { display: list-item; margin: 0; }
 				    v => { opts.mode = v; redraw(); }),
 				anTreeFocusSelect(opts, redraw),
 				paintBtn,
-				// Back to the defaults, folds by hand included (collapsing
-				// follows the tree's size again)
-				button(t('an_fig_reset'), () => {
-					Object.assign(opts, anTreeDefaults());
-					AnState.tree.manual.clear(); AnState.treeRebuild();
-				}, 'btn-link text-muted p-0 ms-auto'));
+				resetBtn);
 
 			// The sliders, together on a line of their own
 			const rowSize = anEl('div', 'an-options mt-2');
@@ -13664,7 +13706,7 @@ li li { display: list-item; margin: 0; }
 			            button('PDF', () => anExportTree('pdf'), 'btn-emerald btn-dl'),
 			            anEl('span', 'an-muted', t('an_tree_export_hint')));
 			box.append(row1, rowSize, paintBox.el, row2, row3);
-			return { box, found, paint: paintBox.update };
+			return { box, found, paint: paintBox.update, mark };
 		}
 
 		function anRenderTree(body) {
@@ -13721,6 +13763,7 @@ li li { display: list-item; margin: 0; }
 				wrap.innerHTML = fig.svg;
 				wrap.classList.toggle('painting', !!opts.paintMode);
 				rowsInfo.textContent = t('an_tree_rows', { n: numFmt.format(fig.rows) });
+				tools.mark();
 				tools.found.textContent = opts.query.trim() ? t('an_tree_found', { n: numFmt.format(fig.matches) }) : '';
 				const viewer = AnState.viewer && AnState.viewer.kind === 'tree' ? AnState.viewer : null;
 				if (viewer) viewer.update();

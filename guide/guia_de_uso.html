@@ -543,6 +543,7 @@
           <li><a href="#modos">Modos de búsqueda</a></li>
           <li><a href="#busqueda-campos">Búsqueda avanzada por campos</a></li>
           <li><a href="#busqueda-fts">Búsqueda de texto completo</a></li>
+          <li><a href="#historial">Historial de búsquedas</a></li>
           <li><a href="#busqueda-batch">Lote en BOLD local</a></li>
           <li><a href="#busqueda-genbank">Lote en GenBank</a></li>
           <li><a href="#tabla">Trabajar con la tabla</a></li>
@@ -922,7 +923,7 @@
           espacio en disco.</li>
     </ul>
 
-    <h3 class="step-title">Paso 4 — Búsqueda por texto libre <em>(opcional)</em></h3>
+    <h3 class="step-title" id="paso4">Paso 4 — Búsqueda por texto libre <em>(opcional)</em></h3>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
@@ -934,11 +935,13 @@
     </div>
     <ul class="bullet">
       <li>Selecciona <strong>«4. Búsqueda por texto libre»</strong> → clic en <strong>Ejecutar</strong>.</li>
-      <li>Por defecto el índice cubre casi los mismos campos que la búsqueda por campos (19 de 20): ID Muestra, ID
-          Campo, ID Museo, BIN, taxonomía completa (reino a especie), identificación, ID Nivel, país, estado,
+      <li>Por defecto el índice cubre el <strong>ID BOLD</strong> y casi los mismos campos que la búsqueda por
+          campos (19 de 20): ID Muestra, ID Campo, ID Museo, BIN, taxonomía completa (reino a especie), identificación, ID Nivel, país, estado,
           región, Bases, marcador y fecha de secuencia. Queda fuera <strong>código país</strong> (ver nota más
           abajo). Esta lista depende de qué campos hayas marcado como <em>"búsqueda rápida"</em> en el panel
           <a href="#campos-panel">Campos</a>; si cambiaste la selección, puede ser distinta.</li>
+      <li>Los índices creados por versiones anteriores no incluyen el ID BOLD. En ese caso el Paso 4 aparece como
+          pendiente: al ejecutarlo se rehace el índice aunque los datos no hayan cambiado.</li>
     </ul>
 
     <!-- Indicadores -->
@@ -1155,12 +1158,11 @@
       <li>Escribe una o varias palabras en el cuadro de búsqueda.</li>
       <li>Haz clic en <strong>Buscar</strong> o presiona <kbd>Enter</kbd>.</li>
     </ol>
-    <p>Por defecto la búsqueda recorre casi los mismos campos que la búsqueda por campos (19 de 20): ID Muestra, ID
+    <p>Por defecto la búsqueda recorre el <strong>ID BOLD</strong> y casi los mismos campos que la búsqueda por campos (19 de 20): ID Muestra, ID
        Campo, ID Museo, BIN, reino, filo, clase, orden, familia, género, especie, identificación, ID Nivel, país,
        estado, región, Bases, marcador y fecha de secuencia — la lista exacta depende de qué campos marcaste como
        <em>"búsqueda rápida"</em> en el panel <a href="#campos-panel">Campos</a>. <strong>No</strong> busca dentro de la secuencia de
-       ADN, las coordenadas, el ID BOLD (ya tiene su propia búsqueda exacta como identificador único de registro)
-       ni el <strong>código país</strong>: al ser siempre de 2 letras (ej. "CO", "US"), es demasiado corto para el
+       ADN, las coordenadas ni el <strong>código país</strong>: al ser siempre de 2 letras (ej. "CO", "US"), es demasiado corto para el
        tipo de índice que usa esta búsqueda — usa el <strong>país</strong> (nombre completo) o la búsqueda por
        campos con <em>Código País = ...</em>.</p>
     <div class="table-wrap">
@@ -1175,6 +1177,7 @@
           <tr><td><code>(Panthera OR Felis) AND Colombia</code></td><td>Los paréntesis agrupan condiciones</td></tr>
           <tr><td><code>"Ara macao"</code></td><td>Frase exacta: busca esa secuencia de texto completa y contigua dentro de un mismo campo</td></tr>
           <tr><td><code>Mexico</code></td><td>También encuentra <em>México</em>: los acentos se ignoran</td></tr>
+          <tr><td><code>GBVA049-11</code></td><td>El registro con ese ID BOLD (o los que lo contienen)</td></tr>
         </tbody>
       </table>
     </div>
@@ -1214,6 +1217,33 @@
         como palabras literales de la frase.
       </div>
     </div>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        Si el índice lo creó una versión anterior, <strong>no incluye el ID BOLD</strong> y el panel lo avisa. Un ID
+        completo o su comienzo (<code>GBVA049-11</code>, <code>GBVA049</code>) se encuentra igualmente, pero un
+        fragmento del interior del ID (<code>VA049-11</code>) no: que no aparezca no significa que el registro falte.
+        Usa la búsqueda por campos o vuelve a ejecutar el <a href="#paso4">Paso 4</a> para incluirlo.
+      </div>
+    </div>
+
+    <!-- Historial -->
+    <h2 class="sub-title" id="historial">Historial de búsquedas</h2>
+    <p>Las búsquedas por campos y de texto completo que devuelven resultados se guardan en el historial, con el
+       número de resultados y la hora. Repetir una búsqueda la sube al principio en lugar de duplicarla. El
+       historial se guarda en el navegador: es propio de cada equipo y navegador, y no se comparte.</p>
+    <ul class="bullet">
+      <li>Antes de buscar, bajo el formulario aparece la fila <strong>Recientes</strong> con las 6 últimas búsquedas
+          (punto azul: texto completo; verde: por campos). Un clic abre su pestaña, rellena el formulario y la
+          vuelve a ejecutar.</li>
+      <li>Al buscar, la fila se pliega para dejar sitio a la tabla. El botón <strong><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg> Historial</strong>, junto a
+          <strong>✎ Editar</strong> (o bajo el cuadro de búsqueda en el texto completo), la muestra u oculta.</li>
+      <li><strong>Ver todo</strong> abre un panel lateral con todo el historial y un cuadro para filtrarlo. Arriba van
+          las búsquedas <strong>fijadas</strong> (☆) y el resto se agrupa en Hoy, Ayer y Anteriores.
+          <kbd>Esc</kbd> lo cierra.</li>
+      <li>✕ quita una búsqueda y <strong>Borrar</strong> vacía el historial (pide confirmación). Las fijadas se
+          conservan siempre; del resto se guardan las 50 más recientes.</li>
+    </ul>
 
     <!-- Batch -->
     <h2 class="sub-title" id="busqueda-batch">Lote en BOLD local</h2>
@@ -1490,7 +1520,8 @@
     </div>
     <p>Sobre la tabla, la línea <strong>Búsqueda mostrada</strong> resume la consulta a la que pertenecen los
        resultados. En una búsqueda por campos, <strong>✎ Editar</strong> vuelve a cargar esas condiciones en el
-       formulario para modificarlas, por ejemplo después de haber probado otra búsqueda.</p>
+       formulario para modificarlas, por ejemplo después de haber probado otra búsqueda. A su lado,
+       <strong>Historial</strong> muestra las búsquedas recientes (ver <a href="#historial">Historial de búsquedas</a>).</p>
 
     <h3 class="step-title" id="ficha">Ficha del registro</h3>
     <p>Al hacer clic en una fila se abre a la derecha la ficha completa del registro:</p>
@@ -2272,7 +2303,7 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td><strong>Subárbol</strong></td><td>Muestra solo una parte del árbol: elige un género o una especie y se dibuja el clado más pequeño que contiene todas sus secuencias, subiendo un nivel para que se vea también su grupo hermano. Las secuencias del taxón elegido salen en negrita y la leyenda solo recoge los valores que quedan a la vista. No recalcula nada, así que es instantáneo; <em>Árbol completo</em> vuelve a verlo entero. Si el taxón ya ocupa la raíz, se ve el árbol entero. La exportación recoge lo que se ve.</td></tr>
           <tr><td><strong>Pintar clados</strong></td><td>Colorea a mano los clados que te interesan, más allá de los 8 colores de «Color». Con el modo activo, un clic en un nodo (○), en un clado plegado o en una banda elige el clado en vez de plegarlo; entonces se elige su <em>color</em> (los 8 de la paleta u otro), su <em>estilo</em> (<em>Banda</em> de fondo, <em>Ramas</em> coloreadas o <em>Ambas</em>) y su <em>nombre</em>, que por defecto es la especie o el género si todas sus secuencias son de uno. Un clado pintado dentro de otro se dibuja encima. <em>Intensidad</em> regula la banda, <em>Nombres de banda</em> los muestra u oculta y <em>Quitar todos los colores</em> los borra. Un clado plegado toma el color de su banda; las bandas fuera del subárbol elegido no se dibujan. Las exportaciones incluyen las bandas y sus nombres. «Restablecer opciones» no los borra.</td></tr>
           <tr><td><strong>Abrir en ventana</strong></td><td>Botón en la esquina superior derecha de la figura. Abre la figura en una ventana flotante a pantalla completa, con las opciones y la exportación en un panel lateral. Permite hacer zoom (Ctrl + rueda, botones − / +, teclas + / − / 0, <em>Ajustar</em>, <em>Ajustar al ancho</em>, <em>100 %</em>), moverse arrastrando el fondo y cambiar el color de cada valor de la leyenda (<em>Restablecer colores</em> vuelve a los de por defecto). Esc la cierra.</td></tr>
-          <tr><td><strong>Restablecer opciones</strong></td><td>Vuelve a las opciones por defecto de la figura (incluidos los nodos plegados a mano).</td></tr>
+          <tr><td><strong>Restablecer opciones</strong></td><td>Vuelve a las opciones por defecto de la figura (incluidos los nodos plegados a mano). Se ve en naranja y con un punto mientras alguna opción difiere de la de por defecto, y atenuado cuando ya está todo por defecto; lo mismo vale para <em>Restablecer colores</em>.</td></tr>
           <tr><td><strong>Exportar figura</strong></td><td>Tal como se ve (colapsos, colores, etiquetas): <em>SVG</em> (editable en Inkscape o Illustrator), <em>PNG 2×</em> o <em>4×</em> (si la imagen es demasiado grande se genera a menor escala y se avisa) y <em>PDF</em> (se abre el diálogo de impresión: elige «Guardar como PDF»; el navegador debe permitir ventanas emergentes).</td></tr>
         </tbody>
       </table>
@@ -2366,7 +2397,7 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td><strong>Arrastrar</strong></td><td>Los círculos se pueden arrastrar para ordenar la figura; <em>Restablecer disposición</em> vuelve a la inicial.</td></tr>
           <tr><td><strong>Exportar figura</strong></td><td>SVG, PNG 2× o 4× y PDF, tal como se ve.</td></tr>
           <tr><td><strong>Abrir en ventana</strong></td><td>Botón en la esquina superior derecha de la figura. Abre la figura en una ventana flotante a pantalla completa, con las opciones y la exportación en un panel lateral. Permite hacer zoom (rueda, botones − / +, teclas + / − / 0, <em>Ajustar</em>, <em>Ajustar al ancho</em>, <em>100 %</em>), moverse arrastrando el fondo y cambiar el color de cada valor de la leyenda (<em>Restablecer colores</em> vuelve a los de por defecto). Esc la cierra.</td></tr>
-          <tr><td><strong>Restablecer opciones</strong></td><td>Vuelve a las opciones por defecto de la figura (no cambia la especie ni el método, ni la disposición de los círculos).</td></tr>
+          <tr><td><strong>Restablecer opciones</strong></td><td>Vuelve a las opciones por defecto de la figura (no cambia la especie ni el método, ni la disposición de los círculos). Como <em>Restablecer disposición</em> y <em>Restablecer colores</em>, se ve en naranja y con un punto mientras hay algo que deshacer, y atenuado cuando ya está todo por defecto.</td></tr>
           <tr><td><strong>Datos</strong></td><td><em>Haplotipos (CSV)</em>: cada haplotipo con sus secuencias, especies, países y BINs. <em>Haplotipos (FASTA)</em>: una secuencia por haplotipo (las posiciones comparadas). <em>NEXUS (PopART)</em>: una secuencia por registro con el color elegido como rasgos (país si no hay color), para seguir trabajando en PopART.</td></tr>
         </tbody>
       </table>

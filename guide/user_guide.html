@@ -543,6 +543,7 @@
           <li><a href="#modos">Search modes</a></li>
           <li><a href="#busqueda-campos">Advanced field search</a></li>
           <li><a href="#busqueda-fts">Full-text search</a></li>
+          <li><a href="#historial">Search history</a></li>
           <li><a href="#busqueda-batch">Local BOLD batch</a></li>
           <li><a href="#busqueda-genbank">GenBank batch</a></li>
           <li><a href="#tabla">Working with the results table</a></li>
@@ -920,7 +921,7 @@
           giving back their disk space.</li>
     </ul>
 
-    <h3 class="step-title">Step 4 — Full-text search <em>(optional)</em></h3>
+    <h3 class="step-title" id="paso4">Step 4 — Full-text search <em>(optional)</em></h3>
     <div class="callout warn">
       <span class="icon">⚠️</span>
       <div>
@@ -932,11 +933,13 @@
     </div>
     <ul class="bullet">
       <li>Select <strong>"4. Full-text search"</strong> → click <strong>Run</strong>.</li>
-      <li>By default the index covers nearly the same fields as the field search (19 of 20): Sample ID, Field
-          ID, Museum ID, BIN, full taxonomy (kingdom to species), identification, ID Rank, country, state,
+      <li>By default the index covers the <strong>BOLD ID</strong> and nearly the same fields as the field search
+          (19 of 20): Sample ID, Field ID, Museum ID, BIN, full taxonomy (kingdom to species), identification, ID Rank, country, state,
           region, Base Count, marker and sequence date. <strong>Country code</strong> is left out (see the note
           below). This list depends on which fields you marked as <em>"index"</em> in the
           <a href="#campos-panel">Field Selection</a> panel; if you changed the selection, it may differ.</li>
+      <li>Indexes built by earlier versions don't include the BOLD ID. Then Step 4 shows as pending: running it
+          rebuilds the index even if the data hasn't changed.</li>
     </ul>
 
     <!-- Status indicators -->
@@ -1154,12 +1157,11 @@
       <li>Type one or more words in the search box.</li>
       <li>Click <strong>Search</strong> or press <kbd>Enter</kbd>.</li>
     </ol>
-    <p>By default the search covers nearly the same fields as the field search (19 of 20): Sample ID, Field
+    <p>By default the search covers the <strong>BOLD ID</strong> and nearly the same fields as the field search (19 of 20): Sample ID, Field
        ID, Museum ID, BIN, kingdom, phylum, class, order, family, genus, species, identification, ID Rank, country,
        state, region, Base Count, marker and sequence date — the exact list depends on which fields you marked as
        <em>"index"</em> in the <a href="#campos-panel">Field Selection</a> panel. It does <strong>not</strong>
-       search inside the DNA sequence, the coordinates, the BOLD ID (which already has its own exact search as the
-       record's unique identifier), or the <strong>country code</strong>: since it's always 2 letters (e.g. "CO",
+       search inside the DNA sequence, the coordinates or the <strong>country code</strong>: since it's always 2 letters (e.g. "CO",
        "US"), it's too short for the type of index this search uses — use <strong>country</strong> (full name)
        or the field search with <em>Country Code = ...</em> instead.</p>
     <div class="table-wrap">
@@ -1174,6 +1176,7 @@
           <tr><td><code>(Panthera OR Felis) AND Colombia</code></td><td>Parentheses group conditions</td></tr>
           <tr><td><code>"Ara macao"</code></td><td>Exact phrase: searches for that complete, contiguous sequence of text within the same field</td></tr>
           <tr><td><code>Mexico</code></td><td>Also finds <em>México</em>: accents are ignored</td></tr>
+          <tr><td><code>GBVA049-11</code></td><td>The record with that BOLD ID (or those that contain it)</td></tr>
         </tbody>
       </table>
     </div>
@@ -1213,6 +1216,33 @@
         words of the phrase.
       </div>
     </div>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div>
+        If the index was built by an earlier version, it <strong>doesn't include the BOLD ID</strong> and the panel
+        says so. A whole ID or its beginning (<code>GBVA049-11</code>, <code>GBVA049</code>) is still found, but a
+        fragment from inside the ID (<code>VA049-11</code>) is not: no results doesn't mean the record is missing.
+        Use the field search or run <a href="#paso4">Step 4</a> again to include it.
+      </div>
+    </div>
+
+    <!-- History -->
+    <h2 class="sub-title" id="historial">Search history</h2>
+    <p>Field and full-text searches that return results are kept in the history, with their result count and
+       time. Running a search again moves it to the top instead of adding it twice. The history is kept in the
+       browser: it belongs to each computer and browser and is not shared.</p>
+    <ul class="bullet">
+      <li>Before searching, the <strong>Recent</strong> row under the form shows the last 6 searches (blue dot:
+          full-text; green: by fields). A click opens its tab, fills in the form and runs it again.</li>
+      <li>Once you search, the row folds to leave room for the table. The <strong><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg> History</strong> button, next to
+          <strong>✎ Edit</strong> (or under the search box for full-text search), shows or hides it.</li>
+      <li><strong>See all</strong> opens a side panel with the whole history and a box to filter it.
+          <strong>Pinned</strong> searches (☆) go first, the rest is grouped by Today, Yesterday and Older.
+          <kbd>Esc</kbd> closes it.</li>
+      <li>✕ removes a search and <strong>Clear</strong> empties the history (it asks first). Pinned searches are
+          always kept; of the rest, the 50 most recent are kept.</li>
+    </ul>
 
     <!-- Batch -->
     <h2 class="sub-title" id="busqueda-batch">Local BOLD batch</h2>
@@ -1487,7 +1517,8 @@
     </div>
     <p>Above the table, the <strong>Showing results for</strong> line sums up the query the results belong to. For a
        field search, <strong>✎ Edit</strong> loads those conditions back into the form so you can change them, for
-       instance after trying another search.</p>
+       instance after trying another search. Next to it, <strong>History</strong> shows the recent searches (see
+       <a href="#historial">Search history</a>).</p>
 
     <h3 class="step-title" id="ficha">Record card</h3>
     <p>Clicking a row opens the record's full card on the right:</p>
@@ -2260,7 +2291,7 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td><strong>Subtree</strong></td><td>Shows only part of the tree: pick a genus or a species and the smallest clade holding all its sequences is drawn, one level up so its sister group shows too. The chosen taxon's sequences are in bold and the legend keeps only the values on view. Nothing is recalculated, so it is instant; <em>Whole tree</em> goes back to the full tree. If the taxon already fills the root, the whole tree shows. Exports follow what is on screen.</td></tr>
           <tr><td><strong>Paint clades</strong></td><td>Colours by hand the clades you care about, beyond the 8 colours of "Colour". With the mode on, a click on a node (○), on a folded clade or on a band chooses the clade instead of folding it; then pick its <em>colour</em> (the 8 of the palette or another), its <em>style</em> (<em>Band</em> behind it, coloured <em>Branches</em> or <em>Both</em>) and its <em>name</em>, which starts as the species or genus when all its sequences are of one. A painted clade inside another is drawn on top. <em>Intensity</em> sets the band, <em>Band names</em> shows or hides them and <em>Clear all colours</em> removes them. A folded clade takes the colour of its band; bands outside the chosen subtree are not drawn. Exports include the bands and their names. "Reset options" does not clear them.</td></tr>
           <tr><td><strong>Open in a window</strong></td><td>Button on the top right corner of the figure. Opens the figure in a full-screen floating window, with the options and exports in a side panel. You can zoom (Ctrl + wheel, − / + buttons, + / − / 0 keys, <em>Fit</em>, <em>Fit width</em>, <em>100 %</em>), move around by dragging the background and change the colour of each value in the legend (<em>Reset colours</em> goes back to the defaults). Esc closes it.</td></tr>
-          <tr><td><strong>Reset options</strong></td><td>Goes back to the figure's default options (folds made by hand included).</td></tr>
+          <tr><td><strong>Reset options</strong></td><td>Goes back to the figure's default options (folds made by hand included). It shows in orange with a dot while some option differs from its default, and faded once everything is at its defaults; the same goes for <em>Reset colours</em>.</td></tr>
           <tr><td><strong>Export figure</strong></td><td>As shown (collapses, colours, labels): <em>SVG</em> (editable in Inkscape or Illustrator), <em>PNG 2×</em> or <em>4×</em> (if the image would be too large it's made at a smaller scale and a notice says so) and <em>PDF</em> (the print dialog opens: choose "Save as PDF"; the browser must allow pop-ups).</td></tr>
         </tbody>
       </table>
@@ -2351,7 +2382,7 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td><strong>Drag</strong></td><td>Circles can be dragged to arrange the figure; <em>Reset layout</em> goes back to the first one.</td></tr>
           <tr><td><strong>Export figure</strong></td><td>SVG, PNG 2× or 4× and PDF, as shown.</td></tr>
           <tr><td><strong>Open in a window</strong></td><td>Button on the top right corner of the figure. Opens the figure in a full-screen floating window, with the options and exports in a side panel. You can zoom (wheel, − / + buttons, + / − / 0 keys, <em>Fit</em>, <em>Fit width</em>, <em>100 %</em>), move around by dragging the background and change the colour of each value in the legend (<em>Reset colours</em> goes back to the defaults). Esc closes it.</td></tr>
-          <tr><td><strong>Reset options</strong></td><td>Goes back to the figure's default options (the species, the method and the circles' layout stay as they are).</td></tr>
+          <tr><td><strong>Reset options</strong></td><td>Goes back to the figure's default options (the species, the method and the circles' layout stay as they are). Like <em>Reset layout</em> and <em>Reset colours</em>, it shows in orange with a dot while there is something to undo, and faded once everything is at its defaults.</td></tr>
           <tr><td><strong>Data</strong></td><td><em>Haplotypes (CSV)</em>: each haplotype with its sequences, species, countries and BINs. <em>Haplotypes (FASTA)</em>: one sequence per haplotype (the positions compared). <em>NEXUS (PopART)</em>: one sequence per record with the colour chosen as traits (country when there is none), to go on in PopART.</td></tr>
         </tbody>
       </table>

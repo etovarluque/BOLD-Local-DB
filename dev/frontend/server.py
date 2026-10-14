@@ -1117,6 +1117,7 @@ def index():
         genbank_fields=genbank_batch.FIELD_OPTIONS,
         genbank_report_columns=genbank_batch.REPORT_COLUMNS,
         fts_available=fts_table_available(),
+        fts_has_processid=fts_has_processid() if fts_table_available() else True,
         fts_table_name=FTS_TABLE_NAME,
         initial_lang=get_lang(),
         version=__version__,
@@ -1366,6 +1367,71 @@ def build_case_sensitive_filter(raw_query: str, table_alias: str = ''):
     return ' AND ' + ' AND '.join(term_clauses), params
 
 
+# FTS indexes built before bold_db_creator added col_processid don't hold the
+# BOLD ID: a full-text search for "GBVA049-11" found nothing although the
+# record was there. Until the index is rebuilt, a query made of a single word
+# that starts some processid is looked up there too, through its own index
+# (the whole ID or its beginning; a fragment from inside it is not found).
+_PID_TERM_RE = re.compile(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9._-]{5,}$')
+# Above every character a processid can hold: closes the prefix range
+_PID_RANGE_END = '\U0010ffff'
+
+
+def fts_has_processid():
+    """Whether the FTS index covers col_processid (True if it can't be told)."""
+    try:
+        return 'col_processid' in get_fts_columns()
+    except sqlite3.Error:
+        return True
+
+
+def _processid_prefix(raw_query):
+    """The BOLD ID, or its beginning, a full-text query consists of when the
+    FTS index can't find it by itself; None otherwise."""
+    tokens = _fts_tokens(raw_query)
+    if len(tokens) != 1 or tokens[0][0] != 'phrase':
+        return None
+    term = tokens[0][1].strip()
+    if not _PID_TERM_RE.match(term) or fts_has_processid():
+        return None
+    conn = get_db_connection()
+    try:
+        hit = conn.execute(
+            f"SELECT 1 FROM {MAIN_TABLE_NAME} WHERE col_processid >= ? AND col_processid < ? LIMIT 1",
+            (term, term + _PID_RANGE_END)).fetchone()
+    except sqlite3.Error:
+        return None
+    finally:
+        conn.close()
+    return term if hit else None
+
+
+def fts_source(raw_query, alias, case_sensitive=False):
+    """FROM and WHERE, with its parameters, of a full-text search over
+    MAIN_TABLE_NAME as `alias` (raw_query already accent-stripped).
+
+    Normally a join with the FTS table. When the query is a BOLD ID the index
+    lacks (see _processid_prefix), the FTS matches OR the records whose
+    processid starts with it: SQLite answers each side with its own index.
+    """
+    query = escape_fts_query(raw_query)
+    if not query:
+        raise ValueError(t('no_search_term'))
+    cs_clause, cs_params = ('', [])
+    if case_sensitive:
+        cs_clause, cs_params = build_case_sensitive_filter(raw_query, alias)
+    pid = _processid_prefix(raw_query)
+    if not pid:
+        return (f'{MAIN_TABLE_NAME} {alias} INNER JOIN {FTS_TABLE_NAME} fts ON {alias}.rowid = fts.rowid',
+                f'fts.{FTS_TABLE_NAME} MATCH ?{cs_clause}', [query, *cs_params])
+    # The processid column folds case (NOCASE): instr() keeps the exact one
+    pid_cs, pid_cs_params = (f' AND instr({alias}.col_processid, ?) = 1', [pid]) if case_sensitive else ('', [])
+    where = (f'({alias}.rowid IN (SELECT rowid FROM {FTS_TABLE_NAME} WHERE {FTS_TABLE_NAME} MATCH ?){cs_clause}'
+             f' OR ({alias}.col_processid >= ? AND {alias}.col_processid < ?{pid_cs}))')
+    return (f'{MAIN_TABLE_NAME} {alias}', where,
+            [query, *cs_params, pid, pid + _PID_RANGE_END, *pid_cs_params])
+
+
 def search_fts(data, start_time, search_id=None):
     """Optimized FTS implementation"""
     # Accent-stripped like every text field was on import (see
@@ -1397,9 +1463,7 @@ def search_fts(data, start_time, search_id=None):
     if not query:
         return jsonify({'error': t('no_search_query')}), 400
 
-    cs_clause, cs_params = ('', [])
-    if data.get('case_sensitive'):
-        cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'm')
+    from_sql, where_sql, params = fts_source(raw_query, 'm', bool(data.get('case_sensitive')))
 
     conn = get_db_connection()
     if search_id:
@@ -1407,31 +1471,19 @@ def search_fts(data, start_time, search_id=None):
             active_searches[search_id] = conn
 
     cursor = conn.cursor()
-    _, main_table = get_column_names()
 
     skip_count = data.get('skip_count', False)
 
     try:
         total_count = None
         if not skip_count:
-            count_query = f"""
-                SELECT COUNT(*)
-                FROM {main_table} m
-                INNER JOIN {FTS_TABLE_NAME} f ON m.rowid = f.rowid
-                WHERE f.{FTS_TABLE_NAME} MATCH ?{cs_clause}
-            """
-            cursor.execute(count_query, (query, *cs_params))
+            count_query = f"SELECT COUNT(*) FROM {from_sql} WHERE {where_sql}"
+            cursor.execute(count_query, params)
             total_count = cursor.fetchone()[0]
 
         offset = (page - 1) * per_page
-        data_query = f"""
-            SELECT m.*
-            FROM {main_table} m
-            INNER JOIN {FTS_TABLE_NAME} f ON m.rowid = f.rowid
-            WHERE f.{FTS_TABLE_NAME} MATCH ?{cs_clause}
-            LIMIT ? OFFSET ?
-        """
-        cursor.execute(data_query, (query, *cs_params, per_page, offset))
+        data_query = f"SELECT m.* FROM {from_sql} WHERE {where_sql} LIMIT ? OFFSET ?"
+        cursor.execute(data_query, (*params, per_page, offset))
         results_raw = cursor.fetchall()
 
         results = [
@@ -1776,26 +1828,19 @@ def build_optimized_fasta_query(request_data):
         # Accent-stripped like search_fts() does — see the comment there.
         raw_query = _strip_accents(raw_query)
 
-        query = escape_fts_query(raw_query)
-        if not query:
-            raise ValueError(t('no_search_term'))
-
-        cs_clause, cs_params = ('', [])
-        if request_data.get('case_sensitive'):
-            cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'r')
+        from_sql, where_sql, params = fts_source(raw_query, 'r', bool(request_data.get('case_sensitive')))
 
         data_query = f"""
             SELECT r.col_processid, r.col_sampleid, r.col_bin_uri,
                    r.col_species, r.col_genus, r.col_family, r.col_order,
                    r.col_class, r.col_phylum, r.col_kingdom,
                    r.col_marker_code, r.col_nuc
-            FROM bold_records r
-            INNER JOIN bold_records_fts fts ON r.rowid = fts.rowid
-            WHERE fts.bold_records_fts MATCH ?
-            AND r.col_nuc IS NOT NULL AND r.col_nuc != ''{cs_clause}
+            FROM {from_sql}
+            WHERE {where_sql}
+            AND r.col_nuc IS NOT NULL AND r.col_nuc != ''
         """
 
-        return data_query, (query, *cs_params)
+        return data_query, tuple(params)
 
     else:
         conditions = request_data.get('conditions', [])
@@ -2091,20 +2136,9 @@ def prepare_query(data, include_nuc=True):
 
         # Accent-stripped like search_fts() does — see the comment there.
         raw_query = _strip_accents(raw_query)
-        query = escape_fts_query(raw_query)
-        if not query:
-            raise ValueError(t('no_search_term'))
-
-        cs_clause, cs_params = ('', [])
-        if data.get('case_sensitive'):
-            cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'r')
-
-        data_query = f"""
-            SELECT {col_select_join} FROM bold_records r
-            INNER JOIN bold_records_fts fts ON r.rowid = fts.rowid
-            WHERE fts.bold_records_fts MATCH ?{cs_clause}
-        """
-        parameters = (query, *cs_params)
+        from_sql, where_sql, params = fts_source(raw_query, 'r', bool(data.get('case_sensitive')))
+        data_query = f"SELECT {col_select_join} FROM {from_sql} WHERE {where_sql}"
+        parameters = tuple(params)
 
     else:
         conditions = data.get('conditions', [])
@@ -3684,11 +3718,7 @@ def _analysis_search_source(data):
             raise ValueError(t('no_search_term'))
         if not fts_table_available():
             raise ValueError(t('fts_unavailable_short'))
-        cs_clause, cs_params = ('', [])
-        if data.get('case_sensitive'):
-            cs_clause, cs_params = build_case_sensitive_filter(raw_query, 'r')
-        return (f'{MAIN_TABLE_NAME} r INNER JOIN {FTS_TABLE_NAME} fts ON r.rowid = fts.rowid',
-                f'fts.{FTS_TABLE_NAME} MATCH ?{cs_clause}', [query, *cs_params])
+        return fts_source(raw_query, 'r', bool(data.get('case_sensitive')))
 
     conditions = data.get('conditions') or []
     if not conditions:

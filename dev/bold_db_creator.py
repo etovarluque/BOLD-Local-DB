@@ -1690,12 +1690,15 @@ def normalize_nuc(value):
 # is kept: the same limit affects it for 1-2 digit values, but most real
 # sequence lengths (3-4 digits) are indexable. col_nuc (DNA sequence) and
 # col_coord (coordinates) are outside the indexed columns and therefore also
-# outside this set; col_processid already has its own PRIMARY KEY index.
+# outside this set. col_processid is never in the indexed list (Step 2 gives
+# it its own index), but it is added here: without it a full-text search for
+# a BOLD ID ("GBVA049-11") found nothing although the record was there.
 _FTS_EXCLUDE = {"col_country_iso"}
 
 
 def fts_cols(cfg=None):
-    return [c for c in index_cols(cfg) if c not in _FTS_EXCLUDE]
+    cols = [c for c in index_cols(cfg) if c not in _FTS_EXCLUDE and c != "col_processid"]
+    return ["col_processid"] + cols
 
 # ---- DPI-aware font scaling --------------------------------------------------
 
@@ -2872,7 +2875,10 @@ def run_step4(log, progress, cfg):
             try:
                 if open(_db_src).read().strip() == open(_fts_src).read().strip():
                     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='bold_records_fts'")
-                    if cur.fetchone():
+                    # An index built with other columns (older ones lacked
+                    # col_processid) is rebuilt, even from the same data
+                    if cur.fetchone() and [d[0] for d in cur.execute(
+                            "SELECT * FROM bold_records_fts LIMIT 0").description] == sel_fts:
                         log(t('fts_already_built'))
                         progress(100)
                         return True
@@ -4149,7 +4155,10 @@ def _get_project_status(max_age=0.5):
             conn = sqlite3.connect(db, timeout=0.3)
             cur  = conn.cursor()
             cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='bold_records_fts'")
-            step4 = bool(cur.fetchone())
+            # An index without col_processid (older versions) is shown as
+            # pending: full-text search can't find BOLD IDs until it's rebuilt
+            step4 = bool(cur.fetchone()) and "col_processid" in [
+                d[0] for d in cur.execute("SELECT * FROM bold_records_fts LIMIT 0").description]
             # Built by a version that stores the record fingerprints (see run_update)
             cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",
                         (ROW_HASH_TABLE,))

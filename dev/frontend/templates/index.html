@@ -1071,6 +1071,42 @@
 		.last-search-edit { margin-left: auto; color: var(--slate); text-decoration: none; font-weight: 500; }
 		.last-search-edit:hover { text-decoration: underline; }
 
+		/* Search history: recent searches as chips under the form, folded
+		   once a search fills the table; "See all" opens a side panel */
+		.last-search-edit + .last-search-edit { margin-left: 0; }
+		.search-history { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 1rem; padding-top: .9rem; border-top: 1px dashed var(--line); }
+		.hist-icon { width: 1em; height: 1em; margin-right: .3em; vertical-align: -.125em; }
+		.history-bar { display: flex; justify-content: flex-end; margin-top: .5rem; }
+		.hist-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 340px; padding: 3px 4px 3px 10px; border: 1px solid #d3d8e0; border-radius: 16px; background: #fff; font-size: .82rem; cursor: pointer; }
+		.hist-chip:hover, .hist-chip:focus-visible { border-color: var(--orange); background: #fbf6ef; outline: none; }
+		.hist-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+		.hist-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+		.hist-dot.fts, .hist-kind.fts { --hk: #2c5fc9; --hk-bg: #e6efff; }
+		.hist-dot.field, .hist-kind.field { --hk: #227a52; --hk-bg: #e7f5ee; }
+		.hist-dot { background: var(--hk); }
+		.hist-x { border: 0; background: none; color: var(--mute); padding: 0 4px; line-height: 1; font-size: .8rem; }
+		.hist-x:hover { color: var(--ink); }
+		.hist-links { margin-left: auto; font-size: .8rem; white-space: nowrap; }
+		.hist-links .btn { font-size: .8rem; vertical-align: baseline; }
+		.hist-back { position: fixed; inset: 0; z-index: 1040; background: rgba(24, 33, 58, .25); }
+		.hist-drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 1041; width: 400px; max-width: 92vw; display: flex; flex-direction: column; background: #fff; box-shadow: -10px 0 30px rgba(0, 0, 0, .15); }
+		.hist-drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--slate); color: #fff; }
+		.hist-drawer-head button { border: 0; background: none; color: #fff; font-size: 1rem; }
+		.hist-drawer-body { flex: 1; overflow-y: auto; }
+		.hist-drawer-foot { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
+		.hist-sec { padding: 8px 12px 4px; border-bottom: 1px solid var(--line); background: #fafbfc; font-size: .7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+		.hist-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+		.hist-item:hover, .hist-item:focus-visible { background: #fbf6ef; outline: none; }
+		.hist-kind { flex-shrink: 0; min-width: 58px; padding: 1px 5px; border-radius: 4px; background: var(--hk-bg); color: var(--hk); text-align: center; font-size: .66rem; font-weight: 600; letter-spacing: .04em; }
+		.hist-main { flex: 1; min-width: 0; }
+		.hist-q { font-family: var(--f-mono); font-size: .8rem; overflow-wrap: anywhere; }
+		.hist-meta { font-size: .75rem; color: var(--mute); }
+		.hist-act { display: flex; opacity: .55; }
+		.hist-item:hover .hist-act, .hist-item:focus-within .hist-act { opacity: 1; }
+		.hist-act button { border: 0; background: none; color: var(--mute); padding: 0 4px; font-size: .95rem; line-height: 1.4; }
+		.hist-act button:hover { color: var(--ink); }
+		.hist-act button.pinned { color: var(--orange); }
+
 		/* Results header: the count stands out, the time is a quiet chip */
 		#resultsCardHeader h5 { align-items: center; }
 		#resultsCardHeader [data-i18n="results_label"] { font-weight: 400; opacity: .85; }
@@ -1640,10 +1676,19 @@
                     <input class="form-check-input" type="checkbox" id="ftsCaseSensitiveCheckbox">
                     <label class="form-check-label" for="ftsCaseSensitiveCheckbox" data-i18n="fts_case_sensitive_label">Sensible a mayúsculas/minúsculas</label>
                 </div>
+                <div class="search-history mb-3" data-kind="fts" hidden></div>
+                <div id="ftsHistoryBar" class="history-bar" hidden>
+                    <button type="button" class="btn btn-sm btn-link last-search-edit history-toggle" aria-expanded="true"></button>
+                </div>
                 <div class="form-text" data-i18n="fts_help_text">
                     Busca en toda la base de datos con una consulta de texto completo.
                     Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.
                 </div>
+                {% if not fts_has_processid %}
+                <div class="alert alert-warning small mt-3 mb-0" role="note" data-i18n-html="fts_no_processid_note">
+                    Este índice de texto completo es de una versión anterior y <strong>no incluye el ID BOLD (processid)</strong>. Un ID completo o su comienzo (<code>GBVA049-11</code>, <code>GBVA049</code>) se encuentra igualmente, pero un fragmento del interior del ID (<code>VA049-11</code>) no: que no aparezca no significa que el registro falte en la base. Para esos casos usa la búsqueda avanzada por campos, o regenera el índice (Paso 4 de BOLD DB Creator) para incluir el ID BOLD.
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -2216,7 +2261,9 @@
 					<span class="last-search-label" data-i18n="last_search_label">Búsqueda mostrada</span>
 					<div id="lastSearchChips" class="last-search-chips"></div>
 					<button type="button" id="editLastSearch" class="btn btn-sm btn-link last-search-edit" data-i18n="edit_search_btn">✎ Editar</button>
+					<button type="button" class="btn btn-sm btn-link last-search-edit history-toggle" aria-expanded="true" hidden></button>
 				</div>
+				<div class="search-history" data-kind="field" hidden></div>
 
                 
 
@@ -2294,6 +2341,7 @@
                 search_methods_aria: 'Métodos de búsqueda',
                 field_search_tab_btn: 'Búsqueda avanzada por campos',
                 fts_panel_title: 'Búsqueda de texto completo',
+                fts_no_processid_note: 'Este índice de texto completo es de una versión anterior y <strong>no incluye el ID BOLD (processid)</strong>. Un ID completo o su comienzo (<code>GBVA049-11</code>, <code>GBVA049</code>) se encuentra igualmente, pero un fragmento del interior del ID (<code>VA049-11</code>) no: que no aparezca no significa que el registro falte en la base. Para esos casos usa la búsqueda avanzada por campos, o regenera el índice (Paso 4 de BOLD DB Creator) para incluir el ID BOLD.',
                 fts_help_text: 'Busca en toda la base de datos con una consulta de texto completo. Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.',
                 fts_query_placeholder: 'Introduce tu consulta...',
                 batch_tab_btn: 'Lote en BOLD local',
@@ -2385,6 +2433,16 @@
                 local_database: 'Base de datos local', records_label: 'registros',
                 db_stale_badge: 'hace {n} días',
                 db_stale_tip: 'El paquete de BOLD con el que se construyó esta base tiene {n} días. BOLD publica uno nuevo cada semana: abre BOLD-Local-DB y usa «Actualizar la base de datos».',
+                history_recent: 'Recientes', history_toggle_show: 'Historial', history_toggle_hide: 'Ocultar historial',
+                history_see_all: 'Ver todo ({n})', history_clear: 'Borrar', history_clear_all: 'Borrar historial',
+                history_clear_confirm: '¿Borrar el historial de búsquedas? Las búsquedas fijadas se conservan.',
+                history_title: 'Historial de búsquedas', history_filter: 'Filtrar historial...', history_close: 'Cerrar',
+                history_pinned: 'Fijadas', history_today: 'Hoy', history_yesterday: 'Ayer', history_older: 'Anteriores',
+                history_pin: 'Fijar (no se borra con el historial)', history_unpin: 'Desfijar', history_remove: 'Quitar del historial',
+                history_results: '{n} resultados', history_result_one: '1 resultado',
+                history_kind_fts: 'TEXTO', history_kind_field: 'CAMPOS',
+                history_none_match: 'Ninguna búsqueda coincide.', history_empty: 'Aún no hay búsquedas guardadas.',
+                history_info: '{n} búsquedas · máximo {max} sin fijar',
                 last_search_label: 'Búsqueda mostrada', edit_search_btn: '✎ Editar',
                 record_label: 'Registro', record_close: 'Cerrar',
                 record_taxonomy: 'Taxonomía', record_fields: 'Datos del registro',
@@ -3632,6 +3690,7 @@
                 search_methods_aria: 'Search methods',
                 field_search_tab_btn: 'Advanced field search',
                 fts_panel_title: 'Full-text search',
+                fts_no_processid_note: 'This full-text index comes from an older version and <strong>does not include the BOLD ID (processid)</strong>. A whole ID or its beginning (<code>GBVA049-11</code>, <code>GBVA049</code>) is still found, but a fragment from inside the ID (<code>VA049-11</code>) is not: no results does not mean the record is missing from the database. For those, use the advanced field search, or rebuild the index (Step 4 of BOLD DB Creator) to include the BOLD ID.',
                 fts_help_text: 'Search the whole database with a full-text query. You can use operators like AND, OR, NOT and quotes for exact phrases.',
                 fts_query_placeholder: 'Enter your query...',
                 batch_tab_btn: 'Local BOLD batch',
@@ -3724,6 +3783,16 @@
                 local_database: 'Local Database', records_label: 'records',
                 db_stale_badge: '{n} days old',
                 db_stale_tip: 'The BOLD package this database was built from is {n} days old. BOLD publishes a new one every week: open BOLD-Local-DB and use "Update the database".',
+                history_recent: 'Recent', history_toggle_show: 'History', history_toggle_hide: 'Hide history',
+                history_see_all: 'See all ({n})', history_clear: 'Clear', history_clear_all: 'Clear history',
+                history_clear_confirm: 'Clear the search history? Pinned searches are kept.',
+                history_title: 'Search history', history_filter: 'Filter history...', history_close: 'Close',
+                history_pinned: 'Pinned', history_today: 'Today', history_yesterday: 'Yesterday', history_older: 'Older',
+                history_pin: 'Pin (kept when the history is cleared)', history_unpin: 'Unpin', history_remove: 'Remove from history',
+                history_results: '{n} results', history_result_one: '1 result',
+                history_kind_fts: 'TEXT', history_kind_field: 'FIELDS',
+                history_none_match: 'No search matches.', history_empty: 'No saved searches yet.',
+                history_info: '{n} searches · up to {max} unpinned',
                 last_search_label: 'Showing results for', edit_search_btn: '✎ Edit',
                 record_label: 'Record', record_close: 'Close',
                 record_taxonomy: 'Taxonomy', record_fields: 'Record data',
@@ -5915,6 +5984,7 @@
 
 				// Hide the explain panel if visible
 				document.getElementById('explainPanel').style.display = 'none';
+				renderHistory();
 			});
 			
 			document.getElementById('cancelButton').addEventListener('click', function() {
@@ -5928,6 +5998,11 @@
 				const s = AppState.resultsSearch;
 				if (s && s.type === 'field') restoreFieldSearchForm(s.conditions);
 			});
+			document.querySelectorAll('.history-toggle').forEach(b => b.addEventListener('click', () => {
+				historyOpen = !historyOpen;
+				renderHistory();
+			}));
+			renderHistory();
 		}
 
 		// The field-search form back to its initial state: one blank condition
@@ -6005,6 +6080,257 @@
 				chips.appendChild(chip);
 			});
 			document.getElementById('lastSearchBar').hidden = false;
+		}
+
+
+		// ── Search history ──
+		// Field and full-text searches that filled the table, kept in this
+		// browser. Their chips sit under the form until a search fills the
+		// table, then fold to leave it room (the History button brings them back).
+		const HISTORY_KEY = 'boldSearchHistory';
+		const HISTORY_MAX = 50;      // unpinned searches; pinned ones always stay
+		const HISTORY_CHIPS = 6;
+		// Clock with a back arrow; takes the text's colour and size, like ✎
+		const HISTORY_ICON = '<svg class="hist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+			+ 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/>'
+			+ '<path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>';
+		let searchHistory = [];
+		try { searchHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (e) { /* storage blocked */ }
+		if (!Array.isArray(searchHistory)) searchHistory = [];
+		let historyOpen = true;
+		let historyDrawer = null;
+
+		function historySave() {
+			try { localStorage.setItem(HISTORY_KEY, JSON.stringify(searchHistory)); } catch (e) { /* storage blocked */ }
+		}
+		const historyKey = h => h.type === 'fts' ? `fts|${h.cs ? 1 : 0}|${h.query}` : 'field|' + JSON.stringify(h.conditions);
+
+		function historyAdd(entry, count) {
+			const old = searchHistory.find(h => historyKey(h) === historyKey(entry));
+			searchHistory = searchHistory.filter(h => h !== old);
+			searchHistory.unshift({ ...entry, count: count ?? null, at: Date.now(), pin: !!(old && old.pin) });
+			let unpinned = 0;
+			searchHistory = searchHistory.filter(h => h.pin || ++unpinned <= HISTORY_MAX);
+			historySave();
+		}
+
+		// What this page can run again (no full-text tab without its index),
+		// pinned first, then the latest
+		const historyList = () => searchHistory
+			.filter(h => h.type === 'field' || document.getElementById('ftsSearchPanel'))
+			.sort((a, b) => (b.pin - a.pin) || (b.at - a.at));
+
+		function historyText(h) {
+			if (h.type === 'fts') return h.query + (h.cs ? ' (Aa)' : '');
+			return h.conditions.map((c, i) => {
+				const sym = CHIP_OPERATORS[c.operator] || c.operator;
+				const op = sym.startsWith('op_') ? t(sym).toLowerCase() : sym;
+				const val = NO_VALUE_OPERATORS.includes(c.operator) ? ''
+					: ' ' + (c.operator === 'BETWEEN' ? `${c.value} – ${c.value2}` : c.value);
+				return `${i ? (c.condition_type || 'AND') + ' ' : ''}${c.column} ${op}${val}`;
+			}).join(' ');
+		}
+
+		// Days between a time and today (0 today, 1 yesterday...)
+		function historyDaysAgo(at) {
+			const day = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+			return Math.round((day(new Date()) - day(new Date(at))) / 86400000);
+		}
+
+		function historyWhen(at) {
+			const d = new Date(at), days = historyDaysAgo(at);
+			const time = d.toLocaleTimeString(currentLang, { hour: '2-digit', minute: '2-digit' });
+			if (days === 0) return `${t('history_today').toLowerCase()} ${time}`;
+			if (days === 1) return `${t('history_yesterday').toLowerCase()} ${time}`;
+			return d.toLocaleDateString(currentLang, { day: 'numeric', month: 'short', year: days > 300 ? 'numeric' : undefined });
+		}
+
+		const historyMeta = h => [
+			h.count === null || h.count === undefined ? ''
+				: t(h.count === 1 ? 'history_result_one' : 'history_results', { n: numFmt.format(h.count) }),
+			historyWhen(h.at),
+		].filter(Boolean).join(' · ');
+
+		// Opens the search's tab, puts it back in the form and runs it
+		function historyRun(h) {
+			historyClose();
+			if (h.type === 'fts') {
+				document.getElementById('ftsSearchTab').click();
+				document.getElementById('ftsQueryInput').value = h.query;
+				const cs = document.getElementById('ftsCaseSensitiveCheckbox');
+				if (cs) cs.checked = !!h.cs;
+				performFtsSearch();
+			} else {
+				document.getElementById('fieldSearchTab').click();
+				restoreFieldSearchForm(h.conditions);
+				performSearch();
+			}
+		}
+
+		function historyRemove(h) {
+			searchHistory = searchHistory.filter(x => x !== h);
+			historySave();
+			renderHistory();
+		}
+
+		function historyClear() {
+			if (!confirm(t('history_clear_confirm'))) return;
+			searchHistory = searchHistory.filter(h => h.pin);
+			historySave();
+			renderHistory();
+		}
+
+		function historyTogglePin(h) {
+			h.pin = !h.pin;
+			historySave();
+			renderHistory();
+		}
+
+		function historyEl(tag, cls, text) {
+			const el = document.createElement(tag);
+			if (cls) el.className = cls;
+			if (text !== undefined) el.textContent = text;
+			return el;
+		}
+
+		// Clicked or Enter/Space: runs the search
+		function historyActivate(el, h) {
+			el.tabIndex = 0;
+			el.setAttribute('role', 'button');
+			el.addEventListener('click', () => historyRun(h));
+			el.addEventListener('keydown', e => {
+				if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); historyRun(h); }
+			});
+		}
+
+		function historyChip(h) {
+			const chip = historyEl('span', 'hist-chip');
+			chip.title = `${historyText(h)} · ${historyMeta(h)}`;
+			const x = historyEl('button', 'hist-x', '✕');
+			x.type = 'button';
+			x.title = t('history_remove');
+			x.setAttribute('aria-label', t('history_remove'));
+			x.addEventListener('click', e => { e.stopPropagation(); historyRemove(h); });
+			chip.append(historyEl('span', 'hist-dot ' + h.type),
+			            historyEl('span', 'hist-text', (h.pin ? '★ ' : '') + historyText(h)), x);
+			historyActivate(chip, h);
+			return chip;
+		}
+
+		function historyLink(text, fn, cls = '') {
+			const b = historyEl('button', 'btn btn-link btn-sm p-0 ' + cls, text);
+			b.type = 'button';
+			b.addEventListener('click', fn);
+			return b;
+		}
+
+		function renderHistory() {
+			const list = historyList();
+			const shown = AppState.resultsSearch && AppState.resultsSearch.type;
+			// Each panel's chips: always while its tab has no results on screen,
+			// otherwise only when unfolded
+			document.querySelectorAll('.search-history').forEach(box => {
+				box.replaceChildren();
+				box.hidden = !list.length || (!historyOpen && shown === box.dataset.kind);
+				if (box.hidden) return;
+				const links = historyEl('span', 'hist-links');
+				links.append(historyLink(t('history_see_all', { n: list.length }), historyOpenDrawer),
+				             document.createTextNode(' · '),
+				             historyLink(t('history_clear'), historyClear, 'text-muted'));
+				box.append(historyEl('span', 'last-search-label', t('history_recent')),
+				           ...list.slice(0, HISTORY_CHIPS).map(historyChip), links);
+			});
+			document.querySelectorAll('.history-toggle').forEach(b => {
+				b.hidden = !list.length;
+				b.innerHTML = HISTORY_ICON + t(historyOpen ? 'history_toggle_hide' : 'history_toggle_show');
+				b.setAttribute('aria-expanded', String(historyOpen));
+			});
+			// The full-text panel has no "search on screen" bar: its button
+			// shows only while its results are
+			const ftsBar = document.getElementById('ftsHistoryBar');
+			if (ftsBar) ftsBar.hidden = !list.length || shown !== 'fts';
+			if (historyDrawer && !historyDrawer.hidden) renderHistoryDrawer();
+		}
+
+		function historyItem(h) {
+			const row = historyEl('div', 'hist-item');
+			const main = historyEl('div', 'hist-main');
+			main.append(historyEl('div', 'hist-q', historyText(h)), historyEl('div', 'hist-meta', historyMeta(h)));
+			const pin = historyEl('button', h.pin ? 'pinned' : '', h.pin ? '★' : '☆');
+			pin.type = 'button';
+			pin.title = t(h.pin ? 'history_unpin' : 'history_pin');
+			pin.setAttribute('aria-label', pin.title);
+			pin.setAttribute('aria-pressed', String(!!h.pin));
+			pin.addEventListener('click', e => { e.stopPropagation(); historyTogglePin(h); });
+			const del = historyEl('button', '', '✕');
+			del.type = 'button';
+			del.title = t('history_remove');
+			del.setAttribute('aria-label', del.title);
+			del.addEventListener('click', e => { e.stopPropagation(); historyRemove(h); });
+			const acts = historyEl('div', 'hist-act');
+			acts.append(pin, del);
+			row.append(historyEl('span', 'hist-kind ' + h.type, t('history_kind_' + h.type)), main, acts);
+			historyActivate(row, h);
+			return row;
+		}
+
+		function renderHistoryDrawer() {
+			const d = historyDrawer;
+			const q = d.querySelector('.hist-filter').value.trim().toLowerCase();
+			const list = historyList().filter(h => !q || historyText(h).toLowerCase().includes(q));
+			const groups = [
+				['history_pinned', list.filter(h => h.pin)],
+				['history_today', list.filter(h => !h.pin && historyDaysAgo(h.at) === 0)],
+				['history_yesterday', list.filter(h => !h.pin && historyDaysAgo(h.at) === 1)],
+				['history_older', list.filter(h => !h.pin && historyDaysAgo(h.at) > 1)],
+			].filter(([, items]) => items.length);
+			const body = d.querySelector('.hist-drawer-body');
+			body.replaceChildren();
+			groups.forEach(([key, items]) => body.append(historyEl('div', 'hist-sec', t(key)), ...items.map(historyItem)));
+			if (!list.length) body.append(historyEl('p', 'text-muted small p-3 mb-0', t(searchHistory.length ? 'history_none_match' : 'history_empty')));
+			d.querySelector('.hist-info').textContent = t('history_info', { n: historyList().length, max: HISTORY_MAX });
+		}
+
+		function historyOpenDrawer() {
+			if (!historyDrawer) {
+				historyDrawer = historyEl('div');
+				const aside = historyEl('aside', 'hist-drawer');
+				aside.setAttribute('role', 'dialog');
+				aside.setAttribute('aria-modal', 'true');
+				aside.setAttribute('aria-label', t('history_title'));
+				const head = historyEl('div', 'hist-drawer-head');
+				const close = historyEl('button', '', '✕');
+				close.type = 'button';
+				close.setAttribute('aria-label', t('history_close'));
+				close.addEventListener('click', historyClose);
+				const title = historyEl('b');
+				title.innerHTML = HISTORY_ICON + t('history_title');
+				head.append(title, close);
+				const filterBox = historyEl('div', 'p-2 border-bottom');
+				const filter = historyEl('input', 'form-control form-control-sm hist-filter');
+				filter.type = 'search';
+				filter.placeholder = t('history_filter');
+				filter.addEventListener('input', renderHistoryDrawer);
+				filterBox.append(filter);
+				const foot = historyEl('div', 'hist-drawer-foot');
+				foot.append(historyEl('span', 'small text-muted hist-info'),
+				            historyLink(t('history_clear_all'), historyClear, 'text-muted'));
+				aside.append(head, filterBox, historyEl('div', 'hist-drawer-body'), foot);
+				const back = historyEl('div', 'hist-back');
+				back.addEventListener('click', historyClose);
+				historyDrawer.append(back, aside);
+				document.body.append(historyDrawer);
+				document.addEventListener('keydown', e => {
+					if (e.key === 'Escape' && !historyDrawer.hidden) historyClose();
+				});
+			}
+			historyDrawer.hidden = false;
+			renderHistoryDrawer();
+			historyDrawer.querySelector('.hist-filter').focus();
+		}
+
+		function historyClose() {
+			if (historyDrawer) historyDrawer.hidden = true;
 		}
 		
 
@@ -6186,8 +6512,11 @@
 					// bring them back). Left alone if it was edited meanwhile.
 					showLastSearch(conditions);
 					if (fieldFormSnapshot() === submittedForm) resetFieldSearchForm();
+					historyAdd({ type: 'field', conditions }, data.count);
+					historyOpen = false;
 				}
                 displayResults(data);
+				renderHistory();
             } catch (error) {
                 if (error.name === 'AbortError') {
                     console.log('Búsqueda cancelada por el usuario');
@@ -6352,6 +6681,11 @@
 				}
 
 				displayResults(data);
+				if (newSearch) {
+					historyAdd({ type: 'fts', query, cs: caseSensitive }, data.count);
+					historyOpen = false;
+				}
+				renderHistory();
 			} catch (error) {
 				if (error.name === 'AbortError') {
 					console.log('Búsqueda cancelada por el usuario');

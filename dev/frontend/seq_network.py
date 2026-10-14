@@ -454,7 +454,7 @@ def guide(d, counts, hap_rows, recs, ids, name, sites):
         "multi_haps": sum(1 for c in counts if c > 1),
         "shared_places": sum(1 for h in range(nh) if counts[h] > 1 and len(places_of(h)) > 1),
         "species": _tally(recs, "species")[:GUIDE_MAX_ITEMS],
-        "species_n": len({_binomial(r.get("species")) for r in recs} - {None}),
+        "species_n": len({seq_analysis.species_key(r.get("species")) for r in recs} - {""}),
         "shared_species": shared_species[:GUIDE_MAX_ITEMS], "shared_species_n": len(shared_species),
     }
 

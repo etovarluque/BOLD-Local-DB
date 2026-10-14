@@ -1479,6 +1479,11 @@
 		.an-net-legend.italic .an-legend-item { font-style: italic; }
 		.an-net-legend.italic .an-legend-item.plain { font-style: normal; }
 		.an-tree { position: relative; }
+		/* The figure with its "open in a window" button on the top right corner,
+		   outside the scrolling area so it stays put while scrolling */
+		.an-fig { position: relative; }
+		.an-fig > .an-open-viewer { position: absolute; top: 8px; right: 22px; z-index: 2;
+			--bs-btn-bg: rgba(255, 255, 255, .92); box-shadow: 0 1px 4px rgba(15, 23, 42, .18); }
 
 		/* Floating viewer for the tree and the network: figure on the left with
 		   zoom and pan, its options, colours and exports on the right */
@@ -2505,6 +2510,7 @@
                 an_t_of: 'de {n}',
                 an_t_stops: 'Con codones de parada',
                 an_t_species: 'Especies',
+                an_t_species_prov: '+{n} sin determinar (sp., cf.…)',
                 an_t_bins: 'BINs',
                 an_v_quality: 'Calidad',
                 an_v_haplotypes: 'Haplotipos',
@@ -3832,6 +3838,7 @@
                 an_t_of: 'of {n}',
                 an_t_stops: 'With stop codons',
                 an_t_species: 'Species',
+                an_t_species_prov: '+{n} unresolved (sp., cf.…)',
                 an_t_bins: 'BINs',
                 an_v_quality: 'Quality',
                 an_v_haplotypes: 'Haplotypes',
@@ -8788,7 +8795,9 @@
 					s.translated && kv(numFmt.format(s.with_stops), t('an_t_stops'),
 						t('an_t_of', { n: numFmt.format(s.translated) }), s.with_stops > 0)]),
 				group('an_g_taxonomy', [
-					r.taxonomy.species && kv(numFmt.format(r.taxonomy.species), t('an_t_species')),
+					r.taxonomy.species && kv(numFmt.format(r.taxonomy.species), t('an_t_species'),
+						r.taxonomy.species_provisional ? t('an_t_species_prov', { n: numFmt.format(r.taxonomy.species_provisional) }) : undefined),
+					r.taxonomy.taxa && kv(numFmt.format(r.taxonomy.taxa), t('an_c_taxa')),
 					r.taxonomy.bin && kv(numFmt.format(r.taxonomy.bin), t('an_t_bins'))]),
 			].filter(Boolean));
 			box.append(groups);
@@ -12535,13 +12544,12 @@ li li { display: list-item; margin: 0; }
 			            button(t('an_net_dl_nexus'), dls.nexus),
 			            button(t('an_net_reset'), () => { AnState.netPos = net.vertices.map(v => [v.x, v.y]); redraw(); },
 			                   'btn-link text-muted p-0 ms-auto'));
-			row1.append(button('⤢ ' + t('an_fig_open'), () => openViewer(), 'btn-outline-primary an-open-viewer'));
 			tools.append(row1, row2);
 			body.append(tools, anEl('p', 'an-muted', t('an_net_drag')));
 
 			const legendBox = anEl('div', 'an-net-legend');
 			const wrap = anEl('div', 'an-tree an-net');
-			body.append(legendBox, wrap);
+			body.append(legendBox, anFigureBox(wrap, () => openViewer()));
 			let fig;
 			function redraw() {
 				fig = anNetSvg(net, opts, false);
@@ -13029,6 +13037,16 @@ li li { display: list-item; margin: 0; }
 			return c || fallback;
 		}
 
+		// The figure's wrapper with the "open in a window" button on its corner
+		function anFigureBox(wrap, openViewer) {
+			const box = anEl('div', 'an-fig');
+			const b = anEl('button', 'btn btn-sm btn-outline-primary an-open-viewer', '⤢ ' + t('an_fig_open'));
+			b.type = 'button';
+			b.addEventListener('click', openViewer);
+			box.append(wrap, b);
+			return box;
+		}
+
 		// Floating viewer for a figure (tree, network). The figure and its
 		// toolbar move into it, so every option keeps working; it adds zoom,
 		// pan and the legend's colours, and on closing they go back.
@@ -13235,7 +13253,7 @@ li li { display: list-item; margin: 0; }
 			else fitWidth();
 		}
 
-		function anTreeToolbar(redraw, hasMotu, openViewer) {
+		function anTreeToolbar(redraw, hasMotu) {
 			const opts = anTreeOpts();
 			const box = anEl('div', 'an-tree-tools');
 			const sel = (labelKey, value, options, onChange) => {
@@ -13287,8 +13305,7 @@ li li { display: list-item; margin: 0; }
 				range('an_tree_row', opts.row, 3, 28, v => { opts.row = v; redraw(); }),
 				range('an_tree_font', opts.font, 4, 18, v => { opts.font = v; redraw(); }),
 				range('an_fig_lines', opts.lineWidth, 0.5, 4, v => { opts.lineWidth = v; redraw(); }, 0.1),
-				check('an_fig_legend', opts.legend, v => { opts.legend = v; redraw(); }),
-				button('⤢ ' + t('an_fig_open'), openViewer, 'btn-outline-primary an-open-viewer'));
+				check('an_fig_legend', opts.legend, v => { opts.legend = v; redraw(); }));
 
 			const row2 = anEl('div', 'an-options mt-2');
 			const labels = anEl('div', 'd-flex flex-wrap align-items-center gap-3');
@@ -13386,10 +13403,10 @@ li li { display: list-item; margin: 0; }
 				kind: 'tree', title: t('an_tree_title', { n: numFmt.format(tree.tips.length) }),
 				wrap, tools: tools.box, size: () => fig, legend: () => anTreeColors(T, opts).legend,
 				attr: () => opts.color, italic: () => anTreeColors(T, opts).italic, redraw: () => redraw(), wheelZoom: false });
-			tools = anTreeToolbar(redraw, hasMotu, openViewer);
+			tools = anTreeToolbar(redraw, hasMotu);
 			// Rebuilding the toolbar too (its selects change with "expand all")
 			AnState.treeRebuild = () => anRefreshView();
-			body.append(tools.box, wrap);
+			body.append(tools.box, anFigureBox(wrap, openViewer));
 
 			wrap.addEventListener('click', e => {
 				const target = e.target.closest('[data-node]');

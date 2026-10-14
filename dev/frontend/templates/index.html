@@ -1481,6 +1481,31 @@
 		.an-tree { position: relative; }
 		/* The figure with its "open in a window" button on the top right corner,
 		   outside the scrolling area so it stays put while scrolling */
+		/* Download icon on the left of every button that saves a file: a mask
+		   painted in the button's own text colour */
+		.btn-dl::before { content: ''; display: inline-block; width: 1.05em; height: 1.05em; margin-right: .4em;
+			vertical-align: -.17em; background-color: currentColor;
+			-webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/%3E%3Cpath d="M7 10l5 5 5-5"/%3E%3Cpath d="M12 15V3"/%3E%3C/svg%3E') center / contain no-repeat; mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/%3E%3Cpath d="M7 10l5 5 5-5"/%3E%3Cpath d="M12 15V3"/%3E%3C/svg%3E') center / contain no-repeat; }
+		/* Painting clades by hand: bands behind the tree, coloured branches */
+		.an-tree .band { cursor: default; }
+		.an-tree.painting .band, .an-tree.painting .group { cursor: pointer; }
+		.an-tree.painting .node-hit { fill: rgba(194, 97, 12, .16); cursor: pointer; }
+		.an-toggle.active { background: var(--slate); border-color: var(--slate); color: #fff; }
+		.an-paint { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+		.an-paint[hidden] { display: none; }
+		.an-paint-who { display: flex; flex-direction: column; min-width: 170px; }
+		.an-paint-g { display: inline-flex; align-items: center; gap: 8px; }
+		.an-paint-sw { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+		.an-sw { width: 22px; height: 22px; padding: 0; border-radius: 5px; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+		.an-sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+		.an-sw-custom { width: 30px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: none; cursor: pointer; }
+		.an-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+		.an-seg button { border: 0; border-right: 1px solid var(--line); background: #fff; color: var(--ink); padding: 2px 10px; font-size: .78rem; }
+		.an-seg button:last-child { border-right: 0; }
+		.an-seg button[aria-pressed="true"] { background: var(--slate); color: #fff; }
+		.an-seg button:disabled { opacity: .45; }
+		.an-paint-name { width: 190px; }
+		.an-viewer-side .an-paint { flex-direction: column; align-items: stretch; }
 		.an-fig { position: relative; }
 		.an-fig > .an-open-viewer { position: absolute; top: 8px; right: 22px; z-index: 2;
 			--bs-btn-bg: rgba(255, 255, 255, .92); box-shadow: 0 1px 4px rgba(15, 23, 42, .18); }
@@ -2223,7 +2248,7 @@
 				<div class="ms-auto d-flex gap-2 align-items-center">
 					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
 					<button id="clearResultsButton" class="btn btn-link btn-sm results-clear-link" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
-					<button id="exportButton" class="btn btn-emerald" data-i18n="export_csv_btn">Exportar CSV</button>
+					<button id="exportButton" class="btn btn-emerald btn-dl" data-i18n="export_csv_btn">Exportar CSV</button>
 				</div>
 			</div>
 			<div class="card-body results-container">
@@ -2498,9 +2523,9 @@
                 an_result_time: 'analizadas en {s} s',
                 an_truncated: 'Se analizaron las primeras {limit} secuencias; la entrada tenía más. Acota la búsqueda para analizarla completa.',
                 an_skipped_short: '{n} secuencia(s) de menos de 50 pb quedaron fuera.',
-                an_dl_sequences: '⤓ Secuencias (CSV)',
-                an_dl_haplotypes: '⤓ Haplotipos (CSV)',
-                an_dl_concordance: '⤓ Especies y BINs (CSV)',
+                an_dl_sequences: 'Secuencias (CSV)',
+                an_dl_haplotypes: 'Haplotipos (CSV)',
+                an_dl_concordance: 'Especies y BINs (CSV)',
                 an_t_sequences: 'Secuencias',
                 an_t_length: 'Longitud mediana (pb)',
                 an_t_range: 'rango {min}–{max}',
@@ -2721,7 +2746,7 @@
                 an_c_mantel_r: 'Mantel r',
                 an_c_p_mantel: 'p (Mantel)',
                 an_c_max_km: 'Distancia máx. (km)',
-                an_struct_pick: 'Ver',
+                an_struct_pick: 'Ver', an_struct_shown: 'Viendo',
                 an_h_ibd: 'Aislamiento por distancia · {sp}',
                 an_ibd_note: '{n} secuencias con coordenadas en {k} lugares{sample}. Cada punto es un par de secuencias: si la nube sube hacia la derecha, las más alejadas son las más distintas.',
                 an_ibd_sample: ' (una muestra de {n} de {m})',
@@ -2815,7 +2840,7 @@
                 id_index_phase_done: 'Creando índice: guardando…',
                 id_running: 'Identificando {done} / {total}…',
                 id_result_title: '{n} secuencias · {marker}',
-                id_dl_zip: '⤓ Resultados (CSV)',
+                id_dl_zip: 'Resultados (CSV)',
                 id_thresholds_note: 'Asignación por consenso de las coincidencias a menos de 1 punto de la mejor: especie desde {s} %, género desde {g} %, familia desde {f} %. Si esas coincidencias no coinciden en un nivel, se asigna el nivel superior en que sí lo hacen.',
                 id_level_species: 'Especie',
                 id_level_genus: 'Género',
@@ -2847,7 +2872,7 @@
                 an_dist_running: 'Alineando y calculando…',
                 an_dist_intro: 'Alinea las secuencias de este análisis contra una de ellas (la referencia) y calcula las distancias por pares; hasta {n} secuencias. Las secuencias con codones de parada se excluyen.',
                 an_dist_title: '{n} secuencias · {model}',
-                an_dl_zip: '⤓ Resultados (ZIP)',
+                an_dl_zip: 'Resultados (ZIP)',
                 an_dist_reference: 'Referencia: {id} ({n} pb).',
                 an_dist_groups: 'Las secuencias forman {n} grupos que no se pueden alinear entre sí: con un mismo nombre de marcador hay genes distintos (el «16S» de BOLD incluye el 16S bacteriano y el mitocondrial de animales) o taxones demasiado lejanos. Las distancias y los árboles se calculan dentro de cada grupo; para analizar uno solo, acota la búsqueda por reino, filo o clase.',
                 an_group_line: 'Grupo {k} · {n} secuencias · {taxa} · referencia {id} ({len} pb)',
@@ -2894,7 +2919,7 @@
                 an_congeneric_note: 'Pares de especies con secuencias casi idénticas. El marcador no las separa: pueden ser especies muy recientes, hibridación, sinónimos o identificaciones a revisar.',
                 an_c_pair: 'Especies', an_c_min_dist: 'Distancia mínima', an_c_same_bin: 'Mismo BIN', an_c_records_list: 'Registros',
                 an_yes: 'Sí', an_no: 'No',
-                an_dl_check: '⤓ Revisión (CSV)',
+                an_dl_check: 'Revisión (CSV)',
                 an_h_gap: 'Barcode gap',
                 an_gap_note: 'Para cada especie, la distancia máxima entre sus secuencias frente a la distancia a la secuencia más cercana de otra especie (su vecino más cercano). Las especies sobre la diagonal o por debajo no tienen gap: el barcode no las separa de su vecina.',
                 an_t_gap_species: 'Especies evaluadas',
@@ -2918,7 +2943,7 @@
                 an_motu_part_asap: 'ASAP, partición {k} ({n} MOTU)',
                 an_motu_part_abgd_rec: 'ABGD recursiva, P = {p} ({n} MOTU)',
                 an_motu_part_abgd_init: 'ABGD inicial, P = {p} ({n} MOTU)',
-                an_dl_motus: '⤓ MOTU (CSV)',
+                an_dl_motus: 'MOTU (CSV)',
                 an_motu_to_tree: 'Ver en el árbol',
                 an_t_motus: 'MOTU',
                 an_t_named_species: 'Especies con nombre',
@@ -3577,12 +3602,20 @@
                 an_tree_country: 'País',
                 an_tree_color_labels: 'Etiquetas en color',
                 an_tree_expand_all: 'Expandir todo',
+                an_tree_focus: 'Subárbol', an_tree_focus_all: 'Árbol completo', an_tree_focus_genera: 'Géneros', an_tree_focus_species: 'Especies',
+                an_paint: 'Pintar clados', an_paint_pick: 'Pulsa un nodo ○ o una banda del árbol para elegir un clado.',
+                an_paint_seqs: '{n} secuencias · {s} especies', an_paint_unnamed: 'Clado sin nombre',
+                an_paint_color: 'Color', an_paint_custom: 'Otro color', an_paint_style: 'Estilo',
+                an_paint_band: 'Banda', an_paint_branch: 'Ramas', an_paint_both: 'Ambas', an_paint_name: 'Nombre',
+                an_paint_remove: 'Quitar color', an_paint_clear: 'Quitar todos los colores',
+                an_paint_opacity: 'Intensidad', an_paint_labels: 'Nombres de banda',
+                an_paint_none: 'Sin color. Elige uno para pintar este clado.',
                 an_tree_export: 'Exportar figura:',
                 an_tree_export_hint: 'tal como se ve (colapsos, colores y etiquetas). PDF: se abre el diálogo de impresión; elige «Guardar como PDF».',
                 an_tree_rows: '{n} filas',
                 an_tree_other: 'Otros ({n} grupos)',
                 an_tree_other_nonmono: 'Otras {n} no monofiléticas',
-                an_fig_open: 'Abrir en ventana', an_fig_close: 'Cerrar', an_fig_options: 'Opciones',
+                an_fig_open: 'Abrir en ventana', an_fig_reset: 'Restablecer opciones', an_fig_close: 'Cerrar', an_fig_options: 'Opciones',
                 an_fig_zoom_in: 'Acercar', an_fig_zoom_out: 'Alejar', an_fig_fit: 'Ajustar', an_fig_fit_width: 'Ajustar al ancho',
                 an_fig_hint_net: 'Rueda: zoom · arrastra el fondo para moverte · arrastra los círculos para recolocarlos · + / − / 0 · Esc para cerrar',
                 an_fig_hint_tree: 'Ctrl + rueda: zoom · arrastra el fondo para moverte · clic en un nodo para plegarlo o desplegarlo · + / − / 0 · Esc para cerrar',
@@ -3826,9 +3859,9 @@
                 an_result_time: 'analysed in {s} s',
                 an_truncated: 'The first {limit} sequences were analysed; the input had more. Narrow the search to analyse all of it.',
                 an_skipped_short: '{n} sequence(s) under 50 bp were left out.',
-                an_dl_sequences: '⤓ Sequences (CSV)',
-                an_dl_haplotypes: '⤓ Haplotypes (CSV)',
-                an_dl_concordance: '⤓ Species and BINs (CSV)',
+                an_dl_sequences: 'Sequences (CSV)',
+                an_dl_haplotypes: 'Haplotypes (CSV)',
+                an_dl_concordance: 'Species and BINs (CSV)',
                 an_t_sequences: 'Sequences',
                 an_t_length: 'Median length (bp)',
                 an_t_range: 'range {min}–{max}',
@@ -4049,7 +4082,7 @@
                 an_c_mantel_r: 'Mantel r',
                 an_c_p_mantel: 'p (Mantel)',
                 an_c_max_km: 'Max. distance (km)',
-                an_struct_pick: 'Show',
+                an_struct_pick: 'Show', an_struct_shown: 'Showing',
                 an_h_ibd: 'Isolation by distance · {sp}',
                 an_ibd_note: '{n} sequences with coordinates at {k} places{sample}. Each point is a pair of sequences: if the cloud rises to the right, those farthest apart are the most different.',
                 an_ibd_sample: ' (a sample of {n} of {m})',
@@ -4143,7 +4176,7 @@
                 id_index_phase_done: 'Building index: saving…',
                 id_running: 'Identifying {done} / {total}…',
                 id_result_title: '{n} sequences · {marker}',
-                id_dl_zip: '⤓ Results (CSV)',
+                id_dl_zip: 'Results (CSV)',
                 id_thresholds_note: 'Assigned by consensus of the matches within 1 point of the best: species from {s} %, genus from {g} %, family from {f} %. When those matches disagree at a rank, the next rank up where they agree is assigned.',
                 id_level_species: 'Species',
                 id_level_genus: 'Genus',
@@ -4175,7 +4208,7 @@
                 an_dist_running: 'Aligning and computing…',
                 an_dist_intro: 'Aligns this analysis\'s sequences to one of them (the reference) and computes pairwise distances; up to {n} sequences. Sequences with stop codons are left out.',
                 an_dist_title: '{n} sequences · {model}',
-                an_dl_zip: '⤓ Results (ZIP)',
+                an_dl_zip: 'Results (ZIP)',
                 an_dist_reference: 'Reference: {id} ({n} bp).',
                 an_dist_groups: 'The sequences form {n} groups that can\'t be aligned with each other: one marker name holds different genes (BOLD\'s "16S" includes bacterial 16S and the mitochondrial 16S of animals) or taxa too far apart. Distances and trees are computed within each group; to analyse just one, narrow the search by kingdom, phylum or class.',
                 an_group_line: 'Group {k} · {n} sequences · {taxa} · reference {id} ({len} bp)',
@@ -4222,7 +4255,7 @@
                 an_congeneric_note: 'Pairs of species with nearly identical sequences. The marker does not tell them apart: very recent species, hybridisation, synonyms or identifications to check.',
                 an_c_pair: 'Species', an_c_min_dist: 'Smallest distance', an_c_same_bin: 'Same BIN', an_c_records_list: 'Records',
                 an_yes: 'Yes', an_no: 'No',
-                an_dl_check: '⤓ Check (CSV)',
+                an_dl_check: 'Check (CSV)',
                 an_h_gap: 'Barcode gap',
                 an_gap_note: 'For each species, the largest distance between its sequences against the distance to the closest sequence of another species (its nearest neighbour). Species on or under the diagonal have no gap: the barcode doesn\'t tell them from their neighbour.',
                 an_t_gap_species: 'Species assessed',
@@ -4246,7 +4279,7 @@
                 an_motu_part_asap: 'ASAP, partition {k} ({n} MOTUs)',
                 an_motu_part_abgd_rec: 'ABGD recursive, P = {p} ({n} MOTUs)',
                 an_motu_part_abgd_init: 'ABGD initial, P = {p} ({n} MOTUs)',
-                an_dl_motus: '⤓ MOTUs (CSV)',
+                an_dl_motus: 'MOTUs (CSV)',
                 an_motu_to_tree: 'Show on the tree',
                 an_t_motus: 'MOTUs',
                 an_t_named_species: 'Named species',
@@ -4905,12 +4938,20 @@
                 an_tree_country: 'Country',
                 an_tree_color_labels: 'Coloured labels',
                 an_tree_expand_all: 'Expand all',
+                an_tree_focus: 'Subtree', an_tree_focus_all: 'Whole tree', an_tree_focus_genera: 'Genera', an_tree_focus_species: 'Species',
+                an_paint: 'Paint clades', an_paint_pick: 'Click a node ○ or a band of the tree to choose a clade.',
+                an_paint_seqs: '{n} sequences · {s} species', an_paint_unnamed: 'Unnamed clade',
+                an_paint_color: 'Colour', an_paint_custom: 'Other colour', an_paint_style: 'Style',
+                an_paint_band: 'Band', an_paint_branch: 'Branches', an_paint_both: 'Both', an_paint_name: 'Name',
+                an_paint_remove: 'Remove colour', an_paint_clear: 'Clear all colours',
+                an_paint_opacity: 'Intensity', an_paint_labels: 'Band names',
+                an_paint_none: 'No colour. Pick one to paint this clade.',
                 an_tree_export: 'Export figure:',
                 an_tree_export_hint: 'as shown (collapses, colours and labels). PDF: the print dialog opens; choose "Save as PDF".',
                 an_tree_rows: '{n} rows',
                 an_tree_other: 'Other ({n} groups)',
                 an_tree_other_nonmono: '{n} other non-monophyletic',
-                an_fig_open: 'Open in a window', an_fig_close: 'Close', an_fig_options: 'Options',
+                an_fig_open: 'Open in a window', an_fig_reset: 'Reset options', an_fig_close: 'Close', an_fig_options: 'Options',
                 an_fig_zoom_in: 'Zoom in', an_fig_zoom_out: 'Zoom out', an_fig_fit: 'Fit', an_fig_fit_width: 'Fit width',
                 an_fig_hint_net: 'Wheel: zoom · drag the background to move around · drag the circles to rearrange them · + / − / 0 · Esc to close',
                 an_fig_hint_tree: 'Ctrl + wheel: zoom · drag the background to move around · click a node to collapse or expand it · + / − / 0 · Esc to close',
@@ -5479,7 +5520,7 @@
 			if (exportButtonContainer && !document.getElementById('exportFastaButton')) {
 				const fastaButton = document.createElement('button');
 				fastaButton.id = 'exportFastaButton';
-				fastaButton.className = 'btn btn-info';
+				fastaButton.className = 'btn btn-info btn-dl';
 				fastaButton.textContent = t('export_fasta_btn');
 				fastaButton.addEventListener('click', exportToFasta);
 				
@@ -5592,7 +5633,7 @@
 							// Replace the cancel button with a download button
 							const downloadBtn = document.createElement('button');
 							downloadBtn.textContent = t('ok_btn');
-							downloadBtn.className = 'download-export-btn';
+							downloadBtn.className = 'download-export-btn btn-dl';
 							downloadBtn.onclick = () => {
 								window.location.href = statusData.download_url;
 								setTimeout(() => {
@@ -6379,7 +6420,7 @@
 					</label>
 					<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
 						<button id="csvOptCancel" style="padding:8px 18px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">${t('cancel_btn')}</button>
-						<button id="csvOptExport" style="padding:8px 20px;border:none;border-radius:4px;background:#0d6efd;color:#fff;font-weight:600;cursor:pointer;">${t('export_btn')}</button>
+						<button id="csvOptExport" class="btn-dl" style="padding:8px 20px;border:none;border-radius:4px;background:#0d6efd;color:#fff;font-weight:600;cursor:pointer;">${t('export_btn')}</button>
 					</div>
 				`;
 
@@ -6525,7 +6566,7 @@
 							// Replace the cancel button with a download button
 							const downloadBtn = document.createElement('button');
 							downloadBtn.textContent = t('ok_btn');
-							downloadBtn.className = 'download-export-btn';
+							downloadBtn.className = 'download-export-btn btn-dl';
 							downloadBtn.onclick = () => {
 								window.location.href = statusData.download_url;
 								setTimeout(() => {
@@ -6826,8 +6867,8 @@
 				return b;
 			};
 			bar.append(label,
-			           mk('⤓ ' + t('sel_export_csv'), 'btn-primary', exportCheckedCsv),
-			           mk('⤓ ' + t('sel_export_fasta'), 'btn-primary', exportCheckedFasta),
+			           mk(t('sel_export_csv'), 'btn-primary btn-dl', exportCheckedCsv),
+			           mk(t('sel_export_fasta'), 'btn-primary btn-dl', exportCheckedFasta),
 			           mk(t('sel_analyse'), 'btn-outline-secondary', anAnalyseChecked),
 			           mk(t('sel_clear'), 'btn-link text-muted', clearChecked));
 			return bar;
@@ -8186,7 +8227,7 @@
 
 							const dlBtn = document.createElement('button');
 							dlBtn.textContent = t('download_zip_btn');
-							dlBtn.className   = 'download-export-btn';
+							dlBtn.className   = 'download-export-btn btn-dl';
 							dlBtn.onclick = () => {
 								window.location.href = sd.download_url;
 								setTimeout(() => {
@@ -8752,7 +8793,7 @@
 			head.append(anEl('span', 'an-muted', t('an_result_time', { s: r.seconds })));
 			const actions = anEl('div', 'an-actions');
 			const dl = (label, fn) => {
-				const b = anEl('button', 'btn btn-sm btn-emerald', label);
+				const b = anEl('button', 'btn btn-sm btn-emerald btn-dl', label);
 				b.type = 'button';
 				b.addEventListener('click', fn);
 				return b;
@@ -8985,6 +9026,8 @@
 
 			const rows = pg.structure;
 			const pick = rows.find(x => x.species === AnState.structSpecies && x.mantel) || rows.find(x => x.mantel);
+			// A choice only when several species have the plot
+			const picks = rows.filter(x => x.mantel).length > 1;
 			const pv = p => p === null || p === undefined ? '—' : p <= 1 / (P.permutations + 1) + 1e-9 ? `≤ ${(1 / (P.permutations + 1)).toFixed(3)}` : p.toFixed(3);
 			if (rows.length > AN_TABLE_ROWS) body.append(anEl('p', 'an-muted',
 				t('an_more_rows', { shown: numFmt.format(AN_TABLE_ROWS), n: numFmt.format(rows.length) })));
@@ -8998,17 +9041,25 @@
 				{ label: t('an_c_mantel_r'), cls: 'num', get: x => x.mantel ? x.mantel.r.toFixed(2) : '—' },
 				{ label: t('an_c_p_mantel'), cls: 'num', get: x => x.mantel ? pv(x.mantel.p) : '—' },
 				{ label: t('an_c_max_km'), cls: 'num', get: x => x.mantel ? numFmt.format(Math.round(x.mantel.max_km)) : '—' },
-				{ label: '', get: x => {
+				...(picks ? [{ label: '', get: x => {
 					if (!x.mantel) return '';
-					const b = anEl('button', 'btn btn-sm an-pick' + (x === pick ? ' active' : ''), t('an_struct_pick'));
+					const active = x === pick;
+					const b = anEl('button', 'btn btn-sm an-pick' + (active ? ' active' : ''), t(active ? 'an_struct_shown' : 'an_struct_pick'));
 					b.type = 'button';
-					b.addEventListener('click', () => { AnState.structSpecies = x.species; anRefreshView(); });
+					b.disabled = active;
+					// The plot is under the table: take the page there
+					b.addEventListener('click', () => {
+						AnState.structSpecies = x.species;
+						anRefreshView();
+						const head = document.querySelector('.an-ibd-head');
+						if (head) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					});
 					return b;
-				} },
+				} }] : []),
 			], rows.slice(0, AN_TABLE_ROWS)));
 			if (pick) {
 				const m = pick.mantel;
-				body.append(anEl('div', 'an-h', t('an_h_ibd', { sp: pick.species })));
+				body.append(anEl('div', 'an-h an-ibd-head', t('an_h_ibd', { sp: pick.species })));
 				body.append(anEl('p', 'an-muted', t('an_ibd_note', { n: numFmt.format(m.n), k: numFmt.format(m.places),
 					sample: m.with_coords > m.n ? t('an_ibd_sample', { n: numFmt.format(m.n), m: numFmt.format(m.with_coords) }) : '' })));
 				body.append(anIbdScatter(m));
@@ -9672,7 +9723,7 @@
 				n: numFmt.format(d.analysed), model: t('an_model_' + d.model) })));
 			head.append(anEl('span', 'an-muted', t('an_result_time', { s: d.seconds })));
 			const actions = anEl('div', 'an-actions');
-			const zip = anEl('a', 'btn btn-sm btn-emerald', t('an_dl_zip'));
+			const zip = anEl('a', 'btn btn-sm btn-emerald btn-dl', t('an_dl_zip'));
 			zip.href = `/api/analysis/download/${d.download_id}`;
 			zip.title = d.files.join(', ');
 			actions.append(zip);
@@ -9776,7 +9827,7 @@
 			const renamed = c.shared.filter(p => p.kind === 'renamed');
 			const congeneric = c.shared.filter(p => p.kind === 'congeneric');
 			if (c.suspects.length || c.shared.length) {
-				const dl = anEl('button', 'btn btn-sm btn-emerald', t('an_dl_check'));
+				const dl = anEl('button', 'btn btn-sm btn-emerald btn-dl', t('an_dl_check'));
 				dl.type = 'button';
 				dl.addEventListener('click', () => anDownloadCheck(c));
 				head.append(dl);
@@ -9971,7 +10022,7 @@
 			const boxHead = anEl('div', 'an-check-head');
 			boxHead.append(anEl('div', 'an-h', t('an_h_motu_conc', { part: part.label })));
 			const actions = anEl('div', 'd-flex flex-wrap gap-2');
-			const dl = anEl('button', 'btn btn-sm btn-emerald', t('an_dl_motus'));
+			const dl = anEl('button', 'btn btn-sm btn-emerald btn-dl', t('an_dl_motus'));
 			dl.type = 'button';
 			dl.addEventListener('click', () => anDownloadMotus(g, part, c));
 			actions.append(dl);
@@ -10346,7 +10397,7 @@
 			// Inside the summary: a click on them mustn't fold the section.
 			const exports = anEl('span', 'an-guide-exports');
 			[['pdf', 'PDF'], ['txt', 'TXT'], ['md', 'MD']].forEach(([fmt, label]) => {
-				const b = anEl('button', 'btn btn-sm an-guide-export', '⤓ ' + label);
+				const b = anEl('button', 'btn btn-sm an-guide-export btn-dl', label);
 				b.type = 'button';
 				b.title = t('an_g_export_' + fmt);
 				b.addEventListener('click', e => {
@@ -12189,9 +12240,12 @@ li li { display: list-item; margin: 0; }
 		// Pixels per layout unit at scale 1
 		const AN_NET_UNIT = 16;
 
+		// How the network is drawn; the species and the method are what was run
+		const anNetDrawDefaults = () => ({ color: 'country', labels: 'hap', ticks: true, scale: 1,
+		                                   nodeScale: 1, labelSize: 10, lineWidth: 1.2, legend: true });
+
 		function anNetOpts() {
-			if (!AnState.netOpts) AnState.netOpts = { species: '', method: 'tcs', color: 'country', labels: 'hap', ticks: true, scale: 1,
-				                                       nodeScale: 1, labelSize: 10, lineWidth: 1.2, legend: true };
+			if (!AnState.netOpts) AnState.netOpts = { species: '', method: 'tcs', ...anNetDrawDefaults() };
 			return AnState.netOpts;
 		}
 
@@ -12522,12 +12576,17 @@ li li { display: list-item; margin: 0; }
 					v => { opts.color = v; redraw(); }),
 				sel('an_tree_labels', opts.labels, [['none', 'an_net_lbl_none'], ['hap', 'an_net_lbl_hap'], ['hap_n', 'an_net_lbl_hap_n']],
 					v => { opts.labels = v; redraw(); }),
+				tickLbl);
+			// The sliders, together on a line of their own
+			const rowSize = anEl('div', 'an-options mt-2');
+			rowSize.append(
 				sizeLbl,
 				slider('an_net_node_size', 'nodeScale', 0.3, 3, 0.1, v => `${v.toFixed(1)}×`),
 				slider('an_fig_text', 'labelSize', 6, 24, 1, v => String(v)),
 				slider('an_fig_lines', 'lineWidth', 0.5, 5, 0.1, v => v.toFixed(1)),
-				tickLbl, legLbl);
-			const button = (label, fn, cls = 'btn-emerald') => {
+				legLbl);
+			// Exports and downloads by default (the resets pass their own class)
+			const button = (label, fn, cls = 'btn-emerald btn-dl') => {
 				const b = anEl('button', 'btn btn-sm ' + cls, label);
 				b.type = 'button';
 				b.addEventListener('click', fn);
@@ -12544,7 +12603,9 @@ li li { display: list-item; margin: 0; }
 			            button(t('an_net_dl_nexus'), dls.nexus),
 			            button(t('an_net_reset'), () => { AnState.netPos = net.vertices.map(v => [v.x, v.y]); redraw(); },
 			                   'btn-link text-muted p-0 ms-auto'));
-			tools.append(row1, row2);
+			row1.append(button(t('an_fig_reset'), () => { Object.assign(opts, anNetDrawDefaults()); anRefreshView(); },
+			                   'btn-link text-muted p-0 ms-auto'));
+			tools.append(row1, rowSize, row2);
 			body.append(tools, anEl('p', 'an-muted', t('an_net_drag')));
 
 			const legendBox = anEl('div', 'an-net-legend');
@@ -12662,15 +12723,18 @@ li li { display: list-item; margin: 0; }
 		const AN_TREE_AUTO_COLLAPSE = 300;
 
 		function anTreeOpts() {
-			if (!AnState.treeOpts) {
-				AnState.treeOpts = {
-					collapse: 'none', color: 'none', mode: 'phylo', row: 15, font: 11, query: '',
-					labels: { species: true, id: true, bin: true, country: false, motu: false },
-					colorLabels: false, lineWidth: 1, legend: true,
-					touched: false,
-				};
-			}
+			if (!AnState.treeOpts) AnState.treeOpts = anTreeDefaults();
 			return AnState.treeOpts;
+		}
+
+		function anTreeDefaults() {
+			return {
+				collapse: 'none', color: 'none', mode: 'phylo', row: 15, font: 11, query: '', focus: '',
+				paintMode: false, bandOpacity: 0.18, bandLabels: true,
+				labels: { species: true, id: true, bin: true, country: false, motu: false },
+				colorLabels: false, lineWidth: 1, legend: true,
+				touched: false,
+			};
 		}
 
 		// Parsed tree with what the drawing needs per node, built once per run
@@ -12719,7 +12783,8 @@ li li { display: list-item; margin: 0; }
 			});
 			// Species that aren't a clade, as the reading tells them (server side)
 			const nonmono = (tree.guide && tree.guide.species && tree.guide.species.nonmono) || [];
-			return { root, nodes, meta, discordance, nonmono, keys: {}, manual: new Map() };
+			// paint: clades coloured by hand, { node id: { color, style, label } }
+			return { root, nodes, meta, discordance, nonmono, keys: {}, manual: new Map(), paint: {}, paintSel: null };
 		}
 
 		// Per node, the value of `attr` its tips all share (null if they differ)
@@ -12736,6 +12801,38 @@ li li { display: list-item; margin: 0; }
 				}
 			}
 			return (T.keys[attr] = keys);
+		}
+
+		// Genus of a tip: its own field, or the first word of the species
+		const anTipGenus = m => m.genus || (m.species ? m.species.split(' ')[0] : '');
+
+		// The subtree on show (opts.focus, "g:Genus" or "s:Genus species"):
+		// the smallest clade holding all the taxon's sequences, one level up
+		// so its sister group shows too. Null for the whole tree.
+		function anTreeFocus(T, opts) {
+			const f = opts.focus || '';
+			if (!f) return null;
+			if (T.focusKey === f) return T.focus;
+			const name = f.slice(2);
+			const match = f[0] === 's' ? m => m.species === name : m => anTipGenus(m) === name;
+			const leaf = new Map(T.nodes.filter(n => !n.children.length).map(n => [n.tip, n]));
+			const tips = T.meta.map((m, i) => match(m) ? i : -1).filter(i => i >= 0 && leaf.has(i));
+			let focus = null;
+			if (tips.length) {
+				const path = new Set();
+				for (let n = leaf.get(tips[0]); n; n = n.parent) path.add(n);
+				let anc = leaf.get(tips[0]);
+				tips.slice(1).forEach(i => {
+					let n = leaf.get(i);
+					while (!path.has(n)) n = n.parent;
+					if (n.depth < anc.depth) anc = n;
+				});
+				const root = anc.parent || anc;
+				if (root !== T.root) focus = { root, tips: new Set(tips) };
+			}
+			T.focusKey = f;
+			T.focus = focus;
+			return focus;
 		}
 
 		function anIsCollapsed(T, n, opts) {
@@ -12856,15 +12953,23 @@ li li { display: list-item; margin: 0; }
 			const colors = anTreeColors(T, opts);
 			const query = (opts.query || '').trim().toLowerCase();
 			const phylo = opts.mode === 'phylo';
+			// A subtree is drawn from its own root, which never folds; its
+			// legend keeps the values it holds
+			const F = anTreeFocus(T, opts), R = F ? F.root : T.root;
+			const collapsed = n => n !== R && anIsCollapsed(T, n, opts);
+			if (F) {
+				const used = new Set(R.tips.map(i => colors.tip(i)));
+				colors.legend = colors.legend.filter(([c]) => used.has(c));
+			}
 
 			// Rows: visible tips and collapsed clades, top to bottom
 			const items = [];
 			const visit = n => {
 				if (!n.children.length) items.push({ n, kind: 'tip' });
-				else if (anIsCollapsed(T, n, opts)) items.push({ n, kind: 'group' });
+				else if (collapsed(n)) items.push({ n, kind: 'group' });
 				else n.children.forEach(visit);
 			};
-			visit(T.root);
+			visit(R);
 			items.forEach(it => {
 				it.parts = !showLabels ? [] : it.kind === 'tip'
 					? anTipLabel(T.meta[it.n.tip], opts.labels) : anGroupLabel(T, it.n, opts.labels);
@@ -12874,8 +12979,30 @@ li li { display: list-item; margin: 0; }
 			const charW = font * 0.56;
 			const dot = colors.legend.length ? Math.max(1, Math.min(5, row * 0.38)) : 0;
 			const labelW = showLabels ? Math.max(...items.map(it => it.text.length), 4) * charW + dot * 2 + 16 : dot * 2 + 8;
+			// Clades painted by hand that are on view (T.paint), the rows they
+			// cover, how deep they nest, and the room their names take
+			const inSub = (n, a) => { for (let p = n; p; p = p.parent) if (p === a) return true; return false; };
+			const rowsOf = n => {
+				let first = -1, last = -1;
+				items.forEach((it, i) => { if (inSub(it.n, n)) { if (first < 0) first = i; last = i; } });
+				return first < 0 ? null : [first, last];
+			};
+			const bands = Object.entries(T.paint || {}).map(([id, p]) => {
+				const n = T.nodes[+id], r = n && rowsOf(n);
+				return r ? { n, p, first: r[0], last: r[1] } : null;
+			}).filter(Boolean).sort((a, b) => a.n.depth - b.n.depth);
+			const filled = bands.filter(b => b.p.style !== 'branch');
+			const levelOf = n => filled.filter(b => b.n !== n && inSub(n, b.n)).length;
+			filled.forEach(b => { b.lv = levelOf(b.n); });
+			const named = opts.bandLabels === false ? [] : filled.filter(b => b.p.label);
+			const bandExtra = named.length ? Math.ceil(Math.max(...named.map(b => b.p.label.length * 6.4 + b.lv * 12)) + 24) : 0;
+			// A folded clade takes the colour of the band it sits in
+			const paintColorAt = n => {
+				for (let p = n; p; p = p.parent) { const x = (T.paint || {})[p.id]; if (x && x.style !== 'branch') return x.color; }
+				return null;
+			};
 			const L = 12, BW = 760;
-			const W = Math.ceil(L + BW + labelW + 12);
+			const W = Math.ceil(L + BW + labelW + 12 + bandExtra);
 
 			// Legend on top, wrapped to the width
 			const legendParts = [];
@@ -12893,9 +13020,9 @@ li li { display: list-item; margin: 0; }
 			}
 
 			// Positions
-			const maxDepth = T.root.maxDepth || 1, maxHeight = T.root.height || 1;
-			const X = n => L + (phylo ? n.depth / maxDepth : (maxHeight - n.height) / maxHeight) * BW;
-			const XEnd = n => L + (phylo ? n.maxDepth / maxDepth : 1) * BW;      // a clade's far edge
+			const d0 = R.depth, maxDepth = (R.maxDepth - d0) || 1, maxHeight = R.height || 1;
+			const X = n => L + (phylo ? (n.depth - d0) / maxDepth : (maxHeight - n.height) / maxHeight) * BW;
+			const XEnd = n => L + (phylo ? (n.maxDepth - d0) / maxDepth : 1) * BW;      // a clade's far edge
 			const Y = new Map();
 			items.forEach((it, i) => Y.set(it.n.id, top + i * row + row / 2));
 			const yOf = n => {
@@ -12905,22 +13032,61 @@ li li { display: list-item; margin: 0; }
 				Y.set(n.id, y);
 				return y;
 			};
-			yOf(T.root);
+			yOf(R);
+			const BR = W - 6;
+			const bandParts = filled.map(b => {
+				const lv = b.lv;
+				const x0 = b.n.parent && inSub(b.n.parent, R) ? X(b.n.parent) + 2 : L - 6, x1 = BR - lv * 12;
+				const y0 = top + b.first * row + lv * 1.5, y1 = top + (b.last + 1) * row - lv * 1.5;
+				return `<rect${forExport ? '' : ` class="band" data-band="${b.n.id}"`} x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(x1 - x0, 4).toFixed(1)}" height="${Math.max(y1 - y0, 4).toFixed(1)}" rx="4" fill="${b.p.color}" fill-opacity="${opts.bandOpacity ?? 0.18}"/>`;
+			});
+			const bandNames = named.map(b => {
+				const x1 = BR - b.lv * 12 - 8, y0 = top + b.first * row + b.lv * 1.5;
+				return `<text x="${x1.toFixed(1)}" y="${(y0 + 13).toFixed(1)}" text-anchor="end" font-size="11" font-weight="600" fill="${anTextColor(b.p.color)}">${anSvgEsc(b.p.label)}</text>`;
+			});
 			const H = Math.ceil(top + items.length * row + (phylo ? 40 : 12));
 
 			// Branches: everything above the visible rows
-			const path = [], hits = [];
+			const path = [], hits = [], pmarks = [];
 			const drawn = n => {
-				if (!n.children.length || anIsCollapsed(T, n, opts)) return;
+				if (!n.children.length || collapsed(n)) return;
 				const ys = n.children.map(c => Y.get(c.id));
 				path.push(`M${X(n).toFixed(1)},${ys[0].toFixed(1)}V${ys[ys.length - 1].toFixed(1)}`);
 				n.children.forEach(c => {
 					path.push(`M${X(n).toFixed(1)},${Y.get(c.id).toFixed(1)}H${X(c).toFixed(1)}`);
 					drawn(c);
 				});
+				if (!forExport && opts.paintMode) pmarks.push(`<circle cx="${X(n).toFixed(1)}" cy="${Y.get(n.id).toFixed(1)}" r="3" fill="#ffffff" stroke="${AN_MUTE}" stroke-width="1.2" pointer-events="none"/>`);
 				if (!forExport) hits.push(`<circle class="node-hit" data-node="${n.id}" cx="${X(n).toFixed(1)}" cy="${Y.get(n.id).toFixed(1)}" r="5" fill="transparent"/>`);
 			};
-			drawn(T.root);
+			drawn(R);
+			// Branches painted by hand, over the plain ones
+			const branchPath = n0 => {
+				const segs = [];
+				const rec = m => {
+					if (!Y.has(m.id)) return;
+					if (m !== R) segs.push(`M${X(m.parent).toFixed(1)},${Y.get(m.id).toFixed(1)}H${X(m).toFixed(1)}`);
+					if (m.children.length && !collapsed(m)) {
+						const ys = m.children.map(c => Y.get(c.id));
+						segs.push(`M${X(m).toFixed(1)},${ys[0].toFixed(1)}V${ys[ys.length - 1].toFixed(1)}`);
+						m.children.forEach(rec);
+					}
+				};
+				rec(n0);
+				return segs.join('');
+			};
+			const paintedBranches = bands.filter(b => b.p.style !== 'band').map(b =>
+				`<path d="${branchPath(b.n)}" stroke="${b.p.color}" stroke-width="${(opts.lineWidth || 1) + 1.4}" stroke-linecap="square" fill="none"/>`);
+			// The clade being chosen, while painting
+			const chosen = [];
+			if (!forExport && opts.paintMode && T.paintSel !== null && T.paintSel !== undefined) {
+				const sn = T.nodes[T.paintSel], r = sn && rowsOf(sn);
+				if (r && Y.has(sn.id)) {
+					const lv = levelOf(sn), x0 = sn.parent && inSub(sn.parent, R) ? X(sn.parent) + 2 : L - 6;
+					chosen.push(`<rect x="${x0.toFixed(1)}" y="${(top + r[0] * row + lv * 1.5).toFixed(1)}" width="${Math.max(BR - lv * 12 - x0, 4).toFixed(1)}" height="${Math.max((r[1] - r[0] + 1) * row - lv * 3, 4).toFixed(1)}" rx="4" fill="none" stroke="${AN_HL}" stroke-width="1.5" stroke-dasharray="4 3" pointer-events="none"/>`,
+					            `<circle cx="${X(sn).toFixed(1)}" cy="${Y.get(sn.id).toFixed(1)}" r="6.5" fill="none" stroke="${AN_HL}" stroke-width="2" pointer-events="none"/>`);
+				}
+			}
 
 			// Rows: tip dots, collapsed triangles, labels
 			const marks = [], texts = [];
@@ -12937,7 +13103,7 @@ li li { display: list-item; margin: 0; }
 				} else {
 					const x0 = X(n), x1 = XEnd(n), h = Math.max(row * 0.8, 3);
 					const tipColors = new Set(n.tips.map(i => colors.tip(i)));
-					const fill = tipColors.size === 1 && [...tipColors][0] ? [...tipColors][0] : '#dfe3ea';
+					const fill = tipColors.size === 1 && [...tipColors][0] ? [...tipColors][0] : (paintColorAt(n) || '#dfe3ea');
 					labelColor = tipColors.size === 1 ? [...tipColors][0] : null;
 					marks.push(`<polygon${forExport ? '' : ` class="group" data-node="${n.id}"`} points="${x0.toFixed(1)},${y.toFixed(1)} ${x1.toFixed(1)},${(y - h / 2).toFixed(1)} ${x1.toFixed(1)},${(y + h / 2).toFixed(1)}" fill="${fill}" fill-opacity="0.55" stroke="${AN_INK}" stroke-width="0.8"/>`);
 					x = x1 + 5;
@@ -12949,23 +13115,26 @@ li li { display: list-item; margin: 0; }
 					`<tspan${italic ? ' font-style="italic"' : ''}>${i ? ' ' : ''}${anSvgEsc(text)}</tspan>`).join('');
 				// A search match wins over the group colour
 				const style = hit ? ` fill="${AN_HL}" font-weight="700"`
-				            : opts.colorLabels && labelColor ? ` fill="${anTextColor(labelColor)}"` : '';
+				            : (opts.colorLabels && labelColor ? ` fill="${anTextColor(labelColor)}"` : '')
+				              + (F && n.tips.some(i => F.tips.has(i)) ? ' font-weight="700"' : '');
 				texts.push(`<text x="${x.toFixed(1)}" y="${(y + font * 0.35).toFixed(1)}"${style}>${spans}</text>`);
 			});
 
 			let scale = '';
 			if (phylo) {
-				const s = anStep(T.root.maxDepth, 6);
+				const s = anStep(maxDepth, 6);
 				const sy = H - 20, x1 = L + s / maxDepth * BW;
 				scale = `<path d="M${L},${sy}H${x1.toFixed(1)}" stroke="${AN_INK}" stroke-width="1.2" fill="none"/>` +
 				        `<text x="${((L + x1) / 2).toFixed(1)}" y="${sy + 14}" text-anchor="middle" font-size="11" fill="${AN_MUTE}">${(100 * s).toLocaleString('en-US', { maximumFractionDigits: 2 })} %</text>`;
 			}
 
 			const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${AN_FONT}">` +
-				`<rect width="${W}" height="${H}" fill="#ffffff"/>` + legendParts.join('') +
+				`<rect width="${W}" height="${H}" fill="#ffffff"/>` + legendParts.join('') + bandParts.join('') +
 				`<path d="${path.join('')}" stroke="${AN_INK}" stroke-width="${opts.lineWidth || 1}" fill="none"/>` +
-				marks.join('') +
-				`<g font-size="${font}" fill="${AN_INK}">${texts.join('')}</g>` + scale + hits.join('') + `</svg>`;
+				paintedBranches.join('') + marks.join('') +
+				// While painting, the names let clicks through to the bands behind
+				`<g font-size="${font}" fill="${AN_INK}"${!forExport && opts.paintMode ? ' pointer-events="none"' : ''}>${texts.join('')}</g>` +
+				bandNames.join('') + scale + chosen.join('') + pmarks.join('') + hits.join('') + `</svg>`;
 			return { svg, W, H, firstHit, matches: query ? items.filter(it => it.text.toLowerCase().includes(query)).length : 0,
 			         rows: items.length };
 		}
@@ -13253,6 +13422,154 @@ li li { display: list-item; margin: 0; }
 			else fitWidth();
 		}
 
+		// Subtree menu: the whole tree, a genus or a species, with their
+		// sequences (a name missing from this tree shows the whole of it)
+		function anTreeFocusSelect(opts, redraw) {
+			const T = AnState.tree;
+			const genera = new Map(), species = new Map();
+			T.meta.forEach(m => {
+				const g = anTipGenus(m);
+				if (g) genera.set(g, (genera.get(g) || 0) + 1);
+				if (m.species) species.set(m.species, (species.get(m.species) || 0) + 1);
+			});
+			const s = anEl('select', 'form-select form-select-sm an-tree-focus');
+			const opt = (value, text) => { const o = anEl('option', '', text); o.value = value; return o; };
+			s.append(opt('', t('an_tree_focus_all')));
+			[['g', genera, 'an_tree_focus_genera'], ['s', species, 'an_tree_focus_species']].forEach(([k, map, label]) => {
+				if (!map.size) return;
+				const group = anEl('optgroup');
+				group.label = t(label);
+				[...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+					.forEach(([name, n]) => group.append(opt(`${k}:${name}`, `${name} (${numFmt.format(n)})`)));
+				s.append(group);
+			});
+			s.value = opts.focus && anTreeFocus(T, opts) ? opts.focus : '';
+			s.addEventListener('change', () => { opts.focus = s.value; redraw(); });
+			const l = anEl('label', 'd-flex align-items-center gap-2');
+			l.append(anEl('span', 'text-secondary small text-nowrap', t('an_tree_focus')), s);
+			return l;
+		}
+
+		// Name a painted clade starts with: the species when its sequences are
+		// all of one, the genus when they are all of one
+		function anCladeName(T, n) {
+			const sp = new Set(), ge = new Set();
+			n.tips.forEach(i => {
+				const m = T.meta[i];
+				if (m.species) sp.add(m.species);
+				const g = anTipGenus(m);
+				if (g) ge.add(g);
+			});
+			return sp.size === 1 ? [...sp][0] : ge.size === 1 ? [...ge][0] : '';
+		}
+
+		// The panel for painting clades by hand: the chosen clade's colour,
+		// style and name, and what applies to all (intensity, names, clear).
+		// Painted clades live on the tree (T.paint), so they stay while the
+		// options change; `update` redraws the panel when the choice changes.
+		function anTreePaintBox(opts, redraw) {
+			const T = AnState.tree;
+			const el = anEl('div', 'an-paint');
+			const group = (labelKey, node) => {
+				const g = anEl('div', 'an-paint-g');
+				g.append(anEl('span', 'text-secondary small text-nowrap', t(labelKey)), node);
+				return g;
+			};
+			const update = () => {
+				el.replaceChildren();
+				const n = T.paintSel === null || T.paintSel === undefined ? null : T.nodes[T.paintSel];
+				const p = n ? T.paint[n.id] : null;
+				const who = anEl('div', 'an-paint-who');
+				if (!n) who.append(anEl('span', 'an-muted', t('an_paint_pick')));
+				else {
+					const sp = new Set();
+					n.tips.forEach(i => { if (T.meta[i].species) sp.add(T.meta[i].species); });
+					who.append(anEl('strong', '', (p && p.label) || anCladeName(T, n) || t('an_paint_unnamed')),
+					           anEl('span', 'an-muted', t('an_paint_seqs', { n: numFmt.format(n.tips.length), s: numFmt.format(sp.size) })));
+				}
+				el.append(who);
+				if (n) {
+					const set = patch => {
+						T.paint[n.id] = Object.assign(T.paint[n.id] || { color: AN_PALETTE[0], style: 'band', label: anCladeName(T, n) }, patch);
+						redraw(); update();
+					};
+					const sw = anEl('div', 'an-paint-sw');
+					AN_PALETTE.forEach(c => {
+						const b = anEl('button', 'an-sw');
+						b.type = 'button';
+						b.style.background = c;
+						b.title = c;
+						b.setAttribute('aria-label', `${t('an_paint_color')} ${c}`);
+						b.setAttribute('aria-pressed', !!p && p.color === c);
+						b.addEventListener('click', () => set({ color: c }));
+						sw.append(b);
+					});
+					const custom = anEl('input', 'an-sw-custom');
+					custom.type = 'color';
+					custom.value = p ? p.color : AN_PALETTE[0];
+					custom.title = t('an_paint_custom');
+					// Dragging inside the picker redraws the tree only: rebuilding
+					// the panel would close it
+					custom.addEventListener('input', () => { if (p) { p.color = custom.value; redraw(); } else set({ color: custom.value }); });
+					custom.addEventListener('change', () => update());
+					sw.append(custom);
+					el.append(group('an_paint_color', sw));
+
+					const seg = anEl('div', 'an-seg');
+					seg.setAttribute('role', 'group');
+					[['band', 'an_paint_band'], ['branch', 'an_paint_branch'], ['both', 'an_paint_both']].forEach(([k, key]) => {
+						const b = anEl('button', '', t(key));
+						b.type = 'button';
+						b.disabled = !p;
+						b.setAttribute('aria-pressed', !!p && p.style === k);
+						b.addEventListener('click', () => set({ style: k }));
+						seg.append(b);
+					});
+					el.append(group('an_paint_style', seg));
+
+					const name = anEl('input', 'form-control form-control-sm an-paint-name');
+					name.type = 'text';
+					name.disabled = !p;
+					name.value = p ? p.label : '';
+					name.placeholder = anCladeName(T, n) || t('an_paint_unnamed');
+					name.addEventListener('input', () => { T.paint[n.id].label = name.value; redraw(); });
+					el.append(group('an_paint_name', name));
+
+					if (p) {
+						const rm = anEl('button', 'btn btn-sm btn-outline-secondary', t('an_paint_remove'));
+						rm.type = 'button';
+						rm.addEventListener('click', () => { delete T.paint[n.id]; redraw(); update(); });
+						el.append(rm);
+					} else {
+						el.append(anEl('span', 'an-muted', t('an_paint_none')));
+					}
+				}
+
+				// What applies to every painted clade
+				const range = anEl('input', 'form-range');
+				range.type = 'range'; range.min = 6; range.max = 40; range.step = 1;
+				range.value = Math.round((opts.bandOpacity ?? 0.18) * 100);
+				range.style.width = '110px';
+				const out = anEl('span', 'an-muted an-range-v', `${range.value} %`);
+				range.addEventListener('input', () => { opts.bandOpacity = +range.value / 100; out.textContent = `${range.value} %`; redraw(); });
+				const strength = anEl('label', 'd-flex align-items-center gap-2 mb-0');
+				strength.append(anEl('span', 'text-secondary small text-nowrap', t('an_paint_opacity')), range, out);
+				const names = anEl('label', 'form-check d-inline-flex align-items-center gap-1 mb-0');
+				const nameBox = anEl('input', 'form-check-input mt-0');
+				nameBox.type = 'checkbox';
+				nameBox.checked = opts.bandLabels !== false;
+				nameBox.addEventListener('change', () => { opts.bandLabels = nameBox.checked; redraw(); });
+				names.append(nameBox, anEl('span', 'small', t('an_paint_labels')));
+				const clear = anEl('button', 'btn btn-link text-muted p-0 btn-sm ms-auto', t('an_paint_clear'));
+				clear.type = 'button';
+				clear.addEventListener('click', () => { T.paint = {}; redraw(); update(); });
+				el.append(strength, names, clear);
+			};
+			el.hidden = !opts.paintMode;
+			update();
+			return { el, update };
+		}
+
 		function anTreeToolbar(redraw, hasMotu) {
 			const opts = anTreeOpts();
 			const box = anEl('div', 'an-tree-tools');
@@ -13290,6 +13607,15 @@ li li { display: list-item; margin: 0; }
 				return b;
 			};
 
+			const paintBox = anTreePaintBox(opts, redraw);
+			const paintBtn = button(t('an_paint'), () => {
+				opts.paintMode = !opts.paintMode;
+				paintBtn.classList.toggle('active', opts.paintMode);
+				paintBtn.setAttribute('aria-pressed', opts.paintMode);
+				paintBox.el.hidden = !opts.paintMode;
+				redraw();
+			}, 'btn-outline-secondary an-toggle' + (opts.paintMode ? ' active' : ''));
+			paintBtn.setAttribute('aria-pressed', !!opts.paintMode);
 			const row1 = anEl('div', 'an-options');
 			const motuOpt = hasMotu ? [['motu', 'an_tree_by_motu']] : [];
 			row1.append(
@@ -13302,6 +13628,18 @@ li li { display: list-item; margin: 0; }
 				    v => { opts.color = v; redraw(); }),
 				sel('an_tree_mode', opts.mode, [['phylo', 'an_tree_phylo'], ['clado', 'an_tree_clado']],
 				    v => { opts.mode = v; redraw(); }),
+				anTreeFocusSelect(opts, redraw),
+				paintBtn,
+				// Back to the defaults, folds by hand included (collapsing
+				// follows the tree's size again)
+				button(t('an_fig_reset'), () => {
+					Object.assign(opts, anTreeDefaults());
+					AnState.tree.manual.clear(); AnState.treeRebuild();
+				}, 'btn-link text-muted p-0 ms-auto'));
+
+			// The sliders, together on a line of their own
+			const rowSize = anEl('div', 'an-options mt-2');
+			rowSize.append(
 				range('an_tree_row', opts.row, 3, 28, v => { opts.row = v; redraw(); }),
 				range('an_tree_font', opts.font, 4, 18, v => { opts.font = v; redraw(); }),
 				range('an_fig_lines', opts.lineWidth, 0.5, 4, v => { opts.lineWidth = v; redraw(); }, 0.1),
@@ -13328,13 +13666,13 @@ li li { display: list-item; margin: 0; }
 
 			const row3 = anEl('div', 'an-options mt-2');
 			row3.append(anEl('span', 'text-secondary small', t('an_tree_export')),
-			            button('SVG', () => anExportTree('svg'), 'btn-emerald'),
-			            button('PNG 2×', () => anExportTree('png', 2), 'btn-emerald'),
-			            button('PNG 4×', () => anExportTree('png', 4), 'btn-emerald'),
-			            button('PDF', () => anExportTree('pdf'), 'btn-emerald'),
+			            button('SVG', () => anExportTree('svg'), 'btn-emerald btn-dl'),
+			            button('PNG 2×', () => anExportTree('png', 2), 'btn-emerald btn-dl'),
+			            button('PNG 4×', () => anExportTree('png', 4), 'btn-emerald btn-dl'),
+			            button('PDF', () => anExportTree('pdf'), 'btn-emerald btn-dl'),
 			            anEl('span', 'an-muted', t('an_tree_export_hint')));
-			box.append(row1, row2, row3);
-			return { box, found };
+			box.append(row1, rowSize, paintBox.el, row2, row3);
+			return { box, found, paint: paintBox.update };
 		}
 
 		function anRenderTree(body) {
@@ -13389,6 +13727,7 @@ li li { display: list-item; margin: 0; }
 			const redraw = (scrollToMatch) => {
 				fig = anTreeSvg(T, opts, false);
 				wrap.innerHTML = fig.svg;
+				wrap.classList.toggle('painting', !!opts.paintMode);
 				rowsInfo.textContent = t('an_tree_rows', { n: numFmt.format(fig.rows) });
 				tools.found.textContent = opts.query.trim() ? t('an_tree_found', { n: numFmt.format(fig.matches) }) : '';
 				const viewer = AnState.viewer && AnState.viewer.kind === 'tree' ? AnState.viewer : null;
@@ -13409,6 +13748,16 @@ li li { display: list-item; margin: 0; }
 			body.append(tools.box, anFigureBox(wrap, openViewer));
 
 			wrap.addEventListener('click', e => {
+				// Painting: a click chooses the clade (a node, a folded clade or a
+				// band) instead of folding it
+				if (opts.paintMode) {
+					const hit = e.target.closest('[data-node],[data-band]');
+					if (!hit) return;
+					T.paintSel = +(hit.dataset.node !== undefined ? hit.dataset.node : hit.dataset.band);
+					redraw();
+					tools.paint();
+					return;
+				}
 				const target = e.target.closest('[data-node]');
 				if (!target) return;
 				const n = T.nodes[+target.dataset.node];
@@ -13416,6 +13765,7 @@ li li { display: list-item; margin: 0; }
 				redraw();
 			});
 			wrap.addEventListener('mouseover', e => {
+				if (opts.paintMode) return;
 				const target = e.target.closest('[data-node]');
 				if (!target) return;
 				const n = T.nodes[+target.dataset.node];
@@ -13689,7 +14039,7 @@ li li { display: list-item; margin: 0; }
 			head.append(anEl('span', 'an-title', t('id_result_title', { n: numFmt.format(res.length), marker: R.marker })),
 			            anEl('span', 'an-muted', t('an_result_time', { s: R.seconds })));
 			const actions = anEl('div', 'an-actions');
-			const zip = anEl('a', 'btn btn-sm btn-outline-secondary', t('id_dl_zip'));
+			const zip = anEl('a', 'btn btn-sm btn-outline-secondary btn-dl', t('id_dl_zip'));
 			zip.href = `/api/identify/download/${R.job}`;
 			actions.append(zip);
 			head.append(actions);

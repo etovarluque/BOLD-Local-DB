@@ -5,6 +5,43 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [Unreleased]
+
+### Upgrade notes
+- Run Step 4 once more: the full-text index now includes the BOLD ID, and
+  the creator shows the step as pending until it's rebuilt. The rest of the
+  database doesn't change. Until then, a whole BOLD ID or its beginning is
+  still found (see Fixed).
+
+### Added
+- Search history: field and full-text searches that return results are kept
+  in the browser, with their count and time (a repeated search moves to the
+  top). The last six show as chips under the form until a search fills the
+  table; then they fold, and a History button next to Edit (under the box
+  in full-text search) brings them back. A click opens the tab, fills in the
+  form and runs the search again. *See all* opens a side panel with a
+  filter, pinned searches first and the rest by day. Up to 50 unpinned
+  searches are kept; clearing asks first and keeps the pinned ones.
+
+### Fixed
+- Full-text search didn't find a BOLD ID ("GBVA049-11") although the field
+  search did: col_processid was left out of the FTS index, since it isn't in
+  the indexed-fields list (Step 2 gives it its own index). It's indexed now.
+  With an index built before, a query that is a BOLD ID or its beginning is
+  also looked up through that index, in the search, the CSV and FASTA
+  exports and sequence analysis, and the full-text panel says that a
+  fragment from inside an ID isn't found until Step 4 runs again.
+- Tree and network floating viewer: a long option in the side panel (a
+  species in *Subtree*) widened it and pushed Collapse, Colour, Branches,
+  Subtree and *Paint clades* out of view.
+
+### Changed
+- Reset buttons show whether there's anything to undo: orange with a dot
+  while a setting differs from its default, faded and disabled once
+  everything is back to it (tree and network options, network layout,
+  viewer colours). The report and column-order resets, shown only when
+  something changed, take the same orange.
+
 ## [2.3.0]
 
 ### Upgrade notes

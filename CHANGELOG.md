@@ -134,6 +134,29 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   (sequences chained less than 2 % apart, with their countries, BINs and
   distance to the largest) and isolated records. With a single species it
   reads how much it varies.
+- NJ tree and haplotype network: *Open in a window*, a button on the top
+  right corner of the figure that opens it full screen in a floating
+  window, with zoom (wheel on the network, Ctrl + wheel on the tree,
+  buttons, keys, Fit and Fit width), pan by dragging the background, the
+  options and exports in a side panel, and a colour picker per legend value
+  that the exports keep.
+- NJ tree: colour by *Non-monophyletic species*, which colours only the
+  species that aren't a clade (farthest from their intruders first), so a
+  species split by misidentifications keeps one colour in every clade. Tips
+  without the value of the colouring show as a white circle, "Unknown" in
+  the legend. Branch width and optional legend.
+- NJ tree: *Paint clades*. With the mode on, a click on a node, a folded
+  clade or a band picks the clade and sets its colour, style (band,
+  branches or both) and name; nested clades, intensity, band names and
+  clear all. Folded clades take their band's colour and exports include the
+  bands.
+- NJ tree: *Subtree* shows the smallest clade holding a genus or species,
+  plus its sister group.
+- Haplotype network: circle size, label size and line width; legend
+  optional in the export. *Size* is now *Scale*.
+- Tree and network: *Reset options* button.
+- Taxonomy card: species, with the unresolved names apart, and taxa (the
+  finest rank each record names).
 
 ### Fixed
 - Species delimitation: ABGD could take minutes looking for the barcode gap
@@ -309,6 +332,25 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   plot) and *Diversity by zone* (richness, Chao1, coverage, rarefaction,
   taxonomic distinctness, Sørensen and Jaccard, turnover and nestedness),
   with their limits. References to the old tab names now point to views.
+- One species criterion: genus and epithet, so a subspecies counts as its
+  species, and provisional names (sp., cf., aff., nr., lineage codes,
+  hybrids) are not species. Used by the taxonomy card, the species & BINs
+  view and its reading, the quality and network readings and the *Species*
+  unit of diversity.
+- Tree and network: the sliders sit on a line of their own. Network
+  tooltips follow the scroll, and "Other" and "Unknown" are never in
+  italics.
+- Every button that saves a file has a download icon on its left.
+- Genetic structure: the *Show* button marks the species on view, only
+  appears when there is a choice and scrolls to the plot.
+- Sørensen similarity between zones: margins come from the zone names (no
+  fixed room on top, nothing cut on the right) and the matrix is drawn at
+  its natural size, scrolling sideways when there are many zones.
+- Advanced search: the remove-condition button is a square with a thin X
+  that turns red on hover, centred on the fields' first line.
+- Guide (English and Spanish): *Open in a window*, *Paint clades*,
+  *Subtree*, *Reset options*, colouring by non-monophyletic species, the
+  new tree and network options and the species criterion of diversity.
 
 ## [2.2.0]
 

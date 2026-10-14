@@ -5,9 +5,10 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
-## [Unreleased]
+## [2.4.0]
 
 ### Upgrade notes
+- Update from Home (*Update*).
 - Run Step 4 once more: the full-text index now includes the BOLD ID, and
   the creator shows the step as pending until it's rebuilt. The rest of the
   database doesn't change. Until then, a whole BOLD ID or its beginning is

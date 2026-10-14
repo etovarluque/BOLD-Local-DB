@@ -347,35 +347,18 @@
 			display: none;
 		}
 		
-		/* Custom style for the X button */
-		.remove-condition {
-			background-color: #ff4444 !important;  /* More intense red */
-			color: white !important;
-			border: none;
-			border-radius: 50%;  /* Circular shape */
-			top: 50%;           /* Vertical centering */
-			transform: translateY(30%); /* Fine adjustment for centering */
-			width: 24px;
-			height: 24px;
-			font-size: 12px;
-			font-weight: bold;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			cursor: pointer !important;
-			transition: all 0.3s ease;  /* Smooth transition */
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-			z-index: 2;
-		}
-
-		.remove-condition:hover {
-			background-color: #cc0000 !important;
-			transform: translateY(30%);
-		}
-
-		.remove-condition:active {
-			transform: translateY(30%);
-		}
+		/* Remove-condition button: a quiet square with a thin X that turns red on
+		   hover. Its column is as tall as the fields, so the button sits centred on
+		   the row's first line even when a second value field opens below it. */
+		.condition-remove { display: flex; align-items: center; align-self: flex-start; min-height: calc(1.5rem + 1rem + 2px); }
+		.remove-condition { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0;
+			border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--mute);
+			transition: color .15s, background-color .15s, border-color .15s; }
+		.remove-condition::before { content: ''; width: 16px; height: 16px; background-color: currentColor;
+			-webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round"%3E%3Cpath d="M18 6 6 18"/%3E%3Cpath d="m6 6 12 12"/%3E%3C/svg%3E') center / contain no-repeat; mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round"%3E%3Cpath d="M18 6 6 18"/%3E%3Cpath d="m6 6 12 12"/%3E%3C/svg%3E') center / contain no-repeat; }
+		.remove-condition:hover { color: var(--base-t); background: rgba(221, 79, 88, .08); border-color: rgba(221, 79, 88, .45); }
+		.remove-condition:active { background: rgba(221, 79, 88, .16); }
+		.remove-condition:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 		
 		/* Transition when adding/removing conditions */
 		.search-condition {
@@ -1051,8 +1034,6 @@
 		#addCondition { border-style: dashed; border-color: #bcc3ce; color: var(--slate); }
 		#addCondition:hover { background: var(--tint); }
 		.first-cond-label { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
-		.remove-condition { background-color: #e6e8ec !important; color: var(--mute) !important; box-shadow: none; }
-		.remove-condition:hover { background-color: var(--base-t) !important; color: #fff !important; }
 
 		/* The search on screen, as chips under the (blank again) form */
 		.last-search {
@@ -1463,8 +1444,9 @@
 		.an-legend-item i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
 		.an-scatter { max-width: 560px; }
 		.an-rare { max-width: 640px; }
-		.an-heat { max-width: 640px; }
-		.an-heat text { font-size: 11px; }
+		.an-heat { max-width: none; overflow-x: auto; }
+		.an-heat svg { max-width: none; }
+		.an-heat text { font-size: 13px; }
 		.an-hist .pt { stroke: #fff; stroke-width: 1.5; }
 		.an-hist .pt.hover { stroke: var(--ink); stroke-width: 2; }
 		.an-hist .diag { stroke: #9aa3b2; stroke-width: 1.5; stroke-dasharray: 5 4; }
@@ -2209,8 +2191,8 @@
 								<div class="autocomplete-dropdown"></div>
 								<input type="text" class="form-control value2-input mt-1" style="display:none;" placeholder="Hasta" data-i18n-placeholder="value2_input_placeholder">
 							</div>
-                            <div class="col-md-1">
-                                <button class="btn btn-danger btn-sm remove-condition">X</button>
+                            <div class="col-md-1 condition-remove">
+                                <button type="button" class="remove-condition" title="Quitar condición" aria-label="Quitar condición" data-i18n-title="remove_condition" data-i18n-aria-label="remove_condition"></button>
                             </div>
                         </div>
                     </div>
@@ -2336,7 +2318,8 @@
                 op_greater_than: 'Mayor que', op_less_than: 'Menor que', op_between: 'Entre',
                 op_has_value: 'Con dato', op_no_value: 'Sin dato',
                 value_input_placeholder: 'Escribe un término', value_from_placeholder: 'Desde', value2_input_placeholder: 'Hasta',
-                add_condition_btn: '+ Añadir condición', search_btn: 'Buscar',
+                add_condition_btn: '+ Añadir condición',
+                remove_condition: 'Quitar condición', search_btn: 'Buscar',
                 col_order_toggle_btn_label: 'Orden de columnas',
                 col_order_reset_title: 'Restablecer orden predeterminado',
                 col_order_hint: 'Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:',
@@ -3672,7 +3655,8 @@
                 op_greater_than: 'Greater than', op_less_than: 'Less than', op_between: 'Between',
                 op_has_value: 'Has value', op_no_value: 'No value',
                 value_input_placeholder: 'Type a term', value_from_placeholder: 'From', value2_input_placeholder: 'To',
-                add_condition_btn: '+ Add condition', search_btn: 'Search',
+                add_condition_btn: '+ Add condition',
+                remove_condition: 'Remove condition', search_btn: 'Search',
                 col_order_toggle_btn_label: 'Column order',
                 col_order_reset_title: 'Reset to default order',
                 col_order_hint: 'Drag the terms to change the column order in the results table:',
@@ -5867,7 +5851,7 @@
 
 				// Show the remove button on the new condition
 				const removeButton = newCondition.querySelector('.remove-condition');
-				removeButton.style.display = 'block';
+				removeButton.style.display = '';
 
 				// Effect when adding a new field
 				newCondition.classList.add('adding');
@@ -9390,8 +9374,16 @@
 		function anSorensenMap(d) {
 			const zones = d.zones.map(z => z.zone);
 			const sim = new Map(d.pairs.flatMap(p => [[`${p.a}\u0000${p.b}`, p.sorensen], [`${p.b}\u0000${p.a}`, p.sorensen]]));
-			const c = 40, L = 150, T = 110;
+			const c = 54, cw = 7.2;
 			const cut = s => s.length > 22 ? s.slice(0, 21) + '…' : s;
+			// Room for the labels, from the names themselves: the zone names on the
+			// left, the tilted ones on top, and what the last of those overhangs
+			// on the right
+			const lens = zones.map(z => cut(z).length), longest = Math.max(...lens);
+			const L = Math.ceil(longest * cw + 16);
+			const T = Math.ceil(longest * cw * 0.71 + 16);
+			const R = Math.ceil(Math.max(10, ...lens.map((n, i) => n * cw * 0.71 - (zones.length - i - 0.5) * c + 12)));
+			const W = L + zones.length * c + R, H = T + zones.length * c + 6;
 			const parts = [];
 			zones.forEach((a, i) => {
 				parts.push(`<text x="${L - 6}" y="${T + i * c + c / 2 + 4}" text-anchor="end">${escapeHtml(cut(a))}</text>`,
@@ -9404,7 +9396,7 @@
 				});
 			});
 			const wrap = anEl('div', 'an-hist an-heat');
-			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${L + zones.length * c + 10} ${T + zones.length * c + 6}" role="img" aria-label="${escapeHtml(t('an_h_sorensen'))}">${parts.join('')}</svg>`);
+			wrap.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 ${W} ${H}" style="width:${W}px;height:${H}px" role="img" aria-label="${escapeHtml(t('an_h_sorensen'))}">${parts.join('')}</svg>`);
 			return wrap;
 		}
 

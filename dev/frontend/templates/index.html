@@ -212,6 +212,32 @@
 			background-color: #e9ecef;
 		}
 
+		/* Sortable / unsortable column headers (see applySort() in index.html).
+		   The icon is an inline SVG (two triangles), not a Unicode arrow
+		   character: '⇕'/'▲'/'▼' render as missing-glyph boxes or stray dots
+		   on fonts/platforms that lack them, an SVG always looks the same. */
+		.table thead th.th-sortable { cursor: pointer; }
+		.table thead th.th-unsortable { cursor: not-allowed; }
+		.th-sort-icon {
+			display: inline-flex;
+			align-items: center;
+			vertical-align: middle;
+			margin-left: 6px;
+		}
+		.th-sort-icon .icon-up, .th-sort-icon .icon-down {
+			fill: #7a8294; /* muted: sortable but not the active sort */
+			opacity: 0.75;
+		}
+		.table thead th.th-sort-asc .th-sort-icon .icon-up,
+		.table thead th.th-sort-desc .th-sort-icon .icon-down {
+			fill: #2c4685; /* matches h1 accent used elsewhere in the page */
+			opacity: 1;
+		}
+		.table thead th.th-sort-asc .th-sort-icon .icon-down,
+		.table thead th.th-sort-desc .th-sort-icon .icon-up {
+			opacity: 0.2;
+		}
+
 		/* Style for the table container */
 		.table-frame {
 			border: 1px solid #dee2e6;
@@ -2416,6 +2442,10 @@
                 first_condition_label: 'Campo',
                 page_label: 'Página', page_of: 'de', results_per_page_title: 'Resultados por página', per_page_suffix: 'por página',
                 first_page_title: 'Primera página', last_page_title: 'Última página',
+                sort_asc_title: 'Ordenado ascendente — clic para invertir',
+                sort_desc_title: 'Ordenado descendente — clic para quitar el orden',
+                sort_none_title: 'Clic para ordenar ascendente',
+                sort_unavailable_title: 'Esta columna no está indexada: ordenarla recorrería toda la base de datos, lo que puede tardar minutos en una base grande',
                 prev_page: '&laquo; Anterior', next_page: 'Siguiente &raquo;',
                 goto_page_placeholder: 'Ir a...', goto_page_btn: 'Ir',
                 unique_values: 'valores únicos',
@@ -3765,6 +3795,10 @@
                 first_condition_label: 'Field',
                 page_label: 'Page', page_of: 'of', results_per_page_title: 'Results per page', per_page_suffix: 'per page',
                 first_page_title: 'First page', last_page_title: 'Last page',
+                sort_asc_title: 'Sorted ascending — click to reverse',
+                sort_desc_title: 'Sorted descending — click to clear the sort',
+                sort_none_title: 'Click to sort ascending',
+                sort_unavailable_title: "This column isn't indexed: sorting it would scan the whole database, which can take minutes on a large one",
                 prev_page: '&laquo; Previous', next_page: 'Next &raquo;',
                 goto_page_placeholder: 'Go to...', goto_page_btn: 'Go',
                 unique_values: 'unique values',
@@ -5126,6 +5160,12 @@
             // made "Export" and "Next page" act on a different search than the
             // one in the table.
             resultsSearch: null,
+            // Results-table sort: technical column name + 'ASC'/'DESC', or
+            // both null for the default (unordered) row order. Persists
+            // across searches like resultsPerPage, reset to page 1 whenever
+            // it changes (see applySort()).
+            sortCol: null,
+            sortDir: null,
             lastFtsQuery: '',
             abortController: null,
             currentSearchId: null,
@@ -5173,6 +5213,30 @@
         const COLUMN_LABEL = Object.fromEntries(
             {{ columns | tojson }}.map(c => [c.technical, c.friendly]));
         const colLabel = tech => COLUMN_LABEL[tech];
+        // Technical name and "has its own index" per friendly name, both
+        // needed to decide whether a results-table header can be sorted:
+        // sorting an unindexed column means SQLite sorts the whole matching
+        // set itself instead of walking a B-tree index, which on a large
+        // database is the kind of operation that takes minutes, not
+        // milliseconds (see server.py's get_indexed_columns()).
+        const COLUMN_TECHNICAL = Object.fromEntries(
+            {{ columns | tojson }}.map(c => [c.friendly, c.technical]));
+        const COLUMN_SORTABLE = Object.fromEntries(
+            {{ columns | tojson }}.map(c => [c.friendly, !!c.indexed]));
+
+        // Sort icon for a sortable header: two triangles, SVG rather than a
+        // Unicode arrow character ('⇕'/'▲'/'▼') - those render as blank
+        // boxes or stray dots on a font/platform that lacks the glyph,
+        // while an SVG always draws the same way. Its CSS (.th-sort-icon)
+        // colors the "up"/"down" path depending on th-sort-asc/-desc.
+        // A wide gap between the two triangles (viewBox is 10x16, not
+        // square) matters: packed too close, they blur into a single dot
+        // at header text size instead of reading as two arrows.
+        const SORT_ICON_SVG = '<svg width="9" height="14" viewBox="0 0 10 16" aria-hidden="true">'
+            + '<path class="icon-up" d="M5 0 L9 5.5 L1 5.5 Z"></path>'
+            + '<path class="icon-down" d="M5 16 L9 10.5 L1 10.5 Z"></path>'
+            + '</svg>';
+
         const SEQ_COL = colLabel('col_nuc');
         const TAXONOMY_COLS = ['col_kingdom', 'col_phylum', 'col_class', 'col_order',
                                'col_family', 'col_subfamily', 'col_tribe', 'col_genus',
@@ -6491,6 +6555,8 @@
 						conditions: conditions,
 						page: AppState.currentPage,
 						per_page: AppState.resultsPerPage,
+						sort_col: AppState.sortCol,
+						sort_dir: AppState.sortDir,
 						skip_count: !newSearch
 					}),
 					signal
@@ -6665,6 +6731,8 @@
 						case_sensitive: caseSensitive,
 						page: AppState.currentPage,
 						per_page: AppState.resultsPerPage,
+						sort_col: AppState.sortCol,
+						sort_dir: AppState.sortDir,
 						skip_count: !newSearch
 					}),
 					signal
@@ -6711,13 +6779,42 @@
 			}
 		}
 
+		// Click on a sortable header: cycles none -> ascending -> descending
+		// -> none for that column (clicking a different column always starts
+		// at ascending). The count doesn't change, so this reuses the
+		// page-change path (executeCurrentSearch -> performSearch/FtsSearch
+		// with newSearch=false): same cached count, no new history entry.
+		function applySort(technicalCol) {
+			if (AppState.sortCol !== technicalCol) {
+				AppState.sortCol = technicalCol;
+				AppState.sortDir = 'ASC';
+			} else if (AppState.sortDir === 'ASC') {
+				AppState.sortDir = 'DESC';
+			} else {
+				AppState.sortCol = null;
+				AppState.sortDir = null;
+			}
+			AppState.currentPage = 1;
+			executeCurrentSearch();
+		}
+
 		// Request body (search part) for the results on screen, for the exports
 		function resultsSearchRequest() {
 			const s = AppState.resultsSearch;
 			if (!s) throw new Error(t('no_search_conditions_alert'));
-			return s.type === 'fts'
+			const base = s.type === 'fts'
 				? { search_type: 'fts', query: s.query, case_sensitive: s.case_sensitive }
 				: { conditions: JSON.parse(JSON.stringify(s.conditions)) };
+			// Carries the table's current sort into exports (CSV/FASTA), so a
+			// sorted results table exports in that same order instead of the
+			// database's own row order. Ignored where it doesn't apply (e.g.
+			// sequence-analysis tools, which read matching records for
+			// calculations that don't depend on row order).
+			if (AppState.sortCol) {
+				base.sort_col = AppState.sortCol;
+				base.sort_dir = AppState.sortDir;
+			}
+			return base;
 		}
 
 		// The results card belongs to the tab whose search produced it
@@ -7532,10 +7629,46 @@
 
 				orderedColumns.forEach((col, colIdx) => {
 					const th = document.createElement("th");
-					th.textContent = col;
+
+					const labelSpan = document.createElement('span');
+					labelSpan.textContent = col;
+					th.appendChild(labelSpan);
+
+					// Sortable only for a column with its own index (see
+					// get_indexed_columns() in server.py): sorting any other
+					// one (col_nuc, coord) would make SQLite sort the whole
+					// matching set itself instead of walking a B-tree index,
+					// minutes rather than milliseconds on a large database.
+					const technicalCol = COLUMN_TECHNICAL[col];
+					const sortable = !!COLUMN_SORTABLE[col];
 
 					const resizeHandle = document.createElement('div');
 					resizeHandle.className = 'col-resize-handle';
+
+					if (sortable) {
+						const sortIcon = document.createElement('span');
+						sortIcon.className = 'th-sort-icon';
+						sortIcon.innerHTML = SORT_ICON_SVG;
+						th.appendChild(sortIcon);
+
+						th.classList.add('th-sortable');
+						const isActive = AppState.sortCol === technicalCol;
+						const dir = isActive ? AppState.sortDir : null;
+						th.classList.toggle('th-sort-asc', dir === 'ASC');
+						th.classList.toggle('th-sort-desc', dir === 'DESC');
+						th.title = dir === 'ASC' ? t('sort_asc_title')
+							: dir === 'DESC' ? t('sort_desc_title') : t('sort_none_title');
+						th.addEventListener('click', (e) => {
+							if (e.target === resizeHandle) return; // the autofit sliver, not a sort click
+							applySort(technicalCol);
+						});
+					} else {
+						// No icon: an unsortable column just stays plain text,
+						// with the disabled cursor and tooltip explaining why.
+						th.classList.add('th-unsortable');
+						th.title = t('sort_unavailable_title');
+					}
+
 					resizeHandle.addEventListener('dblclick', function(e) {
 						e.stopPropagation();
 						const cells = table.querySelectorAll(`tbody tr td:nth-child(${colIdx + 1 + SEL_COLS})`);

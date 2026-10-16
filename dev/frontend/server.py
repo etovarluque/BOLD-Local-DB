@@ -526,6 +526,30 @@ def get_numeric_columns():
         conn.close()
 
 
+def resolve_sort(data, technical_columns):
+    """Validates the request's sort_col/sort_dir, returning (column, SQL direction).
+
+    Returns (None, None) when the caller didn't ask to sort. Raises
+    ValueError for a column that doesn't exist or isn't indexed — the same
+    way build_where_clause() rejects an unknown column — rather than
+    silently ignoring it or running the slow unindexed sort. Sorting is
+    restricted to indexed columns (get_indexed_columns(), defined with the
+    autocomplete code below) because ordering the whole matching set
+    through a non-leading column means SQLite sorts it in a temp B-tree
+    instead of walking an index — on a ~20M-row database the same order of
+    magnitude as building an index from scratch, i.e. minutes (see
+    bold_db_creator.py's index_cols()).
+    """
+    sort_col = data.get('sort_col')
+    if not sort_col:
+        return None, None
+    column = get_technical_name(sort_col)
+    if column not in technical_columns or column not in get_indexed_columns():
+        raise ValueError(t('invalid_sort_column'))
+    direction = 'DESC' if str(data.get('sort_dir', 'asc')).upper() == 'DESC' else 'ASC'
+    return column, direction
+
+
 @lru_cache(maxsize=1)
 def fts_table_available():
     """Indicates whether the database includes the full-text search index.
@@ -737,6 +761,7 @@ STRINGS = {
         'db_schema_too_old': 'Esta base de datos tiene un formato que esta versión del visor ya no lee. Reconstrúyela con BOLD-Local-DB (acceso directo «BOLD-Local-DB» o «Start BOLD-Local-DB» en la carpeta del programa).',
         'db_schema_too_new': 'Esta base de datos se creó con una versión más reciente del programa. Actualiza el proyecto para poder abrirla.',
         'invalid_search_conditions': 'Condiciones de búsqueda inválidas',
+        'invalid_sort_column': 'No se puede ordenar por esa columna',
         'no_search_conditions': 'No se proporcionaron condiciones de búsqueda',
         'no_search_query': 'No se proporcionó ninguna consulta de búsqueda',
         'fts_unavailable': 'Esta base de datos no incluye el índice de búsqueda de texto completo. Usa la búsqueda por campos.',
@@ -840,6 +865,7 @@ STRINGS = {
         'db_schema_too_old': 'This database has a layout this version of the viewer no longer reads. Rebuild it with BOLD-Local-DB (the "BOLD-Local-DB" shortcut, or "Start BOLD-Local-DB" in the program folder).',
         'db_schema_too_new': 'This database was built by a newer version of the program. Update the project to open it.',
         'invalid_search_conditions': 'Invalid search conditions',
+        'invalid_sort_column': 'Cannot sort by that column',
         'no_search_conditions': 'No search conditions provided',
         'no_search_query': 'No search query provided',
         'fts_unavailable': 'This database does not include the full-text search index. Use the field search instead.',
@@ -1073,6 +1099,7 @@ def _guard_database():
 @app.route('/')
 def index():
     technical_columns, _ = get_column_names()
+    indexed_columns = get_indexed_columns()
 
     # Create [technical_name, friendly_name] pairs to send to the template
     columns = []
@@ -1084,7 +1111,12 @@ def index():
         if tech_name in technical_columns and tech_name not in EXCLUDED_COLUMNS:
             columns.append({
                 'technical': tech_name,
-                'friendly': get_friendly_name(tech_name)
+                'friendly': get_friendly_name(tech_name),
+                # Sorting an unindexed column (col_nuc, coord) means SQLite
+                # sorts every matching row instead of walking a B-tree —
+                # minutes on a ~20M-row database (see get_indexed_columns()).
+                # Its header stays, but as disabled with a tooltip.
+                'indexed': tech_name in indexed_columns
             })
 
     # Then add any additional column that isn't in FIELD_MAPPING
@@ -1092,7 +1124,8 @@ def index():
         if col not in FIELD_MAPPING and col not in EXCLUDED_COLUMNS:
             columns.append({
                 'technical': col,
-                'friendly': col  # If not in the mapping, use the technical name
+                'friendly': col,  # If not in the mapping, use the technical name
+                'indexed': col in indexed_columns
             })
 
     # Fields offered as summary metrics in the batch search
@@ -1175,9 +1208,11 @@ def search():
 
     try:
         where_clause, parameters = build_where_clause(conditions, technical_columns)
+        sort_col, sort_dir = resolve_sort(data, technical_columns)
+        order_sql = f' ORDER BY "{sort_col}" {sort_dir}' if sort_col else ''
 
         offset = (page - 1) * per_page
-        data_query = f"SELECT * FROM {table_name} WHERE {where_clause} LIMIT ? OFFSET ?"
+        data_query = f"SELECT * FROM {table_name} WHERE {where_clause}{order_sql} LIMIT ? OFFSET ?"
         data_parameters = parameters + [per_page, offset]
 
         total_count = None
@@ -1464,6 +1499,7 @@ def search_fts(data, start_time, search_id=None):
         return jsonify({'error': t('no_search_query')}), 400
 
     from_sql, where_sql, params = fts_source(raw_query, 'm', bool(data.get('case_sensitive')))
+    technical_columns, _ = get_column_names()
 
     conn = get_db_connection()
     if search_id:
@@ -1475,6 +1511,9 @@ def search_fts(data, start_time, search_id=None):
     skip_count = data.get('skip_count', False)
 
     try:
+        sort_col, sort_dir = resolve_sort(data, technical_columns)
+        order_sql = f' ORDER BY m."{sort_col}" {sort_dir}' if sort_col else ''
+
         total_count = None
         if not skip_count:
             count_query = f"SELECT COUNT(*) FROM {from_sql} WHERE {where_sql}"
@@ -1482,7 +1521,7 @@ def search_fts(data, start_time, search_id=None):
             total_count = cursor.fetchone()[0]
 
         offset = (page - 1) * per_page
-        data_query = f"SELECT m.* FROM {from_sql} WHERE {where_sql} LIMIT ? OFFSET ?"
+        data_query = f"SELECT m.* FROM {from_sql} WHERE {where_sql}{order_sql} LIMIT ? OFFSET ?"
         cursor.execute(data_query, (*params, per_page, offset))
         results_raw = cursor.fetchall()
 
@@ -1500,7 +1539,7 @@ def search_fts(data, start_time, search_id=None):
             'execution_time': round(execution_time, 3)
         })
 
-    except sqlite3.Error as e:
+    except (ValueError, sqlite3.Error) as e:
         if 'interrupted' in str(e).lower():
             return jsonify({'cancelled': True}), 200
         return jsonify({'error': str(e)}), 500
@@ -1817,6 +1856,8 @@ def get_best_taxon(species, genus, family, order, class_, phylum, kingdom):
 
 def build_optimized_fasta_query(request_data):
     """Build an optimized query for FASTA export"""
+    technical_columns, _ = get_column_names()
+    sort_col, sort_dir = resolve_sort(request_data, technical_columns)
 
     if request_data.get('search_type') == 'fts':
         raw_query = request_data.get('query', '').strip()
@@ -1829,6 +1870,7 @@ def build_optimized_fasta_query(request_data):
         raw_query = _strip_accents(raw_query)
 
         from_sql, where_sql, params = fts_source(raw_query, 'r', bool(request_data.get('case_sensitive')))
+        order_sql = f' ORDER BY r."{sort_col}" {sort_dir}' if sort_col else ''
 
         data_query = f"""
             SELECT r.col_processid, r.col_sampleid, r.col_bin_uri,
@@ -1838,6 +1880,7 @@ def build_optimized_fasta_query(request_data):
             FROM {from_sql}
             WHERE {where_sql}
             AND r.col_nuc IS NOT NULL AND r.col_nuc != ''
+            {order_sql}
         """
 
         return data_query, tuple(params)
@@ -1847,7 +1890,6 @@ def build_optimized_fasta_query(request_data):
         if not conditions:
             raise ValueError(t('no_search_conditions'))
 
-        technical_columns, _ = get_column_names()
         where_clause, params = build_where_clause(conditions, technical_columns)
 
         # In parentheses: the conditions may be joined by OR at the top level,
@@ -1857,6 +1899,7 @@ def build_optimized_fasta_query(request_data):
         else:
             where_clause = "(col_nuc IS NOT NULL AND col_nuc != '')"
 
+        order_sql = f' ORDER BY "{sort_col}" {sort_dir}' if sort_col else ''
         data_query = f"""
             SELECT col_processid, col_sampleid, col_bin_uri,
                    col_species, col_genus, col_family, col_order,
@@ -1864,6 +1907,7 @@ def build_optimized_fasta_query(request_data):
                    col_marker_code, col_nuc
             FROM bold_records
             WHERE {where_clause}
+            {order_sql}
         """
 
         return data_query, params
@@ -2118,14 +2162,16 @@ def process_export(data, export_path, export_id, export_filename, include_nuc=Tr
 
 
 def prepare_query(data, include_nuc=True):
+    technical_columns, _ = get_column_names()
     if include_nuc:
         col_select = '*'
         col_select_join = 'r.*'
     else:
-        technical_columns, _ = get_column_names()
         cols = [c for c in technical_columns if c != 'col_nuc']
         col_select = ', '.join(f'"{c}"' for c in cols)
         col_select_join = ', '.join(f'r."{c}"' for c in cols)
+
+    sort_col, sort_dir = resolve_sort(data, technical_columns)
 
     if data.get('search_type') == 'fts':
         raw_query = data.get('query', '').strip()
@@ -2137,7 +2183,8 @@ def prepare_query(data, include_nuc=True):
         # Accent-stripped like search_fts() does — see the comment there.
         raw_query = _strip_accents(raw_query)
         from_sql, where_sql, params = fts_source(raw_query, 'r', bool(data.get('case_sensitive')))
-        data_query = f"SELECT {col_select_join} FROM {from_sql} WHERE {where_sql}"
+        order_sql = f' ORDER BY r."{sort_col}" {sort_dir}' if sort_col else ''
+        data_query = f"SELECT {col_select_join} FROM {from_sql} WHERE {where_sql}{order_sql}"
         parameters = tuple(params)
 
     else:
@@ -2145,9 +2192,9 @@ def prepare_query(data, include_nuc=True):
         if not conditions:
             raise ValueError(t('no_search_conditions'))
 
-        technical_columns, _ = get_column_names()
         where_clause, parameters = build_where_clause(conditions, technical_columns)
-        data_query = f"SELECT {col_select} FROM bold_records WHERE {where_clause}"
+        order_sql = f' ORDER BY "{sort_col}" {sort_dir}' if sort_col else ''
+        data_query = f"SELECT {col_select} FROM bold_records WHERE {where_clause}{order_sql}"
 
     return data_query, parameters
 

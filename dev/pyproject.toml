@@ -10,6 +10,7 @@ dependencies = [
     "flask>=3.0",
     "numpy>=1.26",
     "psutil>=5.9",
+    "openpyxl>=3.1",             # .xlsx export for the report panel
 ]
 
 [tool.uv]

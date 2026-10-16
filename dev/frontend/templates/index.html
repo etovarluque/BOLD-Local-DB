@@ -1602,6 +1602,26 @@
 		.reset-btn.is-dirty::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 5px;
 			border-radius: 50%; background: var(--orange); vertical-align: middle; }
 		.reset-btn:disabled { opacity: .45; }
+
+		/* Report panel ("Crear informe"): a GROUP BY summary table over the
+		   current results, opened inline above the table — same mechanics
+		   as .col-order-list above, dressed with the same tokens as the
+		   results card so it reads as part of it, not a bolted-on widget. */
+		.pivot-panel { border: 1px solid var(--line); border-radius: 8px; background: var(--tint); padding: 16px 18px; }
+		.pivot-panel-label { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+		#pivotHideLink { font-size: .8rem; color: var(--slate); text-decoration: underline; }
+		.pivot-field-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); margin-bottom: 3px; }
+		.pivot-select { min-width: 190px; }
+		.pivot-note { font-size: .8rem; color: var(--orange); margin-top: 10px; }
+		.pivot-caption { font-family: var(--f-mono); font-size: 12px; color: var(--mute); }
+		.pivot-table-wrap { margin-top: 14px; overflow-x: auto; }
+		.pivot-table { border-collapse: collapse; font-size: 13px; width: 100%; background: #fff; }
+		.pivot-table th, .pivot-table td { border: 1px solid var(--line); padding: 7px 11px; }
+		.pivot-table thead th { background: #fff; font-weight: 600; color: var(--slate); text-align: center; font-family: var(--f-ui); }
+		.pivot-table thead th:first-child { text-align: left; }
+		.pivot-table tbody th { text-align: left; font-weight: 600; color: var(--ink); background: #fff; font-family: var(--f-ui); }
+		.pivot-table td { text-align: right; font-family: var(--f-mono); }
+		.pivot-table .pivot-total-col, .pivot-table .pivot-total-row { background: var(--selected); font-weight: 700; }
 		.an-tree-find { width: 230px; }
 		#identifyPanel { border-top: 0; border-radius: 0 0 10px 10px; }
 		#identifyPanel > .card-header { border-radius: 0; }
@@ -2311,6 +2331,9 @@
 				<div class="ms-auto d-flex gap-2 align-items-center">
 					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
 					<button id="clearResultsButton" class="btn btn-link btn-sm results-clear-link" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
+					<button id="pivotToggleBtn" class="btn btn-sm btn-outline-secondary" type="button" onclick="togglePivotPanel()" data-i18n="pivot_toggle_btn_label">
+						⊞ Crear informe ▼
+					</button>
 					<button id="exportButton" class="btn btn-emerald btn-dl" data-i18n="export_csv_btn">Exportar CSV</button>
 				</div>
 			</div>
@@ -2340,6 +2363,43 @@
 					<div id="colOrderPanel" style="display:none;" class="mt-2 mb-2">
 						<small class="text-muted d-block mb-1" data-i18n="col_order_hint">Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:</small>
 						<ul id="colOrderList" class="col-order-list"></ul>
+					</div>
+				</div>
+
+				<!-- Report panel opened by "Crear informe": a GROUP BY summary
+				     table over the same filters as the results on screen. Lives
+				     above the results table, same mechanics as colOrderPanel
+				     above (a button toggles display:none on/off), so it reads
+				     as "open a drawer here", not "switch to another screen". -->
+				<div id="pivotPanel" style="display:none;" class="pivot-panel mb-3">
+					<div class="d-flex justify-content-between align-items-center mb-2">
+						<span class="pivot-panel-label" data-i18n="pivot_panel_label">Informe</span>
+						<a href="#" id="pivotHideLink" onclick="togglePivotPanel();return false;" data-i18n="pivot_hide_link">Ocultar informe ▲</a>
+					</div>
+					<div class="d-flex gap-3 flex-wrap align-items-end">
+						<div>
+							<label class="pivot-field-label" for="pivotRowField" data-i18n="pivot_rows_label">Filas</label>
+							<select id="pivotRowField" class="form-select form-select-sm pivot-select"></select>
+						</div>
+						<div>
+							<label class="pivot-field-label" for="pivotColField" data-i18n="pivot_cols_label">Columnas</label>
+							<select id="pivotColField" class="form-select form-select-sm pivot-select"></select>
+						</div>
+						<div>
+							<label class="pivot-field-label" for="pivotValueField" data-i18n="pivot_value_label">Valor</label>
+							<select id="pivotValueField" class="form-select form-select-sm pivot-select">
+								<option value="records" data-i18n="pivot_value_records">Nº de registros</option>
+								<option value="species" data-i18n="pivot_value_species">Nº de especies distintas</option>
+								<option value="bins" data-i18n="pivot_value_bins">Nº de BINs distintos</option>
+							</select>
+						</div>
+						<button id="pivotGenerateBtn" class="btn btn-primary btn-sm" type="button" onclick="generatePivotReport()" data-i18n="pivot_generate_btn">Generar tabla</button>
+					</div>
+					<div id="pivotNote" class="pivot-note" style="display:none;"></div>
+					<div id="pivotTableWrap" class="pivot-table-wrap"></div>
+					<div id="pivotFooter" class="d-flex justify-content-between align-items-center mt-2" style="display:none;">
+						<span id="pivotCaption" class="pivot-caption"></span>
+						<button id="pivotExportBtn" class="btn btn-emerald btn-sm" type="button" onclick="exportPivotReport()" data-i18n="pivot_export_btn">Exportar a Excel (.xlsx)</button>
 					</div>
 				</div>
 
@@ -2405,6 +2465,26 @@
                 col_order_toggle_btn_label: 'Orden de columnas',
                 col_order_reset_title: 'Restablecer orden predeterminado',
                 col_order_hint: 'Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:',
+                pivot_toggle_btn_label: 'Crear informe',
+                pivot_panel_label: 'Informe',
+                pivot_hide_link: 'Ocultar informe ▲',
+                pivot_rows_label: 'Filas',
+                pivot_cols_label: 'Columnas',
+                pivot_cols_none_option: '— Ninguno —',
+                pivot_value_label: 'Valor',
+                pivot_value_records: 'Nº de registros',
+                pivot_value_species: 'Nº de especies distintas',
+                pivot_value_bins: 'Nº de BINs distintos',
+                pivot_generate_btn: 'Generar tabla',
+                pivot_generating: 'Generando…',
+                pivot_export_btn: 'Exportar a Excel (.xlsx)',
+                pivot_exporting: 'Exportando…',
+                pivot_total_label: 'Total',
+                pivot_caption: '{n} registros resumidos',
+                pivot_truncated_rows_note: 'Se muestran las {shown} filas con más registros, de {total} en total.',
+                pivot_truncated_cols_note: 'Las categorías menos frecuentes de "Columnas" se agrupan en "Otros".',
+                pivot_row_required_alert: 'Elige un campo para "Filas"',
+                pivot_error_generic: 'No se pudo generar el informe.',
                 explain_plan_title: 'Plan de ejecución de la consulta:',
                 results_label: 'Resultados:',
                 cancel_search_btn: 'Cancelar Búsqueda', clear_results_btn: 'Limpiar Resultados', export_csv_btn: 'Exportar CSV',
@@ -3758,6 +3838,26 @@
                 col_order_toggle_btn_label: 'Column order',
                 col_order_reset_title: 'Reset to default order',
                 col_order_hint: 'Drag the terms to change the column order in the results table:',
+                pivot_toggle_btn_label: 'Create report',
+                pivot_panel_label: 'Report',
+                pivot_hide_link: 'Hide report ▲',
+                pivot_rows_label: 'Rows',
+                pivot_cols_label: 'Columns',
+                pivot_cols_none_option: '— None —',
+                pivot_value_label: 'Value',
+                pivot_value_records: 'Number of records',
+                pivot_value_species: 'Number of distinct species',
+                pivot_value_bins: 'Number of distinct BINs',
+                pivot_generate_btn: 'Generate table',
+                pivot_generating: 'Generating…',
+                pivot_export_btn: 'Export to Excel (.xlsx)',
+                pivot_exporting: 'Exporting…',
+                pivot_total_label: 'Total',
+                pivot_caption: '{n} records summarized',
+                pivot_truncated_rows_note: 'Showing the {shown} rows with the most records, out of {total} total.',
+                pivot_truncated_cols_note: 'The least frequent "Columns" categories are grouped into "Other".',
+                pivot_row_required_alert: 'Choose a field for "Rows"',
+                pivot_error_generic: 'Could not generate the report.',
                 explain_plan_title: 'Query execution plan:',
                 results_label: 'Results:',
                 cancel_search_btn: 'Cancel Search', clear_results_btn: 'Clear Results', export_csv_btn: 'Export CSV',
@@ -5112,6 +5212,11 @@
                 const isOpen = document.getElementById('colOrderPanel') && document.getElementById('colOrderPanel').style.display !== 'none';
                 colBtn.textContent = `⠿ ${t('col_order_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
             }
+            const pivotBtn = document.getElementById('pivotToggleBtn');
+            if (pivotBtn) {
+                const isOpen = document.getElementById('pivotPanel') && document.getElementById('pivotPanel').style.display !== 'none';
+                pivotBtn.textContent = `⊞ ${t('pivot_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
+            }
         }
 
         function setLang(lang) {
@@ -5223,6 +5328,11 @@
             {{ columns | tojson }}.map(c => [c.friendly, c.technical]));
         const COLUMN_SORTABLE = Object.fromEntries(
             {{ columns | tojson }}.map(c => [c.friendly, !!c.indexed]));
+
+        // Low-cardinality categorical fields, the only ones the server
+        // accepts as Filas/Columnas in the report panel (see server.py's
+        // METRIC_COLUMNS for why the list is this short).
+        const METRIC_FIELDS = {{ metric_columns | tojson }};
 
         // Sort icon for a sortable header: two triangles, SVG rather than a
         // Unicode arrow character ('⇕'/'▲'/'▼') - those render as blank
@@ -5421,6 +5531,153 @@
             panel.style.display = isHidden ? 'block' : 'none';
             btn.innerHTML = `⠿ ${t('col_order_toggle_btn_label')} ${isHidden ? '▲' : '▼'}`;
             if (isHidden) buildColOrderList();
+        }
+
+        // Report panel ("Crear informe"): lazy-built the first time it's
+        // opened, same as the column-order panel above.
+        let _pivotFieldsBuilt = false;
+        function buildPivotFields() {
+            if (_pivotFieldsBuilt) return;
+            _pivotFieldsBuilt = true;
+            const rowSelect = document.getElementById('pivotRowField');
+            const colSelect = document.getElementById('pivotColField');
+            METRIC_FIELDS.forEach(f => {
+                rowSelect.add(new Option(f.friendly, f.technical));
+                colSelect.add(new Option(f.friendly, f.technical));
+            });
+            colSelect.insertBefore(new Option(t('pivot_cols_none_option'), ''), colSelect.firstChild);
+            colSelect.value = '';
+        }
+
+        function togglePivotPanel() {
+            const panel = document.getElementById('pivotPanel');
+            const btn = document.getElementById('pivotToggleBtn');
+            const isHidden = panel.style.display === 'none';
+            panel.style.display = isHidden ? 'block' : 'none';
+            btn.innerHTML = `⊞ ${t('pivot_toggle_btn_label')} ${isHidden ? '▲' : '▼'}`;
+            if (isHidden) buildPivotFields();
+        }
+
+        function pivotRequestBody() {
+            return {
+                ...resultsSearchRequest(),
+                row_field: document.getElementById('pivotRowField').value,
+                col_field: document.getElementById('pivotColField').value,
+                value: document.getElementById('pivotValueField').value,
+            };
+        }
+
+        // Renders the aggregated table the server returns: a plain row list
+        // (no col_field) or a row × column cross-tab with totals on both
+        // axes, built from the same {rows, cols, matrix, row_totals,
+        // col_totals, grand_total} shape /api/report and the xlsx export
+        // both agree on.
+        function renderPivotTable(data) {
+            const wrap = document.getElementById('pivotTableWrap');
+            const fmt = new Intl.NumberFormat(currentLang === 'es' ? 'es' : 'en');
+            const hasCols = !!data.col_field;
+
+            let html = '<table class="pivot-table"><thead><tr>';
+            html += `<th>${hasCols ? `${escapeHtml(data.row_field)} \\ ${escapeHtml(data.col_field)}` : escapeHtml(data.row_field)}</th>`;
+            if (hasCols) {
+                data.cols.forEach(c => { html += `<th>${escapeHtml(c)}</th>`; });
+                html += `<th class="pivot-total-col">${t('pivot_total_label')}</th>`;
+            } else {
+                html += `<th>${escapeHtml(data.value_label)}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            data.rows.forEach((r, i) => {
+                html += `<tr><th>${escapeHtml(r)}</th>`;
+                if (hasCols) {
+                    data.matrix[i].forEach(v => { html += `<td>${fmt.format(v)}</td>`; });
+                    html += `<td class="pivot-total-col">${fmt.format(data.row_totals[i])}</td>`;
+                } else {
+                    html += `<td>${fmt.format(data.row_totals[i])}</td>`;
+                }
+                html += '</tr>';
+            });
+
+            if (hasCols) {
+                html += `<tr class="pivot-total-row"><th>${t('pivot_total_label')}</th>`;
+                data.col_totals.forEach(v => { html += `<td>${fmt.format(v)}</td>`; });
+                html += `<td class="pivot-total-col">${fmt.format(data.grand_total)}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            wrap.innerHTML = html;
+
+            const notes = [];
+            if (data.row_truncated) notes.push(t('pivot_truncated_rows_note', {shown: data.rows.length, total: fmt.format(data.total_distinct_rows)}));
+            if (data.col_truncated) notes.push(t('pivot_truncated_cols_note'));
+            const noteEl = document.getElementById('pivotNote');
+            noteEl.style.display = notes.length ? 'block' : 'none';
+            noteEl.textContent = notes.join(' ');
+
+            document.getElementById('pivotCaption').textContent =
+                t('pivot_caption', {n: fmt.format(data.grand_total)});
+            document.getElementById('pivotFooter').style.display = 'flex';
+        }
+
+        async function generatePivotReport() {
+            if (!document.getElementById('pivotRowField').value) {
+                alert(t('pivot_row_required_alert'));
+                return;
+            }
+            const btn = document.getElementById('pivotGenerateBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = t('pivot_generating');
+            document.getElementById('pivotFooter').style.display = 'none';
+            document.getElementById('pivotTableWrap').innerHTML = '';
+            document.getElementById('pivotNote').style.display = 'none';
+            try {
+                const response = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(pivotRequestBody())
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || t('pivot_error_generic'));
+                renderPivotTable(data);
+            } catch (err) {
+                document.getElementById('pivotTableWrap').innerHTML =
+                    `<div class="text-danger">${escapeHtml(err.message)}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        async function exportPivotReport() {
+            const btn = document.getElementById('pivotExportBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = t('pivot_exporting');
+            try {
+                const response = await fetch('/api/report/export', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(pivotRequestBody())
+                });
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || t('pivot_error_generic'));
+                }
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `informe_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '')}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
 
         // Wipes the results table/pagination/count/timer text - shared by the

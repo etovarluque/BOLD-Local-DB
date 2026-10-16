@@ -50,7 +50,7 @@ def check_and_install_pip():
             sys.exit(1)
 
 # List of required packages
-required_packages = ["flask", "psutil", "numpy"]
+required_packages = ["flask", "psutil", "numpy", "openpyxl"]
 
 # Started by the launcher, the packages are already there (uv, without pip):
 # pip is only looked for when something is missing, with a Python of one's own
@@ -79,6 +79,9 @@ import threading
 from collections import Counter, defaultdict
 from contextlib import contextmanager
 from datetime import datetime
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
 
 import genbank_batch
 import seq_analysis
@@ -434,6 +437,26 @@ def get_metric_label(technical_name):
     """Name of a field within the batch search's summary report."""
     labels = METRIC_LABELS if get_lang() == 'es' else METRIC_LABELS_EN
     return labels.get(technical_name) or get_friendly_name(technical_name)
+
+# Measures offered by the on-demand report panel next to the results table
+# ("Filas"/"Columnas"/"Valor"). Like METRIC_COLUMNS, this is a fixed
+# whitelist: the SQL snippet is never built from user input, only picked
+# from here by key.
+REPORT_VALUES = {
+    'records': ('COUNT(*)',
+                {'es': 'Nº de registros', 'en': 'Number of records'}),
+    'species': ('COUNT(DISTINCT r.col_species)',
+                {'es': 'Nº de especies distintas', 'en': 'Number of distinct species'}),
+    'bins':    ('COUNT(DISTINCT r.col_bin_uri)',
+                {'es': 'Nº de BINs distintos', 'en': 'Number of distinct BINs'}),
+}
+
+# Distinct row/column categories the report keeps. Rows beyond the cap are
+# simply left out (the UI notes it); columns beyond the cap are folded into
+# a single "Other" column, since unbounded columns would break the table's
+# layout rather than just make it longer.
+REPORT_ROW_CAP = 300
+REPORT_COL_CAP = 15
 
 # Cap on distinct values accumulated in memory per (group, column). It's not
 # an accuracy limit: once exceeded, that group's counter is abandoned and the
@@ -856,6 +879,11 @@ STRINGS = {
         'identify_index_stale': 'El índice de este marcador es de una versión anterior de la base de datos. Vuelve a crearlo.',
         'identify_index_building': 'El índice de este marcador se está creando. Espera a que termine.',
         'identify_too_many': 'Hay {n} secuencias y el máximo por análisis es {limit}.',
+        'report_row_field_required': 'Elige un campo para «Filas»',
+        'report_invalid_value': 'Medida no válida: {value}',
+        'report_other_label': 'Otros',
+        'report_total_label': 'Total',
+        'report_empty_value': '(vacío)',
     },
     'en': {
         'no_table_found': 'No table found in the database',
@@ -960,6 +988,11 @@ STRINGS = {
         'identify_index_stale': "This marker's index is from an earlier version of the database. Build it again.",
         'identify_index_building': "This marker's index is being built. Wait for it to finish.",
         'identify_too_many': 'There are {n} sequences and the most per run is {limit}.',
+        'report_row_field_required': 'Choose a field for "Rows"',
+        'report_invalid_value': 'Invalid measure: {value}',
+        'report_other_label': 'Other',
+        'report_total_label': 'Total',
+        'report_empty_value': '(empty)',
     },
 }
 
@@ -2198,6 +2231,231 @@ def prepare_query(data, include_nuc=True):
 
     return data_query, parameters
 
+
+def report_source(data, technical_columns):
+    """FROM/WHERE (always aliased "r", on both branches) for the on-demand
+    report: the same filters as the search that produced the results on
+    screen — field conditions or full-text — reusing build_where_clause()
+    and fts_source() exactly as prepare_query() does, so a report always
+    matches what's in the results table."""
+    if data.get('search_type') == 'fts':
+        raw_query = data.get('query', '').strip()
+        if not raw_query:
+            raise ValueError(t('no_search_term'))
+        if not fts_table_available():
+            raise ValueError(t('fts_unavailable_short'))
+        raw_query = _strip_accents(raw_query)
+        from_sql, where_sql, params = fts_source(raw_query, 'r', bool(data.get('case_sensitive')))
+        return from_sql, where_sql, list(params)
+
+    conditions = data.get('conditions', [])
+    if not conditions:
+        raise ValueError(t('no_search_conditions'))
+    where_clause, params = build_where_clause(conditions, technical_columns)
+    return f'{MAIN_TABLE_NAME} r', where_clause, params
+
+
+def compute_report(data):
+    """Runs the report panel's aggregation (GROUP BY row[, column]) over the
+    current search's filters and returns a dict ready for jsonify. The xlsx
+    export reuses this too, so the two always agree.
+
+    `row_field`/`col_field` must be real column names from METRIC_COLUMNS
+    (sent by the frontend as-is, from the same list the server renders into
+    the panel's selects) — that whitelist is what makes it safe to
+    interpolate them into the SQL below. Raises ValueError on bad input,
+    which the routes turn into a 400.
+    """
+    technical_columns, _ = get_column_names()
+
+    row_field = (data.get('row_field') or '').strip()
+    col_field = (data.get('col_field') or '').strip() or None
+    value = (data.get('value') or 'records').strip()
+
+    if row_field not in METRIC_COLUMNS or row_field not in technical_columns:
+        raise ValueError(t('report_row_field_required'))
+    if col_field and (col_field not in METRIC_COLUMNS or col_field not in technical_columns
+                       or col_field == row_field):
+        col_field = None
+    if value not in REPORT_VALUES:
+        raise ValueError(t('report_invalid_value', value=value))
+
+    metric_sql, metric_labels = REPORT_VALUES[value]
+    metric_label = metric_labels.get(get_lang(), metric_labels['en'])
+    other_label = t('report_other_label')
+
+    from_sql, where_sql, params = report_source(data, technical_columns)
+
+    with get_export_connection() as conn:
+        cursor = conn.cursor()
+
+        col_values, col_truncated = [], False
+        if col_field:
+            # Discover the column axis's domain first: which categories
+            # exist (within the current filter) and whether there are more
+            # than REPORT_COL_CAP of them, so the main query below can fold
+            # the rest into "Other" instead of returning one real SQL column
+            # per distinct value.
+            cursor.execute(
+                f'SELECT r.{col_field} AS c, COUNT(*) AS n FROM {from_sql} '
+                f'WHERE {where_sql} GROUP BY r.{col_field} ORDER BY n DESC LIMIT ?',
+                [*params, REPORT_COL_CAP + 1]
+            )
+            domain = cursor.fetchall()
+            col_truncated = len(domain) > REPORT_COL_CAP
+            col_values = [row['c'] for row in domain[:REPORT_COL_CAP]]
+
+        if col_field:
+            if col_truncated:
+                placeholders = ', '.join('?' for _ in col_values)
+                col_expr = f'CASE WHEN r.{col_field} IN ({placeholders}) THEN r.{col_field} ELSE ? END'
+                col_params = [*col_values, other_label]
+            else:
+                col_expr = f'r.{col_field}'
+                col_params = []
+            # col_expr's placeholders sit in the SELECT clause, which comes
+            # before WHERE in the SQL text — they must be bound first.
+            cursor.execute(
+                f'SELECT r.{row_field} AS rr, {col_expr} AS cc, {metric_sql} AS v '
+                f'FROM {from_sql} WHERE {where_sql} GROUP BY rr, cc',
+                [*col_params, *params]
+            )
+        else:
+            cursor.execute(
+                f'SELECT r.{row_field} AS rr, {metric_sql} AS v '
+                f'FROM {from_sql} WHERE {where_sql} GROUP BY rr',
+                params
+            )
+        cells = cursor.fetchall()
+
+    # The matrix is assembled here, not in SQL: a row's total (which decides
+    # its place and whether it survives REPORT_ROW_CAP) isn't known until
+    # every one of its cells has been seen, so there's no single GROUP BY
+    # that could apply the cap on its own.
+    row_totals = defaultdict(int)
+    col_totals = defaultdict(int)
+    matrix = defaultdict(lambda: defaultdict(int))
+    grand_total = 0
+    for cell in cells:
+        rr, v = cell['rr'], cell['v'] or 0
+        if col_field:
+            cc = cell['cc']
+            matrix[rr][cc] += v
+            col_totals[cc] += v
+        row_totals[rr] += v
+        grand_total += v
+
+    ordered_rows = sorted(row_totals, key=lambda k: row_totals[k], reverse=True)
+    row_truncated = len(ordered_rows) > REPORT_ROW_CAP
+    ordered_rows = ordered_rows[:REPORT_ROW_CAP]
+
+    ordered_cols = []
+    if col_field:
+        ordered_cols = sorted(
+            (c for c in col_totals if c != other_label),
+            key=lambda k: col_totals[k], reverse=True
+        )
+        if col_truncated:
+            ordered_cols.append(other_label)
+
+    def label(v):
+        return v if v not in (None, '') else t('report_empty_value')
+
+    return {
+        'row_field': get_metric_label(row_field),
+        'col_field': get_metric_label(col_field) if col_field else None,
+        'value_label': metric_label,
+        'rows': [label(r) for r in ordered_rows],
+        'cols': [label(c) for c in ordered_cols],
+        'matrix': [[matrix[r].get(c, 0) for c in ordered_cols] for r in ordered_rows] if col_field else [],
+        'row_totals': [row_totals[r] for r in ordered_rows],
+        'col_totals': [col_totals[c] for c in ordered_cols] if col_field else [],
+        'grand_total': grand_total,
+        'row_truncated': row_truncated,
+        'col_truncated': col_truncated,
+        'total_distinct_rows': len(row_totals),
+    }
+
+
+@app.route('/api/report', methods=['POST'])
+def api_report():
+    """On-demand summary table (the "Crear informe" panel next to the
+    results table): GROUP BY over the same filters as the search on screen,
+    capped so it stays a summary rather than a second copy of the data."""
+    data = request.get_json() or {}
+    try:
+        report = compute_report(data)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+    return jsonify(report)
+
+
+@app.route('/api/report/export', methods=['POST'])
+def export_report():
+    """The report panel's own "Exportar a Excel" button: the same
+    aggregation as /api/report, written to a small in-memory .xlsx (the
+    table is capped, so there's no need for the streaming/background-job
+    machinery the full-results exports use)."""
+    data = request.get_json() or {}
+    try:
+        report = compute_report(data)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Informe'
+
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='2E3846', end_color='2E3846', fill_type='solid')
+    total_font = Font(bold=True)
+    total_fill = PatternFill(start_color='E3E8EF', end_color='E3E8EF', fill_type='solid')
+    total_label = t('report_total_label')
+
+    if report['col_field']:
+        corner = f"{report['row_field']} \\ {report['col_field']}"
+        ws.append([corner, *report['cols'], total_label])
+        for i, row_label in enumerate(report['rows']):
+            ws.append([row_label, *report['matrix'][i], report['row_totals'][i]])
+        ws.append([total_label, *report['col_totals'], report['grand_total']])
+    else:
+        ws.append([report['row_field'], report['value_label']])
+        for row_label, n in zip(report['rows'], report['row_totals']):
+            ws.append([row_label, n])
+        ws.append([total_label, report['grand_total']])
+
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+    for cell in ws[ws.max_row]:
+        cell.font = total_font
+        cell.fill = total_fill
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        row[0].font = total_font
+        if report['col_field']:
+            row[-1].font = total_font
+            row[-1].fill = total_fill
+
+    ws.freeze_panes = 'B2'
+    for col_idx, col in enumerate(ws.columns, start=1):
+        max_len = max((len(str(c.value)) for c in col if c.value is not None), default=8)
+        ws.column_dimensions[get_column_letter(col_idx)].width = min(max_len + 3, 40)
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    filename = f"informe_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        buf,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
 
 
 @app.route('/api/export_status/<export_id>', methods=['GET'])

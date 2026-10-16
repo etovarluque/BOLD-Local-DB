@@ -1611,13 +1611,22 @@
 		.pivot-panel-label { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
 		#pivotHideLink { font-size: .8rem; color: var(--slate); text-decoration: underline; }
 		.pivot-field-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); margin-bottom: 3px; }
+		/* An invisible label, same size as the real ones above the selects,
+		   so the button's own control lines up with theirs — align-items:
+		   end alone matched its bottom edge to the selects', but a button
+		   is shorter than a form-select, so its vertical center still sat
+		   a few px higher. This makes the row above it identical instead. */
+		.pivot-generate-label { visibility: hidden; }
 		.pivot-select { min-width: 190px; }
 		.pivot-note { font-size: .8rem; color: var(--orange); margin-top: 10px; }
 		.pivot-caption { font-family: var(--f-mono); font-size: 12px; color: var(--mute); }
-		.pivot-table-wrap { margin-top: 14px; overflow-x: auto; }
+		/* Capped height with its own scrollbar: a report can run to the
+		   REPORT_ROW_CAP (300) rows, and the header stays pinned while
+		   scrolling so the columns stay readable. */
+		.pivot-table-wrap { margin-top: 14px; max-height: 420px; overflow: auto; }
 		.pivot-table { border-collapse: collapse; font-size: 13px; width: 100%; background: #fff; }
 		.pivot-table th, .pivot-table td { border: 1px solid var(--line); padding: 7px 11px; }
-		.pivot-table thead th { background: #fff; font-weight: 600; color: var(--slate); text-align: center; font-family: var(--f-ui); }
+		.pivot-table thead th { position: sticky; top: 0; z-index: 1; background: #fff; font-weight: 600; color: var(--slate); text-align: center; font-family: var(--f-ui); }
 		.pivot-table thead th:first-child { text-align: left; }
 		.pivot-table tbody th { text-align: left; font-weight: 600; color: var(--ink); background: #fff; font-family: var(--f-ui); }
 		.pivot-table td { text-align: right; font-family: var(--f-mono); }
@@ -2393,7 +2402,10 @@
 								<option value="bins" data-i18n="pivot_value_bins">Nº de BINs distintos</option>
 							</select>
 						</div>
-						<button id="pivotGenerateBtn" class="btn btn-primary btn-sm" type="button" onclick="generatePivotReport()" data-i18n="pivot_generate_btn">Generar tabla</button>
+						<div>
+							<label class="pivot-field-label pivot-generate-label">&nbsp;</label>
+							<button id="pivotGenerateBtn" class="btn btn-primary btn-sm" type="button" onclick="generatePivotReport()" data-i18n="pivot_generate_btn">Generar tabla</button>
+						</div>
 					</div>
 					<div id="pivotNote" class="pivot-note" style="display:none;"></div>
 					<div id="pivotTableWrap" class="pivot-table-wrap"></div>

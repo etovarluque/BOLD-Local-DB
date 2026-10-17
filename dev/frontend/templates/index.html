@@ -556,6 +556,10 @@
 		  transition: all 0.3s;
 		}
 
+		/* The shorthand above wipes Bootstrap's right padding, which is the
+		   room its dropdown arrow needs */
+		.form-select { padding-right: 2.5rem; }
+
 		.form-control:focus, .form-select:focus {
 		  border-color: var(--color-secondary);
 		  box-shadow: 0 0 0 0.25rem rgba(62, 146, 204, 0.25);
@@ -1146,7 +1150,8 @@
 			border-radius: 5px;
 		}
 		.results-card #exportButton,
-		.results-card #exportFastaButton { font-weight: 500; border-radius: 7px; }
+		.results-card #exportFastaButton,
+		.results-card #pivotToggleBtn { font-weight: 500; border-radius: 7px; }
 		/* Pastel green, so it stands out from the slate band */
 		.results-card #exportButton { background: #6ee7b7; border-color: #6ee7b7; color: #064e3b; font-weight: 600; }
 		.results-card #exportButton:hover { background: #34d399; border-color: #34d399; color: #064e3b; }
@@ -1618,6 +1623,8 @@
 		   a few px higher. This makes the row above it identical instead. */
 		.pivot-generate-label { visibility: hidden; }
 		.pivot-select { min-width: 190px; }
+		.pivot-panel .form-select, #pivotGenerateBtn { height: 38px; }
+		#pivotGenerateBtn { padding-top: 0; padding-bottom: 0; }
 		.pivot-note { font-size: .8rem; color: var(--orange); margin-top: 10px; }
 		.pivot-caption { font-family: var(--f-mono); font-size: 12px; color: var(--mute); }
 		/* Capped height with its own scrollbar: a report can run to the
@@ -2340,7 +2347,7 @@
 				<div class="ms-auto d-flex gap-2 align-items-center">
 					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
 					<button id="clearResultsButton" class="btn btn-link btn-sm results-clear-link" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
-					<button id="pivotToggleBtn" class="btn btn-sm btn-outline-secondary" type="button" onclick="togglePivotPanel()" data-i18n="pivot_toggle_btn_label">
+					<button id="pivotToggleBtn" class="btn btn-outline-secondary" type="button" onclick="togglePivotPanel()" data-i18n="pivot_toggle_btn_label">
 						⊞ Crear informe ▼
 					</button>
 					<button id="exportButton" class="btn btn-emerald btn-dl" data-i18n="export_csv_btn">Exportar CSV</button>
@@ -5561,6 +5568,16 @@
             colSelect.value = '';
         }
 
+        // The report panel sits above the table, so opening, closing or
+        // filling it moves the table frame; the record panel beside it
+        // takes its top from that frame and must follow.
+        (function () {
+            const panel = document.getElementById('pivotPanel');
+            if (panel && window.ResizeObserver) {
+                new ResizeObserver(() => syncRecordPanelSize()).observe(panel);
+            }
+        })();
+
         function togglePivotPanel() {
             const panel = document.getElementById('pivotPanel');
             const btn = document.getElementById('pivotToggleBtn');
@@ -5568,6 +5585,17 @@
             panel.style.display = isHidden ? 'block' : 'none';
             btn.innerHTML = `⊞ ${t('pivot_toggle_btn_label')} ${isHidden ? '▲' : '▼'}`;
             if (isHidden) buildPivotFields();
+        }
+
+        // Drops the report of the previous results and closes its panel
+        function resetPivotReport() {
+            const panel = document.getElementById('pivotPanel');
+            if (!panel) return;
+            panel.style.display = 'none';
+            document.getElementById('pivotToggleBtn').innerHTML = `⊞ ${t('pivot_toggle_btn_label')} ▼`;
+            document.getElementById('pivotTableWrap').innerHTML = '';
+            document.getElementById('pivotNote').style.display = 'none';
+            document.getElementById('pivotFooter').style.display = 'none';
         }
 
         function pivotRequestBody() {
@@ -5696,6 +5724,12 @@
         // "clear results" button and by both search functions right before
         // they kick off a new request.
         function resetResultsDisplay() {
+            // Nothing to export or summarize until the new results arrive
+            ['exportButton', 'exportFastaButton', 'pivotToggleBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            resetPivotReport();
             document.getElementById('resultsTable').innerHTML = '';
             document.getElementById('pagination').innerHTML = '';
             document.getElementById('resultsCount').textContent = '';
@@ -7067,6 +7101,22 @@
 			executeCurrentSearch();
 		}
 
+		// Changing the page size doesn't change the total count, so the new
+		// total_pages is computed locally from the cached count instead of
+		// asking the server again - same cached-count page-change path as
+		// applySort above (executeCurrentSearch -> performSearch/FtsSearch
+		// with newSearch=false).
+		function changeResultsPerPage(newPerPage) {
+			if (newPerPage === AppState.resultsPerPage) return;
+			AppState.resultsPerPage = newPerPage;
+			AppState.currentPage = 1;
+			if (AppState.cachedCount !== null && AppState.cachedCount !== undefined) {
+				AppState.cachedTotalPages = Math.max(1, Math.ceil(AppState.cachedCount / newPerPage));
+				AppState.totalPages = AppState.cachedTotalPages;
+			}
+			executeCurrentSearch();
+		}
+
 		// Request body (search part) for the results on screen, for the exports
 		function resultsSearchRequest() {
 			const s = AppState.resultsSearch;
@@ -7867,6 +7917,7 @@
 			if (displayCount > 0) {
 				exportButton.style.display = 'block';
 				if (exportFastaButton) exportFastaButton.style.display = 'block';
+				document.getElementById('pivotToggleBtn').style.display = '';
 				
 				// Build the full table structure
 				const tableFrame = document.createElement('div');
@@ -8093,7 +8144,7 @@
 			const narrowColumns = ["# Bases", "Código País", "Coordenadas", "Base Count", "Country Code", "Coordinates"];
 			
 			const mediumColumns = ["ID BOLD", "ID Muestra", "ID Campo", "ID Museo", "BIN", "Nivel", "Marcador", "Reino", "Filo", "Clase", "Orden", "Familia", "Género", "País", "Estado", "Región", "Fecha secuencia",
-				"BOLD ID", "Sample ID", "Field ID", "Museum ID", "ID Rank", "Marker", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Country/Ocean", "State/Province", "Region", "Sequence Date"];
+				"BOLD ID", "Sample ID", "Field ID", "Museum ID", "ID Rank", "Marker", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Country", "State/Province", "Region", "Sequence Date"];
 			
 			const wideColumns = ["Identificación", "Especie", "Identification", "Species"];
 			
@@ -8237,9 +8288,36 @@
 
 			// "Page X of Y (N per page)" text — "rpp" was an unexplained abbreviation
 			const info = document.createElement('span');
-			info.className = 'fw-semibold text-secondary';
-			info.innerHTML = `${t('page_label')} ${formatter.format(currentPage)} ${t('page_of')} ${formatter.format(totalPages)} <span class="text-muted fw-normal" style="font-size:0.9em;">(${formatter.format(AppState.resultsPerPage)} ${t('per_page_suffix')})</span>`;
+			info.className = 'fw-semibold text-secondary d-flex align-items-center gap-1';
+			info.innerHTML = `${t('page_label')} ${formatter.format(currentPage)} ${t('page_of')} ${formatter.format(totalPages)}`;
 			wrapper.appendChild(info);
+
+			// Results-per-page selector, right after the "page X of Y" text
+			const perPageWrap = document.createElement('span');
+			perPageWrap.className = 'text-muted fw-normal d-flex align-items-center gap-1';
+			perPageWrap.style.fontSize = '0.9em';
+
+			const perPageSelect = document.createElement('select');
+			perPageSelect.className = 'form-select form-select-sm w-auto';
+			// The page's own ".form-select { padding: 0.5rem 1rem }" rule
+			// (see .an-options select for the same fix) eats the right
+			// padding Bootstrap reserves for the dropdown arrow, so it
+			// overlaps the text - restore it here.
+			perPageSelect.style.paddingRight = '1.75rem';
+			perPageSelect.title = t('results_per_page_title');
+			[50, 100, 250].forEach(n => {
+				const opt = document.createElement('option');
+				opt.value = n;
+				opt.textContent = formatter.format(n);
+				if (n === AppState.resultsPerPage) opt.selected = true;
+				perPageSelect.appendChild(opt);
+			});
+			perPageSelect.addEventListener('change', (e) => {
+				changeResultsPerPage(parseInt(e.target.value, 10));
+			});
+			perPageWrap.appendChild(perPageSelect);
+			perPageWrap.appendChild(document.createTextNode(t('per_page_suffix')));
+			wrapper.appendChild(perPageWrap);
 
 			if (totalPages > 1) {
 				// Single block: «« | « Previous | [Go input] | Next » | »»

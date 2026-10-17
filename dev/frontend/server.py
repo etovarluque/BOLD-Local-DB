@@ -351,7 +351,7 @@ FIELD_MAPPING_EN = {
     'col_species': 'Species',
     'col_subspecies': 'Subspecies',
     'col_species_reference': 'Species Reference',
-    'col_country_ocean': 'Country/Ocean',
+    'col_country_ocean': 'Country',
     'col_country_iso': 'Country Code',
     'col_province_state': 'State/Province',
     'col_region': 'Region',

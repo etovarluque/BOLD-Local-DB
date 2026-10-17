@@ -7,7 +7,38 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 
 ## [Unreleased]
 
+### Upgrade notes
+- Update from Home (*Update*): it also installs `openpyxl`, which the report
+  panel's Excel export uses. The database doesn't change; the Step 1 filter
+  of sequences made only of Ns applies the next time the database is built
+  or updated.
+
+### Added
+- Report panel: *Create report* next to the results table summarizes the
+  records on screen (field search or full-text) by a field in rows and,
+  optionally, another in columns, counting records, distinct species or
+  distinct BINs. The table on screen keeps the 300 largest rows and folds
+  columns past 15 into *Other*; *Export to Excel* writes the whole table
+  (as CSV when it's too big for a manageable sheet). Tables can be saved
+  and downloaded together as one workbook, one sheet each (a ZIP when one
+  of them goes as CSV).
+- Results table: a click on a column header sorts by it (ascending,
+  descending, none). Only indexed fields can be sorted: any other would take
+  minutes on a full database, so its header is disabled with a note. The
+  CSV and FASTA exports follow the order on screen.
+- Sequence analysis of a FASTA: a panel shows the fields read from the first
+  headers (ID, taxon, BIN, marker) and the rank of the taxon names (species,
+  genus, family... as the database knows them, or not recognized). *Correct
+  fields* splits the header by a chosen separator and assigns each part to
+  a field by hand (several parts make one taxon, "Genus" + "species").
+- Sequence analysis: a warning when the search or the FASTA holds more
+  sequences than one run analyses; tree tooltips say which tips have the
+  same sequence.
+- Step 1 leaves out sequences made only of Ns (placeholders with no
+  information), as it does records without a sequence, and says how many.
+
 ### Changed
+- NJ tree: with a subtree on show, only the tips of that taxon are coloured.
 - Sequence analysis: the views of a tab (Haplotypes, Distances and
   delimitation, Diversity) sit in a dark band right under the tabs, where
   the small pills under the options went unnoticed, and the options they
@@ -32,6 +63,27 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   skip records that share the sorted value.
 - A search with an invalid sort column or condition answers 400 rather than
   500.
+- FASTA export (and batch search): an empty field keeps its place
+  (`ID|sample||taxon|marker`). Dropped, a record with no BIN put its taxon
+  where the BIN goes, and the Sequence analysis tab lost its taxon and
+  marker when the file was read back. Files exported before are still read
+  right.
+- Sequence analysis, FASTA headers: a genus that starts like a marker code
+  (*Rhogeessa*, *Cadlina*) was taken for the marker.
+- Sequence analysis, genetic code: salps and appendicularians now use code
+  13 like the ascidians, and lancelets code 5. With the vertebrate code
+  their phylum gave, AGA/AGG read as stops: 149 of 150 salp COI sequences
+  had stops and were left out of distances and networks.
+- Sequence analysis of a FASTA: the family up to the kingdom of each record
+  is filled in from the database by its genus (or its taxon name), so the
+  genetic code is chosen as for a search. Panthera's COI from a FASTA was
+  read with the invertebrate code and its 21 sequences with vertebrate stop
+  codons went unseen. A name the database files under two phyla is left
+  as it is.
+- Sequence analysis of a FASTA: a taxon name is cut to what the database
+  knows ("Diptera voucher X" is Diptera) in every tab, not only in the
+  first one, so a network or the diversity of a taxon of the haplotype
+  table finds it.
 
 ## [2.4.0]
 

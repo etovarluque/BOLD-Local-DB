@@ -133,8 +133,11 @@ MARKER_KINDS = {**{m: "mito" for m in _MITO_MARKERS},
                 **{m: "plastid" for m in _PLASTID_MARKERS},
                 **{m: "nuclear" for m in _NUCLEAR_MARKERS}}
 
-# Mitochondrial code by taxon, checked from the most specific rank
-_MITO_CODE_BY_CLASS = {"ascidiacea": 13}
+# Mitochondrial code by taxon, checked from the most specific rank. Every
+# tunicate uses code 13 (AGA/AGG are glycine) and lancelets code 5 (serine):
+# the vertebrate code their phylum would give reads those codons as stops.
+_MITO_CODE_BY_CLASS = {"ascidiacea": 13, "thaliacea": 13, "appendicularia": 13, "larvacea": 13,
+                       "leptocardii": 5}
 _MITO_CODE_BY_PHYLUM = {
     "chordata": 2,
     "echinodermata": 9, "hemichordata": 9, "platyhelminthes": 9,
@@ -258,6 +261,14 @@ def gc3(seq, frame):
 
 _MARKER_RE = re.compile(r"^(CO[IX]|CYTB|ND\d|ATP\d|RBCL|MATK|ITS|5-8S|12S|16S|18S|28S|D-LOOP|"
                         r"TRN|PSB|RPO|H3|RAG\d|RHO|WNT|EF1|CAD)", re.IGNORECASE)
+# A capitalised word in lowercase, as a genus is written: "Rhogeessa" or
+# "Cadlina" start like a marker code (RHO, CAD) but are not one
+_TAXON_LIKE_RE = re.compile(r"^[A-Z][a-z]+(?:[\s_]|$)")
+
+
+def _is_marker(part):
+    """Whether a header field is a marker code ("COI-5P", "rbcLa", "ITS2")."""
+    return bool(_MARKER_RE.match(part)) and not _TAXON_LIKE_RE.match(part)
 
 
 def _taxon_fields(taxon):
@@ -368,9 +379,18 @@ def parse_header(header, mapping=None):
         if len(parts) >= 5:
             rec["marker"] = parts[4]
         rec["id"] = parts[0]
-    elif len(parts) >= 3 and _MARKER_RE.match(parts[2]):
+    elif len(parts) >= 3 and _is_marker(parts[2]):
         rec.update(processid=parts[0], marker=parts[2])
         rec.update(_taxon_fields(parts[1]))
+        rec["id"] = parts[0]
+    elif len(parts) == 4 and _is_marker(parts[3]):
+        # The viewer's export of earlier versions, which dropped an empty field:
+        # processid|sampleid or BIN|taxon|marker
+        rec.update(processid=parts[0], marker=parts[3])
+        rec["bin" if parts[1].upper().startswith("BOLD:") else "sampleid"] = parts[1]
+        rec.update(_taxon_fields(parts[2]))
+        rec["id"] = parts[0]
+    elif len(parts) > 1:
         rec["id"] = parts[0]
     elif len(parts) == 1 and header:
         # GenBank marks some records "UNVERIFIED: Genus species..."

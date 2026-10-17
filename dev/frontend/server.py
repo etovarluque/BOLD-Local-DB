@@ -3114,16 +3114,18 @@ def _row_to_fasta_entry(row, keys):
         return row[col] if col in keys else None
 
     taxon = get_best_taxon(*(val(c) for c in _FASTA_TAXON_COLS))
+    # An empty field keeps its place ("ID||taxon|marker"): dropped, a record
+    # with no BIN put its taxon where the BIN goes, and whoever reads the
+    # header by position (the Sequence analysis tab among them) lost it.
     parts = []
     for value, underscore in ((val('col_processid'), False),
                               (val('col_sampleid'), True),
                               (val('col_bin_uri'), False),
                               (taxon, False),
                               (val('col_marker_code'), False)):
-        if value:
-            value = str(value)
-            parts.append(value.replace(' ', '_') if underscore else value)
-    if not parts:
+        value = str(value) if value else ''
+        parts.append(value.replace(' ', '_') if underscore else value)
+    if not any(parts):
         return ''
     return f">{'|'.join(parts)}\n{seq}\n"
 
@@ -4302,6 +4304,11 @@ def _analysis_input(data, cap=seq_analysis.MAX_SEQUENCES):
                 raise _analysis_error('analysis_fasta_too_large',
                                       mb=seq_analysis.MAX_FASTA_CHARS // 1_000_000)
             records = seq_analysis.parse_fasta(text, seq_analysis.clean_fasta_map(data.get('fasta_map')))
+            # Names cut as every tab shows them ("Diptera voucher X" is
+            # Diptera): a network or a diversity run of one taxon of the
+            # haplotype table must find it under the same name
+            seq_analysis.resolve_taxon_names(records, _analysis_taxon_ranks)
+            _analysis_fill_lineage(records)
         elif source == 'records':
             records = _analysis_client_records(data.get('records'))
         else:
@@ -4395,6 +4402,58 @@ def _analysis_taxon_ranks(names):
     except sqlite3.Error:
         pass
     return out
+
+
+# Ranks above a FASTA record's name, filled in from the database
+_LINEAGE_KEYS = ('genus', 'family', 'order', 'class', 'phylum', 'kingdom')
+_LINEAGE_COLUMNS = dict(_TAXON_RANK_COLUMNS, kingdom='col_kingdom')
+# Rows of a name read to tell its lineage
+_LINEAGE_SAMPLE = 50
+
+
+def _analysis_fill_lineage(records):
+    """Family up to kingdom of FASTA records, from the database by their
+    genus (or the name the header gives, at whatever rank the database files
+    it). A FASTA brings a name at most, and a mitochondrial marker's genetic
+    code depends on the phylum or class: without them Panthera's COI was read
+    with the invertebrate code, and the stops of its pseudogenes went unseen.
+    A name filed under more than one phylum (a homonym) is left as it is."""
+    names = {}
+    for rec in records:
+        name = rec.get('genus') or rec.get('taxon')
+        if name and not rec.get('phylum'):
+            names.setdefault(name, []).append(rec)
+    if not names:
+        return
+    try:
+        indexed = get_indexed_columns()
+        with get_export_connection() as conn:
+            for name in list(names)[:200]:
+                for k, key in enumerate(_LINEAGE_KEYS[:-1]):
+                    col = _LINEAGE_COLUMNS[key]
+                    if col not in indexed:
+                        continue
+                    above = [(x, _LINEAGE_COLUMNS[x]) for x in _LINEAGE_KEYS[k + 1:]]
+                    rows = conn.execute(
+                        f"SELECT {', '.join(c for _, c in above)} FROM {MAIN_TABLE_NAME} WHERE {col} = ? LIMIT ?",
+                        (name, _LINEAGE_SAMPLE)).fetchall()
+                    if not rows:
+                        continue
+                    top = [x for x, _ in above].index('phylum') if key != 'phylum' else None
+                    phyla = {r[top] for r in rows} - {None, ''} if top is not None else set()
+                    if len(phyla) <= 1:
+                        # The name holds its own rank too ("Chordata" is a phylum)
+                        lineage = {key: name}
+                        for i, (x, _) in enumerate(above):
+                            common = Counter(r[i] for r in rows if r[i]).most_common(1)
+                            if common:
+                                lineage[x] = common[0][0]
+                        for rec in names[name]:
+                            for x, v in lineage.items():
+                                rec.setdefault(x, v)
+                    break
+    except sqlite3.Error:
+        pass
 
 
 def _analysis_bin_species(bins):

@@ -296,6 +296,7 @@ STRINGS_ES = {
     'filtered_records': '✅ Registros filtrados: {n:,}',
     'filter_summary': '📊 Filas del paquete: {read:,} · con secuencia (se guardan): {kept:,} · '
                       'sin secuencia (se descartan): {no_seq:,}',
+    'filter_only_n': '🧹 Secuencias formadas solo por N (se descartan): {n:,}',
     'filter_malformed': '⚠️ {n:,} línea(s) del paquete están rotas (les faltan columnas, '
                         'probablemente por un salto de línea dentro de un campo) y no se pudieron leer',
     'file_label': '📁 Archivo: {name}',
@@ -894,6 +895,7 @@ STRINGS_EN = {
     'filtered_records': '✅ Filtered records: {n:,}',
     'filter_summary': '📊 Package rows: {read:,} · with a sequence (kept): {kept:,} · '
                       'without a sequence (left out): {no_seq:,}',
+    'filter_only_n': '🧹 Sequences made only of Ns (left out): {n:,}',
     'filter_malformed': '⚠️ {n:,} line(s) of the package are broken (missing columns, probably '
                         'because of a line break inside a field) and couldn\'t be read',
     'file_label': '📁 File: {name}',
@@ -2377,9 +2379,9 @@ def run_step1(log, progress, cfg):
         stop        = cfg.get("_stop")
         interrupted = False
         processed   = written = 0
-        # What's left out, and why: only rows without a sequence may be, and
+        # What's left out, and why: rows without a sequence (or with only Ns), and
         # the counts are reported so nothing goes missing unnoticed
-        no_seq = malformed = 0
+        no_seq = only_n = malformed = 0
         with open(archivo_tsv, "r", encoding="utf-8", errors="replace", buffering=_IO_BUF) as fin, \
              open(archivo_filtrado, "w", encoding="utf-8", newline="", buffering=_IO_BUF) as fout:
             writer = csv.writer(fout, delimiter="\t")
@@ -2400,7 +2402,11 @@ def run_step1(log, progress, cfg):
                     # once the gaps go, and used to get in as a record
                     # without a sequence.
                     nuc = normalize_nuc(val) if val != "None" else ""
-                    if nuc:
+                    if nuc and not nuc.strip("N"):
+                        # Only Ns: a placeholder with no information, kept
+                        # out like a record without a sequence
+                        only_n += 1
+                    elif nuc:
                         # strip() on every row, not just the non-ASCII ones that
                         # go through normalize_field: otherwise a stray space
                         # around a plain-ASCII value made exact-match search miss it.
@@ -2452,6 +2458,8 @@ def run_step1(log, progress, cfg):
             pass
         log(t('filtered_records', n=total_filtrado))
         log(t('filter_summary', read=processed - 1, kept=total_filtrado, no_seq=no_seq))
+        if only_n:
+            log(t('filter_only_n', n=only_n))
         if malformed:
             log(t('filter_malformed', n=malformed))
         log(t('file_label', name=os.path.basename(archivo_filtrado)))

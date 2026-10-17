@@ -14148,12 +14148,23 @@ li li { display: list-item; margin: 0; }
 
 		// Colour of each tip, and the legend
 		function anTreeColors(T, opts) {
+			const colors = anTreeColorsOf(T, opts);
+			const F = anTreeFocus(T, opts);
+			return F ? { ...colors, tip: i => (F.tips.has(i) ? colors.tip(i) : null) } : colors;
+		}
+
+		function anTreeColorsOf(T, opts) {
 			if (opts.color === 'none') return { tip: () => null, legend: [] };
+			// With a subtree on show only the taxon's own tips are coloured (the
+			// sister group stays plain), and the palette is shared out among them
+			const F = anTreeFocus(T, opts);
+			const scope = F ? [...F.tips] : null;
+			const metas = scope ? scope.map(i => T.meta[i]) : T.meta;
 			if (opts.color === 'discordance') {
 				const colors = { shared: anColor('tree', 'discordance', '#shared', AN_PALETTE[0]),
 				                 split: anColor('tree', 'discordance', '#split', AN_PALETTE[1]),
 				                 both: anColor('tree', 'discordance', '#both', AN_PALETTE[2]) };
-				const present = new Set(T.discordance);
+				const present = new Set(scope ? scope.map(i => T.discordance[i]) : T.discordance);
 				return {
 					tip: i => colors[T.discordance[i]] || null,
 					legend: ['shared', 'split', 'both'].filter(k => present.has(k))
@@ -14162,12 +14173,14 @@ li li { display: list-item; margin: 0; }
 			}
 			if (opts.color === 'nonmono') {
 				// Only the species that aren't a clade; the worst take the colours
-				const slots = T.nonmono.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
-				const colorOf = new Map(T.nonmono.slice(0, slots).map((sp, i) => [sp, anColor('tree', 'nonmono', sp, AN_PALETTE[i])]));
+				const inScope = new Set(metas.map(m => m.species));
+				const nonmono = scope ? T.nonmono.filter(sp => inScope.has(sp)) : T.nonmono;
+				const slots = nonmono.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
+				const colorOf = new Map(nonmono.slice(0, slots).map((sp, i) => [sp, anColor('tree', 'nonmono', sp, AN_PALETTE[i])]));
 				const other = anColor('tree', 'nonmono', '#other', AN_OTHER);
-				const rest = new Set(T.nonmono.slice(slots));
+				const rest = new Set(nonmono.slice(slots));
 				const counts = new Map();
-				T.meta.forEach(m => { if (colorOf.has(m.species)) counts.set(m.species, (counts.get(m.species) || 0) + 1); });
+				metas.forEach(m => { if (colorOf.has(m.species)) counts.set(m.species, (counts.get(m.species) || 0) + 1); });
 				const legend = [...colorOf].map(([sp, c]) => [c, `${sp} (${numFmt.format(counts.get(sp) || 0)})`, sp]);
 				if (rest.size) legend.push([other, t('an_tree_other_nonmono', { n: numFmt.format(rest.size) }), '#other']);
 				return {
@@ -14179,7 +14192,7 @@ li li { display: list-item; margin: 0; }
 			const attr = opts.color;
 			const counts = new Map();
 			let missing = 0;
-			T.meta.forEach(m => { const k = m[attr]; if (k) counts.set(k, (counts.get(k) || 0) + 1); else missing++; });
+			metas.forEach(m => { const k = m[attr]; if (k) counts.set(k, (counts.get(k) || 0) + 1); else missing++; });
 			const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 			const slots = ranked.length <= AN_PALETTE.length ? AN_PALETTE.length : AN_PALETTE.length - 1;
 			const colorOf = new Map(ranked.slice(0, slots).map(([k], i) => [k, anColor('tree', attr, k, AN_PALETTE[i])]));

@@ -458,6 +458,29 @@ REPORT_VALUES = {
 REPORT_ROW_CAP = 300
 REPORT_COL_CAP = 15
 
+# Largest report the Excel export writes as a sheet. The format itself allows
+# far more (16,384 columns, 1M rows), but such a file is unmanageable; a
+# report beyond any of these goes out as CSV instead.
+XLSX_MAX_COLS = 500
+XLSX_MAX_ROWS = 50000
+XLSX_MAX_CELLS = 2000000
+MAX_BOOK_TABLES = 20
+
+
+def report_excel_limit(n_rows, n_cols):
+    """None if a report of n_rows x n_cols categories fits an Excel sheet, or
+    the limit it breaks ('cols', 'rows' or 'cells'), in the orientation the
+    export will use: a table much wider than tall is turned on its side."""
+    if n_cols > 2 * n_rows:
+        n_rows, n_cols = n_cols, n_rows
+    if n_cols > XLSX_MAX_COLS:
+        return 'cols'
+    if n_rows > XLSX_MAX_ROWS:
+        return 'rows'
+    if n_rows * max(n_cols, 1) > XLSX_MAX_CELLS:
+        return 'cells'
+    return None
+
 # Cap on distinct values accumulated in memory per (group, column). It's not
 # an accuracy limit: once exceeded, that group's counter is abandoned and the
 # figure is recalculated with an exact query (see `_metric_exact`). It only
@@ -2255,7 +2278,7 @@ def report_source(data, technical_columns):
     return f'{MAIN_TABLE_NAME} r', where_clause, params
 
 
-def compute_report(data):
+def compute_report(data, full=False):
     """Runs the report panel's aggregation (GROUP BY row[, column]) over the
     current search's filters and returns a dict ready for jsonify. The xlsx
     export reuses this too, so the two always agree.
@@ -2289,8 +2312,8 @@ def compute_report(data):
     with get_export_connection() as conn:
         cursor = conn.cursor()
 
-        col_values, col_truncated = [], False
-        if col_field:
+        col_values, col_truncated, total_cols = [], False, None
+        if col_field and not full:
             # Discover the column axis's domain first: which categories
             # exist (within the current filter) and whether there are more
             # than REPORT_COL_CAP of them, so the main query below can fold
@@ -2304,6 +2327,9 @@ def compute_report(data):
             domain = cursor.fetchall()
             col_truncated = len(domain) > REPORT_COL_CAP
             col_values = [row['c'] for row in domain[:REPORT_COL_CAP]]
+            if col_truncated:
+                cursor.execute(f'SELECT COUNT(*) AS n FROM (SELECT 1 FROM {from_sql} WHERE {where_sql} GROUP BY r.{col_field})', params)
+                total_cols = cursor.fetchone()['n']
 
         if col_field:
             if col_truncated:
@@ -2346,8 +2372,11 @@ def compute_report(data):
         grand_total += v
 
     ordered_rows = sorted(row_totals, key=lambda k: row_totals[k], reverse=True)
-    row_truncated = len(ordered_rows) > REPORT_ROW_CAP
-    ordered_rows = ordered_rows[:REPORT_ROW_CAP]
+    # full=True (the Excel export) keeps every row and column; the caps
+    # only keep the on-screen table readable.
+    row_truncated = not full and len(ordered_rows) > REPORT_ROW_CAP
+    if not full:
+        ordered_rows = ordered_rows[:REPORT_ROW_CAP]
 
     ordered_cols = []
     if col_field:
@@ -2360,6 +2389,8 @@ def compute_report(data):
 
     def label(v):
         return v if v not in (None, '') else t('report_empty_value')
+
+    _limit = report_excel_limit(len(row_totals), total_cols if total_cols is not None else len(col_totals))
 
     return {
         'row_field': get_metric_label(row_field),
@@ -2374,6 +2405,9 @@ def compute_report(data):
         'row_truncated': row_truncated,
         'col_truncated': col_truncated,
         'total_distinct_rows': len(row_totals),
+        'total_distinct_cols': total_cols if total_cols is not None else len(col_totals),
+        'excel_limit': _limit,
+        'excel_fits': _limit is None,
     }
 
 
@@ -2392,41 +2426,48 @@ def api_report():
     return jsonify(report)
 
 
-@app.route('/api/report/export', methods=['POST'])
-def export_report():
-    """The report panel's own "Exportar a Excel" button: the same
-    aggregation as /api/report, written to a small in-memory .xlsx (the
-    table is capped, so there's no need for the streaming/background-job
-    machinery the full-results exports use)."""
-    data = request.get_json() or {}
-    try:
-        report = compute_report(data)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
-    except Exception as e:
-        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+def _prepare_export_report(data):
+    """The full (uncapped) report, turned on its side when much wider than tall."""
+    report = compute_report(data, full=True)
+    if report['col_field'] and len(report['cols']) > 2 * len(report['rows']):
+        report = {
+            **report,
+            'row_field': report['col_field'], 'col_field': report['row_field'],
+            'rows': report['cols'], 'cols': report['rows'],
+            'matrix': [list(r) for r in zip(*report['matrix'])],
+            'row_totals': report['col_totals'], 'col_totals': report['row_totals'],
+        }
+    return report
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Informe'
 
+def _report_table_rows(report):
+    """The report as a list of rows: header, body, totals."""
+    total_label = t('report_total_label')
+    if report['col_field']:
+        rows = [[f"{report['row_field']} \\ {report['col_field']}", *report['cols'], total_label]]
+        for i, row_label in enumerate(report['rows']):
+            rows.append([row_label, *report['matrix'][i], report['row_totals'][i]])
+        rows.append([total_label, *report['col_totals'], report['grand_total']])
+    else:
+        rows = [[report['row_field'], report['value_label']]]
+        rows.extend([row_label, n] for row_label, n in zip(report['rows'], report['row_totals']))
+        rows.append([total_label, report['grand_total']])
+    return rows
+
+
+def _report_csv_bytes(report):
+    buf = io.StringIO()
+    csv.writer(buf).writerows(_report_table_rows(report))
+    return ('\ufeff' + buf.getvalue()).encode('utf-8')
+
+
+def _fill_report_sheet(ws, report):
     header_font = Font(bold=True, color='FFFFFF')
     header_fill = PatternFill(start_color='2E3846', end_color='2E3846', fill_type='solid')
     total_font = Font(bold=True)
     total_fill = PatternFill(start_color='E3E8EF', end_color='E3E8EF', fill_type='solid')
-    total_label = t('report_total_label')
-
-    if report['col_field']:
-        corner = f"{report['row_field']} \\ {report['col_field']}"
-        ws.append([corner, *report['cols'], total_label])
-        for i, row_label in enumerate(report['rows']):
-            ws.append([row_label, *report['matrix'][i], report['row_totals'][i]])
-        ws.append([total_label, *report['col_totals'], report['grand_total']])
-    else:
-        ws.append([report['row_field'], report['value_label']])
-        for row_label, n in zip(report['rows'], report['row_totals']):
-            ws.append([row_label, n])
-        ws.append([total_label, report['grand_total']])
+    for row in _report_table_rows(report):
+        ws.append(row)
 
     for cell in ws[1]:
         cell.font = header_font
@@ -2442,20 +2483,105 @@ def export_report():
             row[-1].fill = total_fill
 
     ws.freeze_panes = 'B2'
-    for col_idx, col in enumerate(ws.columns, start=1):
+    # Widths from the first rows only: scanning every cell of a big sheet is slow
+    for col_idx, col in enumerate(ws.iter_cols(min_row=1, max_row=min(ws.max_row, 200)), start=1):
         max_len = max((len(str(c.value)) for c in col if c.value is not None), default=8)
         ws.column_dimensions[get_column_letter(col_idx)].width = min(max_len + 3, 40)
 
+
+def _sheet_title(report, used):
+    """A unique sheet name: Excel allows 31 characters and none of []:*?/ and backslash."""
+    name = f"{report['row_field']} x {report['col_field']}" if report['col_field'] else report['row_field']
+    name = ''.join(' ' if c in '[]:*?/' + chr(92) else c for c in name).strip()[:31] or 'Informe'
+    base, n = name, 2
+    while name.lower() in used:
+        suffix = f' ({n})'
+        name = base[:31 - len(suffix)] + suffix
+        n += 1
+    used.add(name.lower())
+    return name
+
+
+def _xlsx_response(wb, filename):
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
-    filename = f"informe_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     return send_file(
         buf,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
         download_name=filename
     )
+
+
+@app.route('/api/report/export', methods=['POST'])
+def export_report():
+    """The report panel's own "Exportar a Excel" button: the same
+    aggregation as /api/report but uncapped (the screen folds the tail into
+    "Other"; the file keeps everything), written to an in-memory .xlsx, or
+    to CSV when it is too big to be a manageable sheet."""
+    data = request.get_json() or {}
+    try:
+        report = _prepare_export_report(data)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    if report_excel_limit(len(report['rows']), len(report['cols'])):
+        return Response(
+            _report_csv_bytes(report),
+            mimetype='text/csv',
+            headers={'Content-Disposition': f'attachment; filename="informe_{stamp}.csv"'}
+        )
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = _sheet_title(report, set())
+    _fill_report_sheet(ws, report)
+    return _xlsx_response(wb, f'informe_{stamp}.xlsx')
+
+
+@app.route('/api/report/export_book', methods=['POST'])
+def export_report_book():
+    """Several saved report tables in one download: a workbook with one
+    sheet per table. A table too big to be a sheet goes alongside as CSV,
+    which turns the download into a .zip."""
+    tables = (request.get_json() or {}).get('tables') or []
+    if not tables or len(tables) > MAX_BOOK_TABLES:
+        return jsonify({'error': t('unexpected_error', error='tables')}), 400
+    try:
+        reports = [_prepare_export_report(tbl) for tbl in tables]
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': t('unexpected_error', error=str(e))}), 500
+
+    stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    wb, used, big = Workbook(), set(), []
+    wb.remove(wb.active)
+    for i, report in enumerate(reports, start=1):
+        if report_excel_limit(len(report['rows']), len(report['cols'])):
+            big.append((i, report))
+            continue
+        _fill_report_sheet(wb.create_sheet(_sheet_title(report, used)), report)
+
+    if not big:
+        return _xlsx_response(wb, f'informe_{stamp}.xlsx')
+
+    zbuf = io.BytesIO()
+    with zipfile.ZipFile(zbuf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        if wb.sheetnames:
+            xbuf = io.BytesIO()
+            wb.save(xbuf)
+            zf.writestr(f'informe_{stamp}.xlsx', xbuf.getvalue())
+        for i, report in big:
+            slug = re.sub(r'[^A-Za-z0-9]+', '_', f"{report['row_field']}_{report['col_field'] or ''}").strip('_')
+            zf.writestr(f'tabla_{i}_{slug}.csv', _report_csv_bytes(report))
+    zbuf.seek(0)
+    return send_file(zbuf, mimetype='application/zip', as_attachment=True,
+                     download_name=f'informe_{stamp}.zip')
 
 
 @app.route('/api/export_status/<export_id>', methods=['GET'])

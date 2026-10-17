@@ -516,7 +516,6 @@
 		  -moz-user-select: none;
 		  -ms-user-select: none;
 		}
-						
 		/* Styles for the counters */
 		.results-count {
 		  font-weight: bold;
@@ -1109,6 +1108,7 @@
 		.history-bar { display: flex; justify-content: flex-end; margin-top: .5rem; }
 		.hist-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 340px; padding: 3px 4px 3px 10px; border: 1px solid #d3d8e0; border-radius: 16px; background: #fff; font-size: .82rem; cursor: pointer; }
 		.hist-chip:hover, .hist-chip:focus-visible { border-color: var(--orange); background: #fbf6ef; outline: none; }
+		.hist-conn { color: #b45309; font-weight: 700; }
 		.hist-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 		.hist-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 		.hist-dot.fts, .hist-kind.fts { --hk: #2c5fc9; --hk-bg: #e6efff; }
@@ -1151,7 +1151,10 @@
 		}
 		.results-card #exportButton,
 		.results-card #exportFastaButton,
-		.results-card #pivotToggleBtn { font-weight: 500; border-radius: 7px; }
+		.results-card #pivotToggleBtn { font-size: 1rem; font-weight: 500; border-radius: 7px; }
+		/* On the dark header band the default grey outline nearly disappears */
+		.results-card #pivotToggleBtn { color: #fff; border-color: rgba(255, 255, 255, .85); background: rgba(255, 255, 255, .14); font-weight: 600; }
+		.results-card #pivotToggleBtn:hover, .results-card #pivotToggleBtn:focus { color: var(--ink, #1f2937); background: #fff; border-color: #fff; }
 		/* Pastel green, so it stands out from the slate band */
 		.results-card #exportButton { background: #6ee7b7; border-color: #6ee7b7; color: #064e3b; font-weight: 600; }
 		.results-card #exportButton:hover { background: #34d399; border-color: #34d399; color: #064e3b; }
@@ -1535,6 +1538,10 @@
 		.btn-dl::before { content: ''; display: inline-block; width: 1.05em; height: 1.05em; margin-right: .4em;
 			vertical-align: -.17em; background-color: currentColor;
 			-webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/%3E%3Cpath d="M7 10l5 5 5-5"/%3E%3Cpath d="M12 15V3"/%3E%3C/svg%3E') center / contain no-repeat; mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/%3E%3Cpath d="M7 10l5 5 5-5"/%3E%3Cpath d="M12 15V3"/%3E%3C/svg%3E') center / contain no-repeat; }
+		/* Same icon slot as the download buttons, with a table glyph */
+		.btn-tbl::before { content: ''; display: inline-block; width: 1.05em; height: 1.05em; margin-right: .4em;
+			vertical-align: -.17em; background-color: currentColor;
+			-webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2"/%3E%3Cpath d="M3 9h18M3 15h18M9 3v18"/%3E%3C/svg%3E') center / contain no-repeat; mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2"/%3E%3Cpath d="M3 9h18M3 15h18M9 3v18"/%3E%3C/svg%3E') center / contain no-repeat; }
 		/* Painting clades by hand: bands behind the tree, coloured branches */
 		.an-tree .band { cursor: default; }
 		.an-tree.painting .band, .an-tree.painting .group { cursor: pointer; }
@@ -1622,6 +1629,17 @@
 		   is shorter than a form-select, so its vertical center still sat
 		   a few px higher. This makes the row above it identical instead. */
 		.pivot-generate-label { visibility: hidden; }
+		.pivot-footer { justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+		.pivot-book { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+		.pivot-book-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+		.pivot-book-head .pivot-field-label { margin: 0; }
+		.pivot-book-count { font-size: .8rem; color: var(--mute); }
+		.pivot-book-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+		.pivot-book-chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px 2px 10px; border: 1px solid var(--line); border-radius: 14px; background: #fff; font-size: .8rem; color: var(--slate); }
+		.pivot-book-chip button { border: 0; background: none; line-height: 1; font-size: 1rem; color: var(--mute); padding: 0 6px; cursor: pointer; }
+		.pivot-book-chip button:hover { color: var(--orange); }
+		/* Wide enough to balance the long query box beside it */
+		#ftsSearchButton { min-width: 180px; padding-left: 2rem; padding-right: 2rem; font-weight: 500; }
 		.pivot-select { min-width: 190px; }
 		.pivot-panel .form-select, #pivotGenerateBtn { height: 38px; }
 		#pivotGenerateBtn { padding-top: 0; padding-bottom: 0; }
@@ -2347,13 +2365,67 @@
 				<div class="ms-auto d-flex gap-2 align-items-center">
 					<button id="cancelButton" class="btn btn-danger" style="display: none;" data-i18n="cancel_search_btn">Cancelar Búsqueda</button>
 					<button id="clearResultsButton" class="btn btn-link btn-sm results-clear-link" style="display: none;" data-i18n="clear_results_btn">Limpiar Resultados</button>
-					<button id="pivotToggleBtn" class="btn btn-outline-secondary" type="button" onclick="togglePivotPanel()" data-i18n="pivot_toggle_btn_label">
-						⊞ Crear informe ▼
+					<button id="pivotToggleBtn" class="btn btn-outline-secondary btn-tbl" type="button" onclick="togglePivotPanel()" data-i18n="pivot_toggle_btn_label">
+						Crear informe ▼
 					</button>
 					<button id="exportButton" class="btn btn-emerald btn-dl" data-i18n="export_csv_btn">Exportar CSV</button>
 				</div>
 			</div>
 			<div class="card-body results-container">
+			<!-- Report panel opened by "Crear informe": a GROUP BY summary
+			     table over the same filters as the results on screen. Spans
+			     the full width above the results table and the record panel, same mechanics as colOrderPanel
+			     above (a button toggles display:none on/off), so it reads
+			     as "open a drawer here", not "switch to another screen". -->
+			<div id="pivotPanel" style="display:none;" class="pivot-panel mb-3">
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<span class="pivot-panel-label" data-i18n="pivot_panel_label">Informe</span>
+					<a href="#" id="pivotHideLink" onclick="togglePivotPanel();return false;" data-i18n="pivot_hide_link">Ocultar informe ▲</a>
+				</div>
+				<div class="d-flex gap-3 flex-wrap align-items-end">
+					<div>
+						<label class="pivot-field-label" for="pivotRowField" data-i18n="pivot_rows_label">Filas</label>
+						<select id="pivotRowField" class="form-select form-select-sm pivot-select"></select>
+					</div>
+					<div>
+						<label class="pivot-field-label" for="pivotColField" data-i18n="pivot_cols_label">Columnas</label>
+						<select id="pivotColField" class="form-select form-select-sm pivot-select"></select>
+					</div>
+					<div>
+						<label class="pivot-field-label" for="pivotValueField" data-i18n="pivot_value_label">Valor</label>
+						<select id="pivotValueField" class="form-select form-select-sm pivot-select">
+							<option value="records" data-i18n="pivot_value_records">Nº de registros</option>
+							<option value="species" data-i18n="pivot_value_species">Nº de especies distintas</option>
+							<option value="bins" data-i18n="pivot_value_bins">Nº de BINs distintos</option>
+						</select>
+					</div>
+					<div>
+						<label class="pivot-field-label pivot-generate-label">&nbsp;</label>
+						<button id="pivotGenerateBtn" class="btn btn-primary btn-sm" type="button" onclick="generatePivotReport()" data-i18n="pivot_generate_btn">Generar tabla</button>
+					</div>
+				</div>
+				<div id="pivotNote" class="pivot-note" style="display:none;"></div>
+				<div id="pivotTableWrap" class="pivot-table-wrap"></div>
+				<div id="pivotFooter" class="pivot-footer mt-2" style="display:none;">
+					<span id="pivotCaption" class="pivot-caption"></span>
+					<span class="d-inline-flex gap-2">
+						<button id="pivotAddBtn" class="btn btn-outline-secondary btn-sm" type="button" onclick="addPivotToBook()" data-i18n="pivot_add_btn">+ Añadir al libro</button>
+						<button id="pivotExportBtn" class="btn btn-emerald btn-sm" type="button" onclick="exportPivotReport()" data-i18n="pivot_export_btn">Exportar tabla a Excel (.xlsx)</button>
+					</span>
+				</div>
+				<div id="pivotBook" class="pivot-book" style="display:none;">
+					<div class="pivot-book-head">
+						<span class="pivot-field-label" data-i18n="pivot_book_label">Libro de Excel</span>
+						<span id="pivotBookCount" class="pivot-book-count"></span>
+						<span class="d-inline-flex gap-2 ms-auto">
+							<button id="pivotBookClear" class="btn btn-link btn-sm text-muted p-0" type="button" onclick="clearPivotBook()" data-i18n="pivot_book_clear">Vaciar</button>
+							<button id="pivotBookExport" class="btn btn-emerald btn-sm" type="button" onclick="exportPivotBook()" data-i18n="pivot_book_export">Exportar libro</button>
+						</span>
+					</div>
+					<div id="pivotBookList" class="pivot-book-list"></div>
+				</div>
+			</div>
+
 			<div class="results-layout">
 			<div class="results-main">
 				<div id="loading" class="loading">
@@ -2379,46 +2451,6 @@
 					<div id="colOrderPanel" style="display:none;" class="mt-2 mb-2">
 						<small class="text-muted d-block mb-1" data-i18n="col_order_hint">Arrastra los términos para cambiar el orden de columnas en la tabla de resultados:</small>
 						<ul id="colOrderList" class="col-order-list"></ul>
-					</div>
-				</div>
-
-				<!-- Report panel opened by "Crear informe": a GROUP BY summary
-				     table over the same filters as the results on screen. Lives
-				     above the results table, same mechanics as colOrderPanel
-				     above (a button toggles display:none on/off), so it reads
-				     as "open a drawer here", not "switch to another screen". -->
-				<div id="pivotPanel" style="display:none;" class="pivot-panel mb-3">
-					<div class="d-flex justify-content-between align-items-center mb-2">
-						<span class="pivot-panel-label" data-i18n="pivot_panel_label">Informe</span>
-						<a href="#" id="pivotHideLink" onclick="togglePivotPanel();return false;" data-i18n="pivot_hide_link">Ocultar informe ▲</a>
-					</div>
-					<div class="d-flex gap-3 flex-wrap align-items-end">
-						<div>
-							<label class="pivot-field-label" for="pivotRowField" data-i18n="pivot_rows_label">Filas</label>
-							<select id="pivotRowField" class="form-select form-select-sm pivot-select"></select>
-						</div>
-						<div>
-							<label class="pivot-field-label" for="pivotColField" data-i18n="pivot_cols_label">Columnas</label>
-							<select id="pivotColField" class="form-select form-select-sm pivot-select"></select>
-						</div>
-						<div>
-							<label class="pivot-field-label" for="pivotValueField" data-i18n="pivot_value_label">Valor</label>
-							<select id="pivotValueField" class="form-select form-select-sm pivot-select">
-								<option value="records" data-i18n="pivot_value_records">Nº de registros</option>
-								<option value="species" data-i18n="pivot_value_species">Nº de especies distintas</option>
-								<option value="bins" data-i18n="pivot_value_bins">Nº de BINs distintos</option>
-							</select>
-						</div>
-						<div>
-							<label class="pivot-field-label pivot-generate-label">&nbsp;</label>
-							<button id="pivotGenerateBtn" class="btn btn-primary btn-sm" type="button" onclick="generatePivotReport()" data-i18n="pivot_generate_btn">Generar tabla</button>
-						</div>
-					</div>
-					<div id="pivotNote" class="pivot-note" style="display:none;"></div>
-					<div id="pivotTableWrap" class="pivot-table-wrap"></div>
-					<div id="pivotFooter" class="d-flex justify-content-between align-items-center mt-2" style="display:none;">
-						<span id="pivotCaption" class="pivot-caption"></span>
-						<button id="pivotExportBtn" class="btn btn-emerald btn-sm" type="button" onclick="exportPivotReport()" data-i18n="pivot_export_btn">Exportar a Excel (.xlsx)</button>
 					</div>
 				</div>
 
@@ -2496,12 +2528,23 @@
                 pivot_value_bins: 'Nº de BINs distintos',
                 pivot_generate_btn: 'Generar tabla',
                 pivot_generating: 'Generando…',
-                pivot_export_btn: 'Exportar a Excel (.xlsx)',
+                pivot_export_btn: 'Exportar tabla a Excel (.xlsx)',
                 pivot_exporting: 'Exportando…',
                 pivot_total_label: 'Total',
                 pivot_caption: '{n} registros resumidos',
                 pivot_truncated_rows_note: 'Se muestran las {shown} filas con más registros, de {total} en total.',
-                pivot_truncated_cols_note: 'Las categorías menos frecuentes de "Columnas" se agrupan en "Otros".',
+                pivot_truncated_cols_note: 'Las categorías menos frecuentes de "Columnas" se agrupan en "Otros"; el archivo exportado sí incluye las {total} columnas.',
+                pivot_add_btn: '+ Añadir al libro',
+                pivot_added_hint: 'Añadida al libro',
+                pivot_book_label: 'Libro de Excel',
+                pivot_book_count: '{n} tablas guardadas, se exportan juntas como hojas de un solo archivo',
+                pivot_book_export: 'Exportar libro',
+                pivot_book_clear: 'Vaciar',
+                pivot_book_remove: 'Quitar',
+                pivot_book_full: 'El libro admite hasta {max} tablas.',
+                pivot_csv_note_cols: 'El informe completo tiene más de {max} columnas, demasiadas para una hoja de Excel manejable, así que se exportará como CSV.',
+                pivot_csv_note_rows: 'El informe completo tiene más de {max} filas, demasiadas para una hoja de Excel manejable, así que se exportará como CSV.',
+                pivot_csv_note_cells: 'El informe completo supera los {max} de celdas, demasiado para una hoja de Excel manejable, así que se exportará como CSV.',
                 pivot_row_required_alert: 'Elige un campo para "Filas"',
                 pivot_error_generic: 'No se pudo generar el informe.',
                 explain_plan_title: 'Plan de ejecución de la consulta:',
@@ -3869,12 +3912,23 @@
                 pivot_value_bins: 'Number of distinct BINs',
                 pivot_generate_btn: 'Generate table',
                 pivot_generating: 'Generating…',
-                pivot_export_btn: 'Export to Excel (.xlsx)',
+                pivot_export_btn: 'Export table to Excel (.xlsx)',
                 pivot_exporting: 'Exporting…',
                 pivot_total_label: 'Total',
                 pivot_caption: '{n} records summarized',
                 pivot_truncated_rows_note: 'Showing the {shown} rows with the most records, out of {total} total.',
-                pivot_truncated_cols_note: 'The least frequent "Columns" categories are grouped into "Other".',
+                pivot_truncated_cols_note: 'The least frequent "Columns" categories are grouped into "Other"; the exported file does include all {total} columns.',
+                pivot_add_btn: '+ Add to workbook',
+                pivot_added_hint: 'Added to the workbook',
+                pivot_book_label: 'Excel workbook',
+                pivot_book_count: '{n} saved tables, exported together as sheets of a single file',
+                pivot_book_export: 'Export workbook',
+                pivot_book_clear: 'Clear',
+                pivot_book_remove: 'Remove',
+                pivot_book_full: 'The workbook holds up to {max} tables.',
+                pivot_csv_note_cols: 'The full report has more than {max} columns, too many for a manageable Excel sheet, so it will be exported as CSV.',
+                pivot_csv_note_rows: 'The full report has more than {max} rows, too many for a manageable Excel sheet, so it will be exported as CSV.',
+                pivot_csv_note_cells: 'The full report exceeds {max} cells, too many for a manageable Excel sheet, so it will be exported as CSV.',
                 pivot_row_required_alert: 'Choose a field for "Rows"',
                 pivot_error_generic: 'Could not generate the report.',
                 explain_plan_title: 'Query execution plan:',
@@ -5234,7 +5288,7 @@
             const pivotBtn = document.getElementById('pivotToggleBtn');
             if (pivotBtn) {
                 const isOpen = document.getElementById('pivotPanel') && document.getElementById('pivotPanel').style.display !== 'none';
-                pivotBtn.textContent = `⊞ ${t('pivot_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
+                pivotBtn.textContent = `${t('pivot_toggle_btn_label')} ${isOpen ? '▲' : '▼'}`;
             }
         }
 
@@ -5583,7 +5637,7 @@
             const btn = document.getElementById('pivotToggleBtn');
             const isHidden = panel.style.display === 'none';
             panel.style.display = isHidden ? 'block' : 'none';
-            btn.innerHTML = `⊞ ${t('pivot_toggle_btn_label')} ${isHidden ? '▲' : '▼'}`;
+            btn.innerHTML = `${t('pivot_toggle_btn_label')} ${isHidden ? '▲' : '▼'}`;
             if (isHidden) buildPivotFields();
         }
 
@@ -5592,11 +5646,102 @@
             const panel = document.getElementById('pivotPanel');
             if (!panel) return;
             panel.style.display = 'none';
-            document.getElementById('pivotToggleBtn').innerHTML = `⊞ ${t('pivot_toggle_btn_label')} ▼`;
+            document.getElementById('pivotToggleBtn').innerHTML = `${t('pivot_toggle_btn_label')} ▼`;
             document.getElementById('pivotTableWrap').innerHTML = '';
             document.getElementById('pivotNote').style.display = 'none';
             document.getElementById('pivotFooter').style.display = 'none';
+            document.getElementById('pivotCaption').textContent = '';
+            _lastPivot = null;
         }
+
+        // Saved report tables ("workbook"): each keeps the request that makes
+        // it, search included, so they export together as one file even
+        // when they come from different searches. Kept in sessionStorage so
+        // a reload doesn't lose them; nothing is stored server-side.
+        const PIVOT_BOOK_MAX = 20;
+        let pivotBook = [];
+        let _lastPivot = null;
+        try { pivotBook = JSON.parse(sessionStorage.getItem('pivotBook') || '[]'); } catch (e) { pivotBook = []; }
+
+        function savePivotBook() {
+            try { sessionStorage.setItem('pivotBook', JSON.stringify(pivotBook)); } catch (e) { /* no storage */ }
+        }
+
+        function renderPivotBook() {
+            const box = document.getElementById('pivotBook');
+            box.style.display = pivotBook.length ? 'block' : 'none';
+            document.getElementById('pivotBookCount').textContent = t('pivot_book_count', {n: pivotBook.length});
+            const list = document.getElementById('pivotBookList');
+            list.innerHTML = '';
+            pivotBook.forEach((item, i) => {
+                const chip = document.createElement('span');
+                chip.className = 'pivot-book-chip';
+                chip.append(document.createTextNode(item.label));
+                const rm = document.createElement('button');
+                rm.type = 'button';
+                rm.textContent = '×';
+                rm.title = t('pivot_book_remove');
+                rm.addEventListener('click', () => { pivotBook.splice(i, 1); savePivotBook(); renderPivotBook(); });
+                chip.appendChild(rm);
+                list.appendChild(chip);
+            });
+        }
+
+        function addPivotToBook() {
+            if (!_lastPivot) return;
+            if (pivotBook.length >= PIVOT_BOOK_MAX) { alert(t('pivot_book_full', {max: PIVOT_BOOK_MAX})); return; }
+            pivotBook.push(_lastPivot);
+            savePivotBook();
+            renderPivotBook();
+        }
+
+        function clearPivotBook() {
+            pivotBook = [];
+            savePivotBook();
+            renderPivotBook();
+        }
+
+        // Saves a downloaded report under the name its type calls for
+        async function savePivotDownload(response, stem) {
+            const type = response.headers.get('Content-Type') || '';
+            const ext = type.includes('text/csv') ? 'csv' : type.includes('zip') ? 'zip' : 'xlsx';
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${stem}_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '')}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        async function exportPivotBook() {
+            if (!pivotBook.length) return;
+            const btn = document.getElementById('pivotBookExport');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = t('pivot_exporting');
+            try {
+                const response = await fetch('/api/report/export_book', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({tables: pivotBook.map(item => item.body)})
+                });
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || t('pivot_error_generic'));
+                }
+                await savePivotDownload(response, 'informe');
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderPivotBook);
 
         function pivotRequestBody() {
             return {
@@ -5648,7 +5793,11 @@
 
             const notes = [];
             if (data.row_truncated) notes.push(t('pivot_truncated_rows_note', {shown: data.rows.length, total: fmt.format(data.total_distinct_rows)}));
-            if (data.col_truncated) notes.push(t('pivot_truncated_cols_note'));
+            if (data.col_truncated) notes.push(t('pivot_truncated_cols_note', {total: fmt.format(data.total_distinct_cols)}));
+            if (data.excel_fits === false) {
+                const max = {cols: 500, rows: 50000, cells: 2000000}[data.excel_limit];
+                notes.push(t('pivot_csv_note_' + data.excel_limit, {max: new Intl.NumberFormat(currentLang === 'es' ? 'es' : 'en').format(max)}));
+            }
             const noteEl = document.getElementById('pivotNote');
             noteEl.style.display = notes.length ? 'block' : 'none';
             noteEl.textContent = notes.join(' ');
@@ -5671,14 +5820,19 @@
             document.getElementById('pivotTableWrap').innerHTML = '';
             document.getElementById('pivotNote').style.display = 'none';
             try {
+                const reqBody = pivotRequestBody();
                 const response = await fetch('/api/report', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(pivotRequestBody())
+                    body: JSON.stringify(reqBody)
                 });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || t('pivot_error_generic'));
                 renderPivotTable(data);
+                _lastPivot = {
+                    body: reqBody,
+                    label: `${data.row_field}${data.col_field ? ' × ' + data.col_field : ''} · ${data.value_label}`,
+                };
             } catch (err) {
                 document.getElementById('pivotTableWrap').innerHTML =
                     `<div class="text-danger">${escapeHtml(err.message)}</div>`;
@@ -5703,15 +5857,7 @@
                     const data = await response.json().catch(() => ({}));
                     throw new Error(data.error || t('pivot_error_generic'));
                 }
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `informe_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '')}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
+                await savePivotDownload(response, 'informe');
             } catch (err) {
                 alert(err.message);
             } finally {
@@ -5730,6 +5876,8 @@
                 if (el) el.style.display = 'none';
             });
             resetPivotReport();
+            // Saved tables belong to the search that produced them
+            clearPivotBook();
             document.getElementById('resultsTable').innerHTML = '';
             document.getElementById('pagination').innerHTML = '';
             document.getElementById('resultsCount').textContent = '';
@@ -6052,7 +6200,6 @@
 					try {
 						const statusResponse = await fetch(`/api/fasta_export_status/${exportId}`);
 						const statusData = await statusResponse.json();
-						
 						if (!statusResponse.ok || statusData.error) {
 							throw new Error(statusData.error || `${t('status_check_error_prefix')}${statusResponse.status}`);
 						}
@@ -6105,7 +6252,6 @@
 							clearInterval(exportInterval);
 							throw new Error(`${t('export_error_prefix')}${statusData.message}`);
 						}
-						
 					} catch (error) {
 						clearInterval(exportInterval);
 						console.error('Error al verificar estado de exportación:', error);
@@ -6487,15 +6633,36 @@
 			.filter(h => h.type === 'field' || document.getElementById('ftsSearchPanel'))
 			.sort((a, b) => (b.pin - a.pin) || (b.at - a.at));
 
-		function historyText(h) {
-			if (h.type === 'fts') return h.query + (h.cs ? ' (Aa)' : '');
-			return h.conditions.map((c, i) => {
+		// A search as text pieces; connectors (AND, OR, NOT...) are flagged so
+		// the chips can colour them
+		function historyParts(h) {
+			if (h.type === 'fts') {
+				const parts = h.query.split(/\b(AND|OR|NOT|NEAR)\b/).map((text, i) => ({ text, conn: i % 2 === 1 }));
+				if (h.cs) parts.push({ text: ' (Aa)' });
+				return parts.filter(p => p.text);
+			}
+			const parts = [];
+			h.conditions.forEach((c, i) => {
 				const sym = CHIP_OPERATORS[c.operator] || c.operator;
 				const op = sym.startsWith('op_') ? t(sym).toLowerCase() : sym;
 				const val = NO_VALUE_OPERATORS.includes(c.operator) ? ''
 					: ' ' + (c.operator === 'BETWEEN' ? `${c.value} – ${c.value2}` : c.value);
-				return `${i ? (c.condition_type || 'AND') + ' ' : ''}${c.column} ${op}${val}`;
-			}).join(' ');
+				if (i) parts.push({ text: ' ' }, { text: c.condition_type || 'AND', conn: true }, { text: ' ' });
+				parts.push({ text: `${c.column} ${op}${val}` });
+			});
+			return parts;
+		}
+
+		const historyText = h => historyParts(h).map(p => p.text).join('');
+
+		function historyNodes(h) {
+			return historyParts(h).map(p => {
+				if (!p.conn) return document.createTextNode(p.text);
+				const s = document.createElement('span');
+				s.className = 'hist-conn';
+				s.textContent = p.text;
+				return s;
+			});
 		}
 
 		// Days between a time and today (0 today, 1 yesterday...)
@@ -6553,10 +6720,11 @@
 			renderHistory();
 		}
 
-		function historyEl(tag, cls, text) {
+		function historyEl(tag, cls, text, ...children) {
 			const el = document.createElement(tag);
 			if (cls) el.className = cls;
 			if (text !== undefined) el.textContent = text;
+			el.append(...children);
 			return el;
 		}
 
@@ -6579,7 +6747,7 @@
 			x.setAttribute('aria-label', t('history_remove'));
 			x.addEventListener('click', e => { e.stopPropagation(); historyRemove(h); });
 			chip.append(historyEl('span', 'hist-dot ' + h.type),
-			            historyEl('span', 'hist-text', (h.pin ? '★ ' : '') + historyText(h)), x);
+			            historyEl('span', 'hist-text', (h.pin ? '★ ' : ''), ...historyNodes(h)), x);
 			historyActivate(chip, h);
 			return chip;
 		}
@@ -6622,7 +6790,7 @@
 		function historyItem(h) {
 			const row = historyEl('div', 'hist-item');
 			const main = historyEl('div', 'hist-main');
-			main.append(historyEl('div', 'hist-q', historyText(h)), historyEl('div', 'hist-meta', historyMeta(h)));
+			main.append(historyEl('div', 'hist-q', '', ...historyNodes(h)), historyEl('div', 'hist-meta', historyMeta(h)));
 			const pin = historyEl('button', h.pin ? 'pinned' : '', h.pin ? '★' : '☆');
 			pin.type = 'button';
 			pin.title = t(h.pin ? 'history_unpin' : 'history_pin');
@@ -7286,7 +7454,6 @@
 					try {
 						const statusResponse = await fetch(`/api/export_status/${exportId}`);
 						const statusData = await statusResponse.json();
-						
 						if (!statusResponse.ok || statusData.error) {
 							throw new Error(statusData.error || `${t('status_check_error_prefix')}${statusResponse.status}`);
 						}
@@ -7352,7 +7519,6 @@
 							clearInterval(exportInterval);
 							throw new Error(`${t('export_error_prefix')}${statusData.message}`);
 						}
-						
 					} catch (error) {
 						clearInterval(exportInterval);
 						console.error('Error al verificar estado de exportación:', error);
@@ -8551,7 +8717,6 @@
 						input.value = items[currentFocus].querySelector('strong').textContent;
 						clearAutocomplete(resultsDiv);
 						hasSelection = true;
-						
 						if (event.key === 'Tab') {
 							// With Tab, move focus to the next field
 							const form = input.closest('form');

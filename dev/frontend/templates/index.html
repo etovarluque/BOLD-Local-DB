@@ -1057,8 +1057,9 @@
 		.btn-primary {
 			--bs-btn-bg: var(--slate);
 			--bs-btn-border-color: var(--slate);
-			--bs-btn-hover-bg: var(--slate-2);
-			--bs-btn-hover-border-color: var(--slate-2);
+			/* Lighter on hover: slate-2 is too close to slate to notice */
+			--bs-btn-hover-bg: #4a5870;
+			--bs-btn-hover-border-color: #4a5870;
 			--bs-btn-active-bg: var(--slate-2);
 			--bs-btn-active-border-color: var(--slate-2);
 			--bs-btn-disabled-bg: var(--slate);
@@ -1104,6 +1105,8 @@
 		.crit-val { font-family: var(--f-mono); font-size: .8rem; color: var(--slate); overflow-wrap: anywhere; }
 		.last-search-edit { margin-left: auto; color: var(--slate); text-decoration: none; font-weight: 500; }
 		.last-search-edit:hover { text-decoration: underline; }
+		/* The pencil outside the underline: an inline-block isn't decorated */
+		#editLastSearch::before { content: '✎'; display: inline-block; margin-right: .3em; }
 
 		/* Search history: recent searches as chips under the form, folded
 		   once a search fills the table; "See all" opens a side panel */
@@ -1441,14 +1444,21 @@
 		.an-badge { padding: 0 7px; border-radius: 9px; background: #fff; color: var(--slate); font-size: .72rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 		.an-badge.warn { background: var(--orange); color: #fff; }
 		.an-view-body { padding: 18px 16px; border: 1px solid #d2d7df; border-top: 0; border-radius: 0 0 10px 10px; }
-		/* Views inside a tab, as pills under its shared options */
-		.an-subviews { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
-		.an-subviews button { padding: 3px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--mute); font-weight: 500; font-size: .84rem; }
-		.an-subviews button:hover { color: var(--ink); }
-		.an-subviews button.active { border-color: var(--ink); background: var(--ink); color: #fff; }
-		.an-subviews button:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+		/* Views inside a tab: a dark band right under the tabs, over the
+		   options they share */
+		.an-subviews { display: flex; flex-wrap: wrap; margin: -18px -16px 1rem; padding: 0 8px; background: var(--slate); }
+		.an-subviews button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; background: transparent; color: #c9cfd9; font-weight: 500; font-size: .95rem; white-space: nowrap; }
+		.an-subviews button:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+		.an-subviews button.active { color: #fff; font-weight: 600; box-shadow: inset 0 -3px 0 var(--tab-accent); }
+		.an-subviews button:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
+		/* Shared options folded to what is set, once the tab has results */
+		.an-opts-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 1rem; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--tint); font-size: .84rem; color: var(--mute); }
+		.an-opts-sum.open { margin-bottom: 6px; }
+		.an-opt-chip { padding: 1px 9px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); }
+		.an-opts-sum .btn { margin-left: auto; }
 		/* Views the data can't fill: struck through but clickable; a dot when some sections are hidden */
 		.an-views button.off, .an-subviews button.off { opacity: .55; text-decoration: line-through; }
+		.an-subviews button.off { opacity: .7; }
 		.an-views button.off.active, .an-subviews button.off.active { opacity: 1; text-decoration: none; }
 		.an-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
 		.an-subviews button { display: inline-flex; align-items: center; gap: 6px; }
@@ -2372,7 +2382,7 @@
 				<div id="lastSearchBar" class="last-search" hidden>
 					<span class="last-search-label" data-i18n="last_search_label">Búsqueda mostrada</span>
 					<div id="lastSearchChips" class="last-search-chips"></div>
-					<button type="button" id="editLastSearch" class="btn btn-sm btn-link last-search-edit" data-i18n="edit_search_btn">✎ Editar</button>
+					<button type="button" id="editLastSearch" class="btn btn-sm btn-link last-search-edit" data-i18n="edit_search_btn">Editar</button>
 					<button type="button" class="btn btn-sm btn-link last-search-edit history-toggle" aria-expanded="true" hidden></button>
 				</div>
 				<div class="search-history" data-kind="field" hidden></div>
@@ -2647,7 +2657,7 @@
                 history_kind_fts: 'TEXTO', history_kind_field: 'CAMPOS',
                 history_none_match: 'Ninguna búsqueda coincide.', history_empty: 'Aún no hay búsquedas guardadas.',
                 history_info: '{n} búsquedas · máximo {max} sin fijar',
-                last_search_label: 'Búsqueda mostrada', edit_search_btn: '✎ Editar',
+                last_search_label: 'Búsqueda mostrada', edit_search_btn: 'Editar',
                 record_label: 'Registro', record_close: 'Cerrar',
                 record_taxonomy: 'Taxonomía', record_fields: 'Datos del registro',
                 record_sequence: 'Secuencia', record_copy_fasta: 'Copiar FASTA',
@@ -3147,6 +3157,9 @@
                 an_v_distance: 'Distancias',
                 an_v_dist_tab: 'Distancias y delimitación',
                 an_v_tree: 'Árbol NJ',
+                an_opts_shared: 'Opciones comunes a las {n} vistas:',
+                an_opts_change: 'Cambiar opciones ▾',
+                an_opts_hide: 'Ocultar opciones ▴',
                 an_model_label: 'Modelo:',
                 an_model_k2p: 'K2P (Kimura 2 parámetros)',
                 an_model_jc: 'Jukes-Cantor (JC69)',
@@ -4067,7 +4080,7 @@
                 history_kind_fts: 'TEXT', history_kind_field: 'FIELDS',
                 history_none_match: 'No search matches.', history_empty: 'No saved searches yet.',
                 history_info: '{n} searches · up to {max} unpinned',
-                last_search_label: 'Showing results for', edit_search_btn: '✎ Edit',
+                last_search_label: 'Showing results for', edit_search_btn: 'Edit',
                 record_label: 'Record', record_close: 'Close',
                 record_taxonomy: 'Taxonomy', record_fields: 'Record data',
                 record_sequence: 'Sequence', record_copy_fasta: 'Copy FASTA',
@@ -4566,6 +4579,9 @@
                 an_v_distance: 'Distances',
                 an_v_dist_tab: 'Distances and delimitation',
                 an_v_tree: 'NJ tree',
+                an_opts_shared: 'Options shared by the {n} views:',
+                an_opts_change: 'Change options ▾',
+                an_opts_hide: 'Hide options ▴',
                 an_model_label: 'Model:',
                 an_model_k2p: 'K2P (Kimura 2-parameter)',
                 an_model_jc: 'Jukes-Cantor (JC69)',
@@ -9415,6 +9431,7 @@
 			distRunning: false,
 			showView: null,
 			tabViews: {},      // view last seen in each tab
+			optsOpen: {},      // tabs whose shared options are unfolded
 			popgen: null,      // diversity and structure of each species (asked for on its own)
 			popgenRunning: false,
 			popgenError: null,
@@ -10136,8 +10153,8 @@
 					b.setAttribute('aria-selected', b.dataset.tab === tab.id);
 				});
 				body.innerHTML = '';
-				// Views of one tab: their own row, under the options they share
-				if (tab.controls && anTabState(tab) !== 'off') tab.controls(body);
+				// Views of one tab: their own row under the tabs, over the
+				// options they share
 				if (tab.views.length > 1) {
 					const subs = anEl('div', 'an-subviews');
 					subs.setAttribute('role', 'tablist');
@@ -10154,6 +10171,7 @@
 					});
 					body.append(subs);
 				}
+				if (tab.controls && anTabState(tab) !== 'off') anTabControls(tab, body);
 				const st = anViewState(view);
 				if (st.s === 'off') return anRenderOff(body, st);
 				if (st.s === 'partial') body.append(anEl('p', 'an-hidden', st.why));
@@ -10892,6 +10910,42 @@
 
 		function anRefreshView() {
 			if (AnState.showView) AnState.showView(AnState.view);
+		}
+
+		// Options a tab's views share. Once the tab has results they fold
+		// to a line with what is set, and open again on demand
+		const AN_TAB_READY = {
+			distance: () => AnState.dist && !AnState.distRunning,
+			diversity: () => AnState.div && !AnState.divRunning && !AnState.divError,
+		};
+
+		function anTabControls(tab, body) {
+			const holder = anEl('div');
+			tab.controls(holder);
+			const ready = AN_TAB_READY[tab.id];
+			if (!ready || !ready()) return body.append(...holder.childNodes);
+			const open = !!AnState.optsOpen[tab.id];
+			const bar = anEl('div', 'an-opts-sum' + (open ? ' open' : ''));
+			bar.append(anEl('span', '', t('an_opts_shared', { n: tab.views.length })));
+			if (!open) {
+				// What is set: each select as "label: value", each ticked box by its label
+				holder.querySelectorAll('label').forEach(l => {
+					const s = l.querySelector('select'), c = l.querySelector('input[type=checkbox]');
+					const name = (l.querySelector('span') || l).textContent.replace(/\s*\(.*\)\s*$/, '').trim().replace(/:$/, '');
+					if (s && s.selectedIndex >= 0) bar.append(anEl('span', 'an-opt-chip', `${name}: ${s.options[s.selectedIndex].text}`));
+					else if (c && c.checked) bar.append(anEl('span', 'an-opt-chip', `${name} ✓`));
+				});
+			}
+			const toggle = anEl('button', 'btn btn-sm btn-outline-secondary', t(open ? 'an_opts_hide' : 'an_opts_change'));
+			toggle.type = 'button';
+			toggle.setAttribute('aria-expanded', open);
+			toggle.addEventListener('click', () => {
+				AnState.optsOpen[tab.id] = !open;
+				anRefreshView();
+			});
+			bar.append(toggle);
+			body.append(bar);
+			if (open) body.append(...holder.childNodes);
 		}
 
 		// ── Distances, barcode gap and tree (phase 2) ──

@@ -7,6 +7,15 @@ This log starts at `1.1.0`. Changes before that are only in the git history
 
 ## [Unreleased]
 
+### Changed
+- Sequence analysis: the views of a tab (Haplotypes, Distances and
+  delimitation, Diversity) sit in a dark band right under the tabs, where
+  the small pills under the options went unnoticed, and the options they
+  share come after them. Once the tab has results those options fold to a
+  line with what is set (*Change options* opens them).
+- Primary buttons are lighter on hover (the change was hard to see), and
+  the *Edit* link of the search shown underlines the word, not the pencil.
+
 ### Fixed
 - Report panel: with *Number of distinct species* or *Number of distinct
   BINs*, the row, column and grand totals added up the cells, so a species

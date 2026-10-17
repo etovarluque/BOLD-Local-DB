@@ -544,8 +544,8 @@
           <li><a href="#busqueda-campos">Búsqueda avanzada por campos</a></li>
           <li><a href="#busqueda-fts">Búsqueda de texto completo</a></li>
           <li><a href="#historial">Historial de búsquedas</a></li>
-          <li><a href="#busqueda-batch">Lote en BOLD local</a></li>
-          <li><a href="#busqueda-genbank">Lote en GenBank</a></li>
+          <li><a href="#busqueda-batch">Búsqueda por lotes</a></li>
+          <li><a href="#busqueda-genbank">Búsqueda por lotes en GenBank</a></li>
           <li><a href="#tabla">Trabajar con la tabla</a></li>
           <li><a href="#seleccion">Seleccionar registros</a></li>
           <li><a href="#exportar">Exportar resultados</a></li>
@@ -647,7 +647,7 @@
        Necesitas además:</p>
     <ul class="bullet">
       <li><strong>Espacio en disco:</strong> al menos <strong>80 GB libres</strong> (ver preguntas frecuentes).</li>
-      <li><strong>Internet</strong> la primera vez que abres el programa, para descargar BOLD y para el Lote en GenBank.</li>
+      <li><strong>Internet</strong> la primera vez que abres el programa, para descargar BOLD y para la búsqueda por lotes en GenBank.</li>
     </ul>
     <div class="callout tip">
       <span class="icon">ℹ️</span>
@@ -1068,11 +1068,11 @@
         <p>Busca una o varias palabras en todos los campos de texto a la vez. Requiere haber completado el Paso 4.</p>
       </div>
       <div class="mode-card">
-        <h3>📦 Lote en BOLD local</h3>
+        <h3>📦 Búsqueda por lotes</h3>
         <p>Busca una lista entera de valores cargando un archivo de texto. Ideal para muchas especies o IDs a la vez.</p>
       </div>
       <div class="mode-card">
-        <h3>🧬 Lote en GenBank</h3>
+        <h3>🧬 Búsqueda por lotes en GenBank</h3>
         <p>Busca una lista de términos en NCBI GenBank, en línea. Conteos, metadatos y secuencias por término.</p>
       </div>
       <div class="mode-card">
@@ -1113,7 +1113,7 @@
         <strong>todos</strong> los leones (de cualquier país) más los jaguares de Brasil. Para limitar las dos especies a
         Brasil, repite la condición en cada rama: <em>Especie = Panthera leo</em> AND <em>País = Brazil</em> OR
         <em>Especie = Panthera onca</em> AND <em>País = Brazil</em>. Para listas largas, usa el
-        <a href="#busqueda-batch">Lote en BOLD local</a> con un segundo campo de filtro.
+        <a href="#busqueda-batch">Búsqueda por lotes</a> con un segundo campo de filtro.
       </div>
     </div>
 
@@ -1246,11 +1246,11 @@
     </ul>
 
     <!-- Batch -->
-    <h2 class="sub-title" id="busqueda-batch">Lote en BOLD local</h2>
+    <h2 class="sub-title" id="busqueda-batch">Búsqueda por lotes</h2>
     <p>Ideal cuando tienes una lista de especies, BINs o IDs y quieres obtener todos sus registros a la vez.</p>
 
     <p>
-      La búsqueda por lote en BOLD local es, en esencia, una <strong>búsqueda por campos automatizada</strong>: repite la misma
+      La búsqueda por lotes en BOLD local es, en esencia, una <strong>búsqueda por campos automatizada</strong>: repite la misma
       consulta una vez por cada término de tu archivo. Eso implica que <strong>todos los términos del archivo
       deben pertenecer a un mismo campo</strong>, el que selecciones en <em>Campo 1</em>. El programa no deduce a
       qué categoría pertenece cada línea: aplica el campo elegido a todas por igual.
@@ -1404,7 +1404,7 @@
     </p>
 
     <!-- GenBank batch -->
-    <h2 class="sub-title" id="busqueda-genbank">Lote en GenBank</h2>
+    <h2 class="sub-title" id="busqueda-genbank">Búsqueda por lotes en GenBank</h2>
     <p>
       A diferencia de las otras tres pestañas, esta <strong>no</strong> consulta tu base de datos local: busca en
       <strong>NCBI GenBank</strong> (base de datos nucleotide) <strong>en línea</strong>, así que necesita
@@ -1461,7 +1461,7 @@
 
     <h3 class="step-title">Reporte resumen</h3>
     <p>
-      Funciona como el de <em>Lote en BOLD local</em>, para cuatro categorías: <em>Marker/Gene</em>, <em>Moltype</em>,
+      Funciona como el de <em>Búsqueda por lotes</em>, para cuatro categorías: <em>Marker/Gene</em>, <em>Moltype</em>,
       <em>Division</em> y <em>Country</em>. Para cada una puedes añadir <strong>cuántos</strong> valores distintos
       encontró cada consulta, <strong>cuáles</strong> y, en la lista, <strong>con conteo</strong>
       (<code>Colombia (12); Peru (3)</code>). Las listas pueden acortarse a los N valores más frecuentes.
@@ -1584,7 +1584,7 @@
 
     <h3 class="step-title">Formato de los archivos FASTA</h3>
     <p>Cada encabezado combina los datos disponibles del registro, separados por <code>|</code>. Es el mismo en la
-       exportación desde la tabla de resultados y en <em>Lote en BOLD local</em>:</p>
+       exportación desde la tabla de resultados y en <em>Búsqueda por lotes</em>:</p>
 <pre>&gt;ID_BOLD|ID_Muestra|BIN|Taxón_más_específico|Marcador</pre>
     <ul class="bullet">
       <li>El <em>taxón más específico</em> es el primero disponible en este orden: especie, género, familia, orden, clase, filo, reino.</li>

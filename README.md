@@ -21,7 +21,7 @@ Two programs, used in order:
    filter and export records (CSV / FASTA) from the database. Works fully
    offline once the database exists.
 
-   It also has a **GenBank batch** tab (ported from BarcodeSuite) that
+   It also has a **GenBank batch search** tab (ported from BarcodeSuite) that
    searches NCBI GenBank online — the only feature that needs internet — for
    a list of terms, optionally crossed with a second criterion, and downloads
    a ZIP with record counts per query and, optionally, metadata (TSV) and
@@ -46,8 +46,8 @@ Two programs, used in order:
 | Advanced field search | Full-text search |
 |---|---|
 | ![Advanced field search](dev/screenshots/advanced_field_search.png) | ![Full-text search](dev/screenshots/full_text_search.png) |
-| **Local BOLD batch** | **GenBank batch** |
-| ![Local BOLD batch](dev/screenshots/batch_search.png) | ![GenBank batch](dev/screenshots/genbank_batch.png) |
+| **Batch search** | **GenBank batch search** |
+| ![Batch search](dev/screenshots/batch_search.png) | ![GenBank batch search](dev/screenshots/genbank_batch.png) |
 | **Sequence analysis** | **NJ tree (species–BIN discordances)** |
 | ![Sequence analysis](dev/screenshots/sequence_analysis.png) | ![NJ tree](dev/screenshots/sequence_tree.png) |
 

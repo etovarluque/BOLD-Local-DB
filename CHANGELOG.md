@@ -52,6 +52,10 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   them against its clades). A box changed by hand holds, and once there are
   results the options show what was computed. A view whose analysis wasn't
   asked for offers to compute it as well (*Also compute the NJ tree*).
+- The batch tabs are now *Batch search* and *GenBank batch search*
+  (*Búsqueda por lotes*, *Búsqueda por lotes en GenBank* in Spanish).
+- Sequence analysis: *Selected records* shows a dash, like the other
+  sources, when no record is selected.
 
 ### Fixed
 - Report panel: with *Number of distinct species* or *Number of distinct

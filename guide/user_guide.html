@@ -544,8 +544,8 @@
           <li><a href="#busqueda-campos">Advanced field search</a></li>
           <li><a href="#busqueda-fts">Full-text search</a></li>
           <li><a href="#historial">Search history</a></li>
-          <li><a href="#busqueda-batch">Local BOLD batch</a></li>
-          <li><a href="#busqueda-genbank">GenBank batch</a></li>
+          <li><a href="#busqueda-batch">Batch search</a></li>
+          <li><a href="#busqueda-genbank">GenBank batch search</a></li>
           <li><a href="#tabla">Working with the results table</a></li>
           <li><a href="#seleccion">Selecting records</a></li>
           <li><a href="#exportar">Exporting results</a></li>
@@ -647,7 +647,7 @@
        You also need:</p>
     <ul class="bullet">
       <li><strong>Disk space:</strong> at least <strong>80 GB free</strong> (see the FAQ).</li>
-      <li><strong>Internet</strong> the first time you open the program, to download from BOLD and for the GenBank batch.</li>
+      <li><strong>Internet</strong> the first time you open the program, to download from BOLD and for the GenBank batch search.</li>
     </ul>
     <div class="callout tip">
       <span class="icon">ℹ️</span>
@@ -1067,11 +1067,11 @@
         <p>Searches one or more words across all text fields at once. Requires Step 4 to have been completed.</p>
       </div>
       <div class="mode-card">
-        <h3>📦 Local BOLD batch</h3>
+        <h3>📦 Batch search</h3>
         <p>Searches a whole list of values by uploading a text file. Ideal for many species or IDs at once.</p>
       </div>
       <div class="mode-card">
-        <h3>🧬 GenBank batch</h3>
+        <h3>🧬 GenBank batch search</h3>
         <p>Searches a list of terms in NCBI GenBank, online. Record counts, metadata and sequences per term.</p>
       </div>
       <div class="mode-card">
@@ -1112,7 +1112,7 @@
         <strong>every</strong> lion (from any country) plus the jaguars from Brazil. To limit both species to Brazil,
         repeat the condition in each branch: <em>Species = Panthera leo</em> AND <em>Country = Brazil</em> OR
         <em>Species = Panthera onca</em> AND <em>Country = Brazil</em>. For long lists, use the
-        <a href="#busqueda-batch">Local BOLD batch</a> with a second filter field.
+        <a href="#busqueda-batch">Batch search</a> with a second filter field.
       </div>
     </div>
 
@@ -1245,7 +1245,7 @@
     </ul>
 
     <!-- Batch -->
-    <h2 class="sub-title" id="busqueda-batch">Local BOLD batch</h2>
+    <h2 class="sub-title" id="busqueda-batch">Batch search</h2>
     <p>Ideal when you have a list of species, BINs, or IDs and want to get all their records at once.</p>
 
     <p>
@@ -1402,7 +1402,7 @@
     </p>
 
     <!-- GenBank batch -->
-    <h2 class="sub-title" id="busqueda-genbank">GenBank batch</h2>
+    <h2 class="sub-title" id="busqueda-genbank">GenBank batch search</h2>
     <p>
       Unlike the other three tabs, this one does <strong>not</strong> query your local database: it searches
       <strong>NCBI GenBank</strong> (nucleotide database) <strong>online</strong>, so it needs an internet
@@ -1459,7 +1459,7 @@
 
     <h3 class="step-title">Summary report</h3>
     <p>
-      Works like the one in <em>Local BOLD batch</em>, for four categories: <em>Marker/Gene</em>, <em>Moltype</em>,
+      Works like the one in <em>Batch search</em>, for four categories: <em>Marker/Gene</em>, <em>Moltype</em>,
       <em>Division</em> and <em>Country</em>. For each one you can add <strong>how many</strong> distinct values
       each query found, <strong>which ones</strong>, and, in the list, <strong>with counts</strong>
       (<code>Colombia (12); Peru (3)</code>). The lists can be shortened to the N most frequent values.
@@ -1581,7 +1581,7 @@
 
     <h3 class="step-title">FASTA file format</h3>
     <p>Each header combines the record's available data, separated by <code>|</code>. It's the same for the
-       results-table export and for <em>Local BOLD batch</em>:</p>
+       results-table export and for <em>Batch search</em>:</p>
 <pre>&gt;BOLD_ID|Sample_ID|BIN|Most_specific_taxon|Marker</pre>
     <ul class="bullet">
       <li>The <em>most specific taxon</em> is the first one available in this order: species, genus, family, order, class, phylum, kingdom.</li>

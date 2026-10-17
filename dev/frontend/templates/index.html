@@ -1766,8 +1766,8 @@
                         data-i18n="fts_panel_title">
                     Búsqueda de texto completo
                 </button>
-                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_tab_btn">Lote en BOLD local</button>
-                <button type="button" class="btn btn-outline-primary" id="genbankSearchTab" data-i18n="genbank_tab_btn">Lote en GenBank</button>
+                <button type="button" class="btn btn-outline-primary" id="batchSearchTab" data-i18n="batch_tab_btn">Búsqueda por lotes</button>
+                <button type="button" class="btn btn-outline-primary" id="genbankSearchTab" data-i18n="genbank_tab_btn">Búsqueda por lotes en GenBank</button>
                 <button type="button" class="btn btn-outline-primary" id="analysisTab" data-i18n="an_tab_btn">Análisis de secuencias</button>
                 {# Off for now (IDENTIFY_ENABLED in server.py) #}
                 {% if identify_enabled %}
@@ -1812,7 +1812,7 @@
         <!-- Batch search panel -->
         <div id="batchSearchPanel" class="card mb-4" style="display:none;">
             <div class="card-header has-help">
-                <h5 data-i18n="batch_panel_title">Búsqueda por lote en la base BOLD local</h5>
+                <h5 data-i18n="batch_panel_title">Búsqueda por lotes en la base BOLD local</h5>
                 {{ help_link('busqueda-batch') }}
             </div>
             <div class="card-body">
@@ -2042,7 +2042,7 @@
         <!-- GenBank batch search panel (queries NCBI online; ported from BarcodeSuite) -->
         <div id="genbankSearchPanel" class="card mb-4" style="display:none;">
             <div class="card-header has-help">
-                <h5 data-i18n="genbank_panel_title">Búsqueda por lote en NCBI GenBank (en línea)</h5>
+                <h5 data-i18n="genbank_panel_title">Búsqueda por lotes en NCBI GenBank (en línea)</h5>
                 {{ help_link('busqueda-genbank') }}
             </div>
             <div class="card-body">
@@ -2202,7 +2202,7 @@
                                     <input type="radio" name="anSource" value="records" class="form-check-input mt-0">
                                     <span data-i18n="an_src_records">Registros seleccionados</span>
                                     <span class="an-count-warn" id="anSelWarn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 22.4 20.6H1.6Z" fill="#f5b301" stroke="#f5b301" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5.2M12 17.2v.3" stroke="#3b2a00" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></span>
-                                    <span class="an-count" id="anSelCount">0</span>
+                                    <span class="an-count" id="anSelCount">—</span>
                                 </label>
                                 <label class="an-source">
                                     <input type="radio" name="anSource" value="fasta" class="form-check-input mt-0">
@@ -2523,8 +2523,8 @@
                 fts_no_processid_note: 'Este índice de texto completo es de una versión anterior y <strong>no incluye el ID BOLD (processid)</strong>. Un ID completo o su comienzo (<code>GBVA049-11</code>, <code>GBVA049</code>) se encuentra igualmente, pero un fragmento del interior del ID (<code>VA049-11</code>) no: que no aparezca no significa que el registro falte en la base. Para esos casos usa la búsqueda avanzada por campos, o regenera el índice (Paso 4 de BOLD DB Creator) para incluir el ID BOLD.',
                 fts_help_text: 'Busca en toda la base de datos con una consulta de texto completo. Puedes usar operadores como AND, OR, NOT y comillas para frases exactas.',
                 fts_query_placeholder: 'Introduce tu consulta...',
-                batch_tab_btn: 'Lote en BOLD local',
-                batch_panel_title: 'Búsqueda por lote en la base BOLD local',
+                batch_tab_btn: 'Búsqueda por lotes',
+                batch_panel_title: 'Búsqueda por lotes en la base BOLD local',
                 batch_intro_text: 'Búsqueda por campos automatizada: repite la misma consulta una vez por cada término de tu archivo de texto plano (un valor por línea). Todos los términos deben pertenecer al <strong>mismo campo</strong>, el que selecciones abajo. Los resultados se descargan como un ZIP con archivos TSV individuales por término, <code>all_results.tsv</code> y <code>summary.csv</code>.',
                 batch_field1_label: 'Campo 1 · requerido',
                 batch_field2_label: 'Campo 2 · filtro adicional',
@@ -2695,8 +2695,8 @@
                 exporting_csv_title: 'Exportando CSV',
                 exporting_generic_title: 'Exportando',
                 fts_case_sensitive_label: 'Sensible a mayúsculas/minúsculas',
-                genbank_tab_btn: 'Lote en GenBank',
-                genbank_panel_title: 'Búsqueda por lote en NCBI GenBank (en línea)',
+                genbank_tab_btn: 'Búsqueda por lotes en GenBank',
+                genbank_panel_title: 'Búsqueda por lotes en NCBI GenBank (en línea)',
                 genbank_intro_text: 'Busca en <strong>NCBI GenBank</strong> (nucleotide) <strong>en línea</strong>, no en la base local, así que requiere conexión a internet. Escribe o pega una lista de términos para el criterio 1 (uno por línea, o arrastra un archivo .txt/.csv), opcionalmente cruzada con el criterio 2: <strong>un solo valor</strong> filtra todos los términos de arriba; <strong>una lista</strong> se cruza con cada uno. Los resultados se descargan como un ZIP con <code>genbank_counts.csv</code> (registros por consulta) y, opcionalmente, metadatos y FASTA compilados, más una carpeta por término con los suyos.',
                 genbank_ncbi_settings: 'Ajustes de NCBI',
                 genbank_api_key_label: 'API key (opcional):',
@@ -3947,7 +3947,7 @@
                 fts_no_processid_note: 'This full-text index comes from an older version and <strong>does not include the BOLD ID (processid)</strong>. A whole ID or its beginning (<code>GBVA049-11</code>, <code>GBVA049</code>) is still found, but a fragment from inside the ID (<code>VA049-11</code>) is not: no results does not mean the record is missing from the database. For those, use the advanced field search, or rebuild the index (Step 4 of BOLD DB Creator) to include the BOLD ID.',
                 fts_help_text: 'Search the whole database with a full-text query. You can use operators like AND, OR, NOT and quotes for exact phrases.',
                 fts_query_placeholder: 'Enter your query...',
-                batch_tab_btn: 'Local BOLD batch',
+                batch_tab_btn: 'Batch search',
                 batch_panel_title: 'Batch search in the local BOLD database',
                 batch_intro_text: 'Automated field search: it repeats the same query once for each term in your plain text file (one value per line). All terms must belong to the <strong>same field</strong>, the one you select below. Results are downloaded as a ZIP with individual TSV files per term, <code>all_results.tsv</code> and <code>summary.csv</code>.',
                 batch_field1_label: 'Field 1 · required',
@@ -4119,7 +4119,7 @@
                 exporting_csv_title: 'Exporting CSV',
                 exporting_generic_title: 'Exporting',
                 fts_case_sensitive_label: 'Case-sensitive search',
-                genbank_tab_btn: 'GenBank batch',
+                genbank_tab_btn: 'GenBank batch search',
                 genbank_panel_title: 'Batch search in NCBI GenBank (online)',
                 genbank_intro_text: 'Searches <strong>NCBI GenBank</strong> (nucleotide) <strong>online</strong>, not the local database, so it needs an internet connection. Type or paste a list of terms for Criterion 1 (one per line, or drop a .txt/.csv file), optionally crossed with Criterion 2: <strong>a single value</strong> filters every term above; <strong>a list</strong> is crossed with every term above. Results are downloaded as a ZIP with <code>genbank_counts.csv</code> (records per query) and, optionally, a compiled metadata table and FASTA file, plus one folder per term with its own.',
                 genbank_ncbi_settings: 'NCBI settings',
@@ -9576,7 +9576,8 @@
 				warn.hidden = !big;
 				warn.title = big ? t('an_count_big_tip', { n: numFmt.format(AN_LIMIT) }) : '';
 			};
-			setCount(selCount, document.getElementById('anSelWarn'), AppState.checked ? AppState.checked.size : 0);
+			// None selected reads like the other sources with nothing: a dash
+			setCount(selCount, document.getElementById('anSelWarn'), AppState.checked && AppState.checked.size ? AppState.checked.size : null);
 			setCount(document.getElementById('anSearchCount'), document.getElementById('anSearchWarn'),
 				(AppState.resultsSearch && AppState.totalCount != null) ? AppState.totalCount : null);
 			anInputChanged();

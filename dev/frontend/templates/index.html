@@ -5905,7 +5905,7 @@
             noteEl.textContent = notes.join(' ');
 
             document.getElementById('pivotCaption').textContent =
-                t('pivot_caption', {n: fmt.format(data.grand_total)});
+                t('pivot_caption', {n: fmt.format(data.record_count ?? data.grand_total)});
             document.getElementById('pivotFooter').style.display = 'flex';
         }
 

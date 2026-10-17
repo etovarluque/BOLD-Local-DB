@@ -1265,7 +1265,10 @@ def search():
     try:
         where_clause, parameters = build_where_clause(conditions, technical_columns)
         sort_col, sort_dir = resolve_sort(data, technical_columns)
-        order_sql = f' ORDER BY "{sort_col}" {sort_dir}' if sort_col else ''
+        # rowid breaks ties: without it, rows sharing the sorted value could
+        # repeat on one page and be missing from another. The column's index
+        # holds (value, rowid), so it is still walked rather than sorted.
+        order_sql = f' ORDER BY "{sort_col}" {sort_dir}, rowid {sort_dir}' if sort_col else ''
 
         offset = (page - 1) * per_page
         data_query = f"SELECT * FROM {table_name} WHERE {where_clause}{order_sql} LIMIT ? OFFSET ?"
@@ -1298,7 +1301,7 @@ def search():
     except (ValueError, sqlite3.Error) as e:
         if 'interrupted' in str(e).lower():
             return jsonify({'cancelled': True}), 200
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 400 if isinstance(e, ValueError) else 500
     finally:
         if search_id:
             with active_searches_lock:
@@ -1568,7 +1571,8 @@ def search_fts(data, start_time, search_id=None):
 
     try:
         sort_col, sort_dir = resolve_sort(data, technical_columns)
-        order_sql = f' ORDER BY m."{sort_col}" {sort_dir}' if sort_col else ''
+        # rowid breaks ties, as in search()
+        order_sql = f' ORDER BY m."{sort_col}" {sort_dir}, m.rowid {sort_dir}' if sort_col else ''
 
         total_count = None
         if not skip_count:
@@ -1598,13 +1602,13 @@ def search_fts(data, start_time, search_id=None):
     except (ValueError, sqlite3.Error) as e:
         if 'interrupted' in str(e).lower():
             return jsonify({'cancelled': True}), 200
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 400 if isinstance(e, ValueError) else 500
     finally:
         if search_id:
             with active_searches_lock:
                 active_searches.pop(search_id, None)
         conn.close()
-        
+
 
 
 
@@ -2354,6 +2358,23 @@ def compute_report(data, full=False):
             )
         cells = cursor.fetchall()
 
+        # A distinct count doesn't add up: a species found in two countries
+        # is one species, not two. Its totals are counted in SQL instead of
+        # summed from the cells (and the caption needs the record count).
+        distinct_totals = None
+        if value != 'records':
+            cursor.execute(f'SELECT {metric_sql} AS v, COUNT(*) AS n FROM {from_sql} WHERE {where_sql}', params)
+            grand = cursor.fetchone()
+            by_row = by_col = {}
+            if col_field:
+                cursor.execute(f'SELECT r.{row_field} AS k, {metric_sql} AS v '
+                               f'FROM {from_sql} WHERE {where_sql} GROUP BY k', params)
+                by_row = {row['k']: row['v'] or 0 for row in cursor.fetchall()}
+                cursor.execute(f'SELECT {col_expr} AS k, {metric_sql} AS v '
+                               f'FROM {from_sql} WHERE {where_sql} GROUP BY k', [*col_params, *params])
+                by_col = {row['k']: row['v'] or 0 for row in cursor.fetchall()}
+            distinct_totals = (grand['v'] or 0, grand['n'], by_row, by_col)
+
     # The matrix is assembled here, not in SQL: a row's total (which decides
     # its place and whether it survives REPORT_ROW_CAP) isn't known until
     # every one of its cells has been seen, so there's no single GROUP BY
@@ -2370,6 +2391,12 @@ def compute_report(data, full=False):
             col_totals[cc] += v
         row_totals[rr] += v
         grand_total += v
+    record_count = grand_total
+    if distinct_totals:
+        grand_total, record_count, by_row, by_col = distinct_totals
+        if col_field:
+            row_totals.update(by_row)
+            col_totals.update(by_col)
 
     ordered_rows = sorted(row_totals, key=lambda k: row_totals[k], reverse=True)
     # full=True (the Excel export) keeps every row and column; the caps
@@ -2402,6 +2429,7 @@ def compute_report(data, full=False):
         'row_totals': [row_totals[r] for r in ordered_rows],
         'col_totals': [col_totals[c] for c in ordered_cols] if col_field else [],
         'grand_total': grand_total,
+        'record_count': record_count,
         'row_truncated': row_truncated,
         'col_truncated': col_truncated,
         'total_distinct_rows': len(row_totals),

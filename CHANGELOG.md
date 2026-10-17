@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 This log starts at `1.1.0`. Changes before that are only in the git history
 (`git log`), since versions weren't tracked release-by-release until now.
 
+## [Unreleased]
+
+### Fixed
+- Report panel: with *Number of distinct species* or *Number of distinct
+  BINs*, the row, column and grand totals added up the cells, so a species
+  found in two countries counted twice (Panthera by country: 63 instead of
+  6). They are now counted directly, on screen and in the Excel file, and
+  the caption gives the number of records summarized.
+- Sorted results pages break ties on the row, so a page can never repeat or
+  skip records that share the sorted value.
+- A search with an invalid sort column or condition answers 400 rather than
+  500.
+
 ## [2.4.0]
 
 ### Upgrade notes

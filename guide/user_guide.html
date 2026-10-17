@@ -1697,9 +1697,10 @@
         </tbody>
       </table>
     </div>
-    <p>The results are split into five tabs, some with several views (a second row of buttons). Each tab goes back
-       to the view last seen in it, and some show a count (flagged sequences, haplotypes, cases to review), in orange
-       when something deserves a look.</p>
+    <p>The results are split into five tabs, some with several views (in a dark band under the tabs). Each tab goes
+       back to the view last seen in it, and some show a count (flagged sequences, haplotypes, cases to review), in
+       orange when something deserves a look. The options the views of a tab share sit under that band and, once
+       there are results, fold to a line with what is set: <strong>Change options</strong> opens them again.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Tab</th><th>Views</th></tr></thead>
@@ -2004,11 +2005,17 @@ Sequence B:  A C G T C A G C G T ...
           <tr><td></td><td><em>Jukes-Cantor (JC69)</em></td><td>A simpler correction: one substitution rate and equal base frequencies.</td></tr>
           <tr><td></td><td><em>p-distance</em></td><td>Proportion of differing sites, uncorrected. Easy to read ("3 % of positions differ"); underestimates large distances.</td></tr>
           <tr><td><strong>Max. per species</strong></td><td>All, 1, 2, 3, 5, 10, 20 or 50</td><td>Subsamples before computing, keeping the longest sequences of each species (or of each BIN when there's no species). Useful when a few species have hundreds of sequences and dominate the result, or to get within the limits. With 1 there are no intraspecific distances.</td></tr>
-          <tr><td><strong>Build NJ tree</strong></td><td>On by default</td><td>Turn it off if you only want the distances: with many sequences the tree is the slowest part.</td></tr>
-          <tr><td><strong>Delimit species</strong></td><td>Off by default</td><td>Runs ASAP and ABGD on the distances (up to 2,000 sequences per group). See <a href="#an-delimitacion">Species delimitation</a>.</td></tr>
+          <tr><td><strong>Build NJ tree</strong></td><td>Ticked in <em>NJ tree</em> and <em>MOTUs</em></td><td>Untick it if you only want the distances: with many sequences the tree is the slowest part.</td></tr>
+          <tr><td><strong>Delimit species</strong></td><td>Ticked in <em>MOTUs</em></td><td>Runs ASAP and ABGD on the distances (up to 2,000 sequences per group). See <a href="#an-delimitacion">Species delimitation</a>.</td></tr>
         </tbody>
       </table>
     </div>
+    <p>Before the first run each view ticks what it needs: <strong>Distances</strong>, the distances alone;
+       <strong>NJ tree</strong>, the tree; <strong>MOTUs</strong>, the delimitation and the tree, which shows the
+       MOTUs and checks them against its clades. A box you change by hand stays as you left it from one view to
+       another. Once there are results the options show what was computed, and a view whose analysis wasn't asked for
+       offers to compute it as well (<strong>Also compute the NJ tree</strong>, <strong>Also compute the delimitation
+       (MOTUs)</strong>), keeping what was already computed; the whole run is repeated, alignment included.</p>
 
     <h3 class="step-title">How they're aligned</h3>
     <p>Sequences are aligned to a <strong>reference</strong> picked from among them (the longest one without

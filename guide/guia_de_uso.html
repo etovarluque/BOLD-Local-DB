@@ -1701,9 +1701,11 @@
         </tbody>
       </table>
     </div>
-    <p>Los resultados se reparten en cinco pestañas, algunas con varias vistas (una segunda fila de botones). Cada
-       pestaña vuelve a la última vista abierta en ella, y algunas muestran un contador (secuencias con alertas,
-       haplotipos, casos para revisar), en naranja cuando hay algo que conviene mirar.</p>
+    <p>Los resultados se reparten en cinco pestañas, algunas con varias vistas (en una banda oscura bajo las pestañas).
+       Cada pestaña vuelve a la última vista abierta en ella, y algunas muestran un contador (secuencias con alertas,
+       haplotipos, casos para revisar), en naranja cuando hay algo que conviene mirar. Las opciones que comparten las
+       vistas de una pestaña van bajo esa banda y, cuando ya hay resultados, se pliegan en una línea con lo elegido:
+       <strong>Cambiar opciones</strong> las vuelve a abrir.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Pestaña</th><th>Vistas</th></tr></thead>
@@ -2010,11 +2012,17 @@ Secuencia B:  A C G T C A G C G T ...
           <tr><td></td><td><em>Jukes-Cantor (JC69)</em></td><td>Corrección más simple: una sola tasa de sustitución y bases equifrecuentes.</td></tr>
           <tr><td></td><td><em>Distancia p</em></td><td>Proporción de sitios distintos, sin corrección. Fácil de interpretar («3 % de las posiciones difieren»); subestima las distancias grandes.</td></tr>
           <tr><td><strong>Máx. por especie</strong></td><td>Todas, 1, 2, 3, 5, 10, 20 o 50</td><td>Submuestrea antes de calcular, quedándose con las secuencias más largas de cada especie (o de cada BIN si no hay especie). Útil cuando unas pocas especies tienen cientos de secuencias y dominan el resultado, o para entrar en los límites. Con 1 no hay distancias intraespecíficas.</td></tr>
-          <tr><td><strong>Construir árbol NJ</strong></td><td>Activado por defecto</td><td>Desactívalo si solo quieres las distancias: el árbol es lo más lento con muchas secuencias.</td></tr>
-          <tr><td><strong>Delimitar especies</strong></td><td>Desactivado por defecto</td><td>Ejecuta ASAP y ABGD sobre las distancias (hasta 2.000 secuencias por grupo). Ver <a href="#an-delimitacion">Delimitación de especies</a>.</td></tr>
+          <tr><td><strong>Construir árbol NJ</strong></td><td>Marcado en <em>Árbol NJ</em> y <em>MOTU</em></td><td>Desmárcalo si solo quieres las distancias: el árbol es lo más lento con muchas secuencias.</td></tr>
+          <tr><td><strong>Delimitar especies</strong></td><td>Marcado en <em>MOTU</em></td><td>Ejecuta ASAP y ABGD sobre las distancias (hasta 2.000 secuencias por grupo). Ver <a href="#an-delimitacion">Delimitación de especies</a>.</td></tr>
         </tbody>
       </table>
     </div>
+    <p>Antes del primer cálculo, cada vista marca lo que necesita: <strong>Distancias</strong>, solo las distancias;
+       <strong>Árbol NJ</strong>, el árbol; <strong>MOTU</strong>, la delimitación y el árbol, que muestra los MOTU y
+       los contrasta con sus clados. Una casilla que cambies a mano se mantiene al pasar de una vista a otra. Con
+       resultados, las opciones muestran lo que se calculó, y una vista cuyo análisis no se pidió ofrece calcularlo
+       también (<strong>Calcular también el árbol NJ</strong>, <strong>Calcular también la delimitación (MOTU)</strong>),
+       conservando lo ya calculado; el cálculo se repite entero, alineamiento incluido.</p>
 
     <h3 class="step-title">Cómo se alinean</h3>
     <p>Las secuencias se alinean contra una <strong>referencia</strong> elegida entre ellas (la más larga sin

@@ -967,6 +967,29 @@ TREE_OUTLIER_RATIO = 3
 TREE_GUIDE_MAX_ITEMS = 8
 
 
+def identical_groups(D):
+    """Groups of tips (positions in D) at distance 0 from each other: the
+    sequences the aligned positions can't tell apart. Only groups of two or
+    more are returned."""
+    zero = (D == 0)
+    np.fill_diagonal(zero, False)
+    seen, groups = set(), []
+    for i in range(len(D)):
+        if i in seen or not zero[i].any():
+            continue
+        group, stack = [], [i]
+        seen.add(i)
+        while stack:
+            k = stack.pop()
+            group.append(k)
+            for j in np.flatnonzero(zero[k]).tolist():
+                if j not in seen:
+                    seen.add(j)
+                    stack.append(j)
+        groups.append(sorted(group))
+    return groups
+
+
 def tree_guide(children, root, D, species, genera, ids):
     """`children`/`root` as midpoint_root returns them, over tips 0..n-1
     whose distances are `D`."""
@@ -1315,6 +1338,8 @@ def run_distance(records, marker, forced_code=None, model="k2p",
                           "country": usable[i].get("country") or ""}
                          for i in keep],
                 "dropped": m - len(keep),
+                # Tips with the same sequence, by their position in `tips`
+                "identical": identical_groups(sub),
                 "guide": tree_guide(children, root, sub, [species[i] for i in keep],
                                     [genera[i] for i in keep], [ids[i] for i in keep]),
             })

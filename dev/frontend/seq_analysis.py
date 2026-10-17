@@ -275,6 +275,10 @@ _GENUS_RE = re.compile(r"^[A-Z][a-z]{2,}$")
 _EPITHET_RE = re.compile(r"^[a-z][a-z-]{2,}$")
 # Words that stand for an epithet, the first two followed by one
 _QUALIFIERS = {"cf.": True, "aff.": True, "cf": True, "aff": True, "sp.": False, "sp": False}
+# Words GenBank puts after a name that look like an epithet but are not one
+# ("Diptera voucher ROM 1", "Carollia isolate X")
+_NOT_EPITHETS = {"voucher", "isolate", "specimen", "sample", "clone", "haplotype", "strain", "mitochondrion",
+                 "mitochondrial", "cytochrome", "partial", "complete", "genomic", "unverified", "uncultured"}
 
 
 def _species_in(words):
@@ -287,10 +291,62 @@ def _species_in(words):
         if _QUALIFIERS[second.lower()] and len(words) > 2 and _EPITHET_RE.match(words[2]):
             return f"{words[0]} {second} {words[2]}"
         return f"{words[0]} sp." if not _QUALIFIERS[second.lower()] else None
-    return f"{words[0]} {second}" if _EPITHET_RE.match(second) else None
+    return f"{words[0]} {second}" if _EPITHET_RE.match(second) and second.lower() not in _NOT_EPITHETS else None
 
 
-def parse_header(header):
+# How a header is split when the user assigns its parts by hand
+FASTA_SEPARATORS = {"|": "|", "space": None, "_": "_", ",": ",", ";": ";", "tab": "\t"}
+FASTA_FIELDS = ("id", "taxon", "bin", "marker")
+
+
+def clean_fasta_map(raw):
+    """A manual assignment of header parts to fields, validated:
+    {"sep": key of FASTA_SEPARATORS, "fields": {field: [part indexes]}}.
+    None when absent or empty, so the headers are read automatically."""
+    if not isinstance(raw, dict) or raw.get("sep") not in FASTA_SEPARATORS:
+        return None
+    given = raw.get("fields") if isinstance(raw.get("fields"), dict) else {}
+    fields = {}
+    for name in FASTA_FIELDS:
+        idx = given.get(name)
+        if isinstance(idx, list):
+            idx = [i for i in idx if isinstance(i, int) and not isinstance(i, bool) and 0 <= i < 100][:6]
+            if idx:
+                fields[name] = idx
+    return {"sep": raw["sep"], "fields": fields} if fields else None
+
+
+def _parse_mapped(header, mapping):
+    """A header read with the parts the user assigned to each field. Several
+    parts of one field are joined with a space ("Genus" + "species")."""
+    sep = FASTA_SEPARATORS[mapping["sep"]]
+    parts = [p.strip() for p in (header.split(sep) if sep else header.split())]
+
+    def pick(name):
+        return " ".join(parts[i] for i in mapping["fields"].get(name, [])
+                        if i < len(parts) and parts[i]).strip()
+
+    words = header.split()
+    rec = {"id": pick("id") or (words[0] if words else "")}
+    taxon = pick("taxon")
+    if taxon:
+        names = taxon.replace("_", " ").split()
+        species = _species_in(names)
+        if species and species.endswith(" sp."):
+            # "Insecta sp.": only the genus-or-higher name is known
+            rec["taxon"] = names[0]
+        elif species:
+            rec.update(species=species, genus=species.split()[0])
+        else:
+            rec["taxon"] = " ".join(names)
+    for name in ("bin", "marker"):
+        value = pick(name)
+        if value:
+            rec[name] = value
+    return rec
+
+
+def parse_header(header, mapping=None):
     """Fields of a FASTA header.
 
     Understands the viewer's own export (processid|sampleid|BIN|taxon|marker),
@@ -301,6 +357,8 @@ def parse_header(header):
     as the identifier.
     """
     header = header.strip()
+    if mapping:
+        return _parse_mapped(header, mapping)
     parts = [p.strip() for p in header.split("|")]
     rec = {"id": header.split()[0] if header else ""}
     if len(parts) >= 3 and (parts[2].upper().startswith("BOLD:") or parts[2] == ""):
@@ -347,14 +405,16 @@ def field_counts(records):
             "big_cells": big(cells)}
 
 
-def parse_fasta(text):
-    """Records of a FASTA text, in file order."""
+def parse_fasta(text, mapping=None):
+    """Records of a FASTA text, in file order. `mapping` (see
+    clean_fasta_map) reads the headers by the parts the user assigned."""
     records = []
     header, chunks = None, []
 
     def flush():
         if header is not None:
-            rec = parse_header(header)
+            rec = parse_header(header, mapping)
+            rec["header"] = header
             rec["seq"] = "".join(chunks)
             records.append(rec)
 
@@ -369,6 +429,53 @@ def parse_fasta(text):
             chunks.append(line)
     flush()
     return records
+
+
+def resolve_taxon_names(records, lookup):
+    """Ranks of the taxon names that are not species (`lookup`, given names,
+    returns {name: rank}). A name the database doesn't know but whose first
+    word it does ("Diptera voucher X", "Insecta sp.") is cut to that word in
+    the records; what neither knows stays as written, with no rank."""
+    names = sorted({r["taxon"] for r in records if r.get("taxon") and not r.get("species")})
+    ranks = lookup(names)
+    firsts = {n: n.split()[0] for n in names if n not in ranks and " " in n}
+    if firsts:
+        found = lookup(sorted(set(firsts.values())))
+        for r in records:
+            first = firsts.get(r.get("taxon"))
+            if first in found:
+                r["taxon"] = first
+        ranks.update(found)
+    return ranks
+
+
+def fasta_preview(records, ranks=None, n=5):
+    """What was read from the first headers, for the user to check."""
+    ranks = ranks or {}
+    out = []
+    for r in records[:n]:
+        name = r.get("species") or r.get("taxon") or ""
+        out.append({"header": r.get("header", ""),
+                    "id": r.get("processid") or r.get("id") or "",
+                    "taxon": name,
+                    "rank": "species" if r.get("species") else ranks.get(name, ""),
+                    "bin": r.get("bin") or "", "marker": r.get("marker") or ""})
+    return out
+
+
+def rank_counts(records, ranks=None):
+    """Records by the level of the taxon name their header gave: a rank,
+    "unknown" for a name no rank of the database knows, "none" for no name."""
+    ranks = ranks or {}
+    counts = Counter()
+    for r in records:
+        if r.get("species"):
+            counts["species"] += 1
+        elif r.get("taxon"):
+            counts[ranks.get(r["taxon"]) or "unknown"] += 1
+        else:
+            counts["none"] += 1
+    return dict(counts)
 
 
 # ── Analyses ──────────────────────────────────────────────────────────────────

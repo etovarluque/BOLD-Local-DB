@@ -4273,7 +4273,7 @@ def _analysis_input(data, cap=seq_analysis.MAX_SEQUENCES):
             if len(text) > seq_analysis.MAX_FASTA_CHARS:
                 raise _analysis_error('analysis_fasta_too_large',
                                       mb=seq_analysis.MAX_FASTA_CHARS // 1_000_000)
-            records = seq_analysis.parse_fasta(text)
+            records = seq_analysis.parse_fasta(text, seq_analysis.clean_fasta_map(data.get('fasta_map')))
         elif source == 'records':
             records = _analysis_client_records(data.get('records'))
         else:
@@ -4315,10 +4315,17 @@ def analysis_basic():
     try:
         forced_code = _analysis_genetic_code(data)
         records, marker, truncated, total = _analysis_input(data)
+        fasta_checks = None
+        if data.get('source') == 'fasta':
+            # Read before run_basic overwrites each record's marker
+            ranks = seq_analysis.resolve_taxon_names(records, _analysis_taxon_ranks)
+            fasta_checks = (seq_analysis.fasta_preview(records, ranks), seq_analysis.rank_counts(records, ranks))
         result = seq_analysis.run_basic(records, marker, forced_code, total,
                                         bin_lookup=_analysis_bin_species)
         # What the input brings, so the page can say what can't be done
         result['fields'] = seq_analysis.field_counts(records)
+        if fasta_checks:
+            result['fasta_preview'], result['fasta_ranks'] = fasta_checks
         result['source'] = data.get('source')
     except _AnalysisReply as reply:
         return jsonify(reply.body), reply.status
@@ -4332,6 +4339,34 @@ def analysis_basic():
     print(f"Analysis OK — {data.get('source')} | {marker or '?'} | "
           f"{result['summary']['analysed']:,} seqs | {result['seconds']}s")
     return jsonify(result)
+
+
+# Levels a FASTA's taxon name is checked against, lowest first
+_TAXON_RANK_COLUMNS = (('genus', 'col_genus'), ('family', 'col_family'), ('order', 'col_order'),
+                       ('class', 'col_class'), ('phylum', 'col_phylum'))
+
+
+def _analysis_taxon_ranks(names):
+    """{name: rank} for the names the database knows at some level (genus
+    up to phylum), to tell a genus from a class in a FASTA header. A name
+    takes milliseconds on an indexed column; a column without an index (an old database) is skipped rather than scanned."""
+    out = {}
+    if not names:
+        return out
+    try:
+        indexed = get_indexed_columns()
+        with get_export_connection() as conn:
+            for name in list(names)[:200]:
+                for rank, col in _TAXON_RANK_COLUMNS:
+                    if col not in indexed:
+                        continue
+                    if conn.execute(f'SELECT 1 FROM {MAIN_TABLE_NAME} WHERE {col} = ? LIMIT 1',
+                                    (name,)).fetchone():
+                        out[name] = rank
+                        break
+    except sqlite3.Error:
+        pass
+    return out
 
 
 def _analysis_bin_species(bins):

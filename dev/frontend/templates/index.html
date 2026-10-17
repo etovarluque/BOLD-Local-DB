@@ -716,6 +716,11 @@
 			background: #f0fff7;
 			cursor: default;
 		}
+		/* File fields and text areas that take a dropped file: same hover and
+		   drag-over cue as the batch drop zones */
+		input[type=file].form-control, .gb-terms { transition: border-color .2s, background-color .2s; }
+		input[type=file].form-control:hover, .gb-terms:hover { border-color: var(--color-secondary); background-color: #f0f7ff; }
+		input[type=file].form-control.dragover { border-color: var(--color-secondary); background-color: #e8f3ff; box-shadow: 0 0 0 .2rem rgba(62, 146, 204, .2); }
 		.batch-drop-hint {
 			color: #6c757d;
 			font-size: 0.88rem;
@@ -1374,6 +1379,11 @@
 		.an-source:hover { background: #f7f8fa; }
 		.an-source:has(input:checked) { background: var(--selected); box-shadow: inset 3px 0 0 var(--slate); }
 		.an-count { margin-left: auto; padding: 0 8px; border-radius: 10px; background: var(--tint); color: var(--slate); font-size: .78rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+		/* Yellow warning triangle to the left of a count over the analysis limit */
+		.an-count-warn { margin-left: auto; display: inline-flex; width: 18px; height: 18px; }
+		.an-count-warn[hidden] { display: none; }
+		.an-count-warn svg { width: 100%; height: 100%; }
+		.an-count-warn:not([hidden]) + .an-count { margin-left: 6px; }
 		.an-source:has(input:checked) .an-count { background: var(--slate); color: #fff; }
 		.an-fields { display: grid; gap: 10px; }
 		.an-field { display: grid; gap: 4px; margin: 0; font-size: .78rem; font-weight: 500; color: var(--mute); }
@@ -1381,6 +1391,22 @@
 		.an-field .form-select:hover:not(:disabled) { border-color: var(--slate); }
 		.an-run { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 		.an-fasta-text { font-family: var(--f-mono); font-size: .8rem; }
+		/* FASTA header fields: what was read, editable */
+		.an-map { margin: .75rem 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--tint); }
+		.an-map-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+		.an-map-title { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+		.an-map-table-wrap { overflow-x: auto; margin-top: 8px; }
+		.an-map table { border-collapse: collapse; font-size: .82rem; background: #fff; }
+		.an-map th, .an-map td { border: 1px solid var(--line); padding: 4px 9px; white-space: nowrap; }
+		.an-map th { background: #f7f8fb; color: var(--slate); font-weight: 600; text-align: left; }
+		.an-map td.hdr { font-family: var(--f-mono); max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
+		.an-map .rank { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 9px; background: var(--selected); color: var(--slate); font-size: .72rem; font-weight: 600; }
+		.an-map .rank.unknown { background: #fbefd9; color: #85540a; }
+		.an-map-levels { margin-top: 8px; font-size: .84rem; color: var(--mute); }
+		.an-map-edit { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+		.an-map-edit select { width: auto; min-width: 0; }
+		.an-map-edit th select { font-weight: 400; }
+		.an-map-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
 		.an-options { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
 		.an-options select { width: auto; min-width: 200px; flex: none; padding-right: 2.25rem; }
 		.an-note { margin-top: .9rem; padding: 8px 12px; border-left: 3px solid var(--orange); background: #fff7ee; font-size: .88rem; }
@@ -2151,6 +2177,7 @@
                                 aria-controls="anInputForm" aria-expanded="true" hidden></button>
                     </div>
                     <p class="an-note an-fields-note" id="anInputFields" hidden></p>
+                    <div class="an-map" id="anFastaMap" hidden></div>
                     <div class="an-input-form" id="anInputForm">
                         <fieldset>
                             <legend class="an-label" data-i18n="an_source_label">Secuencias</legend>
@@ -2158,16 +2185,20 @@
                                 <label class="an-source">
                                     <input type="radio" name="anSource" value="search" class="form-check-input mt-0" checked>
                                     <span data-i18n="an_src_search">Resultados de la búsqueda mostrada</span>
+                                    <span class="an-count-warn" id="anSearchWarn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 22.4 20.6H1.6Z" fill="#f5b301" stroke="#f5b301" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5.2M12 17.2v.3" stroke="#3b2a00" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></span>
                                     <span class="an-count" id="anSearchCount">—</span>
                                 </label>
                                 <label class="an-source">
                                     <input type="radio" name="anSource" value="records" class="form-check-input mt-0">
                                     <span data-i18n="an_src_records">Registros seleccionados</span>
+                                    <span class="an-count-warn" id="anSelWarn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 22.4 20.6H1.6Z" fill="#f5b301" stroke="#f5b301" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5.2M12 17.2v.3" stroke="#3b2a00" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></span>
                                     <span class="an-count" id="anSelCount">0</span>
                                 </label>
                                 <label class="an-source">
                                     <input type="radio" name="anSource" value="fasta" class="form-check-input mt-0">
                                     <span data-i18n="an_src_fasta">Archivo FASTA</span>
+                                    <span class="an-count-warn" id="anFastaWarn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 22.4 20.6H1.6Z" fill="#f5b301" stroke="#f5b301" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5.2M12 17.2v.3" stroke="#3b2a00" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></span>
+                                    <span class="an-count" id="anFastaCount">—</span>
                                 </label>
                             </div>
                         </fieldset>
@@ -2201,6 +2232,7 @@
                             <textarea id="anFastaText" class="form-control an-fasta-text" rows="5" spellcheck="false"
                                       data-i18n-placeholder="an_fasta_placeholder"></textarea>
                             <p class="an-muted an-fasta-help mt-1 mb-0" data-i18n="an_fasta_help"></p>
+                            <p id="anFastaBigNote" class="an-note mt-2 mb-0" hidden></p>
                         </div>
                         <div class="an-input-foot">
                             <span id="anCodeHint" class="an-muted"></span>
@@ -2694,11 +2726,44 @@
                 an_source_label: 'Secuencias',
                 an_src_records: 'Registros seleccionados',
                 an_src_search: 'Resultados de la búsqueda mostrada',
+                an_count_big_tip: 'Más de {n} secuencias: solo se analizarán las primeras {n}. Considera filtrar la búsqueda.',
+                an_fasta_big: 'El FASTA tiene {n} secuencias: solo se analizarán las primeras {limit}.',
                 an_src_fasta: 'Archivo FASTA',
                 an_fasta_clear: '✕ Quitar archivo',
                 an_fasta_placeholder: 'O pega aquí las secuencias en formato FASTA.',
                 an_fasta_help: 'Del FASTA se leen el nombre de especie y el BIN si la cabecera los trae: la de este visor (processid|sampleid|BIN|taxón|marcador), la de BOLD (processid|taxón|marcador|accesión), «>id Género especie…» (GenBank y la mayoría de fuentes) o «>Género_especie_id». El nombre permite comparar con las especies y el BIN con los BIN; sin ellos esas partes quedan vacías. El país no viaja en ningún FASTA: para la geografía, analiza desde la búsqueda.',
                 an_fields_read: 'Del FASTA se leyeron {n} secuencias: {sp} con nombre de especie, {bin} con BIN y {c} con país.',
+                an_map_title: 'Campos leídos de los encabezados del FASTA',
+                an_map_hint: 'Revisa lo que se identificó en las primeras secuencias. Si algo está mal, corrígelo y vuelve a analizar.',
+                an_map_head: 'Encabezado',
+                an_map_f_id: 'ID',
+                an_map_f_taxon: 'Taxón',
+                an_map_f_bin: 'BIN',
+                an_map_f_marker: 'Marcador',
+                an_map_none: '—',
+                an_map_edit: 'Corregir campos',
+                an_map_close: 'Cerrar',
+                an_map_sep: 'Separar el encabezado por',
+                an_map_sep_pipe: 'barra vertical ( | )',
+                an_map_sep_space: 'espacios',
+                an_map_sep_us: 'guion bajo ( _ )',
+                an_map_sep_comma: 'coma',
+                an_map_sep_semi: 'punto y coma',
+                an_map_sep_tab: 'tabulador',
+                an_map_part: 'Parte {n}',
+                an_map_edit_hint: 'Asigna a cada parte el campo que contiene. Si el nombre ocupa varias partes (género y especie por separado), márcalas todas como Taxón: se unen con un espacio.',
+                an_map_apply: 'Aplicar y analizar de nuevo',
+                an_map_auto: 'Volver a la detección automática',
+                an_map_custom: 'Asignación manual en uso',
+                an_map_levels: 'Nivel del taxón en los encabezados:',
+                an_rank_species: 'especie',
+                an_rank_genus: 'género',
+                an_rank_family: 'familia',
+                an_rank_order: 'orden',
+                an_rank_class: 'clase',
+                an_rank_phylum: 'filo',
+                an_rank_unknown: 'no reconocido',
+                an_rank_none: 'sin nombre',
                 an_fields_partial_species: ' Las que no traen nombre quedan fuera de las comparaciones con las especies.',
                 an_fields_partial_bin: ' Las que no traen BIN quedan fuera de las comparaciones con los BIN.',
                 an_fields_missing_species: ' Sin nombre de especie no estarán disponibles el barcode gap, la revisión de identificaciones, la comparación de especies frente a MOTU ni las partes de las lecturas que comparan con los nombres.',
@@ -3853,6 +3918,8 @@
                 an_tree_disc_both: 'Ambas',
                 an_tree_click_expand: 'Clado colapsado ({n} secuencias): clic para expandir',
                 an_tree_click_collapse: 'Clado de {n} secuencias: clic para colapsar',
+                an_tree_distinct: '{h} distintas',
+                an_tree_identical: 'Idéntica a: {ids}',
                 an_tree_popup_blocked: 'El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes para esta página.',
                 an_tree_png_failed: 'No se pudo generar el PNG. Prueba con SVG o con una escala menor.',
                 an_tree_png_reduced: 'El árbol es demasiado grande para esa escala: el PNG se generó a {s}×. Para más resolución, exporta en SVG o colapsa clados.',
@@ -4078,10 +4145,43 @@
                 an_source_label: 'Sequences',
                 an_src_records: 'Selected records',
                 an_src_search: 'Results of the search on screen',
+                an_count_big_tip: 'More than {n} sequences: only the first {n} will be analysed. Consider narrowing the search.',
+                an_fasta_big: 'The FASTA has {n} sequences: only the first {limit} will be analysed.',
                 an_src_fasta: 'FASTA file',
                 an_fasta_clear: '✕ Remove file',
                 an_fasta_placeholder: 'Or paste sequences in FASTA format here.',
                 an_fasta_help: 'The species name and the BIN are read from the FASTA when the header carries them: this viewer\'s (processid|sampleid|BIN|taxon|marker), BOLD\'s (processid|taxon|marker|accession), ">id Genus species…" (GenBank and most sources) or ">Genus_species_id". The name allows comparing with species and the BIN with BINs; without them those parts stay empty. No FASTA carries the country: for geography, analyse from the search.',
+                an_map_title: 'Fields read from the FASTA headers',
+                an_map_hint: 'Check what was identified in the first sequences. If something is wrong, correct it and analyse again.',
+                an_map_head: 'Header',
+                an_map_f_id: 'ID',
+                an_map_f_taxon: 'Taxon',
+                an_map_f_bin: 'BIN',
+                an_map_f_marker: 'Marker',
+                an_map_none: '—',
+                an_map_edit: 'Correct fields',
+                an_map_close: 'Close',
+                an_map_sep: 'Split the header by',
+                an_map_sep_pipe: 'vertical bar ( | )',
+                an_map_sep_space: 'spaces',
+                an_map_sep_us: 'underscore ( _ )',
+                an_map_sep_comma: 'comma',
+                an_map_sep_semi: 'semicolon',
+                an_map_sep_tab: 'tab',
+                an_map_part: 'Part {n}',
+                an_map_edit_hint: 'Give each part the field it holds. If the name spans several parts (genus and species apart), mark them all as Taxon: they are joined with a space.',
+                an_map_apply: 'Apply and analyse again',
+                an_map_auto: 'Back to automatic detection',
+                an_map_custom: 'Manual assignment in use',
+                an_map_levels: 'Level of the taxon in the headers:',
+                an_rank_species: 'species',
+                an_rank_genus: 'genus',
+                an_rank_family: 'family',
+                an_rank_order: 'order',
+                an_rank_class: 'class',
+                an_rank_phylum: 'phylum',
+                an_rank_unknown: 'not recognised',
+                an_rank_none: 'no name',
                 an_fields_read: '{n} sequences read from the FASTA: {sp} with a species name, {bin} with a BIN and {c} with a country.',
                 an_fields_partial_species: ' Those without a name are left out of the comparisons with species.',
                 an_fields_partial_bin: ' Those without a BIN are left out of the comparisons with BINs.',
@@ -5237,6 +5337,8 @@
                 an_tree_disc_both: 'Both',
                 an_tree_click_expand: 'Collapsed clade ({n} sequences): click to expand',
                 an_tree_click_collapse: 'Clade of {n} sequences: click to collapse',
+                an_tree_distinct: '{h} distinct',
+                an_tree_identical: 'Identical to: {ids}',
                 an_tree_popup_blocked: 'The browser blocked the print window. Allow pop-ups for this page.',
                 an_tree_png_failed: 'The PNG could not be created. Try SVG or a smaller scale.',
                 an_tree_png_reduced: 'The tree is too big for that scale: the PNG was made at {s}×. For more resolution, export SVG or collapse clades.',
@@ -9437,15 +9539,23 @@
 			if (src === 'search') return 'search:' + JSON.stringify(AppState.resultsSearch);
 			const file = document.getElementById('anFastaFile').files[0];
 			return 'fasta:' + (file ? `${file.name}:${file.size}:${file.lastModified}` : '')
-			     + ':' + document.getElementById('anFastaText').value.length;
+			     + ':' + document.getElementById('anFastaText').value.length
+			     + ':' + JSON.stringify(AnState.fastaMap || null);
 		}
 
 		function anUpdateSourceCounts() {
 			const selCount = document.getElementById('anSelCount');
 			if (!selCount) return;
-			selCount.textContent = numFmt.format(AppState.checked ? AppState.checked.size : 0);
-			document.getElementById('anSearchCount').textContent =
-				(AppState.resultsSearch && AppState.totalCount != null) ? numFmt.format(AppState.totalCount) : '—';
+			// Past this many sequences the analyses get slow: flag the count
+			const setCount = (el, warn, n) => {
+				const big = n != null && n > AN_LIMIT;
+				el.textContent = n == null ? '—' : numFmt.format(n);
+				warn.hidden = !big;
+				warn.title = big ? t('an_count_big_tip', { n: numFmt.format(AN_LIMIT) }) : '';
+			};
+			setCount(selCount, document.getElementById('anSelWarn'), AppState.checked ? AppState.checked.size : 0);
+			setCount(document.getElementById('anSearchCount'), document.getElementById('anSearchWarn'),
+				(AppState.resultsSearch && AppState.totalCount != null) ? AppState.totalCount : null);
 			anInputChanged();
 		}
 
@@ -9527,6 +9637,27 @@
 			};
 		}
 
+		// Warns when the FASTA typed or chosen has more sequences than the
+		// analysis takes (the server keeps only the first AN_LIMIT)
+		let _anFastaCheckId = 0;
+		async function anFastaCheck() {
+			const id = ++_anFastaCheckId;
+			const box = document.getElementById('anFastaBigNote');
+			let text = document.getElementById('anFastaText').value;
+			const file = document.getElementById('anFastaFile').files[0];
+			if (!text.trim() && file && file.size <= AN_FASTA_MAX_MB * 1e6) {
+				try { text = await file.text(); } catch (e) { text = ''; }
+			}
+			if (id !== _anFastaCheckId) return;
+			const n = (text.match(/^>/gm) || []).length;
+			const badge = document.getElementById('anFastaCount'), warn = document.getElementById('anFastaWarn');
+			badge.textContent = n ? numFmt.format(n) : '—';
+			warn.hidden = n <= AN_LIMIT;
+			warn.title = n > AN_LIMIT ? t('an_count_big_tip', { n: numFmt.format(AN_LIMIT) }) : '';
+			box.hidden = n <= AN_LIMIT;
+			if (n > AN_LIMIT) box.textContent = t('an_fasta_big', { n: numFmt.format(n), limit: numFmt.format(AN_LIMIT) });
+		}
+
 		async function anFastaInput() {
 			const text = document.getElementById('anFastaText').value;
 			if (text.trim()) return text;
@@ -9566,6 +9697,7 @@
 					body.search = resultsSearchRequest();
 				} else {
 					body.fasta = await anFastaInput();
+					if (AnState.fastaMap) body.fasta_map = AnState.fastaMap;
 					if (!body.fasta.trim()) { showBatchDialog(escapeHtml(t('an_need_fasta'))); return; }
 				}
 			} catch (e) {
@@ -9660,10 +9792,162 @@
 				chip('an_code_field', code.disabled ? '—' : code.options[code.selectedIndex].textContent));
 			document.getElementById('anInputToggle').hidden = false;
 			anFieldsNote(data.source === 'fasta' ? data.fields : null);
+			anMapRender(data);
 		}
 
 		// What a FASTA's headers gave (species, BIN, country) and what can't
 		// be done without it
+		// ── FASTA header fields: what was read from the first headers, editable ──
+
+		const AN_MAP_SEPS = [['|', 'an_map_sep_pipe'], ['space', 'an_map_sep_space'], ['_', 'an_map_sep_us'],
+			[',', 'an_map_sep_comma'], [';', 'an_map_sep_semi'], ['tab', 'an_map_sep_tab']];
+		const AN_MAP_FIELDS = ['id', 'taxon', 'bin', 'marker'];
+		const AN_MAP_SPLIT = { '|': /\|/, space: /\s+/, '_': /_/, ',': /,/, ';': /;/, tab: /\t/ };
+
+		const anMapSplit = (header, sep) => header.trim().split(AN_MAP_SPLIT[sep]).map(p => p.trim());
+
+		// Which parts of the first header hold each field, guessed from what
+		// the automatic reading found
+		function anMapInfer(preview, sep) {
+			const fields = { id: [], taxon: [], bin: [], marker: [] };
+			const first = preview[0];
+			const norm = s => s.replace(/_/g, ' ').trim();
+			const words = norm(first.taxon || '').split(' ').filter(Boolean);
+			anMapSplit(first.header, sep).forEach((p, i) => {
+				const np = norm(p);
+				if (first.bin && np === first.bin) fields.bin.push(i);
+				else if (first.marker && np === first.marker) fields.marker.push(i);
+				else if (first.id && p === first.id) fields.id.push(i);
+				else if (words.length && (words.includes(np) || np === words.join(' '))) fields.taxon.push(i);
+			});
+			return fields;
+		}
+
+		function anMapRankBadge(rank) {
+			if (!rank) return anEl('span', 'rank unknown', t('an_rank_unknown'));
+			return anEl('span', 'rank', t('an_rank_' + rank));
+		}
+
+		function anMapRender(data) {
+			const box = document.getElementById('anFastaMap');
+			const preview = data.source === 'fasta' ? data.fasta_preview : null;
+			if (!preview || !preview.length) { box.hidden = true; box.replaceChildren(); return; }
+			box.hidden = false;
+
+			const head = anEl('div', 'an-map-head');
+			head.append(anEl('span', 'an-map-title', t('an_map_title')));
+			if (AnState.fastaMap) head.append(anEl('span', 'rank', t('an_map_custom')));
+			const edit = anEl('button', 'btn btn-sm btn-primary px-3 ms-auto', '✎ ' + t('an_map_edit'));
+			edit.type = 'button';
+			head.append(edit);
+
+			// What was read
+			const readTable = anEl('table');
+			const hr = anEl('tr');
+			['an_map_head', 'an_map_f_id', 'an_map_f_taxon', 'an_map_f_bin', 'an_map_f_marker']
+				.forEach(k => hr.append(anEl('th', '', t(k))));
+			readTable.append(hr);
+			preview.forEach(p => {
+				const tr = anEl('tr');
+				const taxon = anEl('td', '', p.taxon || '—');
+				if (p.taxon) taxon.append(anMapRankBadge(p.rank));
+				tr.append(anEl('td', 'hdr', p.header), anEl('td', '', p.id || '—'), taxon,
+					anEl('td', '', p.bin || '—'), anEl('td', '', p.marker || '—'));
+				readTable.append(tr);
+			});
+			const wrap = anEl('div', 'an-map-table-wrap');
+			wrap.append(readTable);
+
+			const levels = anEl('div', 'an-map-levels');
+			const ranks = data.fasta_ranks || {};
+			const order = ['species', 'genus', 'family', 'order', 'class', 'phylum', 'unknown', 'none'];
+			const parts = order.filter(k => ranks[k]).map(k => `${numFmt.format(ranks[k])} ${t('an_rank_' + k)}`);
+			levels.textContent = `${t('an_map_levels')} ${parts.join(' · ') || '—'}`;
+
+			const editor = anEl('div', 'an-map-edit');
+			editor.hidden = true;
+			box.replaceChildren(head, anEl('p', 'an-muted mb-0 mt-1', t('an_map_hint')), wrap, levels, editor);
+			edit.addEventListener('click', () => {
+				editor.hidden = !editor.hidden;
+				edit.textContent = editor.hidden ? '✎ ' + t('an_map_edit') : t('an_map_close');
+				edit.classList.toggle('btn-primary', editor.hidden);
+				edit.classList.toggle('btn-outline-primary', !editor.hidden);
+				if (!editor.hidden && !editor.childElementCount) anMapBuildEditor(editor, preview);
+			});
+		}
+
+		function anMapBuildEditor(editor, preview) {
+			const headers = preview.map(p => p.header);
+			const startSep = AnState.fastaMap ? AnState.fastaMap.sep
+				: (headers.some(h => h.includes('|')) ? '|' : 'space');
+			const sepSel = anEl('select', 'form-select form-select-sm');
+			AN_MAP_SEPS.forEach(([value, key]) => {
+				const o = anEl('option', '', t(key));
+				o.value = value;
+				sepSel.append(o);
+			});
+			sepSel.value = startSep;
+			const sepRow = anEl('label', 'd-inline-flex align-items-center gap-2 mb-2');
+			sepRow.append(anEl('span', '', t('an_map_sep')), sepSel);
+
+			const grid = anEl('div', 'an-map-table-wrap');
+			const selects = [];
+
+			const build = () => {
+				const sep = sepSel.value;
+				const kept = AnState.fastaMap && AnState.fastaMap.sep === sep ? AnState.fastaMap.fields : anMapInfer(preview, sep);
+				const split = headers.map(h => anMapSplit(h, sep));
+				const nParts = Math.min(Math.max(...split.map(p => p.length)), 12);
+				selects.length = 0;
+				const table = anEl('table');
+				const tr = anEl('tr');
+				for (let i = 0; i < nParts; i++) {
+					const th = anEl('th');
+					const sel = anEl('select', 'form-select form-select-sm');
+					const none = anEl('option', '', `${t('an_map_part', { n: i + 1 })}: ${t('an_map_none')}`);
+					none.value = '';
+					sel.append(none);
+					AN_MAP_FIELDS.forEach(f => {
+						const o = anEl('option', '', `${t('an_map_part', { n: i + 1 })}: ${t('an_map_f_' + f)}`);
+						o.value = f;
+						sel.append(o);
+					});
+					sel.value = AN_MAP_FIELDS.find(f => (kept[f] || []).includes(i)) || '';
+					selects.push(sel);
+					th.append(sel);
+					tr.append(th);
+				}
+				table.append(tr);
+				split.forEach(parts => {
+					const row = anEl('tr');
+					for (let i = 0; i < nParts; i++) row.append(anEl('td', '', parts[i] || ''));
+					table.append(row);
+				});
+				grid.replaceChildren(table);
+			};
+			sepSel.addEventListener('change', build);
+			build();
+
+			const apply = anEl('button', 'btn btn-sm btn-primary', t('an_map_apply'));
+			apply.type = 'button';
+			apply.addEventListener('click', () => {
+				const fields = {};
+				selects.forEach((sel, i) => { if (sel.value) (fields[sel.value] = fields[sel.value] || []).push(i); });
+				AnState.fastaMap = Object.keys(fields).length ? { sep: sepSel.value, fields } : null;
+				anInputChanged();
+				anRun();
+			});
+			const actions = anEl('div', 'an-map-actions');
+			actions.append(apply);
+			if (AnState.fastaMap) {
+				const auto = anEl('button', 'btn btn-sm btn-link text-muted p-0', t('an_map_auto'));
+				auto.type = 'button';
+				auto.addEventListener('click', () => { AnState.fastaMap = null; anInputChanged(); anRun(); });
+				actions.append(auto);
+			}
+			editor.append(anEl('p', 'an-muted mb-2', t('an_map_edit_hint')), sepRow, grid, actions);
+		}
+
 		function anFieldsNote(f) {
 			const box = document.getElementById('anInputFields');
 			box.hidden = !f;
@@ -13781,7 +14065,28 @@ li li { display: list-item; margin: 0; }
 			// Species that aren't a clade, as the reading tells them (server side)
 			const nonmono = (tree.guide && tree.guide.species && tree.guide.species.nonmono) || [];
 			// paint: clades coloured by hand, { node id: { color, style, label } }
-			return { root, nodes, meta, discordance, nonmono, keys: {}, manual: new Map(), paint: {}, paintSel: null };
+			// Tips with the same sequence: each one's group, and the groups
+			const same = tree.identical || [];
+			const gid = new Array(meta.length).fill(-1);
+			same.forEach((g, k) => g.forEach(i => { gid[i] = k; }));
+			return { root, nodes, meta, discordance, nonmono, same, gid, keys: {}, manual: new Map(), paint: {}, paintSel: null };
+		}
+
+		// How many different sequences a set of tips holds (identical ones count once)
+		function anDistinctCount(T, tips) {
+			const seen = new Set();
+			let n = 0;
+			tips.forEach(i => {
+				const g = T.gid[i];
+				if (g < 0) n++;
+				else if (!seen.has(g)) { seen.add(g); n++; }
+			});
+			return n;
+		}
+
+		// The other tips with the same sequence as tip i, as their IDs
+		function anIdenticalIds(T, i) {
+			return T.gid[i] < 0 ? [] : T.same[T.gid[i]].filter(j => j !== i).map(j => T.meta[j].id);
 		}
 
 		// Per node, the value of `attr` its tips all share (null if they differ)
@@ -14114,7 +14419,15 @@ li li { display: list-item; margin: 0; }
 				const style = hit ? ` fill="${AN_HL}" font-weight="700"`
 				            : (opts.colorLabels && labelColor ? ` fill="${anTextColor(labelColor)}"` : '')
 				              + (F && n.tips.some(i => F.tips.has(i)) ? ' font-weight="700"' : '');
-				texts.push(`<text x="${x.toFixed(1)}" y="${(y + font * 0.35).toFixed(1)}"${style}>${spans}</text>`);
+				let tipTitle = '';
+				if (!forExport && it.kind === 'tip') {
+					const twins = anIdenticalIds(T, n.tip);
+					if (twins.length) {
+						const shown = twins.slice(0, 8).join(', ') + (twins.length > 8 ? ` (+${twins.length - 8})` : '');
+						tipTitle = `<title>${anSvgEsc(t('an_tree_identical', { ids: shown }))}</title>`;
+					}
+				}
+				texts.push(`<text x="${x.toFixed(1)}" y="${(y + font * 0.35).toFixed(1)}"${style}>${spans}${tipTitle}</text>`);
 			});
 
 			let scale = '';
@@ -14786,7 +15099,8 @@ li li { display: list-item; margin: 0; }
 				target.setAttribute('title', '');
 				const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
 				title.textContent = t(anIsCollapsed(T, n, opts) ? 'an_tree_click_expand' : 'an_tree_click_collapse',
-				                      { n: numFmt.format(n.tips.length) });
+				                      { n: numFmt.format(n.tips.length) })
+				                    + ' · ' + t('an_tree_distinct', { h: numFmt.format(anDistinctCount(T, n.tips)) });
 				target.replaceChildren(title);
 			});
 			redraw();
@@ -14869,11 +15183,13 @@ li li { display: list-item; margin: 0; }
 			document.getElementById('anIntro').innerHTML = t('an_intro_text', { limit: numFmt.format(AN_LIMIT) });
 			anBuildMarkerSelect();
 			document.querySelectorAll('input[name="anSource"]').forEach(r => r.addEventListener('change', anSourceChanged));
-			document.getElementById('anFastaFile').addEventListener('change', anInputChanged);
-			document.getElementById('anFastaText').addEventListener('input', anInputChanged);
+			document.getElementById('anFastaFile').addEventListener('change', () => { AnState.fastaMap = null; anInputChanged(); anFastaCheck(); });
+			document.getElementById('anFastaText').addEventListener('input', () => { AnState.fastaMap = null; anInputChanged(); anFastaCheck(); });
 			document.getElementById('anFastaClear').addEventListener('click', () => {
 				document.getElementById('anFastaFile').value = '';
+				AnState.fastaMap = null;
 				anInputChanged();
+				anFastaCheck();
 			});
 			document.getElementById('anRunBtn').addEventListener('click', anRun);
 			document.getElementById('anInputToggle').addEventListener('click', () =>
@@ -15483,6 +15799,14 @@ li li { display: list-item; margin: 0; }
 			GbState.jobId = null;
 			gbUpdateCounts();
 		}
+
+		// Drag-over cue on the file fields (the browser's own drop handling stays)
+		document.addEventListener('DOMContentLoaded', () => {
+			document.querySelectorAll('input[type=file].form-control').forEach(input => {
+				['dragenter', 'dragover'].forEach(ev => input.addEventListener(ev, () => input.classList.add('dragover')));
+				['dragleave', 'drop'].forEach(ev => input.addEventListener(ev, () => input.classList.remove('dragover')));
+			});
+		});
 
 		function setupGenbankPanel() {
 			if (!document.getElementById('genbankSearchPanel')) return;

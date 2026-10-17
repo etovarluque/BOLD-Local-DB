@@ -3230,11 +3230,13 @@
                 an_gap_tip: '{sp} · intra máx. {intra} · vecino {nn} ({nnsp})',
                 an_c_max_intra: 'Intra máx.', an_c_mean_intra: 'Intra media', an_c_nn: 'Vecino',
                 an_c_nn_species: 'Especie vecina', an_c_gap: 'Gap',
-                an_tree_off: 'Marca «Construir árbol NJ» y pulsa «Calcular».',
+                an_tree_off: 'Las distancias en pantalla se calcularon sin el árbol.',
+                an_tree_add: 'Calcular también el árbol NJ',
                 an_v_delimit: 'MOTU',
                 an_delimit_option: 'Delimitar especies: ASAP y ABGD (hasta {n} secuencias)',
                 an_dist_running_delimit: 'Alineando, calculando y delimitando especies (puede tardar un minuto)…',
-                an_delimit_off: 'Marca «Delimitar especies» y pulsa «Calcular».',
+                an_delimit_off: 'Las distancias en pantalla se calcularon sin delimitar especies.',
+                an_delimit_add: 'Calcular también la delimitación (MOTU)',
                 an_delimit_group_label: 'Delimitación del grupo:',
                 an_delimit_title: 'Delimitación de especies · {n} secuencias',
                 an_delimit_note: 'ASAP y ABGD agrupan las secuencias en MOTU (unidades taxonómicas operativas moleculares) solo por sus distancias, sin mirar los nombres. Al compararlos con los nombres se ve qué especies separa el marcador, cuáles divide y cuáles junta. Son hipótesis que hay que contrastar con la morfología, la distribución u otros marcadores.',
@@ -4652,11 +4654,13 @@
                 an_gap_tip: '{sp} · max intra {intra} · neighbour {nn} ({nnsp})',
                 an_c_max_intra: 'Max intra', an_c_mean_intra: 'Mean intra', an_c_nn: 'Neighbour',
                 an_c_nn_species: 'Neighbour species', an_c_gap: 'Gap',
-                an_tree_off: 'Tick "Build NJ tree" and press "Compute".',
+                an_tree_off: 'The distances on screen were computed without the tree.',
+                an_tree_add: 'Also compute the NJ tree',
                 an_v_delimit: 'MOTUs',
                 an_delimit_option: 'Delimit species: ASAP and ABGD (up to {n} sequences)',
                 an_dist_running_delimit: 'Aligning, computing and delimiting species (may take a minute)…',
-                an_delimit_off: 'Tick "Delimit species" and press "Compute".',
+                an_delimit_off: 'The distances on screen were computed without delimiting species.',
+                an_delimit_add: 'Also compute the delimitation (MOTUs)',
                 an_delimit_group_label: 'Delimitation of group:',
                 an_delimit_title: 'Species delimitation · {n} sequences',
                 an_delimit_note: 'ASAP and ABGD group the sequences into MOTUs (molecular operational taxonomic units) by their distances alone, without looking at the names. Comparing them with the names shows which species the marker separates, which ones it splits and which ones it lumps. They are hypotheses, to be weighed against morphology, distribution or other markers.',
@@ -9426,6 +9430,8 @@
 			lastBody: null,    // request of the results on screen, reused by phase 2
 			dist: null,        // last distance analysis of those results
 			distOpts: { model: 'k2p', per_species: null, tree: true, delimit: false },
+			distDone: null,    // options `dist` was computed with
+			distDraft: null,   // options changed by hand and not computed yet
 			motuGroup: null,   // group shown on the delimitation tab (null: the first)
 			motuSels: {},      // partition chosen in each group: { method: 'asap'|'abgd'|'abgd_initial', index }
 			distRunning: false,
@@ -9449,7 +9455,7 @@
 			{ id: 'haplotypes', label: 'an_v_haplotypes', views: ['haplotypes', 'network', 'structure'] },
 			{ id: 'concordance', label: 'an_v_concordance', views: ['concordance'] },
 			{ id: 'distance', label: 'an_v_dist_tab', views: ['distance', 'tree', 'delimit'],
-			  controls: body => anDistanceControls(body) },
+			  controls: body => anDistanceControls(body), discard: () => { AnState.distDraft = null; } },
 			{ id: 'diversity', label: 'an_v_div_tab', views: ['richness', 'beta'],
 			  controls: body => anDivControls(body) },
 		];
@@ -9742,6 +9748,8 @@
 				AnState.result = data;
 				AnState.lastBody = Object.assign({}, body, { marker: data.marker });
 				AnState.dist = null;
+				AnState.distDone = null;
+				AnState.distDraft = null;
 				AnState.net = null;
 				AnState.popgen = null;
 				AnState.popgenError = null;
@@ -10933,13 +10941,15 @@
 					const s = l.querySelector('select'), c = l.querySelector('input[type=checkbox]');
 					const name = (l.querySelector('span') || l).textContent.replace(/\s*\(.*\)\s*$/, '').trim().replace(/:$/, '');
 					if (s && s.selectedIndex >= 0) bar.append(anEl('span', 'an-opt-chip', `${name}: ${s.options[s.selectedIndex].text}`));
-					else if (c && c.checked) bar.append(anEl('span', 'an-opt-chip', `${name} ✓`));
+					else if (c && c.checked) bar.append(anEl('span', 'an-opt-chip', `${name.split(':')[0]} ✓`));
 				});
 			}
 			const toggle = anEl('button', 'btn btn-sm btn-outline-secondary', t(open ? 'an_opts_hide' : 'an_opts_change'));
 			toggle.type = 'button';
 			toggle.setAttribute('aria-expanded', open);
 			toggle.addEventListener('click', () => {
+				// Folding drops changes not computed: the line says what is on screen
+				if (open && tab.discard) tab.discard();
 				AnState.optsOpen[tab.id] = !open;
 				anRefreshView();
 			});
@@ -10961,9 +10971,41 @@
 
 		const anPctOf = (x, digits = 2) => (x === null || x === undefined) ? '—' : `${(100 * x).toFixed(digits)} %`;
 
+		// What each view suggests computing before the first run: distances
+		// alone; the tree; the MOTUs with the tree, which shows them and
+		// checks them against its clades
+		const AN_DIST_SUGGEST = { distance: { tree: false, delimit: false }, tree: { tree: true },
+		                          delimit: { tree: true, delimit: true } };
+
+		// Options on show: those changed by hand; else what the results on
+		// screen were computed with; else the last ones, as the view suggests
+		function anDistShownOpts() {
+			return AnState.distDraft || AnState.distDone
+				|| Object.assign({}, AnState.distOpts, AN_DIST_SUGGEST[AnState.view]);
+		}
+
+		// Run again with one more analysis, keeping what was computed
+		function anDistAdd(extra) {
+			AnState.distOpts = Object.assign({}, AnState.distDone || AnState.distOpts, extra);
+			AnState.distDraft = null;
+			anRunDistance();
+		}
+
+		// A view whose analysis wasn't asked for: what is missing, and a
+		// button that computes it as well
+		function anDistAddBox(body, textKey, buttonKey, extra) {
+			const box = anEl('div', 'd-flex flex-wrap align-items-center gap-3 mt-3');
+			const add = anEl('button', 'btn btn-sm btn-primary px-3', t(buttonKey));
+			add.type = 'button';
+			add.disabled = AnState.distRunning;
+			add.addEventListener('click', () => anDistAdd(extra));
+			box.append(anEl('span', 'an-muted', t(textKey)), add);
+			body.append(box);
+		}
+
 		function anDistanceControls(body) {
 			const box = anEl('div', 'an-dist-controls');
-			const opts = AnState.distOpts;
+			const opts = anDistShownOpts();
 			const mkSelect = (id, options, value) => {
 				const sel = anEl('select', 'form-select form-select-sm');
 				sel.id = id;
@@ -10998,17 +11040,21 @@
 			const run = anEl('button', 'btn btn-primary btn-sm px-4', t('an_dist_run'));
 			run.type = 'button';
 			run.disabled = AnState.distRunning;
+			const read = () => ({
+				model: model.value,
+				per_species: per.value ? Number(per.value) : null,
+				tree: tree.checked,
+				delimit: delimit.checked,
+			});
+			// A change by hand holds in every view until computed
+			[model, per, tree, delimit].forEach(c => c.addEventListener('change', () => { AnState.distDraft = read(); }));
 			run.addEventListener('click', () => {
-				AnState.distOpts = {
-					model: model.value,
-					per_species: per.value ? Number(per.value) : null,
-					tree: tree.checked,
-					delimit: delimit.checked,
-				};
+				AnState.distOpts = read();
+				AnState.distDraft = null;
 				anRunDistance();
 			});
 			const status = anEl('span', 'an-muted ms-auto', !AnState.distRunning ? ''
-				: t(opts.delimit ? 'an_dist_running_delimit' : 'an_dist_running'));
+				: t(AnState.distOpts.delimit ? 'an_dist_running_delimit' : 'an_dist_running'));
 			const row = anEl('div', 'an-options');
 			row.append(field('an_model_label', model), field('an_per_label', per), treeWrap, delimitWrap, status, run);
 			box.append(row, anEl('p', 'an-muted mt-2 mb-0', t('an_dist_intro', { n: numFmt.format(AN_DIST_LIMIT) })));
@@ -11019,7 +11065,8 @@
 			if (AnState.distRunning || !AnState.lastBody) return;
 			AnState.distRunning = true;
 			anRefreshView();
-			const body = Object.assign({}, AnState.lastBody, AnState.distOpts);
+			const asked = Object.assign({}, AnState.distOpts);
+			const body = Object.assign({}, AnState.lastBody, asked);
 			try {
 				const response = await fetch('/api/analysis/distance', {
 					method: 'POST',
@@ -11031,6 +11078,7 @@
 					throw new Error(data.error || `${t('server_error_prefix')}${response.status}`);
 				}
 				AnState.dist = data;
+				AnState.distDone = asked;
 				AnState.motuGroup = null;
 				AnState.motuSels = {};
 				AnState.tree = null;
@@ -11312,7 +11360,7 @@
 			if (!d) return;
 			(d.delimit_notes || []).forEach(note => body.append(anEl('div', 'an-warn mt-2', '⚠ ' + note)));
 			if (!d.delimit || !d.delimit.length) {
-				if (!(d.delimit_notes || []).length) body.append(anEl('p', 'an-muted mt-3', t('an_delimit_off')));
+				if (!(d.delimit_notes || []).length) anDistAddBox(body, 'an_delimit_off', 'an_delimit_add', { tree: true, delimit: true });
 				return;
 			}
 			const g = anDelimitGroup();
@@ -15073,7 +15121,7 @@ li li { display: list-item; margin: 0; }
 			if (!d) return;
 			(d.tree_notes || []).forEach(note => body.append(anEl('div', 'an-warn mt-2', '⚠ ' + note)));
 			if (!d.trees.length) {
-				if (!(d.tree_notes || []).length) body.append(anEl('p', 'an-muted mt-3', t('an_tree_off')));
+				if (!(d.tree_notes || []).length) anDistAddBox(body, 'an_tree_off', 'an_tree_add', { tree: true });
 				return;
 			}
 			// Sequences that can't be aligned together get separate trees

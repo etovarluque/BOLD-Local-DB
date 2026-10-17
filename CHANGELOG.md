@@ -15,6 +15,12 @@ This log starts at `1.1.0`. Changes before that are only in the git history
   line with what is set (*Change options* opens them).
 - Primary buttons are lighter on hover (the change was hard to see), and
   the *Edit* link of the search shown underlines the word, not the pencil.
+- Distances and delimitation: before the first run each view ticks what it
+  needs (Distances: neither the tree nor the MOTUs; NJ tree: the tree;
+  MOTUs: the delimitation and the tree, which shows the MOTUs and checks
+  them against its clades). A box changed by hand holds, and once there are
+  results the options show what was computed. A view whose analysis wasn't
+  asked for offers to compute it as well (*Also compute the NJ tree*).
 
 ### Fixed
 - Report panel: with *Number of distinct species* or *Number of distinct
